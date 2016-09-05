@@ -1,0 +1,6 @@
+*\.pyc
+*\.swp
+*py\.swo
+testsold
+.ropeproject
+__pycache__
