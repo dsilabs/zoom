@@ -1,0 +1,231 @@
+# -*- coding: utf-8 -*-
+
+"""
+    middlware layers
+
+    A set of functions that can be placed between the HTTP server and
+    the application layer.  These functions can provide various services
+    such as content serving, caching, error trapping, security, etc..
+"""
+
+# pylint: disable=broad-except
+# We sometimes catch anything that hasn't already been handled and provide a
+# useful respose to the browser.  That's not usually advised but in this
+# case it's what we want.
+
+import os
+import sys
+import traceback
+import json
+from io import StringIO
+
+from response import (
+    PNGResponse,
+    JPGResponse,
+    CSSResponse,
+    JavascriptResponse,
+    HTMLResponse,
+)
+
+
+SAMPLE_FORM = """
+<br><br>
+<form action="" id="dz_form" name="dz_form" method="POST" enctype="multipart/form-data">
+    first name<input name="first_name" value="" type="text">
+    last name<input name="last_name" value="" type="text">
+    picture<input name="photo" value="" type="file">
+    <input style="" name="send_button" value="send" class="button" type="submit" id="send_button">
+</form>
+""".replace('/n', '<br>')
+
+
+def debug(request):
+    """fake app for development purposes"""
+
+    def format_section(title, content):
+        """format a section for debugging output"""
+        return '<pre>\n====== %s ======\n%s\n</pre>' % (title, repr(content))
+
+    def formatr(title, content):
+        """format a section for debugging output in raw form"""
+        return '<pre>\n====== %s ======\n%s\n</pre>' % (title, content)
+
+    content = ''
+
+    try:
+        status = '200 OK'
+
+        if request.module == 'wsgi':
+            title = 'Hello from WSGI!'
+        else:
+            title = 'Hello from CGI!'
+
+        content = []
+        content.append(title)
+        content.append('<br>\n')
+
+        #content.append(formatr('printed output', '{printed_output}'))
+
+        content.append(formatr('request', request))
+        content.append(formatr('form', SAMPLE_FORM))
+        content.append(formatr('paths', json.dumps(dict(
+            path=[sys.path],
+            directory=os.path.abspath('.'),
+            pathname=__file__,
+                ), indent=2)))
+        content.append(formatr('environment',
+                           json.dumps(list(os.environ.items()), indent=2)))
+
+        #print('testing printed output')
+
+        data = request.data
+        if 'photo' in data and data['photo'].filename:
+            content.append(format_section('filename', data['photo'].filename))
+            content.append(format_section('filedata', data['photo'].value))
+
+    except Exception:
+        content = ['<pre>{}</pre>'.format(traceback.format_exc())]
+
+    return HTMLResponse(''.join(content)).as_wsgi()
+
+
+def app(request):
+    """Call the main Application"""
+    # pylint: disable=unused-argument
+    return HTMLResponse('This is an app response').as_wsgi()
+
+
+def serve_response(*path):
+    """Serve up various respones with their correct response type"""
+    known_types = dict(
+            png=PNGResponse,
+            jpg=JPGResponse,
+            gif=PNGResponse,
+            ico=PNGResponse,
+            css=CSSResponse,
+            js=JavascriptResponse,
+            )
+    filename = os.path.join(*path)
+    if os.path.exists(filename):
+        filenamel = filename.lower()
+        for file_type in known_types:
+            if filenamel.endswith('.' + file_type):
+                data = open(filename, 'rb').read()
+                response = known_types[file_type](data)
+                return response.as_wsgi()
+        return HTMLResponse('unknown file type').as_wsgi()
+    else:
+        relative_path = os.path.join(*path[1:])
+        return HTMLResponse('file not found: {}'.format(relative_path)).as_wsgi()
+
+
+def serve_static(request, handler, *rest):
+    """Serve a static file"""
+    if request.path.startswith('/static/'):
+        return serve_response(request.instance, 'www', request.path[1:])
+    else:
+        return handler(request, *rest)
+
+
+def serve_themes(request, handler, *rest):
+    """Serve a theme file"""
+    if request.path.startswith('/themes/'):
+        return serve_response(request.instance, request.path[1:])
+    else:
+        return handler(request, *rest)
+
+
+def serve_images(request, handler, *rest):
+    """Serve an image file"""
+    if request.path.startswith('/images/'):
+        return serve_response(request.root, 'content', request.path[1:])
+    else:
+        return handler(request, *rest)
+
+
+def serve_favicon(request, handler, *rest):
+    """Serve a favicon file
+
+        >>> from request import Request
+        >>> def content_handler(request, *rest):
+        ...     return '200 OK', [], 'nuthin'
+        >>> request = Request(
+        ...     dict(REQUEST_URI='/'),
+        ... )
+        >>> status, _, content = serve_favicon(
+        ...     request,
+        ...     content_handler,
+        ... )
+    """
+    if request.path == '/favicon.ico':
+        return serve_response(request.root, 'content', 'images', request.path[1:])
+    else:
+        return handler(request, *rest)
+
+
+def serve_html(request, handler, *rest):
+    """Direct a request for an HTML page to the content app"""
+    if request.path.endswith('.html'):
+        request.path = '/content' + request.path[:-5]
+        request.route = request.path.split('/')[1:]
+        return handler(request, *rest)
+    else:
+        return handler(request, *rest)
+
+
+def trap_errors(request, handler, *rest):
+    """Trap exceptions and raise a server error
+
+        >>> def exception_handler(request, *rest):
+        ...     raise Exception('error!')
+        >>> def content_handler(request, *rest):
+        ...     return '200 OK', [], 'nuthin'
+        >>> request = {}
+        >>> status, headers, content = trap_errors(request, content_handler)
+        >>> content
+        'nuthin'
+        >>> status
+        '200 OK'
+        >>> status, headers, content = trap_errors(request, exception_handler)
+        >>> status
+        '500 Internal Server Error'
+        >>> 'Exception: error!' in content
+        True
+    """
+    try:
+        return handler(request, *rest)
+    except Exception:
+        status = '500 Internal Server Error'
+        content = traceback.format_exc()
+        headers = [('Content-type', 'text/plain'),
+                   ('Content-Length', str(len(content)))]
+        return status, headers, content
+
+
+def _handle(request, handler, *rest):
+    """invoke the next handler"""
+    return handler(request, *rest)
+
+
+def handle(request, handlers=None):
+    """handle a request"""
+    default_handlers = (
+        trap_errors,
+        serve_favicon,
+        serve_static,
+        serve_themes,
+        serve_images,
+        serve_html,
+        app,
+    )
+    return _handle(request, *(handlers or default_handlers))
+
+
+DEBUGGING_HANDLERS = (
+    trap_errors,
+    serve_favicon,
+    serve_static,
+    serve_themes,
+    serve_images,
+    debug,
+)
