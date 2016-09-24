@@ -6,14 +6,14 @@
     The following test is a bit lame because the timestamp makes it tricky to
     test.  Ideally we'd pass in a timer somehow but the cookie module is
     handling the time calculation so without diving into the innards of the
-    cookie module this is what we have right now.
+    http.cookies module this is what we have right now.
 
     >>> cookie = make_cookie()
     >>> add_value(cookie, 'name1', 'value1', 60, True)
     >>> v = get_value(cookie)
     >>> v.startswith('name1=value1; expires=')
     True
-    >>> v.endswith(' GMT; httponly; secure')
+    >>> v.endswith('; Secure')
     True
     >>> len(v)
     69
@@ -22,8 +22,8 @@
 from http.cookies import SimpleCookie
 
 
-SESSION_COOKIE_NAME = 'z3sid'
-SUBJECT_COOKIE_NAME = 'z3sub'
+SESSION_COOKIE_NAME = 'z6sid'
+SUBJECT_COOKIE_NAME = 'z6sub'
 ONE_YEAR = 365 * 24 * 60 * 60
 
 
