@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    middlware layers
+    zoom.middleware
 
     A set of functions that can be placed between the HTTP server and
     the application layer.  These functions can provide various services

@@ -1,7 +1,9 @@
-"""
-    portable server
+# -*- coding: utf-8 -*-
 
-    runs an instance of DataZoomer using the builtin Python WSGI server.
+"""
+    zoom.server
+
+    runs an instance of Zoom using the builtin Python WSGI server.
 
     >>> server = WSGIApplication()
 """
@@ -66,7 +68,7 @@ def run(port=8004, instance='.', handlers=None):
 
 
 def application(environ, start_response):
-    """run DataZoomer using external WSGI Server
+    """run Zoom using external WSGI Server
 
     Assumes that the WSGI script is located one directory below the instance
     directory.  In an typical installation the instance directory would be
