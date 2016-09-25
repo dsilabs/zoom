@@ -13,7 +13,7 @@ import urllib
 import uuid
 from timeit import default_timer as timer
 
-from cookies import (
+from zoom.cookies import (
     get_cookies,
     SESSION_COOKIE_NAME,
     SUBJECT_COOKIE_NAME,
@@ -187,4 +187,3 @@ class Request(object):
             key,
             self.__dict__[key]) for key in self.__dict__
         )
-
