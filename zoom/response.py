@@ -4,12 +4,21 @@
     zoom.response
 
     Various common web responses.
+
+    Note:  We have chosen to use a dict for the headers even though
+    technically the HTTP spec allows for multiple values by the same name
+    because the uses cases for this seem to be very obscure and the benefits
+    of not duplicating header entries that the dict provides seem to outweigh
+    supporting obscure and generally not recommend use cases.  The only use
+    case where this is more commonly used is in cookies, but we deal with that
+    special case in the cookie module.
 """
 
 
 from hashlib import md5
+from collections import OrderedDict
 
-from jsonz import dumps
+from zoom.jsonz import dumps
 
 
 class Response(object):
@@ -17,7 +26,7 @@ class Response(object):
 
     def __init__(self, content):
         self.status = '200 OK'
-        self.headers = {}
+        self.headers = OrderedDict()
         self.content = content
 
     def render_doc(self):
@@ -33,8 +42,10 @@ class Response(object):
                              headers.items()]))
 
         doc = self.render_doc()
-        length_entry = [('Content-length', '%s' % len(doc))]
-        headers = render_headers(dict(list(self.headers.items()) + length_entry))
+        length_entry = {'Content-length': '%s' % len(doc)}
+        headers = render_headers(
+            OrderedDict(self.headers, **length_entry)
+        )
         return ''.join([headers, '\n', doc])
 
     def as_wsgi(self):
@@ -85,22 +96,21 @@ class HTMLResponse(Response):
     """
     HTML response
 
-    >>> import response
-    >>> response.HTMLResponse('test123').render() == (
-    ...     'X-FRAME-OPTIONS: DENY\\n'
+    >>> HTMLResponse('test123').render() == (
     ...     'Content-type: text/html\\n'
-    ...     'Content-length: 7\\n'
-    ...     'Cache-Control: no-cache\\n\\n'
+    ...     'Cache-Control: no-cache\\n'
+    ...     'X-FRAME-OPTIONS: DENY\\n'
+    ...     'Content-length: 7\\n\\n'
     ...     'test123'
     ... )
     True
 
-    >>> response.HTMLResponse('test123').render_wsgi() == (
+    >>> HTMLResponse('test123').as_wsgi() == (
     ...    '200 OK',
     ...    [
-    ...       ('X-FRAME-OPTIONS', 'DENY'),
     ...       ('Content-type', 'text/html'),
     ...       ('Cache-Control', 'no-cache'),
+    ...       ('X-FRAME-OPTIONS', 'DENY'),
     ...       ('Content-length', '7')
     ...    ],
     ...    'test123'
@@ -116,7 +126,7 @@ class HTMLResponse(Response):
 
     def render_doc(self):
         """Render HTML the payload including printed debugging output"""
-        return self.content.encode('utf-8')
+        return self.content
 
 
 class XMLResponse(Response):
@@ -210,4 +220,3 @@ class PDFResponse(FileResponse):
         FileResponse.__init__(self, filename, content)
         self.headers['Content-type'] = 'application/pdf'
         del self.headers['Content-Disposition']
-
