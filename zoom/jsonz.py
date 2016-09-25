@@ -38,7 +38,7 @@ def dumps(data, *a, **k):
     '"test"'
 
     >>> loads(dumps('test'))
-    u'test'
+    'test'
 
     >>> loads(dumps(date(2015,1,1)))
     datetime.date(2015, 1, 1)
@@ -60,4 +60,3 @@ def dumps(data, *a, **k):
             raise TypeError(msg % (type(obj), repr(obj)))
 
     return json.dumps(data, default=handler, *a, **k)
-
