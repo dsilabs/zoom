@@ -19,7 +19,7 @@ import traceback
 import json
 from io import StringIO
 
-from response import (
+from zoom.response import (
     PNGResponse,
     JPGResponse,
     CSSResponse,
@@ -98,13 +98,13 @@ def app(request):
 def serve_response(*path):
     """Serve up various respones with their correct response type"""
     known_types = dict(
-            png=PNGResponse,
-            jpg=JPGResponse,
-            gif=PNGResponse,
-            ico=PNGResponse,
-            css=CSSResponse,
-            js=JavascriptResponse,
-            )
+        png=PNGResponse,
+        jpg=JPGResponse,
+        gif=PNGResponse,
+        ico=PNGResponse,
+        css=CSSResponse,
+        js=JavascriptResponse,
+    )
     filename = os.path.join(*path)
     if os.path.exists(filename):
         filenamel = filename.lower()
@@ -146,7 +146,7 @@ def serve_images(request, handler, *rest):
 def serve_favicon(request, handler, *rest):
     """Serve a favicon file
 
-        >>> from request import Request
+        >>> from zoom.request import Request
         >>> def content_handler(request, *rest):
         ...     return '200 OK', [], 'nuthin'
         >>> request = Request(
