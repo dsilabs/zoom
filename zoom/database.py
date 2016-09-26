@@ -45,10 +45,14 @@ class Result(object):
 
     def __str__(self):
         """nice for humans"""
-        labels = [' %s '%i[0] for i in self.cursor.description]
+
+        def is_numeric(value):
+            return str(value[1:-1]).translate({'.': None}).isdigit()
+
+        labels = [' %s ' % i[0] for i in self.cursor.description]
         values = [[' %s ' % i for i in r] for r in self]
         allnum = [
-            all(str(v[i][1:-1]).translate({'.': None}).isdigit() for v in values)
+            all(is_numeric(v[i]) for v in values)
             for i in range(len(labels))
         ]
         widths = [
@@ -60,7 +64,9 @@ class Result(object):
             for i, w in enumerate(widths)
         ])
         lines = ['-' * (w) for w in widths]
-        result = '\n'.join((fmt%tuple(i)).rstrip() for i in [labels] + [lines] + values)
+        result = '\n'.join(
+            (fmt % tuple(i)).rstrip() for i in [labels] + [lines] + values
+        )
         return result
 
     def __repr__(self):
@@ -128,9 +134,9 @@ class Database(object):
         """execute the SQL command"""
         start = timeit.default_timer()
         params = len(args) == 1 and \
-                hasattr(args[0], 'items') and \
-                args[0] or \
-                args
+            hasattr(args[0], 'items') and \
+            args[0] or \
+            args
         try:
             method(command, params)
         except Exception as error:
@@ -178,6 +184,7 @@ class Database(object):
             return '  Database Queries\n --------------------\n{}\n'.format(
                 '\n'.join(self.log))
         return ''
+
 
 def database(engine, *args, **kwargs):
     """create a database object"""
