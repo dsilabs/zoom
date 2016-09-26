@@ -3,4 +3,5 @@
 *py\.swo
 testsold
 .ropeproject
+.coverage
 __pycache__
