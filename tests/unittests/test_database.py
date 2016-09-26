@@ -9,11 +9,13 @@
 
 import unittest
 import sqlite3
+import logging
 from decimal import Decimal
 from datetime import date, datetime
 
 from zoom.database import Database
 
+logger = logging.getLogger(__name__)
 
 class TestDatabase(unittest.TestCase):
     """test db module"""
@@ -35,7 +37,7 @@ class TestDatabase(unittest.TestCase):
     #     db("""drop table if exists dzdb_test_table""")
     #     db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
     #        NUMERIC(10,2),DTADD DATE,NOTES TEXT)""")
-    #     db("""insert into dzdb_test_table values ("1234",50,"2005-01-14","Hello
+    #     db("""insert into dzdb_test_table values  ("1234",50,"2005-01-14","Hello
     #        there")""")
     #     db("""insert into dzdb_test_table values ("5678",60,"2035-01-24","New
     #        notes")""")
@@ -44,18 +46,23 @@ class TestDatabase(unittest.TestCase):
     #     for rec in recordset:
     #         self.assertEquals(rec, ("1234", 50, "2005-01-14", "Hello there"))
     #         break
-    #
-    # def test_db_create_drop_table(self):
-    #     table_names = lambda a: [x[0] for x in a('show tables')]
-    #     db = self.db
-    #     db('drop table if exists dzdb_test_table')
-    #     self.assert_('dzdb_test_table' not in table_names(db))
-    #     db("""create table dzdb_test_table (ID CHAR(10),AMOUNT
-    #        NUMERIC(10,2),DTADD DATE,NOTES TEXT)""")
-    #     self.assert_('dzdb_test_table' in table_names(db))
-    #     db('drop table dzdb_test_table')
-    #     self.assert_('dzdb_test_table' not in table_names(db))
-    #
+
+    def test_db_create_drop_table(self):
+        db = self.db
+        db('drop table if exists dzdb_test_table')
+        self.assert_('dzdb_test_table' not in db.get_tables())
+        db(
+           'create table dzdb_test_table ('
+           '  ID CHAR(10),'
+           '  AMOUNT NUMERIC(10,2),'
+           '  DTADD DATE,'
+           '  NOTES TEXT'
+           ')'
+        )
+        self.assert_('dzdb_test_table' in db.get_tables())
+        db('drop table dzdb_test_table')
+        self.assert_('dzdb_test_table' not in db.get_tables())
+
     # def test_db_insert_update_record(self):
     #     # pylint: disable=protected-access
     #     insert_test = """insert into dzdb_test_table (ID, DTADD, amount, notes)

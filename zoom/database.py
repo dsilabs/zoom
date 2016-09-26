@@ -185,6 +185,11 @@ class Database(object):
                 '\n'.join(self.log))
         return ''
 
+    def get_tables(self):
+        """return table names"""
+        cmd = 'select name from sqlite_master where type="table"'
+        return [a[0] for a in self(cmd)]
+
 
 def database(engine, *args, **kwargs):
     """create a database object"""
