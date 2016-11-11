@@ -14,7 +14,7 @@ from wsgiref.simple_server import make_server
 from timeit import default_timer as timer
 
 from zoom.request import Request
-import zoom.middleware
+import zoom.middleware as middleware
 
 def reset_modules():
     """reset the modules to a known starting set
