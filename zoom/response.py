@@ -45,8 +45,8 @@ class Response(object):
         length_entry = {'Content-length': '%s' % len(doc)}
         headers = render_headers(
             OrderedDict(self.headers, **length_entry)
-        )
-        return ''.join([headers, '\n', doc])
+        ).encode('utf8')
+        return b''.join([headers, b'\n', doc])
 
     def as_wsgi(self):
         """Render the entire response"""
@@ -92,7 +92,19 @@ class GIFResponse(Response):
         self.headers['Content-type'] = 'image/gif'
 
 
-class HTMLResponse(Response):
+class TextResponse(Response):
+    """Plan text response"""
+
+    def __init__(self, content=''):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'text'
+        self.headers['Cache-Control'] = 'no-cache'
+
+    def render_doc(self):
+        return self.content.encode('utf8')
+
+
+class HTMLResponse(TextResponse):
     """
     HTML response
 
@@ -101,7 +113,7 @@ class HTMLResponse(Response):
     ...     'Cache-Control: no-cache\\n'
     ...     'X-FRAME-OPTIONS: DENY\\n'
     ...     'Content-length: 7\\n\\n'
-    ...     'test123'
+    ...     b'test123'
     ... )
     True
 
@@ -113,20 +125,16 @@ class HTMLResponse(Response):
     ...       ('X-FRAME-OPTIONS', 'DENY'),
     ...       ('Content-length', '7')
     ...    ],
-    ...    'test123'
+    ...    b'test123'
     ... )
     True
     """
 
     def __init__(self, content=''):
-        Response.__init__(self, content)
+        TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'text/html'
         self.headers['Cache-Control'] = 'no-cache'
         self.headers['X-FRAME-OPTIONS'] = 'DENY'
-
-    def render_doc(self):
-        """Render HTML the payload including printed debugging output"""
-        return self.content
 
 
 class XMLResponse(Response):
@@ -139,20 +147,7 @@ class XMLResponse(Response):
 
     def render_doc(self):
         doc = '<?xml version="1.0"?>%s' % self.content
-        return doc
-
-
-class TextResponse(Response):
-    """Plan text response"""
-
-    def __init__(self, content=''):
-        Response.__init__(self, content)
-        self.headers['Content-type'] = 'text'
-        self.headers['Cache-Control'] = 'no-cache'
-
-    def render_doc(self):
-        doc = '%s' % self.content
-        return doc
+        return doc.encode('utf8')
 
 
 class JavascriptResponse(TextResponse):
@@ -179,11 +174,11 @@ class JSONResponse(TextResponse):
         self.headers['Content-type'] = 'application/json;charset=utf-8'
 
 
-class CSSResponse(Response):
+class CSSResponse(TextResponse):
     """CSS response"""
 
     def __init__(self, content):
-        Response.__init__(self, content)
+        TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'text/css;charset=utf-8'
 
 
