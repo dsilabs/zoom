@@ -35,8 +35,6 @@ def server(instance='.'):
     else:
         instance = instance
 
-    print('starting server for {} on port {}'.format(instance, options.port))
-
     from zoom.server import run as runweb
     runweb(port=options.port, instance=instance)
     print('\rstopped')

@@ -59,6 +59,8 @@ def run(port=8004, instance='.', handlers=None):
     The instance variable is the path of the directory on the system where the
     sites folder is located. (e.g. /work/web)
     """
+    print('starting server for {} on port {}'.format(instance, port))
+
     the_appliation = WSGIApplication(instance, handlers)
     server = make_server('', int(port), the_appliation)
     try:
