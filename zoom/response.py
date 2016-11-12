@@ -109,10 +109,10 @@ class HTMLResponse(TextResponse):
     HTML response
 
     >>> HTMLResponse('test123').render() == (
-    ...     'Content-type: text/html\\n'
-    ...     'Cache-Control: no-cache\\n'
-    ...     'X-FRAME-OPTIONS: DENY\\n'
-    ...     'Content-length: 7\\n\\n'
+    ...     b'Content-type: text/html\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'X-FRAME-OPTIONS: DENY\\n'
+    ...     b'Content-length: 7\\n\\n'
     ...     b'test123'
     ... )
     True
