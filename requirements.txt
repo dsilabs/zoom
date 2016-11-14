@@ -1,0 +1,2 @@
+# The order of packages is important as pip processes them in order
+PyMySQL>=0.7.9

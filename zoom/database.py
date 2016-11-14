@@ -7,10 +7,7 @@
 """
 
 import timeit
-
-
-class UnkownDatabaseException(Exception):
-    pass
+import collections
 
 
 ARRAY_SIZE = 1000
@@ -20,6 +17,16 @@ ERROR_TPL = """
   parameters: {}
   message: {}
 """
+
+
+class UnkownDatabaseException(Exception):
+    """exception raised when the database is unknown"""
+    pass
+
+
+class DatabaseException(Exception):
+    """exception raised when a database server error occurs"""
+    pass
 
 
 class Result(object):
@@ -47,6 +54,7 @@ class Result(object):
         """nice for humans"""
 
         def is_numeric(value):
+            """test if string contains only numeric values"""
             return str(value[1:-1]).translate({'.': None}).isdigit()
 
         labels = [' %s ' % i[0] for i in self.cursor.description]
@@ -81,6 +89,7 @@ class Result(object):
 
 class Database(object):
     # pylint: disable=trailing-whitespace
+    # pylint: disable=too-many-instance-attributes
     """
     database object
 
@@ -110,7 +119,9 @@ class Database(object):
            1   Joe     32   None   None        None
 
     """
-    # pylint: disable=too-many-instance-attributes
+
+    paramstyle = 'pyformat'
+
 
     def __init__(self, factory, *args, **keywords):
         """Initialize with factory method to generate DB connection
@@ -130,13 +141,45 @@ class Database(object):
             self.__connection = self.__factory(*self.__args, **self.__keywords)
         return getattr(self.__connection, name)
 
+    def translate(self, command, *args):
+        """translate sql dialects
+
+        The Python db API standard does not attempt unify parameter passing
+        styles for SQL arguments.  This translate routine attempts to do that
+        for each database type.  For databases that use the preferred pyformat
+        paramstyle nothing needs to be done.  Databases requiring other
+        paramstyles should override this method to provide translate the
+        command the the required style.
+        """
+        def issequenceform(obj):
+            """test for a sequence type that is not a string"""
+            if isinstance(obj, str):
+                return False
+            return isinstance(obj, collections.Sequence)
+
+        if self.paramstyle == 'qmark':
+            if len(args) == 1 and hasattr(args[0], 'items') and args[0]:
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args[0]
+            elif len(args) >= 1 and issequenceform(args[0]):
+                placeholders = ['?'] * len(args[0])
+                cmd = command % tuple(placeholders), args
+            else:
+                placeholders = ['?'] * len(args)
+                cmd = command % tuple(placeholders), args
+            return cmd
+
+        else:
+            params = len(args) == 1 and \
+                hasattr(args[0], 'items') and \
+                args[0] or \
+                args
+            return command, params
+
     def _execute(self, cursor, method, command, *args):
         """execute the SQL command"""
         start = timeit.default_timer()
-        params = len(args) == 1 and \
-            hasattr(args[0], 'items') and \
-            args[0] or \
-            args
+        command, params = self.translate(command, *args)
         try:
             method(command, params)
         except Exception as error:
@@ -177,7 +220,7 @@ class Database(object):
         args = list(self.__args)
         keywords = dict(self.__keywords, db=name)
         return Database(self.__factory, *args, **keywords)
-
+        
     def report(self):
         """produce a SQL log report"""
         if self.log:
@@ -186,8 +229,65 @@ class Database(object):
         return ''
 
     def get_tables(self):
+        """get a list of database tables"""
+        pass
+
+
+class Sqlite3Database(Database):
+    """Sqlite3 Database"""
+
+    paramstyle = 'qmark'
+
+    def __init__(self, *args, **kwargs):
+        import sqlite3
+        from decimal import Decimal
+
+        keyword_args = dict(
+            kwargs,
+            detect_types=sqlite3.PARSE_DECLTYPES,
+        )
+
+        # add support for decimal types
+        def adapt_decimal(value):
+            """adapt decimal values to their string representation"""
+            return str(value)
+        def convert_decimal(bytetext):
+            """convert bytesring representatinos of decimal values to actual
+            Decimal values"""
+            return Decimal(bytetext.decode())
+        sqlite3.register_adapter(Decimal, adapt_decimal)
+        sqlite3.register_converter('decimal', convert_decimal)
+
+        # pylint: disable=star-args
+        # I meant to do that
+        Database.__init__(self, sqlite3.connect, *args, **keyword_args)
+
+    def get_tables(self):
         """return table names"""
         cmd = 'select name from sqlite_master where type="table"'
+        return [a[0] for a in self(cmd)]
+
+
+class MySQLDatabase(Database):
+    """MySQL Database"""
+
+    paramstyle = 'pyformat'
+
+    def __init__(self, *args, **kwargs):
+        import pymysql
+
+        keyword_args = dict(
+            kwargs,
+            charset='utf8'
+        )
+
+        # pylint: disable=star-args
+        # I meant to do that
+        Database.__init__(self, pymysql.connect, *args, **keyword_args)
+
+    def get_tables(self):
+        """return table names"""
+        cmd = 'show tables'
         return [a[0] for a in self(cmd)]
 
 
@@ -196,8 +296,12 @@ def database(engine, *args, **kwargs):
     # pylint: disable=invalid-name
 
     if engine == 'sqlite3':
-        import sqlite3
-        db = Database(sqlite3.connect, *args, **kwargs)
+        db = Sqlite3Database(*args, **kwargs)
+        return db
+
+    elif engine == 'mysql':
+        db = MySQLDatabase(*args, **kwargs)
+        db.autocommit(1)
         return db
 
     else:
