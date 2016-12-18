@@ -17,6 +17,7 @@ import os
 import sys
 import traceback
 import json
+import logging
 from io import StringIO
 
 from zoom.response import (
@@ -29,14 +30,13 @@ from zoom.response import (
 
 
 SAMPLE_FORM = """
-<br><br>
 <form action="" id="dz_form" name="dz_form" method="POST" enctype="multipart/form-data">
-    first name<input name="first_name" value="" type="text">
-    last name<input name="last_name" value="" type="text">
-    picture<input name="photo" value="" type="file">
+    first name: <input name="first_name" value="" type="text">
+    last name: <input name="last_name" value="" type="text">
+    picture: <input name="photo" value="" type="file">
     <input style="" name="send_button" value="send" class="button" type="submit" id="send_button">
 </form>
-""".replace('/n', '<br>')
+"""
 
 
 def debug(request):
@@ -48,7 +48,7 @@ def debug(request):
 
     def formatr(title, content):
         """format a section for debugging output in raw form"""
-        return '<pre>\n====== %s ======\n%s\n</pre>' % (title, content)
+        return '<pre>\n====== %s ======\n%s</pre>' % (title, content)
 
     content = ''
 
@@ -61,13 +61,20 @@ def debug(request):
             title = 'Hello from CGI!'
 
         content = []
-        content.append(title)
-        content.append('<br>\n')
+        content.extend([
+            '<br>\n',
+            '<img src="/themes/default/images/banner_logo.png" />\n',
+            '<hr>\n',
+            #'<pre>{printed_output}</pre>\n',
+            '<img src="/static/zoom/images/checkmark.png" />\n',
+            '<br>\n',
+            title,
+        ])
 
         #content.append(formatr('printed output', '{printed_output}'))
 
+        content.append(formatr('test form', SAMPLE_FORM))
         content.append(formatr('request', request))
-        content.append(formatr('form', SAMPLE_FORM))
         content.append(formatr('paths', json.dumps(dict(
             path=[sys.path],
             directory=os.path.abspath('.'),
@@ -105,7 +112,9 @@ def serve_response(*path):
         css=CSSResponse,
         js=JavascriptResponse,
     )
-    filename = os.path.join(*path)
+    filename = os.path.realpath(os.path.join(*path))
+    logger = logging.getLogger(__name__)
+    logger.debug('attempting to serve up filename {!r}'.format(filename))
     if os.path.exists(filename):
         filenamel = filename.lower()
         for file_type in known_types:
@@ -115,6 +124,7 @@ def serve_response(*path):
                 return response.as_wsgi()
         return HTMLResponse('unknown file type').as_wsgi()
     else:
+        logger.warning('unable to serve filename {!r}'.format(filename))
         relative_path = os.path.join(*path[1:])
         return HTMLResponse('file not found: {}'.format(relative_path)).as_wsgi()
 
@@ -122,7 +132,8 @@ def serve_response(*path):
 def serve_static(request, handler, *rest):
     """Serve a static file"""
     if request.path.startswith('/static/'):
-        return serve_response(request.instance, 'www', request.path[1:])
+        libpath = os.path.dirname(__file__)
+        return serve_response(libpath, '..', 'web', 'www', request.path[1:])
     else:
         return handler(request, *rest)
 
@@ -130,7 +141,8 @@ def serve_static(request, handler, *rest):
 def serve_themes(request, handler, *rest):
     """Serve a theme file"""
     if request.path.startswith('/themes/'):
-        return serve_response(request.instance, request.path[1:])
+        libpath = os.path.dirname(__file__)
+        return serve_response(libpath, '..', 'web', request.path[1:])
     else:
         return handler(request, *rest)
 
