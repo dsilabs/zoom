@@ -170,7 +170,9 @@ def serve_favicon(request, handler, *rest):
         ... )
     """
     if request.path == '/favicon.ico':
-        return serve_response(request.root, 'content', 'images', request.path[1:])
+        libpath = os.path.dirname(__file__)
+        return serve_response(libpath, '..', 'web', 'themes', 'default',
+                              'images', request.path[1:])
     else:
         return handler(request, *rest)
 
