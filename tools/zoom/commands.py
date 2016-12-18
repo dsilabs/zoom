@@ -25,7 +25,7 @@ def server(instance='.'):
     """run an instance using Python's builtin HTTP server"""
 
     parser = OptionParser(usage='usage: %prog server [options] instance')
-    parser.add_option("-p", type="int", dest="port", default=8000, help='service port')
+    parser.add_option("-p", type="int", dest="port", default=80, help='service port')
     (options, args) = parser.parse_args()
 
     if len(args) > 2:
@@ -36,7 +36,9 @@ def server(instance='.'):
         instance = instance
 
     from zoom.server import run as runweb
-    runweb(port=options.port, instance=instance)
-    print('\rstopped')
-
-
+    try:
+        runweb(port=options.port, instance=instance)
+        print('\rstopped')
+    except PermissionError:
+        print('Permission Error: is port {} in use?\n'
+              'use -p <port> to choose a different port'.format(options.port))

@@ -53,17 +53,17 @@ class WSGIApplication(object):
         return [content]
 
 
-def run(port=8004, instance='.', handlers=None):
+def run(port=80, instance='.', handlers=None):
     """run using internal HTTP Server
 
     The instance variable is the path of the directory on the system where the
     sites folder is located. (e.g. /work/web)
     """
-    print('starting server for {} on port {}'.format(instance, port))
 
     the_appliation = WSGIApplication(instance, handlers)
     server = make_server('', int(port), the_appliation)
     try:
+        print('serving {} on port {}'.format(instance, port))
         server.serve_forever()
     except KeyboardInterrupt:
         pass
@@ -82,6 +82,3 @@ def application(environ, start_response):
     """
     os.chdir(environ.get('DOCUMENT_ROOT'))
     return WSGIApplication(instance='..')(environ, start_response)
-
-if __name__ == '__main__':
-    run(handlers=middleware.DEBUGGING_HANDLERS)
