@@ -8,7 +8,7 @@
 
 import sys
 import inspect
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 from zoom.utils import ItemList
 
@@ -34,6 +34,7 @@ def dispatch(args):
     functions = get_functions()
     cmd = args[1]
     if cmd in functions:
+        del sys.argv[1]
         functions[cmd]()
     else:
         raise Exception('No such command %s' % cmd)
@@ -62,8 +63,14 @@ def main():
     calls the appropriate method corresponding to the command line args
     """
 
-    #parser = OptionParser()
-    #(options, args) = parser.parse_args()
+    if len(sys.argv) == 2 and sys.argv[-1] in ['-h', '--help']:
+        parser = ArgumentParser(
+            description='zoom command line utility',
+            usage='zoom <command> [options] [arguments]\n'
+                  '       zoom <command> -h'
+            )
+        parser.add_argument('command', nargs='?')
+        args = parser.parse_args()
 
     try:
         if len(sys.argv) > 1:
