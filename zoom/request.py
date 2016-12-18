@@ -35,8 +35,8 @@ class Webvars(object):
         # pylint: disable=no-member
         try:
             import msvcrt
-            msvcrt.setmode(0, os.O_BINARY) # stdin  = 0
-            msvcrt.setmode(1, os.O_BINARY) # stdout = 1
+            msvcrt.setmode(0, os.O_BINARY)  # stdin  = 0
+            msvcrt.setmode(1, os.O_BINARY)  # stdout = 1
         except ImportError:
             pass
 
@@ -76,7 +76,7 @@ class Webvars(object):
         self.__dict__ = items
 
     def __getattr__(self, name):
-        return '' # return blank for missing attributes
+        return ''  # return blank for missing attributes
 
     def __str__(self):
         return repr(self.__dict__)
@@ -84,9 +84,11 @@ class Webvars(object):
     def __repr__(self):
         return str(self)
 
+
 def get_parent_dir():
     """get the directory above the current directory"""
     return os.path.split(os.path.abspath(os.getcwd()))[0]
+
 
 class Request(object):
     """A web request"""
@@ -141,6 +143,8 @@ class Request(object):
 
         instance = instance or get_parent_dir()
         root = os.path.join(instance, 'sites', server)
+        mode = env.get('mod_wsgi.process_group', None) \
+            and 'daemon' or 'embedded'
 
         # gather some commonly required environment variables
         attributes = dict(
@@ -150,7 +154,7 @@ class Request(object):
             domain=calc_domain(env.get('HTTP_HOST')),
             uri=env.get('REQUEST_URI', 'index.py'),
             query=env.get('QUERY_STRING'),
-            ip=env.get('REMOTE_ADDR'), # deprecated
+            ip=env.get('REMOTE_ADDR'),  # deprecated
             ip_address=env.get('REMOTE_ADDR'),
             user=env.get('REMOTE_USER'),
             cookies=cookies,
@@ -164,8 +168,7 @@ class Request(object):
             agent=env.get('HTTP_USER_AGENT'),
             method=env.get('REQUEST_METHOD'),
             module=module,
-            mode=env.get('mod_wsgi.process_group', None) \
-                and 'daemon' or 'embedded',
+            mode=mode,
             protocol=env.get('HTTPS', 'off') == 'on' and 'https' or 'http',
             referrer=env.get('HTTP_REFERER'),
             wsgi_version=env.get('wsgi.version'),
