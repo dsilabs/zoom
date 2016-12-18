@@ -133,7 +133,7 @@ class Request(object):
         module = env.get('wsgi.version', None) and 'wsgi' or 'cgi'
 
         if module == 'wsgi':
-            server = env.get('HTTP_HOST').split(':')[0]
+            server = (env.get('HTTP_HOST') or '').split(':')[0]
             home = os.getcwd()
         else:
             server = env.get('SERVER_NAME', 'localhost')

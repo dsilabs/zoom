@@ -1,6 +1,9 @@
 """
     Test the cookies module
+    
 """
+# pylint: disable=missing-docstring
+# method names are more useful for testing
 
 import unittest
 import http.cookies
@@ -14,11 +17,8 @@ from zoom.cookies import (
 )
 
 
-class TestRequest(unittest.TestCase): #pylint: disable=R0904
+class TestCookies(unittest.TestCase):
     """test system cookies"""
-
-    #pylint: disable=missing-docstring
-    # method names are more useful for testing
 
     def test_create_cookie(self):
         logger = logging.getLogger('zoom.cookies')
