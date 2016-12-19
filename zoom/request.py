@@ -9,6 +9,7 @@
 import os
 import sys
 import cgi
+import json
 import urllib
 import uuid
 from timeit import default_timer as timer
@@ -19,12 +20,13 @@ from zoom.cookies import (
     SUBJECT_COOKIE_NAME,
 )
 
+
 class Webvars(object):
     """Extracts parameters sent as part of the request"""
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, env=None):
+    def __init__(self, env=None, body=None):
         """gather query fields"""
 
         env = env or os.environ
@@ -46,19 +48,20 @@ class Webvars(object):
             cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
         else:
             if module == 'wsgi':
+                body_stream = body
                 post_env = env.copy()
                 post_env['QUERY_STRING'] = ''
-                cgi_fields = cgi.FieldStorage(
-                    fp=env.get('wsgi.input'),
-                    environ=post_env,
-                    keep_blank_values=True
-                )
+                keep_blanks = True
             else:
-                cgi_fields = cgi.FieldStorage(
-                    fp=sys.stdin,
-                    environ=env,
-                    keep_blank_values=1
-                )
+                body_stream = body
+                post_env = env.copy()
+                keep_blanks = 1
+
+            cgi_fields = cgi.FieldStorage(
+                fp=body_stream,
+                environ=post_env,
+                keep_blank_values=keep_blanks
+            )
 
         items = {}
         for key in cgi_fields.keys():
@@ -73,7 +76,7 @@ class Webvars(object):
                 items[key] = cgi_fields[key]
             else:
                 items[key] = cgi_fields[key].value
-        self.__dict__ = items
+        self.__dict__.update(items)
 
     def __getattr__(self, name):
         return ''  # return blank for missing attributes
@@ -96,14 +99,29 @@ class Request(object):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, env=None, instance=None, start_time=None):
-        env = env or os.environ
+        self.env = env or os.environ
         self.start_time = start_time or timer()
         self.ip_address = None
         self.session_token = None
         self.server = None
         self.route = []
-        self.data = {}
-        self.setup(env, instance)
+        self.setup(self.env, instance)
+
+    @property
+    def body(self):
+        self.body_consumed = True
+        return self._body
+
+    @property
+    def data(self):
+        if not self.body_consumed:
+            return Webvars(self.env, self._body).__dict__
+        else:
+            return {}
+
+    @property
+    def json_body(self):
+        return json.loads(self.body.read().decode('utf-8'))
 
     def setup(self, env, instance=None):
         """setup the Request attributes"""
@@ -128,6 +146,10 @@ class Request(object):
                 return host.split(':')[0].split('www.')[-1:][0]
             return ''
 
+        self._data = None
+        self._body = None
+        self.body_consumed = False
+
         path = env.get('PATH_INFO', env.get('REQUEST_URI', '').split('?')[0])
         current_route = path != '/' and path.split('/')[1:] or []
         cookies = get_cookies(env.get('HTTP_COOKIE'))
@@ -137,9 +159,11 @@ class Request(object):
         if module == 'wsgi':
             server = (env.get('HTTP_HOST') or '').split(':')[0]
             home = os.getcwd()
+            self._body = env.get('wsgi.input')
         else:
             server = env.get('SERVER_NAME', 'localhost')
             home = os.path.dirname(env.get('SCRIPT_FILENAME', ''))
+            self._body = sys.stdin
 
         instance = instance or get_parent_dir()
         root = os.path.join(instance, 'sites', server)
@@ -180,13 +204,12 @@ class Request(object):
             wsgi_errors=env.get('wsgi.errors'),
             wsgi_input=env.get('wsgi.input'),
             route=current_route,
-            data=Webvars(env).__dict__,
             env=env
         )
         self.__dict__.update(attributes)
 
     def __str__(self):
-        return '{\n%s\n}' % '\n'.join('  %s:%s' % (
+        return '{\n%s\n}' % '\n'.join('  %s: %r' % (
             key,
             self.__dict__[key]) for key in self.__dict__
         )
