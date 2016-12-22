@@ -116,3 +116,22 @@ class ItemList(list):
         return ' '.join(title) + ' '.join(lines) + '\n'.join(t)
 
 
+def parents(path):
+    if not os.path.isdir(path):
+        return parents(os.path.split(os.path.abspath(path))[0])
+    parent = os.path.abspath(os.path.join(path, os.pardir))
+    if path == parent:
+        return []
+    else:
+        return [path] + parents(parent)
+
+
+def locate_config(filename='zoom.conf', start='.'):
+    for path in parents(start):
+        pathname = os.path.join(path, filename)
+        if os.path.exists(pathname):
+            return pathname
+    for path in parents(os.path.join(os.path.expanduser('~'))):
+        pathname = os.path.join(path, filename)
+        if os.path.exists(pathname):
+            return pathname

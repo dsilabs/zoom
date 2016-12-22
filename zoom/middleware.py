@@ -20,6 +20,7 @@ import json
 import logging
 from io import StringIO
 
+import zoom.apps
 from zoom.response import (
     PNGResponse,
     JPGResponse,
@@ -98,8 +99,7 @@ def debug(request):
 
 def app(request):
     """Call the main Application"""
-    # pylint: disable=unused-argument
-    return HTMLResponse('This is an app response').as_wsgi()
+    return zoom.apps.handle(request)
 
 
 def serve_response(*path):
@@ -210,7 +210,7 @@ def trap_errors(request, handler, *rest):
         return handler(request, *rest)
     except Exception:
         status = '500 Internal Server Error'
-        content = traceback.format_exc()
+        content = traceback.format_exc().encode('utf-8')
         headers = [('Content-type', 'text/plain'),
                    ('Content-Length', str(len(content)))]
         return status, headers, content
