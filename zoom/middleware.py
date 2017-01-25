@@ -203,7 +203,7 @@ def trap_errors(request, handler, *rest):
         >>> status, headers, content = trap_errors(request, exception_handler)
         >>> status
         '500 Internal Server Error'
-        >>> 'Exception: error!' in content
+        >>> 'Exception: error!' in str(content)
         True
     """
     try:
