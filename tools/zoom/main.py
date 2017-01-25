@@ -6,13 +6,13 @@
     Zoom command line utility
 """
 
+import os
 import sys
 import inspect
+import commands
 from argparse import ArgumentParser
 
 from zoom.utils import ItemList
-
-import commands
 
 
 class SimpleException(Exception):
@@ -37,7 +37,7 @@ def dispatch(args):
         del sys.argv[1]
         functions[cmd]()
     else:
-        raise Exception('No such command %s' % cmd)
+        print('No such command {!r}\nUse -h for help'.format(cmd))
 
 
 def list_commands():
@@ -60,17 +60,21 @@ def list_commands():
 def main():
     """main program
 
-    calls the appropriate method corresponding to the command line args
+    Calls the appropriate method corresponding to the command line args.
     """
-
     if len(sys.argv) == 2 and sys.argv[-1] in ['-h', '--help']:
+        installed_name = os.path.split(sys.argv[0])[-1]
         parser = ArgumentParser(
-            description='zoom command line utility',
-            usage='zoom <command> [options] [arguments]\n'
-                  '       zoom <command> -h'
+            description='{name} command line utility'.format(
+                name=installed_name
+            ),
+            usage='{name} <command> [options] [arguments]\n'
+                  '       {name} <command> -h\n'
+                  '       {name} # list commands'.format(
+                      name=installed_name
+                  )
             )
         parser.add_argument('command', nargs='?')
-        args = parser.parse_args()
 
     try:
         if len(sys.argv) > 1:
