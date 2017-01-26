@@ -9,13 +9,7 @@
 # pylint: disable=unused-argument
 
 import os
-import sys
-import time
-import shlex
 from argparse import ArgumentParser
-
-from subprocess import Popen, PIPE
-from os.path import exists
 
 __all__ = [
     'server',
@@ -25,7 +19,6 @@ __all__ = [
 def server(instance='.'):
     """run an instance using Python's builtin HTTP server"""
 
-#    del sys.argv[1]
     parser = ArgumentParser(
         description='run a built-in zoom http server',
         usage='zoom server [options] instance'

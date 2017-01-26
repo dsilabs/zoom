@@ -8,7 +8,6 @@ import os
 import imp
 
 from zoom.response import Response, HTMLResponse
-from zoom.system import System
 
 
 def locate_app(request):

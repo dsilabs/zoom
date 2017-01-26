@@ -46,13 +46,13 @@ def list_commands():
     for name, function in sorted(get_functions().items()):
         if not name.startswith('_'):
             doc = function.__doc__
-            argspec = inspect.getargspec(function)
-            sig = ['zoom {} [<options>]'.format(name)]
-            sig.extend(['<{}>'.format(arg)
-                        for arg in argspec.args if arg != 'options'])
-            if argspec.varargs:
-                sig.append('[{}...]'.format(argspec.varargs))
-            result.append([name, doc, ' '.join(sig)])
+            text = ['zoom {} [<options>]'.format(name)]
+            parameters = inspect.signature(function).parameters.values()
+            for parameter in parameters:
+                if parameter.kind == parameter.POSITIONAL_OR_KEYWORD:
+                    text.append('[{}]'.format(parameter.name))
+                print(parameter)
+            result.append([name, doc, ' '.join(text)])
     print(result)
 
 
