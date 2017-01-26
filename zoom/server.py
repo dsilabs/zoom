@@ -16,6 +16,7 @@ from timeit import default_timer as timer
 from zoom.request import Request
 import zoom.middleware as middleware
 
+
 def reset_modules():
     """reset the modules to a known starting set
 
@@ -27,7 +28,7 @@ def reset_modules():
     # it, and this is for develoment purposes only in any case.
     global init_modules
     if 'init_modules' in globals():
-        for module in [x for x in sys.modules.keys() if x not in init_modules]:
+        for module in [x for x in sys.modules if x not in init_modules]:
             del sys.modules[module]
     else:
         init_modules = sys.modules.keys()

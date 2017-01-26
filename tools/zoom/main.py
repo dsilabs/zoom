@@ -52,8 +52,7 @@ def list_commands():
                         for arg in argspec.args if arg != 'options'])
             if argspec.varargs:
                 sig.append('[{}...]'.format(argspec.varargs))
-            sig = ' '.join(sig)
-            result.append([name, doc, sig])
+            result.append([name, doc, ' '.join(sig)])
     print(result)
 
 

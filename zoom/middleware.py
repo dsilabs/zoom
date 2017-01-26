@@ -18,7 +18,6 @@ import sys
 import traceback
 import json
 import logging
-from io import StringIO
 
 import zoom.apps
 from zoom.response import (
@@ -32,11 +31,13 @@ import zoom.templates
 
 
 SAMPLE_FORM = """
-<form action="" id="dz_form" name="dz_form" method="POST" enctype="multipart/form-data">
+<form action="" id="dz_form" name="dz_form" method="POST"
+    enctype="multipart/form-data">
     first name: <input name="first_name" value="" type="text">
     last name: <input name="last_name" value="" type="text">
     picture: <input name="photo" value="" type="file">
-    <input style="" name="send_button" value="send" class="button" type="submit" id="send_button">
+    <input style="" name="send_button" value="send" class="button"
+    type="submit" id="send_button">
 </form>
 """
 
@@ -52,7 +53,7 @@ def debug(request):
         """format a section for debugging output in raw form"""
         return '<pre>\n====== %s ======\n%s</pre>' % (title, content)
 
-    content = ''
+    content = []
 
     try:
         status = '200 OK'
@@ -62,30 +63,40 @@ def debug(request):
         else:
             title = 'Hello from CGI!'
 
-        content = []
         content.extend([
             '<br>\n',
             '<img src="/themes/default/images/banner_logo.png" />\n',
             '<hr>\n',
-            #'<pre>{printed_output}</pre>\n',
+            # '<pre>{printed_output}</pre>\n',
             '<img src="/static/zoom/images/checkmark.png" />\n',
             '<br>\n',
             title,
         ])
 
-        #content.append(formatr('printed output', '{printed_output}'))
+        # content.append(formatr('printed output', '{printed_output}'))
 
         content.append(formatr('test form', SAMPLE_FORM))
         content.append(formatr('request', request))
-        content.append(formatr('paths', json.dumps(dict(
-            path=[sys.path],
-            directory=os.path.abspath('.'),
-            pathname=__file__,
-                ), indent=2)))
-        content.append(formatr('environment',
-                           json.dumps(list(os.environ.items()), indent=2)))
+        content.append(
+            formatr(
+                'paths',
+                json.dumps(
+                    dict(
+                        path=[sys.path],
+                        directory=os.path.abspath('.'),
+                        pathname=__file__,
+                    ), indent=2
+                )
+            )
+        )
+        content.append(
+            formatr(
+                'environment',
+                json.dumps(list(os.environ.items()), indent=2)
+            )
+        )
 
-        #print('testing printed output')
+        # print('testing printed output')
 
         data = request.data
         if 'photo' in data and data['photo'].filename:
@@ -95,7 +106,7 @@ def debug(request):
     except Exception:
         content = ['<pre>{}</pre>'.format(traceback.format_exc())]
 
-    return HTMLResponse(''.join(content)).as_wsgi()
+    return HTMLResponse(''.join(content), status=status).as_wsgi()
 
 
 def serve_response(*path):
@@ -110,7 +121,7 @@ def serve_response(*path):
     )
     filename = os.path.realpath(os.path.join(*path))
     logger = logging.getLogger(__name__)
-    logger.debug('attempting to serve up filename {!r}'.format(filename))
+    logger.debug('attempting to serve up filename %r', filename)
     if os.path.exists(filename):
         filenamel = filename.lower()
         for file_type in known_types:
@@ -120,9 +131,10 @@ def serve_response(*path):
                 return response.as_wsgi()
         return HTMLResponse('unknown file type').as_wsgi()
     else:
-        logger.warning('unable to serve filename {!r}'.format(filename))
+        logger.warning('unable to serve filename %r', filename)
         relative_path = os.path.join(*path[1:])
-        return HTMLResponse('file not found: {}'.format(relative_path)).as_wsgi()
+        msg = 'file not found: {}'
+        return HTMLResponse(msg.format(relative_path)).as_wsgi()
 
 
 def serve_static(request, handler, *rest):

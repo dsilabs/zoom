@@ -10,7 +10,6 @@ import os
 import sys
 import cgi
 import json
-import urllib
 import uuid
 from timeit import default_timer as timer
 
@@ -52,22 +51,20 @@ class Webvars(object):
                 body_stream = body
                 post_env = env.copy()
                 post_env['QUERY_STRING'] = ''
-                keep_blanks = True
             else:
                 body_stream = body
                 post_env = env.copy()
-                keep_blanks = 1
 
             cgi_fields = cgi.FieldStorage(
                 fp=body_stream,
                 environ=post_env,
-                keep_blank_values=keep_blanks
+                keep_blank_values=True
             )
 
         items = {}
         for key in cgi_fields.keys():
 
-            if type(cgi_fields[key]) == list:
+            if isinstance(cgi_fields[key], list):
                 items[key] = [item.value for item in cgi_fields[key]]
             elif cgi_fields[key].filename:
                 items[key] = cgi_fields[key]
@@ -86,6 +83,7 @@ class Webvars(object):
 
 
 def get_web_vars(env, body):
+    """return web parameters as a dict"""
     return Webvars(env, body).__dict__
 
 
@@ -97,7 +95,7 @@ def get_parent_dir():
 class Request(object):
     """A web request"""
 
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods, too-many-instance-attributes
 
     def __init__(self, env=None, instance=None, start_time=None):
         self.env = env or os.environ
@@ -107,14 +105,17 @@ class Request(object):
         self.server = None
         self.route = []
         self.setup(self.env, instance)
+        self.body_consumed = False
 
     @property
     def body(self):
+        """access the body in raw form"""
         self.body_consumed = True
         return self._body
 
     @property
     def data(self):
+        """access the body as data"""
         if not self.body_consumed:
             return get_web_vars(self.env, self._body)
         else:
@@ -122,6 +123,7 @@ class Request(object):
 
     @property
     def json_body(self):
+        """access and parse the body as json"""
         return json.loads(self.body.read().decode('utf-8'))
 
     def setup(self, env, instance=None):
@@ -197,7 +199,9 @@ class Request(object):
         self.env = env
 
     def __str__(self):
-        return '{\n%s\n}' % '\n'.join('  %s: %r' % (
-            key,
-            self.__dict__[key]) for key in self.__dict__
+        return '{\n%s\n}' % '\n'.join(
+            '  %s: %r' % (
+                key,
+                self.__dict__[key]
+            ) for key in self.__dict__
         )
