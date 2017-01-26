@@ -6,9 +6,7 @@
 
 import os
 import imp
-import os
 
-import zoom.templates
 from zoom.response import Response, HTMLResponse
 from zoom.system import System
 
@@ -54,8 +52,4 @@ def handle(request):
             response = app(request)
         finally:
             os.chdir(save_dir)
-    else:
-        msg = zoom.templates.app_not_found(request)
-        response = msg.format(request.instance)
-
-    return respond(response)
+        return respond(response)

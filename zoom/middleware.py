@@ -28,6 +28,7 @@ from zoom.response import (
     JavascriptResponse,
     HTMLResponse,
 )
+import zoom.templates
 
 
 SAMPLE_FORM = """
@@ -95,11 +96,6 @@ def debug(request):
         content = ['<pre>{}</pre>'.format(traceback.format_exc())]
 
     return HTMLResponse(''.join(content)).as_wsgi()
-
-
-def app(request):
-    """Call the main Application"""
-    return zoom.apps.handle(request)
 
 
 def serve_response(*path):
@@ -187,6 +183,18 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
+def dispatch_app(request, handler, *rest):
+    """Dispatch request to an application"""
+    return zoom.apps.handle(request) or handler(request, *rest)
+
+
+def not_found(request):
+    """return a 404 page"""
+    msg = zoom.templates.app_not_found(request)
+    response = msg.format(request.instance)
+    return HTMLResponse(response, status='404 Not Found').as_wsgi()
+
+
 def trap_errors(request, handler, *rest):
     """Trap exceptions and raise a server error
 
@@ -230,7 +238,8 @@ def handle(request, handlers=None):
         serve_themes,
         serve_images,
         serve_html,
-        app,
+        dispatch_app,
+        not_found,
     )
     return _handle(request, *(handlers or default_handlers))
 

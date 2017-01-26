@@ -25,9 +25,9 @@ class Response(object):
     """web response"""
 
     def __init__(self, content):
+        self.content = content
         self.status = '200 OK'
         self.headers = OrderedDict()
-        self.content = content
 
     def render_doc(self):
         """Renders the payload"""
@@ -130,11 +130,12 @@ class HTMLResponse(TextResponse):
     True
     """
 
-    def __init__(self, content=''):
+    def __init__(self, content='', status='200 OK'):
         TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'text/html'
         self.headers['Cache-Control'] = 'no-cache'
         self.headers['X-FRAME-OPTIONS'] = 'DENY'
+        self.status = status
 
 
 class XMLResponse(Response):
