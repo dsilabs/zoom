@@ -74,6 +74,7 @@ def main():
                   )
             )
         parser.add_argument('command', nargs='?')
+        parser.parse_args()
 
     try:
         if len(sys.argv) > 1:
