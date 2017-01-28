@@ -92,6 +92,10 @@ def get_parent_dir():
     return os.path.split(os.path.abspath(os.getcwd()))[0]
 
 
+def get_instance(directory):
+    return directory and os.path.abspath(directory) or get_parent_dir()
+
+
 class Request(object):
     """A web request"""
 
@@ -177,14 +181,14 @@ class Request(object):
             self._body = sys.stdin
 
         self.path = path
-        self.instance = instance or get_parent_dir()
+        self.instance = get_instance(instance)
         self.root = os.path.join(self.instance, 'sites', self.server)
         self.host = get('HTTP_HOST')
         self.domain = calc_domain(get('HTTP_HOST'))
         self.uri = get('REQUEST_URI', 'index.py')
         self.query = get('QUERY_STRING')
         self.ip_address = get('REMOTE_ADDR')
-        self.user = get('REMOTE_USER')
+        self.remote_user = get('REMOTE_USER')
         self.cookies = get_cookies(get('HTTP_COOKIE'))
         self.session_token = self.cookies.get(SESSION_COOKIE_NAME, None)
         self.subject = self.cookies.get(SUBJECT_COOKIE_NAME, new_subject())

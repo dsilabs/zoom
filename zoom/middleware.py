@@ -27,6 +27,7 @@ from zoom.response import (
     JavascriptResponse,
     HTMLResponse,
 )
+import zoom.site
 import zoom.templates
 
 
@@ -250,6 +251,7 @@ def handle(request, handlers=None):
         serve_themes,
         serve_images,
         serve_html,
+        zoom.site.site_handler,
         dispatch_app,
         not_found,
     )

@@ -6,12 +6,21 @@
 
 import os
 import imp
+import logging
 
 from zoom.response import Response, HTMLResponse
 
 
+def get_apps(request):
+    """get list of apps installed on this site"""
+    if os.path.exists(request.site.directory):
+        logger = logging.getLogger(__name__)
+        logger.debug('site directory exists: %r', request.site.directory)
+
+
 def locate_app(request):
     """locate the app to run"""
+    get_apps(request)
     filename = os.path.join(request.instance, 'app.py')
     if os.path.isfile(filename):
         return request.instance
