@@ -30,6 +30,7 @@ from zoom.response import (
 import zoom.session
 import zoom.site
 import zoom.templates
+import zoom.user
 
 
 SAMPLE_FORM = """
@@ -254,6 +255,7 @@ def handle(request, handlers=None):
         serve_html,
         zoom.site.site_handler,
         zoom.session.session_handler,
+        zoom.user.user_handler,
         dispatch_app,
         not_found,
     )
