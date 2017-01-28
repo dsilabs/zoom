@@ -8,7 +8,9 @@
 
 # pylint: disable=unused-argument
 
+import logging
 import os
+import sys
 from argparse import ArgumentParser
 
 __all__ = [
@@ -28,6 +30,8 @@ def server(instance='.'):
                         help='service port')
     parser.add_argument("-n", "--noop", action='store_true',
                         help='use special debugging middleware stack')
+    parser.add_argument("-v", "--verbose", action='store_true',
+                        help='verbose console logging')
     parser.add_argument('instance', nargs='?', default=os.getcwd())
     args = parser.parse_args()
 
@@ -38,6 +42,16 @@ def server(instance='.'):
         if not os.path.exists(instance):
             print('Um, that\'s not a valid instance directory')
         else:
+            if args.verbose:
+                fmt = '%(asctime)s  %(name)-15s %(levelname)-8s %(message)s'
+                con_formatter = logging.Formatter(fmt)
+                console_handler = logging.StreamHandler(sys.stdout)
+                console_handler.setLevel(logging.DEBUG)
+                console_handler.setFormatter(con_formatter)
+
+                root_logger = logging.getLogger()
+                root_logger.setLevel(logging.DEBUG)
+                root_logger.addHandler(console_handler)
             if args.noop:
                 handlers = zoom.middleware.DEBUGGING_HANDLERS
                 runweb(port=args.port, instance=instance, handlers=handlers)
