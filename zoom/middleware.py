@@ -31,7 +31,7 @@ import zoom.session
 import zoom.site
 import zoom.templates
 import zoom.user
-
+import zoom.apps
 
 SAMPLE_FORM = """
 <form action="" id="dz_form" name="dz_form" method="POST"
@@ -198,11 +198,6 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
-def dispatch_app(request, handler, *rest):
-    """Dispatch request to an application"""
-    return zoom.apps.handle(request) or handler(request, *rest)
-
-
 def not_found(request):
     """return a 404 page"""
     msg = zoom.templates.app_not_found(request)
@@ -256,7 +251,7 @@ def handle(request, handlers=None):
         zoom.site.site_handler,
         zoom.session.session_handler,
         zoom.user.user_handler,
-        dispatch_app,
+        zoom.apps.apps_handler,
         not_found,
     )
     return _handle(request, *(handlers or default_handlers))

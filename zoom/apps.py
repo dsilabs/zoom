@@ -61,3 +61,8 @@ def handle(request):
         finally:
             os.chdir(save_dir)
         return respond(response)
+
+
+def apps_handler(request, handler, *rest):
+    """Dispatch request to an application"""
+    return handle(request) or handler(request, *rest)
