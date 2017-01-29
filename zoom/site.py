@@ -12,6 +12,7 @@ class Site(object):
 
     def __init__(self, directory):
         self.directory = directory
+        self.config = zoom.config.Config(self.directory, 'site.ini')
         logger = logging.getLogger(__name__)
         logger.debug('site loaded: %r', directory)
 
