@@ -6,6 +6,7 @@
     a database that does less
 """
 
+import logging
 import timeit
 import collections
 
@@ -306,3 +307,41 @@ def database(engine, *args, **kwargs):
 
     else:
         raise UnkownDatabaseException
+
+
+def connect_database(config):
+    get = config.get
+
+    engine = get('database', 'engine', 'sqlite3')
+
+    if engine == 'mysql':
+        host = get('database', 'dbhost', 'database')
+        name = get('database', 'dbname', 'zoomdev')
+        user = get('database', 'dbuser', 'testuser')
+        password = get('database', 'dbpass', 'password')
+        parameters = dict(
+            engine=engine,
+            host=host,
+            db=name,
+            user=user,
+        )
+        if password:
+            parameters['passwd'] = password
+
+    elif engine == 'sqlite3':
+        name = get('database', 'name', 'zoomdev')
+        parameters = dict(
+            engine=engine,
+            database=name,
+        )
+
+    connection = database(**parameters)
+
+    if connection:
+        logger = logging.getLogger(__name__)
+        if 'passwd' in parameters:
+            parameters['passwd'] = '*hidden*'
+        logger.debug('database connected: %r', parameters)
+        logger.debug(repr(connection.get_tables()))
+
+    return connection

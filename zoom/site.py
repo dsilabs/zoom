@@ -6,13 +6,17 @@ import logging
 import os
 
 import zoom.config
+import zoom.database
 
 
 class Site(object):
 
     def __init__(self, directory):
+
         self.directory = directory
         self.config = zoom.config.Config(self.directory, 'site.ini')
+        self.db = zoom.database.connect_database(self.config)
+
         logger = logging.getLogger(__name__)
         logger.debug('site loaded: %r', directory)
 
