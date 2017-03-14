@@ -26,6 +26,7 @@ from zoom.response import (
     CSSResponse,
     JavascriptResponse,
     HTMLResponse,
+    ICOResponse,
 )
 import zoom.session
 import zoom.site
@@ -118,7 +119,7 @@ def serve_response(*path):
         png=PNGResponse,
         jpg=JPGResponse,
         gif=PNGResponse,
-        ico=PNGResponse,
+        ico=ICOResponse,
         css=CSSResponse,
         js=JavascriptResponse,
     )
