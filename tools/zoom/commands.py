@@ -42,16 +42,19 @@ def server(instance='.'):
         if not os.path.exists(instance):
             print('Um, that\'s not a valid instance directory')
         else:
-            if args.verbose:
-                fmt = '%(asctime)s  %(name)-15s %(levelname)-8s %(message)s'
-                con_formatter = logging.Formatter(fmt)
-                console_handler = logging.StreamHandler(sys.stdout)
-                console_handler.setLevel(logging.DEBUG)
-                console_handler.setFormatter(con_formatter)
+            fmt = '%(asctime)s  %(name)-15s %(levelname)-8s %(message)s'
+            con_formatter = logging.Formatter(fmt)
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setLevel(logging.WARNING)
+            console_handler.setFormatter(con_formatter)
 
-                root_logger = logging.getLogger()
-                root_logger.setLevel(logging.DEBUG)
-                root_logger.addHandler(console_handler)
+            root_logger = logging.getLogger()
+            root_logger.setLevel(logging.DEBUG)
+            root_logger.addHandler(console_handler)
+
+            if args.verbose:
+                console_handler.setLevel(logging.DEBUG)
+
             if args.noop:
                 handlers = zoom.middleware.DEBUGGING_HANDLERS
                 runweb(port=args.port, instance=instance, handlers=handlers)
