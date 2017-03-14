@@ -13,17 +13,37 @@ from zoom.response import Response, HTMLResponse
 
 def get_apps(request):
     """get list of apps installed on this site"""
-    if os.path.exists(request.site.directory):
-        logger = logging.getLogger(__name__)
-        logger.debug('site directory exists: %r', request.site.directory)
+    logger = logging.getLogger(__name__)
+    result = []
+    apps_paths = request.site.config.get('apps', 'path').split(';')
+
+    for app_path in apps_paths:
+        path = os.path.join(
+            request.site.directory,
+            app_path,
+        )
+        logger.debug('app path: %s', path)
+        for app in os.listdir(path):
+            filename = os.path.join(path, app, 'app.py')
+            if os.path.exists(filename):
+                result.append((app, filename))
+
+    logger.debug(apps_paths)
+    logger.debug('%s apps found', len(result))
+    return result
 
 
 def locate_app(request):
-    """locate the app to run"""
-    get_apps(request)
-    filename = os.path.join(request.instance, 'app.py')
-    if os.path.isfile(filename):
-        return request.instance
+    logger = logging.getLogger(__name__)
+    default_app = 'hello'
+    app_name = request.route and request.route[0] or default_app
+    apps_paths = request.site.config.get('apps', 'path').split(';')
+    for path in apps_paths:
+        app_path = os.path.abspath(os.path.join(request.site.path, path, app_name))
+        logger.debug('checking %s', app_path)
+        if os.path.exists(os.path.join(app_path, 'app.py')):
+            logger.debug('located app %s', app_path)
+            return app_path
 
 
 def respond(content):
