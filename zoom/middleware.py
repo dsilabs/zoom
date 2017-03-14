@@ -250,6 +250,7 @@ def handle(request, handlers=None):
         serve_images,
         serve_html,
         zoom.site.site_handler,
+        zoom.database.database_handler,
         zoom.session.session_handler,
         zoom.user.user_handler,
         zoom.apps.apps_handler,

@@ -30,6 +30,11 @@ class DatabaseException(Exception):
     pass
 
 
+class EmptyDatabaseException(Exception):
+    """exception raised when a database is empty"""
+    pass
+
+
 class Result(object):
     """database query result"""
     # pylint: disable=too-few-public-methods
@@ -345,3 +350,19 @@ def connect_database(config):
         logger.debug(repr(connection.get_tables()))
 
     return connection
+
+
+def database_handler(request, handler, *rest):
+    """Connect a database to the site if specified"""
+    site = request.site
+    if site.config.get('database', 'dbname', False):
+        site.db = connect_database(site.config)
+
+        if site.db.get_tables() == []:
+            raise EmptyDatabaseException('Database is empty')
+
+    else:
+        logger = logging.getLogger(__name__)
+        logger.warning('no database specified for {}'.format(site.name))
+
+    return handler(request, *rest)
