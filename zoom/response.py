@@ -76,6 +76,16 @@ class PNGCachedResponse(PNGResponse):
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
+class ICOResponse(Response):
+    """Cached ICO image response"""
+
+    def __init__(self, content, age=86400):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'image/x-icon'
+        self.headers['Cache-Control'] = 'max-age={}'.format(age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
+
+
 class JPGResponse(Response):
     """JPG image response"""
 
