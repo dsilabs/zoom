@@ -4,6 +4,10 @@
     zoom.utils
 """
 
+import os
+import collections
+
+
 class ItemList(list):
     """
     list of data items
@@ -135,3 +139,109 @@ def locate_config(filename='zoom.conf', start='.'):
         pathname = os.path.join(path, filename)
         if os.path.exists(pathname):
             return pathname
+
+
+class OrderedSet(collections.MutableSet):
+    """
+    A Record with default values
+
+    trimmed_rows = [row.strip() for row in aligned_rows]
+
+        >>> s = OrderedSet('abracadaba')
+        >>> t = OrderedSet('simsalabim')
+        >>> print(s | t)
+        OrderedSet(['a', 'b', 'r', 'c', 'd', 's', 'i', 'm', 'l'])
+        >>> print(s & t)
+        OrderedSet(['a', 'b'])
+        >>> print(s - t)
+        OrderedSet(['r', 'c', 'd'])
+
+    credit: http://code.activestate.com/recipes/576694/
+    Licensed under MIT License
+    """
+
+    def __init__(self, iterable=None):
+        self.end = end = []
+        end += [None, end, end]         # sentinel node for doubly linked list
+        self.map = {}                   # key --> [key, prev, next]
+        if iterable is not None:
+            self |= iterable
+
+    def __len__(self):
+        return len(self.map)
+
+    def __contains__(self, key):
+        """test if item is present
+
+            >>> s = OrderedSet([1, 2, 3])
+            >>> 'c' in s
+            False
+            >>> 2 in s
+            True
+        """
+        return key in self.map
+
+    def add(self, key):
+        """add an item
+
+            >>> s = OrderedSet([1, 2, 3])
+            >>> s.add(4)
+            >>> s
+            OrderedSet([1, 2, 3, 4])
+        """
+        if key not in self.map:
+            end = self.end
+            curr = end[1]
+            curr[2] = end[1] = self.map[key] = [key, curr, end]
+
+    def discard(self, key):
+        """discard an item by key
+
+            >>> s = OrderedSet([1, 2, 3])
+            >>> s.discard(1)
+            >>> s
+            OrderedSet([2, 3])
+        """
+        if key in self.map:
+            key, prev, next = self.map.pop(key)
+            prev[2] = next
+            next[1] = prev
+
+    def __iter__(self):
+        end = self.end
+        curr = end[2]
+        while curr is not end:
+            yield curr[0]
+            curr = curr[2]
+
+    def __reversed__(self):
+        end = self.end
+        curr = end[1]
+        while curr is not end:
+            yield curr[0]
+            curr = curr[1]
+
+    def pop(self, last=True):
+        """pop an item
+
+            >>> s = OrderedSet([1, 2, 3])
+            >>> s.pop(2)
+            3
+            >>> s
+            OrderedSet([1, 2])
+        """
+        if not self:
+            raise KeyError('set is empty')
+        key = self.end[1][0] if last else self.end[2][0]
+        self.discard(key)
+        return key
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, list(self))
+
+    def __eq__(self, other):
+        if isinstance(other, OrderedSet):
+            return len(self) == len(other) and list(self) == list(other)
+        return set(self) == set(other)
