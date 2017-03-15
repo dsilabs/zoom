@@ -70,19 +70,19 @@ class PNGResponse(Response):
 class PNGCachedResponse(PNGResponse):
     """Cached PNG image response"""
 
-    def __init__(self, content, age=86400):
+    def __init__(self, content, max_age=86400):
         PNGResponse.__init__(self, content)
-        self.headers['Cache-Control'] = 'max-age={}'.format(age)
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
 class ICOResponse(Response):
     """Cached ICO image response"""
 
-    def __init__(self, content, age=86400):
+    def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
         self.headers['Content-type'] = 'image/x-icon'
-        self.headers['Cache-Control'] = 'max-age={}'.format(age)
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
@@ -161,12 +161,14 @@ class XMLResponse(Response):
         return doc.encode('utf8')
 
 
-class JavascriptResponse(TextResponse):
+class JavascriptResponse(Response):
     """Javascript response"""
 
-    def __init__(self, content):
+    def __init__(self, content, max_age=86400):
         TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'application/javascript'
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
 class JSONResponse(TextResponse):
@@ -185,12 +187,14 @@ class JSONResponse(TextResponse):
         self.headers['Content-type'] = 'application/json;charset=utf-8'
 
 
-class CSSResponse(TextResponse):
+class CSSResponse(Response):
     """CSS response"""
 
-    def __init__(self, content):
+    def __init__(self, content, max_age=86400):
         TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'text/css;charset=utf-8'
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
 class RedirectResponse(Response):
