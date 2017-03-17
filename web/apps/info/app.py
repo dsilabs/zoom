@@ -7,6 +7,10 @@
 import json
 
 
+from zoom.page import page
+from zoom.helpers import url_for, link_to
+
+
 def app(request):
     def serializable(i):
         _, v = i
@@ -16,7 +20,14 @@ def app(request):
         except TypeError:
             return False
 
-    tpl = '<h1>System Info</h1><pre>{}</pre>'
+    links = link_to('hello', '/hello')
+    tpl = links + '<pre>{}</pre>'
     request_values = dict(filter(serializable, request.__dict__.items()))
-    values = dict(request_values, data=request.data)
-    return tpl.format(json.dumps(values, indent=4))
+    values = dict(
+        request_values,
+        data=request.data,
+        a_url=url_for('howdy', name='Joe Smith'),
+        a_rooted_url=url_for('/howdy', name='Joe Smith'),
+    )
+
+    return page(tpl.format(json.dumps(values, indent=4)), title='System Info')
