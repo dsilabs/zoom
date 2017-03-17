@@ -17,7 +17,15 @@ patterns = {}
 
 
 def _fill(tag_start, tag_end, text, callback):
-    """do the actual work of filling in tags"""
+    """do the actual work of filling in tags
+    
+    >>> def filler(name, *args, **kwargs):
+    ...     if name == 'name':
+    ...         return 'Joe'
+    >>> _fill('<dz:', '>', 'Hello <dz:name>!', filler)
+    'Hello Joe!'
+    
+    """
 
     def replace_tag(match):
         """replace a tag"""
