@@ -8,25 +8,57 @@ import os
 import zoom.config
 
 
+DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
+
 class Site(object):
+    """a Zoom site"""
+    # pylint: disable=too-many-instance-attributes, too-few-public-methods
 
-    def __init__(self, directory, name):
+    def __init__(self, request):
 
-        self.directory = self.path = directory
-        self.config = zoom.config.Config(self.directory, 'site.ini')
-        self.name = name
+        self.request = request
+        instance = request.instance
+        name = request.domain
 
-        logger = logging.getLogger(__name__)
-        logger.debug('site loaded: %r', directory)
+        site_path = os.path.join(instance, 'sites', name)
+        if os.path.exists(site_path):
+
+            self.name = name
+            self.path = site_path
+            self.config = zoom.config.Config(site_path, 'site.ini')
+
+            get = self.config.get
+            self.url = get('site', 'url', '')
+
+            self.owner_name = get('site', 'owner', 'dynamic solutions')
+            self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
+            self.owner_email = get('site', 'owner_email', 'info@testco.com')
+
+            themes_directory = os.path.join(instance, 'themes')
+            self.theme = get('theme', 'name', 'default')
+            self.theme_path = os.path.join(themes_directory, self.theme)
+
+            logger = logging.getLogger(__name__)
+            logger.debug('site path: %r', site_path)
+            logger.debug('theme path: %r', self.theme_path)
+
+        else:
+            raise Exception('site {!r} does not exist'.format(site_path))
+
+    def helpers(self):
+        """provide helpers"""
+        return dict(
+            site_name=self.name,
+            site_url=self.url,
+            owner_name=self.owner_name,
+            owner_url=self.owner_url,
+            owner_email=self.owner_email,
+            theme=self.theme,
+            theme_uri='/themes/' + self.theme,
+        )
 
 
 def site_handler(request, handler, *rest):
-    site_directory = os.path.join(request.instance, request.domain)
-    if os.path.exists(site_directory):
-        logger = logging.getLogger(__name__)
-        logger.debug('site directory: %r', site_directory)
-        request.site = Site(site_directory, request.domain)
-    else:
-        raise Exception('site {!r} does not exist'.format(site_directory))
-
+    """install site object"""
+    request.site = Site(request)
     return handler(request, *rest)
