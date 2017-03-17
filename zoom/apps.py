@@ -46,14 +46,14 @@ def locate_app(request):
             return app_path
 
 
-def respond(content):
+def respond(content, request):
     """construct a response"""
     if content:
         if isinstance(content, Response):
             result = content
 
         elif hasattr(content, 'render') and content.render:
-            result = content.render()
+            result = content.render(request)
 
         elif isinstance(content, (list, set, tuple)):
             result = HTMLResponse(''.join(content))
@@ -80,7 +80,7 @@ def handle(request):
             response = app(request)
         finally:
             os.chdir(save_dir)
-        return respond(response)
+        return respond(response, request)
 
 
 def apps_handler(request, handler, *rest):
