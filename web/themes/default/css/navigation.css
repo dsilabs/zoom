@@ -1,0 +1,78 @@
+/* system menu */
+div.system_menu {
+  font-size: 0.8em;
+  display: inline;
+}
+div.system_menu ul {
+  text-align: left;
+  display: inline;
+}
+div.system_menu li {
+  margin: 0 7px;
+  display: inline;
+}
+div.system_menu a {
+  height: 3em;
+  line-height: 3em;
+  color: #ddd;
+  text-decoration: none;
+}
+div.system_menu a:hover {
+  color: white;
+}
+
+/* main menu */
+div.main_menu {
+  font-size: 14px;
+  padding: 1px;
+  display: inline;
+}
+div.main_menu ul {
+  text-align: left;
+  display: inline;
+  line-height: 3em;
+}
+div.main_menu li {
+  display: inline;
+}
+div.main_menu a {
+  height: 3em;
+  line-height: 3em;
+  color: #ddd;
+  text-decoration: none;
+}
+div.main_menu a:hover {
+  color: white;
+  background: #444;
+}
+div.main_menu a#current {
+  color: white;
+  background: #222;
+}
+
+/* app menu */
+div.app_menu {
+  font-size: 12px;
+  background-color: #ccc;
+}
+div.app_menu ul {
+  text-align: left;
+  display: block;
+}
+div.app_menu li {
+  display: inline;
+  line-height: 25px;
+}
+div.app_menu a {
+  color: #444;
+  text-decoration: none;
+  padding: 1em;
+}
+div.app_menu a:hover {
+  color: black;
+  text-decoration: none;
+}
+div.app_menu a#current {
+  color: white;
+  background: #222;
+}
