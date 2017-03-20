@@ -50,9 +50,42 @@ def id_for(*args):
 
     """
     def id_(text):
-        return str(text).strip().translate(allowed).lower().replace(' ','-')
+        return str(text).strip().translate(allowed).lower().replace(' ', '-')
 
     return '~'.join([id_(arg) for arg in args])
+
+
+def trim(text):
+    """
+        Remove the left most spaces for markdown
+
+        >>> trim('remove right ')
+        'remove right'
+
+        >>> trim(' remove left')
+        'remove left'
+
+        >>> trim(' remove spaces \\n    from block\\n    of text ')
+        'remove spaces\\n   from block\\n   of text'
+
+    """
+    n = 0
+    for line in text.splitlines():
+        if line.isspace():
+            continue
+        if line.startswith(' '):
+            n = len(line) - len(line.lstrip())
+            break
+    if n:
+        lines = []
+        for line in text.splitlines():
+            lines.append(line[n:].rstrip())
+        return '\n'.join(lines)
+    else:
+        return text.strip()
+
+
+
 
 
 class ItemList(list):
