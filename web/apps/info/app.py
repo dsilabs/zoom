@@ -36,6 +36,6 @@ def app(request):
         tpl.format(json.dumps(values, indent=4)),
         title='System Info',
         actions=actions,
-        search='',
+        search=request.data.get('q', ''),
         subtitle='this is the subtitle'
     )

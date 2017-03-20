@@ -12,12 +12,36 @@ from zoom.mvc import DynamicView
 import zoom.helpers
 
 
+class ClearSearch(DynamicView):
+    pass
+
+
+class SearchBox(DynamicView):
+
+    request_path = '<dz:request_path>'
+
+    @property
+    def clear(self):
+        if self.value:
+            return ''.join(ClearSearch().render().parts['html'])
+        else:
+            return ''
+
+
 class PageHeader(DynamicView):
     """page header"""
 
     @property
     def action_items(self):
         return as_actions(self.model.actions)
+
+    @property
+    def search_box(self):
+        if self.search == None:
+            return ''
+        else:
+            search_box = SearchBox(value=self.model.search)
+            return ''.join(search_box.render().parts['html'])
 
 
 class Page(object):
@@ -29,7 +53,7 @@ class Page(object):
         self.template = 'default'
         self.subtitle = ''
         self.actions = []
-        self.search = ''
+        self.search = None
         self.__dict__.update(kwargs)
         self.args = args
         self.kwargs = kwargs
@@ -98,7 +122,6 @@ class Page(object):
 
         with open(filename) as reader:
             template = reader.read()
-        print(self.title)
         page_header = PageHeader(self).render()
         save_content = self.content
         full_page = page_header + self.content
