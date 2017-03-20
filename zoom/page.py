@@ -11,6 +11,7 @@ from zoom.mvc import DynamicView
 
 import zoom.helpers
 import zoom.apps
+import zoom.render
 
 
 class ClearSearch(DynamicView):
@@ -77,61 +78,27 @@ class Page(object):
     def render(self, request):
         """render page"""
 
-        def not_found(name):
-            """what happens when a helper is not found"""
-            def missing_helper(*args, **kwargs):
-                """provide some info for missing helpers"""
-                parts = ' '.join(
-                    [name] +
-                    ['{!r}'.format(a) for a in args] +
-                    ['{}={!r}'.format(k, v) for k, v in kwargs.items()]
-                )
-                return '&lt;dz:{}&gt; missing'.format(
-                    parts,
-                )
-            return missing_helper
+        template = request.site.get_template(self.template)
 
-        def filler(helpers):
-            """callback for filling in templates"""
-            def _filler(name, *args, **kwargs):
-                """handle the details of filling in templates"""
+        providers = [
+            zoom.helpers.__dict__,
+            request.site.helpers(),
+            zoom.apps.helpers(request),
+            self.helpers(request),
+            dict(
+                username='a-user'
+            )
+        ]
 
-                if hasattr(self, name):
-                    attr = getattr(self, name)
-                    if callable(attr):
-                        repl = attr(self, *args, **kwargs)
-                    else:
-                        repl = attr
-                    return dzfill(repl, _filler)
-
-                helper = helpers.get(name, not_found(name))
-                if callable(helper):
-                    repl = helper(*args, **kwargs)
-                else:
-                    repl = helper
-                return dzfill(repl, _filler)
-            return _filler
-
-        helpers = {}
-        helpers.update(zoom.helpers.__dict__)
-        helpers.update(request.site.helpers())
-        helpers.update(zoom.apps.helpers(request))
-        helpers.update(self.helpers(request))
-
-        template = 'default'
-        theme_path = request.site.theme_path
-        filename = os.path.join(theme_path, template + '.html')
-
-        with open(filename) as reader:
-            template = reader.read()
         page_header = PageHeader(self).render()
         save_content = self.content
         full_page = page_header + self.content
         self.content = ''.join(full_page.parts['html'])
-        content = dzfill(template, filler(helpers))
+        content = zoom.render.apply_helpers(template, self, providers)
         self.content = save_content
         
         return HTMLResponse(content)
+
 
 
 page = Page  # pylint: disable=invalid-name

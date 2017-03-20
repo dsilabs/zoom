@@ -45,6 +45,12 @@ class Site(object):
         else:
             raise Exception('site {!r} does not exist'.format(site_path))
 
+    def get_template(self, name=None):
+        template = name or 'default'
+        filename = os.path.join(self.theme_path, template + '.html')
+        with open(filename) as reader:
+            return reader.read()
+
     def helpers(self):
         """provide helpers"""
         return dict(

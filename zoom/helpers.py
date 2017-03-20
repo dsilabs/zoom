@@ -9,7 +9,7 @@ import zoom.html as html
 
 def username():
     """Returns the username."""
-    return 'auser'
+    return tag_for('username')
 
 
 def owner_name():
