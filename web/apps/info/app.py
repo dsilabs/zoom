@@ -30,4 +30,12 @@ def app(request):
         a_rooted_url=url_for('/howdy', name='Joe Smith'),
     )
 
-    return page(tpl.format(json.dumps(values, indent=4)), title='System Info')
+    actions = 'New',
+
+    return page(
+        tpl.format(json.dumps(values, indent=4)),
+        title='System Info',
+        actions=actions,
+        search='',
+        subtitle='this is the subtitle'
+    )
