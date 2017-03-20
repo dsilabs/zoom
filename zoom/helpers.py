@@ -42,8 +42,8 @@ def owner_link():
 def app_menu_items():
     """Returns app menu items."""
     return (
-        '<li><a href="/info">Overview</a></li>'
-        '<li><a href="/about">About</a></li>'
+        '<li><a href="<dz:app_url>">Overview</a></li>'
+        '<li><a href="<dz:app_url>/about">About</a></li>'
     )
 
 

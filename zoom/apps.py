@@ -82,6 +82,11 @@ def handle(request):
             os.chdir(save_dir)
         return respond(response, request)
 
+def helpers(request):
+    return dict(
+        app_url='/' + (request.route and request.route[0] or ''),
+    )
+
 
 def apps_handler(request, handler, *rest):
     """Dispatch request to an application"""

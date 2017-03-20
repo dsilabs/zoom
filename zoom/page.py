@@ -10,6 +10,7 @@ from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
 
 import zoom.helpers
+import zoom.apps
 
 
 class ClearSearch(DynamicView):
@@ -104,6 +105,7 @@ class Page(object):
         helpers.update(zoom.helpers.__dict__)
         helpers.update(request.site.helpers())
         helpers.update(self.helpers())
+        helpers.update(zoom.apps.helpers(request))
         helpers.update(dict(
             title=request.site.name,
             site_url=request.site.url,
