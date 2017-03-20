@@ -1,14 +1,23 @@
 """
     zoom.page
-
 """
 
 import os
 
+from zoom.components import as_actions
 from zoom.fill import dzfill
 from zoom.response import HTMLResponse
+from zoom.mvc import DynamicView
 
 import zoom.helpers
+
+
+class PageHeader(DynamicView):
+    """page header"""
+
+    @property
+    def action_items(self):
+        return as_actions(self.model.actions)
 
 
 class Page(object):
@@ -16,8 +25,12 @@ class Page(object):
 
     def __init__(self, content, *args, **kwargs):
         self.content = content
-        self.template = kwargs.pop('template', 'default')
-        self.theme = kwargs.pop('theme', 'default')
+        self.theme = 'default'
+        self.template = 'default'
+        self.subtitle = ''
+        self.actions = []
+        self.search = ''
+        self.__dict__.update(kwargs)
         self.args = args
         self.kwargs = kwargs
 
@@ -85,9 +98,15 @@ class Page(object):
 
         with open(filename) as reader:
             template = reader.read()
-        return HTMLResponse(
-            dzfill(template, filler(helpers))
-        )
+        print(self.title)
+        page_header = PageHeader(self).render()
+        save_content = self.content
+        full_page = page_header + self.content
+        self.content = ''.join(full_page.parts['html'])
+        content = dzfill(template, filler(helpers))
+        self.content = save_content
+        
+        return HTMLResponse(content)
 
 
 page = Page  # pylint: disable=invalid-name
