@@ -4,8 +4,55 @@
     zoom.utils
 """
 
-import os
 import collections
+import os
+import string
+
+chars = ''.join(map(chr, range(256)))
+keep_these = string.ascii_letters + string.digits + '- '
+delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
+allowed = str.maketrans(keep_these, keep_these, delete_these)
+
+
+def kind(o):
+    """
+    returns a suitable table name for an object based on the object class
+    """
+    n = []
+    for c in o.__class__.__name__:
+        if c.isalpha() or c == '_':
+            if c.isupper() and len(n):
+                n.append('_')
+            n.append(c.lower())
+    return ''.join(n)
+
+
+def id_for(*args):
+    """
+    Calculates a valid HTML tag id given an arbitrary string.
+
+        >>> id_for('Test 123')
+        'test-123'
+        >>> id_for('New Record')
+        'new-record'
+        >>> id_for('New "special" Record')
+        'new-special-record'
+        >>> id_for("hi", "test")
+        'hi~test'
+        >>> id_for("hi test")
+        'hi-test'
+        >>> id_for("hi-test")
+        'hi-test'
+        >>> id_for(1234)
+        '1234'
+        >>> id_for('this %$&#@^is##-$&*!it')
+        'this-is-it'
+
+    """
+    def id_(text):
+        return str(text).strip().translate(allowed).lower().replace(' ','-')
+
+    return '~'.join([id_(arg) for arg in args])
 
 
 class ItemList(list):
