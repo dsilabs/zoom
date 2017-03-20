@@ -59,9 +59,20 @@ class Page(object):
         self.args = args
         self.kwargs = kwargs
 
-    def helpers(self):
-        """provide helpers"""
-        return {'page_' + k: v for k, v in self.__dict__.items()}
+    def helpers(self, request):
+        """provide page helpers"""
+        return dict(
+            {'page_' + k: v for k, v in self.__dict__.items()},
+            title=request.site.name,
+            site_url=request.site.url,
+            request_path=request.path,
+            css='',
+            js='',
+            head='',
+            tail='',
+            styles='',
+            libs='',
+        )
 
     def render(self, request):
         """render page"""
@@ -104,19 +115,8 @@ class Page(object):
         helpers = {}
         helpers.update(zoom.helpers.__dict__)
         helpers.update(request.site.helpers())
-        helpers.update(self.helpers())
         helpers.update(zoom.apps.helpers(request))
-        helpers.update(dict(
-            title=request.site.name,
-            site_url=request.site.url,
-            request_path=request.path,
-            css='',
-            js='',
-            head='',
-            tail='',
-            styles='',
-            libs='',
-        ))
+        helpers.update(self.helpers(request))
 
         template = 'default'
         theme_path = request.site.theme_path
