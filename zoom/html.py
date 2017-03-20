@@ -1,6 +1,7 @@
 """
     zoom.html
 """
+# pylint: disable=invalid-name
 
 
 def tag(element, content=None, *args, **kwargs):
@@ -129,8 +130,12 @@ def glyphicon(icon, **kwargs):
     >>> glyphicon('heart', Class="special")
     '<span aria-hidden="true" class="glyphicon glyphicon-heart special"></span>'
 
-    >>> glyphicon('heart', Class="special", style="color:red")
-    '<span aria-hidden="true" class="glyphicon glyphicon-heart special" style="color:red"></span>'
+    >>> t = (
+    ...     '<span aria-hidden="true" class="glyphicon '
+    ...     'glyphicon-heart special" style="color:red"></span>'
+    ... )
+    >>> glyphicon('heart', Class="special", style="color:red") == t
+    True
     """
     additional_css_classes = kwargs.pop('Class', kwargs.pop('_class', ''))
     css_class = ' '.join(i for i in ['glyphicon glyphicon-{}'.format(icon),
