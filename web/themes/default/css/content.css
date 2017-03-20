@@ -21,8 +21,6 @@ a:hover { text-decoration: none; }
 .content blockquote ol { list-style-type: lower-alpha; padding-left: 1em; }
 .content blockquote blockquote ol { list-style-type: lower-roman; padding-left: 1em; }
 .content hr { height: 1px; width: 100%; margin: 20px 0; display: block; border-top: thin dashed #ccc; background: none; }
-.content pre { margin: 0; padding: 0; display: block; background: #ffc; border: 0; }
-.content pre code { margin: 1em 4em 1em 2em; display: block; background: #ffc; padding: 15px 5px; }
 
 .dz-toc ul { list-style-type: none; }
 
