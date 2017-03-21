@@ -152,7 +152,9 @@ class ItemList(list):
             ])
 
         def get_format(label, values):
-            first_non_null = list(map(type, [a for a in values if a is not None]))[:1]
+            first_non_null = list(
+                map(type, [a for a in values if a is not None])
+            )[:1]
             if first_non_null:
                 data_type = first_non_null[0]
                 if data_type in [int, float, decimal.Decimal]:
@@ -214,9 +216,9 @@ class ItemList(list):
 
         label_format = '{:<{width}}'
         formatted_labels = [
-                label_format.format(l, width=data_widths[i])
-                for i, l in enumerate(labels)
-                ]
+            label_format.format(l, width=data_widths[i])
+            for i, l in enumerate(labels)
+        ]
 
         dashes = ['-' * data_widths[col] for col in columns]
         aligned_rows = [formatted_labels] + [dashes] + [
@@ -373,3 +375,317 @@ class OrderedSet(collections.MutableSet):
         if isinstance(other, OrderedSet):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
+
+
+class Storage(dict):
+    """
+    A Storage object is like a dictionary except `obj.foo` can be used
+    in addition to `obj['foo']`.
+
+        >>> o = Storage(a=1)
+        >>> o.a
+        1
+        >>> o['a']
+        1
+        >>> o.a = 2
+        >>> o['a']
+        2
+        >>> del o.a
+        >>> o.a
+        Traceback (most recent call last):
+            ...
+        AttributeError: 'a'
+
+    """
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError as k:
+            raise AttributeError(k)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def __delattr__(self, key):
+        try:
+            del self[key]
+        except KeyError as k:
+            raise AttributeError(k)
+
+    def __repr__(self):
+        return '<Storage ' + dict.__repr__(self) + '>'
+
+
+def get_attributes(obj):
+    def properties(obj):
+        if type(obj) == dict:
+            return []
+        items = list(obj.__class__.__dict__.items())
+        return [k for k, v in items if hasattr(v, '__get__')]
+
+    def looks_like_an_id(text):
+        return text.endswith('_id')
+
+    all_keys = list(obj.keys()) + properties(obj)
+    id_keys = sorted(key for key in all_keys if looks_like_an_id(key))
+    special_keys = id_keys + [
+        'id', 'userid', 'groupid', 'key',
+        'name', 'title', 'description',
+        'first_name', 'middle_name', 'last_name', 'fname', 'lname'
+    ]
+    result = []
+    for key in special_keys:
+        if key in all_keys:
+            result.append(key)
+    for key in sorted(all_keys):
+        if key not in special_keys:
+            result.append(key)
+    return result
+
+
+class Record(Storage):
+    """
+    A dict with attribute access to items, attributes and properties
+
+        >>> class Foo(Record):
+        ...     full = property(lambda a: a.fname + ' ' + a.lname)
+        ...
+        >>> f = Foo(fname='Joe', lname='Smith')
+        >>> f.full
+        'Joe Smith'
+        >>> f['full']
+        'Joe Smith'
+        >>> 'The name is %(full)s' % f
+        'The name is Joe Smith'
+        >>> print(f)
+        Foo
+          fname ...............: 'Joe'
+          lname ...............: 'Smith'
+          full ................: 'Joe Smith'
+
+        >>> f.attributes()
+        ['fname', 'lname', 'full']
+
+        >>> class FooBar(Record):
+        ...     full = property(lambda a: a.fname + ' ' + a.lname)
+        ...
+        >>> o = FooBar(a=2)
+        >>> kind(o)
+        'foo_bar'
+        >>> o.a
+        2
+        >>> o['a']
+        2
+        >>> o.double = property(lambda o: 2*o.a)
+        >>> o.double
+        4
+        >>> o['double']
+        4
+        >>> del o.a
+        >>> o.a
+        Traceback (most recent call last):
+            ...
+        AttributeError: 'a'
+
+        >>> class Foo(Record):
+        ...     full = property(lambda a: a.fname + ' ' + a.lname)
+        ...
+        >>> f = Foo(fname='Joe', lname='Smith')
+        >>> f.full
+        'Joe Smith'
+        >>> f['full']
+        'Joe Smith'
+        >>> 'The name is %(full)s' % f
+        'The name is Joe Smith'
+        >>> getattr(f,'full')
+        'Joe Smith'
+
+        >>> print(Foo(_id=1, fname='Jane', lname='Smith'))
+        Foo
+          fname ...............: 'Jane'
+          lname ...............: 'Smith'
+          full ................: 'Jane Smith'
+
+        >>> o = Record(a=2)
+        >>> o.a
+        2
+        >>> o['a']
+        2
+        >>> o.double = property(lambda o: 2*o.a)
+        >>> o.double
+        4
+        >>> o['double']
+        4
+        >>> del o.a
+        >>> o.a
+        Traceback (most recent call last):
+            ...
+        AttributeError: 'a'
+
+    """
+
+    def attributes(self):
+        return get_attributes(self)
+
+    def valid(self):
+        return 1
+
+    def allows(self, user, action):
+        return True
+
+    def get(self, name, *default):
+        try:
+            return self.__getitem__(name)
+        except KeyError as k:
+            if default:
+                return default[0]
+            raise k
+
+    def __getitem__(self, name):
+        try:
+            value = dict.__getitem__(self, name)
+            if hasattr(value, '__get__'):
+                return value.__get__(self)
+            else:
+                return value
+        except KeyError as k:
+            try:
+                return self.__class__.__dict__[name].__get__(self)
+            except KeyError as k:
+                raise k
+
+    def __str__(self):
+        return self.__repr__(pretty=True)
+
+    def __repr__(self, pretty=False):
+
+        name = self.__class__.__name__
+        attributes = self.attributes()
+        t = []
+
+        items = [
+            (key, self[key]) for key in attributes
+            if not key.startswith('_')
+        ]
+
+        if pretty:
+            for key, value in items:
+                if callable(value):
+                    v = value()
+                else:
+                    v = value
+                t.append('  {} {}: {!r}'.format(
+                    key,
+                    '.'*(20-len(key[:20])),
+                    v
+                ))
+            return '\n'.join([name] + t)
+
+        else:
+            for key, value in items:
+                if callable(value):
+                    v = value()
+                else:
+                    v = value
+                t.append((repr(key), repr(v)))
+            return '<%s {%s}>' % (
+                name, ', '.join('%s: %s' % (k, v) for k, v in t)
+            )
+
+
+class DefaultRecord(Record):
+    """
+    A Record with default values
+
+        >>> class Foo(DefaultRecord): pass
+        >>> foo = Foo(name='Sam')
+        >>> foo.name
+        'Sam'
+        >>> foo.phone
+        ''
+    """
+
+    def __getitem__(self, name):
+        try:
+            return Record.__getitem__(self, name)
+        except KeyError:
+            return ''
+
+
+class RecordList(list):
+    """a list of Records"""
+
+    def __str__(self):
+        """
+        represent as a string
+
+            >>> import datetime
+            >>> class Person(Record): pass
+            >>> class People(RecordList): pass
+            >>> people = People()
+            >>> people.append(Person(_id=1, name='Joe', age=20,
+            ...     birthdate=datetime.date(1992,5,5)))
+            >>> people.append(Person(_id=2, name='Samuel', age=25,
+            ...     birthdate=datetime.date(1992,4,5)))
+            >>> people.append(Person(_id=3, name='Sam', age=35,
+            ...     birthdate=datetime.date(1992,3,5)))
+            >>> print(people)
+            person
+            _id name   age birthdate
+            --- ------ --- ----------
+              1 Joe     20 1992-05-05
+              2 Samuel  25 1992-04-05
+              3 Sam     35 1992-03-05
+            3 person records
+
+            >>> people = People()
+            >>> people.append(Person(userid=1, name='Joe', age=20,
+            ...     birthdate=datetime.date(1992,5,5)))
+            >>> people.append(Person(userid=2, name='Samuel', age=25,
+            ...     birthdate=datetime.date(1992,4,5)))
+            >>> people.append(Person(userid=3, name='Sam', age=35,
+            ...     birthdate=datetime.date(1992,3,5)))
+            >>> print(people)
+            person
+            userid name   age birthdate
+            ------ ------ --- ----------
+                 1 Joe     20 1992-05-05
+                 2 Samuel  25 1992-04-05
+                 3 Sam     35 1992-03-05
+            3 person records
+
+        """
+        def get_names(obj):
+            try:
+                result = obj.attributes()
+            except AttributeError:
+                result = list(obj.keys())
+            return result
+
+        if not bool(self):
+            return 'Empty list'
+
+        title = '%s\n' % kind(self[0])
+
+        keys = labels = get_attributes(self[0])
+        rows = [[record.get(key, None) for key in keys] for record in self]
+
+        footer = '\n{} {} records'.format(len(self), kind(self[0]))
+
+        return title + str(ItemList(rows, labels=labels)) + footer
+
+    def __init__(self, *a, **k):
+        list.__init__(self, *a, **k)
+        self._n = 0
+
+    def __iter__(self):
+        self._n = 0
+        return self
+
+    def __next__(self):
+        if self._n >= len(self):
+            raise StopIteration
+        else:
+            result = self[self._n]
+            self._n += 1
+        return result
