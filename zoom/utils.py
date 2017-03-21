@@ -5,6 +5,7 @@
 """
 
 import collections
+import configparser
 import os
 import string
 
@@ -224,7 +225,7 @@ def locate_config(filename='zoom.conf', start='.'):
 class Config(object):
 
     def __init__(self, filename):
-        self.config = ConfigParser.ConfigParser()
+        self.config = configparser.ConfigParser()
         if not filename or not os.path.exists(filename):
             raise Exception('%s file missing' % filename)
         self.config.read(filename)
@@ -232,7 +233,7 @@ class Config(object):
     def get(self, section, option, default=None):
         try:
             return self.config.get(section, option)
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+        except (configparser.NoOptionError, configparser.NoSectionError):
             if default is not None:
                 return default
             raise
