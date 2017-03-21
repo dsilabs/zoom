@@ -8,6 +8,8 @@ import collections
 import configparser
 import os
 import string
+import decimal
+import datetime
 
 chars = ''.join(map(chr, range(256)))
 keep_these = string.ascii_letters + string.digits + '- '
@@ -86,9 +88,6 @@ def trim(text):
         return text.strip()
 
 
-
-
-
 class ItemList(list):
     """
     list of data items
@@ -98,27 +97,26 @@ class ItemList(list):
     >>> items
     [['Joe', 12, 125]]
     >>> print(items)
-    Column 0  Column 1  Column 2  
-    --------- --------- --------- 
-    Joe       12        125      
+    Column 0 Column 1 Column 2
+    -------- -------- --------
+    Joe            12      125
 
     >>> items.insert(0, ['Name', 'Score', 'Points'])
     >>> print(items)
-    Name  Score  Points  
-    ----- ------ ------- 
-    Joe   12     125    
+    Name Score Points
+    ---- ----- ------
+    Joe     12    125
 
     >>> data = [
     ...     ['Joe', 12, 125],
-    ...     ['Sally', 13, 135],
+    ...     ['Sally', 13, 1354],
     ... ]
     >>> items = ItemList(data)
     >>> print(items)
-    Column 0  Column 1  Column 2  
-    --------- --------- --------- 
-    Joe       12        125      
-    Sally     13        135      
-
+    Column 0 Column 1 Column 2
+    -------- -------- --------
+    Joe            12      125
+    Sally          13    1,354
 
     >>> data = [
     ...     ['Joe', 12, 125],
@@ -126,10 +124,10 @@ class ItemList(list):
     ... ]
     >>> items = ItemList(data, labels=['Name', 'Score', 'Points'])
     >>> print(items)
-    Name   Score  Points  
-    ------ ------ ------- 
-    Joe    12     125    
-    Sally  13     135    
+    Name  Score Points
+    ----- ----- ------
+    Joe      12    125
+    Sally    13    135
 
 
     """
@@ -139,7 +137,7 @@ class ItemList(list):
 
     def __str__(self):
         def is_numeric(value):
-            return type(value) in [int, float, Decimal]
+            return type(value) in [int, float, decimal.Decimal]
 
         def is_text(value):
             return type(value) in [str, bytes]
@@ -147,17 +145,37 @@ class ItemList(list):
         def name_column(number):
             return 'Column {}'.format(number)
 
+        def is_homogeneous(values):
+            return any([
+                len(values) <= 1,
+                all(type(values[0]) == type(i) for i in values[1:]),
+            ])
+
+        def get_format(label, values):
+            first_non_null = list(map(type, [a for a in values if a is not None]))[:1]
+            if first_non_null:
+                data_type = first_non_null[0]
+                if data_type in [int, float, decimal.Decimal]:
+                    return '{:{width},}'
+                elif data_type in [datetime.date]:
+                    return '{:%Y-%m-%d}'
+                elif data_type in [datetime.datetime]:
+                    return '{:%Y-%m-%d %H:%M:%S}'
+                elif label in ['_id', 'userid']:
+                    return '{:10}'
+            return '{:<{width}}'
+
         if len(self) == 0:
             return ''
 
-        num_columns = len(self[0])
+        num_columns = len(list(self[0]))
+        columns = list(range(num_columns))
 
         # calculate labels
         if self.labels:
             labels = self.labels
             offset = 0
         else:
-            # if first row is not all text it doesn't contain labels so generate them
             if not all(is_text(label) for label in self[0]):
                 labels = [name_column(i) for i in range(num_columns)]
                 offset = 0
@@ -165,40 +183,52 @@ class ItemList(list):
                 labels = self[0]
                 offset = 1
 
-        # calculate column lengths
-        data_lengths = {}
-        for rec in self[offset:]:
-            for i, col in enumerate(rec):
-                n = data_lengths.get(i, 0)
-                m = len('%s' % rec[i])
+        # rows containing data
+        rows = [list(row) for row in self[offset:]]
+
+        # calculate formats
+        formats = []
+        for col in columns:
+            values = [row[col] for row in rows]
+            if is_homogeneous(values):
+                formats.append(get_format(labels[col], values))
+            else:
+                formats.append('{}')
+
+        # calulate formatted values
+        formatted_values = [labels] + [
+            [
+                formats[col].format(row[col], width=0)
+                for col in columns
+            ] for row in rows
+        ]
+
+        # calculate column widths
+        data_widths = {}
+        for row in formatted_values:
+            for col in columns:
+                n = data_widths.get(col, 0)
+                m = len(row[col])
                 if n < m:
-                    data_lengths[i] = m
+                    data_widths[col] = m
 
-        # sort columns by data length
-        fields = list(data_lengths.keys())
-        d = data_lengths
-        fields.sort(key=lambda a: d[a])
+        label_format = '{:<{width}}'
+        formatted_labels = [
+                label_format.format(l, width=data_widths[i])
+                for i, l in enumerate(labels)
+                ]
 
-        # make the various parts of the displayed list
-        title = []
-        lines = []
-        fmtstr = []
-        for i, label in enumerate(labels):
-            width = max(len(label), d[i]) + 1
-            fmt = '%-' + ('%ds'% width)
-            fmtstr.append(fmt)
-            title.append(fmt % label)
-            lines.append(('-' * width) + '')
-        title.append('\n')
-        lines.append('\n')
-        fmtstr = ' '.join(fmtstr)
+        dashes = ['-' * data_widths[col] for col in columns]
+        aligned_rows = [formatted_labels] + [dashes] + [
+            [
+                formats[col].format(row[col], width=data_widths[col])
+                for col in columns
+            ] for row in rows
+        ]
 
-        t = []
+        lines = [' '.join(row).rstrip() for row in aligned_rows]
 
-        for rec in self[offset:]:
-            t.append(fmtstr % tuple(rec))
-
-        return ' '.join(title) + ' '.join(lines) + '\n'.join(t)
+        return '\n'.join(lines)
 
 
 def parents(path):
