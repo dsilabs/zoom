@@ -36,9 +36,9 @@ class Config(object):
                 self.default_config_pathname,
                 ))
 
-        if self.config.has_option(section, option):
+        if self.config and self.config.has_option(section, option):
             return self.config.get(section, option)
-        elif self.default_config.has_option(section, option):
+        elif self.default_config and self.default_config.has_option(section, option):
             return self.default_config.get(section, option)
         elif default is not None:
             return default
