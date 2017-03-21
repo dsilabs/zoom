@@ -10,6 +10,7 @@ import os
 import sys
 import cgi
 import json
+import logging
 import uuid
 from timeit import default_timer as timer
 
@@ -18,6 +19,7 @@ from zoom.cookies import (
     SESSION_COOKIE_NAME,
     SUBJECT_COOKIE_NAME,
 )
+import zoom.utils
 
 
 class Webvars(object):
@@ -91,9 +93,70 @@ def get_parent_dir():
     """get the directory above the current directory"""
     return os.path.split(os.path.abspath(os.getcwd()))[0]
 
+def get_library_instance():
+    return os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'web'
+        )
+    )
+
 
 def get_instance(directory):
-    return directory and os.path.abspath(directory) or get_parent_dir()
+    """figures out what instance to run"""
+
+    logger = logging.getLogger(__name__)
+
+    if directory and os.path.isdir(os.path.join(directory, 'sites')):
+        # user wants to run a specific instance overriding the config files
+        instance = os.path.abspath(directory)
+        return instance
+
+    config_file = (
+        zoom.utils.locate_config('zoom.conf') or
+        zoom.utils.locate_config('.zoomrc') or
+        False
+    )
+    logger.debug('instance config file: %s', config_file)
+
+    if config_file:
+        instance = zoom.utils.Config(config_file).get('sites', 'path', None)
+    else:
+        instance = None
+
+    if not instance:
+        logger.debug('no instance configured, using internal instance')
+        instance = get_library_instance()
+
+    return instance
+
+
+def get_site_path(request, location):
+    logger = logging.getLogger(__name__)
+    exists = os.path.exists
+    join = os.path.join
+    split = os.path.split
+    isdir = os.path.isdir
+
+    if location:
+        if exists(location):
+            if isdir(location):
+                if exists(join(location, 'site.ini')):
+                    logger.debug('using site.ini file: %s', location)
+                    return location
+            elif exists(location) and split(location)[-1] == 'site.ini':
+                logger.debug('using site: %s', join(location))
+                return split(location)[0]
+
+    result = os.path.join(request.instance, 'sites', request.server)
+    return result
+
+
+def strim(url):
+    if url and url.endswith('/'):
+        return url[:-1]
+    return url
 
 
 class Request(object):
@@ -153,6 +216,8 @@ class Request(object):
                 return host.split(':')[0].split('www.')[-1:][0]
             return ''
 
+        logger = logging.getLogger(__name__)
+
         get = env.get
 
         self._body = None
@@ -181,8 +246,16 @@ class Request(object):
             self._body = sys.stdin
 
         self.path = path
+
+        self.location = strim(instance)
+        logger.debug('location: {}'.format(self.location))
+
         self.instance = get_instance(instance)
-        self.root = os.path.join(self.instance, 'sites', self.server)
+        logger.debug('instance: {}'.format(self.instance))
+
+        self.site_path = get_site_path(self, instance)
+        logger.debug('site: {}'.format(self.site_path))
+
         self.host = get('HTTP_HOST')
         self.domain = calc_domain(get('HTTP_HOST'))
         self.uri = get('REQUEST_URI', 'index.py')
@@ -201,6 +274,8 @@ class Request(object):
         self.referrer = get('HTTP_REFERER')
         self.route = path != '/' and path.split('/')[1:] or []
         self.env = env
+
+        logger.debug('request.home: {}'.format(self.home))
 
     def __str__(self):
         return '{\n%s\n}' % '\n'.join(

@@ -27,21 +27,22 @@ def server(instance='.'):
         )
 
     parser.add_argument("-p", "--port", type=int, default=80,
-                        help='service port')
+                        help='http service port')
     parser.add_argument("-n", "--noop", action='store_true',
                         help='use special debugging middleware stack')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
-    parser.add_argument('instance', nargs='?', default=os.getcwd())
+    parser.add_argument('instance', nargs='?', default=None)
     args = parser.parse_args()
 
     from zoom.server import run as runweb
     import zoom.middleware
     try:
-        instance = os.path.abspath(args.instance or instance)
-        if not os.path.exists(instance):
-            print('Um, that\'s not a valid instance directory')
+        if args.instance and not os.path.exists(args.instance):
+            print('{!r} is not a valid directory'.format(args.instance))
         else:
+            # instance = os.path.abspath(args.instance or instance)
+            instance = args.instance
             fmt = '%(asctime)s  %(name)-15s %(levelname)-8s %(message)s'
             con_formatter = logging.Formatter(fmt)
             console_handler = logging.StreamHandler(sys.stdout)
@@ -61,6 +62,7 @@ def server(instance='.'):
             else:
                 runweb(port=args.port, instance=instance)
             print('\rstopped')
+
     except PermissionError:
         print('Permission Error: is port {} in use?\n'
               'use -p <port> to choose a different port'.format(args.port))

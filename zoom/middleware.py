@@ -162,7 +162,7 @@ def serve_themes(request, handler, *rest):
 def serve_images(request, handler, *rest):
     """Serve an image file"""
     if request.path.startswith('/images/'):
-        return serve_response(request.root, 'content', request.path[1:])
+        return serve_response(request.site_path, 'content', request.path[1:])
     else:
         return handler(request, *rest)
 

@@ -15,6 +15,7 @@ from timeit import default_timer as timer
 
 from zoom.request import Request
 import zoom.middleware as middleware
+import zoom.utils
 
 
 def reset_modules():
@@ -40,7 +41,7 @@ class WSGIApplication(object):
     # pylint: disable=too-few-public-methods
     def __init__(self, instance='.', handlers=None):
         self.handlers = handlers
-        self.instance = os.path.abspath(instance)
+        self.instance = instance
 
     def __call__(self, environ, start_response):
         reset_modules()
@@ -54,7 +55,7 @@ class WSGIApplication(object):
         return [content]
 
 
-def run(port=80, instance='.', handlers=None):
+def run(port=80, instance=None, handlers=None):
     """run using internal HTTP Server
 
     The instance variable is the path of the directory on the system where the
@@ -64,7 +65,12 @@ def run(port=80, instance='.', handlers=None):
     the_appliation = WSGIApplication(instance, handlers)
     server = make_server('', int(port), the_appliation)
     try:
-        print('serving {} on port {}'.format(instance, port))
+        message = zoom.utils.trim("""
+         * running on http://localhost{} (press Ctrl+C to quit)
+        """).format(
+            port != 80 and ':{}'.format(port) or '',
+        )
+        print(message)
         server.serve_forever()
     except KeyboardInterrupt:
         pass

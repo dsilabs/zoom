@@ -20,7 +20,7 @@ class Site(object):
         instance = request.instance
         name = request.domain
 
-        site_path = os.path.join(instance, 'sites', name)
+        site_path = request.site_path
         if os.path.exists(site_path):
 
             self.name = name

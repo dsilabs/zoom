@@ -12,9 +12,9 @@ def as_actions(items):
         returns actions
 
         >>> as_actions(['New'])
-        '<div class="actions"><ul><li><a class="action" id="new-action" href="/new">New</a></li></ul></div>'
+        '<div class="actions"><ul><li><a class="action" href="new" id="new-action">New</a></li></ul></div>'
         >>> as_actions(['New','Delete'])
-        '<div class="actions"><ul><li><a class="action" id="delete-action" href="/delete">Delete</a></li><li><a class="action" id="new-action" href="/new">New</a></li></ul></div>'
+        '<div class="actions"><ul><li><a class="action" href="delete" id="delete-action">Delete</a></li><li><a class="action" href="new" id="new-action">New</a></li></ul></div>'
 
     """
     if not items:

@@ -5,7 +5,7 @@ from os.path import abspath, split, join
 import finder
 
 
-lib_path = abspath(join(split(finder.__file__)[0],'../..'))
+lib_path = abspath(join(split(finder.__file__)[0], '../..'))
 if lib_path not in sys.path:
     sys.path.insert(0, lib_path)
 

@@ -43,17 +43,17 @@ def dispatch(args):
 def list_commands():
     """print lits of valid commands to stdout"""
     result = ItemList([('command', 'purpose', 'usage')])
+    installed_name = os.path.split(sys.argv[0])[-1]
     for name, function in sorted(get_functions().items()):
         if not name.startswith('_'):
             doc = function.__doc__
-            text = ['zoom {} [<options>]'.format(name)]
+            text = ['{} {} [<options>]'.format(installed_name, name)]
             parameters = inspect.signature(function).parameters.values()
             for parameter in parameters:
                 if parameter.kind == parameter.POSITIONAL_OR_KEYWORD:
                     text.append('[{}]'.format(parameter.name))
-                print(parameter)
             result.append([name, doc, ' '.join(text)])
-    print(result)
+    print('\nZoom Framework CLI\n\n{}\n'.format(result))
 
 
 def main():
