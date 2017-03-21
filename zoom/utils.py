@@ -221,6 +221,23 @@ def locate_config(filename='zoom.conf', start='.'):
             return pathname
 
 
+class Config(object):
+
+    def __init__(self, filename):
+        self.config = ConfigParser.ConfigParser()
+        if not filename or not os.path.exists(filename):
+            raise Exception('%s file missing' % filename)
+        self.config.read(filename)
+
+    def get(self, section, option, default=None):
+        try:
+            return self.config.get(section, option)
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+            if default is not None:
+                return default
+            raise
+
+
 class OrderedSet(collections.MutableSet):
     """
     A Record with default values
