@@ -13,8 +13,11 @@ import os
 import sys
 from argparse import ArgumentParser
 
+from database import database
+
 __all__ = [
     'server',
+    'database',
 ]
 
 
