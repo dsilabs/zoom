@@ -366,3 +366,47 @@ def database_handler(request, handler, *rest):
         logger.warning('no database specified for {}'.format(site.name))
 
     return handler(request, *rest)
+
+
+def setup_test():
+    def create_test_tables(db):
+        db(
+            """
+            create table if not exists entities (
+                id int not null auto_increment,
+                kind      varchar(100),
+                PRIMARY KEY (id)
+                )
+            """
+        )
+        db(
+            """
+            create table if not exists attributes (
+                id int not null auto_increment,
+                kind      varchar(100),
+                row_id    int not null,
+                attribute varchar(100),
+                datatype  varchar(30),
+                value     text,
+                PRIMARY KEY (id),
+                KEY `row_id_key` (`row_id`),
+                KEY `kind_key` (`kind`),
+                KEY `kv` (`kind`, `attribute`, `value`(100))
+                )
+            """
+        )
+
+    def delete_test_tables(db):
+        db('drop table if exists attributes')
+        db('drop table if exists entities')
+
+    db = database(
+        'mysql',
+        host='database',
+        db='test',
+        user='testuser',
+        passwd='password'
+    )
+    delete_test_tables(db)
+    create_test_tables(db)
+    return db

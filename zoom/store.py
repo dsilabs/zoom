@@ -10,52 +10,7 @@ import decimal
 import zoom.utils
 import zoom.exceptions
 import zoom.jsonz
-
-
-def setup_test():
-    def create_test_tables(db):
-        db(
-            """
-            create table if not exists entities (
-                id int not null auto_increment,
-                kind      varchar(100),
-                PRIMARY KEY (id)
-                )
-            """
-        )
-        db(
-            """
-            create table if not exists attributes (
-                id int not null auto_increment,
-                kind      varchar(100),
-                row_id    int not null,
-                attribute varchar(100),
-                datatype  varchar(30),
-                value     text,
-                PRIMARY KEY (id),
-                KEY `row_id_key` (`row_id`),
-                KEY `kind_key` (`kind`),
-                KEY `kv` (`kind`, `attribute`, `value`(100))
-                )
-            """
-        )
-
-    def delete_test_tables(db):
-        db('drop table if exists attributes')
-        db('drop table if exists entities')
-
-    from zoom.database import database
-
-    db = database(
-        'mysql',
-        host='database',
-        db='test',
-        user='testuser',
-        passwd='password'
-    )
-    delete_test_tables(db)
-    create_test_tables(db)
-    return db
+from zoom.database import setup_test
 
 
 Record = Entity = zoom.utils.Record

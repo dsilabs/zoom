@@ -4,13 +4,12 @@
     Test the store module
 """
 
-from zoom.store import Entity, EntityStore
-from zoom.database import database
-
-import unittest
 from decimal import Decimal
-
 from datetime import date, time, datetime
+import unittest
+
+from zoom.store import Entity, EntityStore
+from zoom.database import setup_test
 
 
 class Person(Entity):
@@ -24,13 +23,7 @@ class TestPerson(Entity):
 class TestStore(unittest.TestCase):
 
     def setUp(self):
-        params = dict(
-            host='database',
-            user='testuser',
-            passwd='password',
-            db='test',
-        )
-        self.db = database('mysql', **params)
+        self.db = setup_test()
         self.db.autocommit(1)
         self.people = EntityStore(self.db, Person)
         self.joe_id = self.people.put(Person(name='Joe', age=50))
