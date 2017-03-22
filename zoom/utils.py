@@ -17,6 +17,27 @@ delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
 
+
+def sorted_column_names(names):
+    def looks_like_an_id(text):
+        return text.endswith('_id')
+
+    id_names = sorted(name for name in names if looks_like_an_id(name))
+    special_names = id_names + [
+        'id', 'userid', 'groupid', 'key',
+        'name', 'title', 'description',
+        'first_name', 'middle_name', 'last_name', 'fname', 'lname'
+    ]
+    result = []
+    for name in special_names:
+        if name in names:
+            result.append(name)
+    for name in sorted(names, key=lambda a: (len(a), a)):
+        if name not in result:
+            result.append(name)
+    return result
+
+
 def kind(o):
     """
     returns a suitable table name for an object based on the object class
@@ -220,8 +241,13 @@ class ItemList(list):
             for i, l in enumerate(labels)
         ]
 
+        sorted_names = sorted_column_names(labels)
+
+        columns = sorted(columns, key=lambda a: sorted_names.index(labels[a]))
         dashes = ['-' * data_widths[col] for col in columns]
-        aligned_rows = [formatted_labels] + [dashes] + [
+        sorted_labels = [formatted_labels[col] for col in columns]
+
+        aligned_rows = [sorted_labels] + [dashes] + [
             [
                 formats[col].format(row[col], width=data_widths[col])
                 for col in columns
@@ -421,26 +447,9 @@ def get_attributes(obj):
         if type(obj) == dict:
             return []
         items = list(obj.__class__.__dict__.items())
-        return [k for k, v in items if hasattr(v, '__get__')]
-
-    def looks_like_an_id(text):
-        return text.endswith('_id')
-
-    all_keys = list(obj.keys()) + properties(obj)
-    id_keys = sorted(key for key in all_keys if looks_like_an_id(key))
-    special_keys = id_keys + [
-        'id', 'userid', 'groupid', 'key',
-        'name', 'title', 'description',
-        'first_name', 'middle_name', 'last_name', 'fname', 'lname'
-    ]
-    result = []
-    for key in special_keys:
-        if key in all_keys:
-            result.append(key)
-    for key in sorted(all_keys):
-        if key not in special_keys:
-            result.append(key)
-    return result
+        return [k for k, v in items if type(v) == property]
+    names = list(obj.keys()) + properties(obj)
+    return sorted_column_names(names)
 
 
 class Record(Storage):
