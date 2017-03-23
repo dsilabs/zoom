@@ -8,20 +8,23 @@
 --
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
   `path` varchar(80) DEFAULT NULL,
   `status` char(1) DEFAULT NULL,
-  `username` varchar(30) DEFAULT NULL,
+  `user_id` unsigned int DEFAULT NULL,
   `address` varchar(15) DEFAULT NULL,
-  `login` varchar(30) DEFAULT NULL,
+  `login` varchar(50) DEFAULT NULL,
   `server` varchar(60) DEFAULT NULL,
   `timestamp` datetime DEFAULT NULL,
   `elapsed` int(10) DEFAULT NULL,
-  `message` text,
+  `message` longtext,
   PRIMARY KEY (`id`),
-  KEY `log_status` (`status`),
   KEY `log_app` (`app`),
+  KEY `log_path` (`path`),
+  KEY `log_username` (`username`),
+  KEY `log_address` (`address`),
+  KEY `log_status` (`status`),
   KEY `log_timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -31,9 +34,9 @@ CREATE TABLE `log` (
 --
 DROP TABLE IF EXISTS `audit_log`;
 CREATE TABLE `audit_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
-  `username` varchar(30) DEFAULT NULL,
+  `user_id` unsigned int DEFAULT NULL,
   `activity` varchar(30) DEFAULT NULL,
   `subject1` varchar(30) DEFAULT NULL,
   `subject2` varchar(30) DEFAULT NULL,
@@ -50,10 +53,10 @@ CREATE TABLE `audit_log` (
 --
 drop table if exists entities;
 create table if not exists entities (
-    `id` int not null auto_increment,
-    `kind` varchar(100) NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `kind_key` (`kind`)
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `kind` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `kind_key` (`kind`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -62,17 +65,17 @@ create table if not exists entities (
 --
 drop table if exists attributes;
 create table if not exists attributes (
-    `id` int not null auto_increment,
-    `kind` varchar(100) NOT NULL,
-    `row_id` int not null,
-    `attribute` varchar(100),
-    `datatype` varchar(30),
-    `value` mediumblob,
-    PRIMARY KEY (`id`),
-    KEY `row_id_key` (`row_id`),
-    KEY `kind_key` (`kind`),
-    KEY `kv` (`kind`, `attribute`, `value`(100))
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `kind` varchar(100) NOT NULL,
+  `row_id` int not null,
+  `attribute` varchar(100),
+  `datatype` varchar(30),
+  `value` mediumblob,
+  PRIMARY KEY (`id`),
+  KEY `row_id_key` (`row_id`),
+  KEY `kind_key` (`kind`),
+  KEY `kv` (`kind`, `attribute`, `value`(100))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 --
@@ -80,14 +83,13 @@ create table if not exists attributes (
 --
 DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
-  `id` int(11) NOT NULL auto_increment,
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
   `type` char(1) default NULL,
   `name` char(20) default NULL,
-  `descr` char(60) default NULL,
-  `admin` char(20) default NULL,
+  `description` char(60) default NULL,
+  `admin_group_id` unsigned int default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `name` (`name`),
-  KEY `name_2` (`name`)
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -96,8 +98,8 @@ CREATE TABLE `groups` (
 --
 DROP TABLE IF EXISTS `members`;
 CREATE TABLE `members` (
-  `user_id` int(11) default NULL,
-  `group_id` int(11) default NULL,
+  `user_id` unsigned int NOT NULL,
+  `group_id` unsigned int NOT NULL,
   UNIQUE KEY `user_group` (`user_id`,`group_id`),
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`)
@@ -108,8 +110,8 @@ CREATE TABLE `members` (
 -- Table structure for table `sessions`
 --
 CREATE TABLE if not exists `sessions` (
-  `id` varchar(32) NOT NULL default '',
-  `expiry` int(11) NOT NULL default '0',
+  `id` varchar(32) NOT NULL,
+  `expiry` unsigned int NOT NULL,
   `status` char(1) not null default 'D',
   `value` text NOT NULL,
   PRIMARY KEY  (`id`)
@@ -121,8 +123,8 @@ CREATE TABLE if not exists `sessions` (
 --
 DROP TABLE IF EXISTS `subgroups`;
 CREATE TABLE `subgroups` (
-  `group_id` int(11) default NULL,
-  `subgroup_id` int(11) default NULL,
+  `group_id` unsigned int NOT NULL,
+  `subgroup_id` unsigned int NOT NULL,
   UNIQUE KEY `group_subgroup` (`group_id`,`subgroup_id`),
   KEY `group_id` (`group_id`),
   KEY `subgroup_id` (`subgroup_id`)
@@ -134,8 +136,8 @@ CREATE TABLE `subgroups` (
 --
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(5) NOT NULL auto_increment,
-  `username` char(50) default NULL,
+  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `username` char(50) NOT NULL,
   `password` varchar(125) default NULL,
   `first_name` char(40) default NULL,
   `last_name` char(40) default NULL,
@@ -143,8 +145,8 @@ CREATE TABLE `users` (
   `phone` char(30) default NULL,
   `created` datetime default NULL,
   `updated` datetime default NULL,
-  `created_by` char(50) default NULL,
-  `updated_by` char(50) default NULL,
+  `created_by` unsigned int default NULL,
+  `updated_by` unsigned int default NULL,
   `status` char(1) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`username`),
