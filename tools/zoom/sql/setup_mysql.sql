@@ -109,11 +109,12 @@ CREATE TABLE `members` (
 --
 -- Table structure for table `sessions`
 --
-CREATE TABLE if not exists `sessions` (
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions` (
   `id` varchar(32) NOT NULL,
   `expiry` int unsigned NOT NULL,
   `status` char(1) not null default 'D',
-  `value` text NOT NULL,
+  `value` mediumblob NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
