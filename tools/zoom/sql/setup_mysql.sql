@@ -8,11 +8,11 @@
 --
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
   `path` varchar(80) DEFAULT NULL,
   `status` char(1) DEFAULT NULL,
-  `user_id` unsigned int DEFAULT NULL,
+  `user_id` int unsigned DEFAULT NULL,
   `address` varchar(15) DEFAULT NULL,
   `login` varchar(50) DEFAULT NULL,
   `server` varchar(60) DEFAULT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE `log` (
   PRIMARY KEY (`id`),
   KEY `log_app` (`app`),
   KEY `log_path` (`path`),
-  KEY `log_username` (`username`),
+  KEY `log_user_id` (`user_id`),
   KEY `log_address` (`address`),
   KEY `log_status` (`status`),
   KEY `log_timestamp` (`timestamp`)
@@ -34,9 +34,9 @@ CREATE TABLE `log` (
 --
 DROP TABLE IF EXISTS `audit_log`;
 CREATE TABLE `audit_log` (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
-  `user_id` unsigned int DEFAULT NULL,
+  `user_id` int unsigned DEFAULT NULL,
   `activity` varchar(30) DEFAULT NULL,
   `subject1` varchar(30) DEFAULT NULL,
   `subject2` varchar(30) DEFAULT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE `audit_log` (
 --
 drop table if exists entities;
 create table if not exists entities (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `kind_key` (`kind`)
@@ -65,9 +65,9 @@ create table if not exists entities (
 --
 drop table if exists attributes;
 create table if not exists attributes (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
-  `row_id` int not null,
+  `row_id` int unsigned not null,
   `attribute` varchar(100),
   `datatype` varchar(30),
   `value` mediumblob,
@@ -83,11 +83,11 @@ create table if not exists attributes (
 --
 DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `type` char(1) default NULL,
   `name` char(20) default NULL,
   `description` char(60) default NULL,
-  `admin_group_id` unsigned int default NULL,
+  `admin_group_id` int unsigned default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -98,8 +98,8 @@ CREATE TABLE `groups` (
 --
 DROP TABLE IF EXISTS `members`;
 CREATE TABLE `members` (
-  `user_id` unsigned int NOT NULL,
-  `group_id` unsigned int NOT NULL,
+  `user_id` int unsigned NOT NULL,
+  `group_id` int unsigned NOT NULL,
   UNIQUE KEY `user_group` (`user_id`,`group_id`),
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`)
@@ -111,7 +111,7 @@ CREATE TABLE `members` (
 --
 CREATE TABLE if not exists `sessions` (
   `id` varchar(32) NOT NULL,
-  `expiry` unsigned int NOT NULL,
+  `expiry` int unsigned NOT NULL,
   `status` char(1) not null default 'D',
   `value` text NOT NULL,
   PRIMARY KEY  (`id`)
@@ -123,8 +123,8 @@ CREATE TABLE if not exists `sessions` (
 --
 DROP TABLE IF EXISTS `subgroups`;
 CREATE TABLE `subgroups` (
-  `group_id` unsigned int NOT NULL,
-  `subgroup_id` unsigned int NOT NULL,
+  `group_id` int unsigned NOT NULL,
+  `subgroup_id` int unsigned NOT NULL,
   UNIQUE KEY `group_subgroup` (`group_id`,`subgroup_id`),
   KEY `group_id` (`group_id`),
   KEY `subgroup_id` (`subgroup_id`)
@@ -136,7 +136,7 @@ CREATE TABLE `subgroups` (
 --
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` unsigned int NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `username` char(50) NOT NULL,
   `password` varchar(125) default NULL,
   `first_name` char(40) default NULL,
@@ -145,8 +145,8 @@ CREATE TABLE `users` (
   `phone` char(30) default NULL,
   `created` datetime default NULL,
   `updated` datetime default NULL,
-  `created_by` unsigned int default NULL,
-  `updated_by` unsigned int default NULL,
+  `created_by` int unsigned default NULL,
+  `updated_by` int unsigned default NULL,
   `status` char(1) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`username`),
