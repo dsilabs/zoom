@@ -8,6 +8,20 @@ from zoom.fill import dzfill
 
 
 def apply_helpers(template, obj, providers):
+    """employ helpers to fill in a template
+
+    >>> class User(object): pass
+    >>> user = User()
+    >>> user.name = 'World'
+    >>> apply_helpers('Hello <dz:name>!', user, {})
+    'Hello World!'
+
+    >>> apply_helpers('Hello <dz:other>!', user, [{'other': 'Sam'}])
+    'Hello Sam!'
+
+    >>> apply_helpers('Hello <dz:other>!', user, {})
+    'Hello &lt;dz:other&gt; missing!'
+    """
     def not_found(name):
         """what happens when a helper is not found"""
         def missing_helper(*args, **kwargs):
