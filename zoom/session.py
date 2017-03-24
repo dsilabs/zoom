@@ -11,7 +11,7 @@ from zoom.database import DatabaseException
 from zoom.records import Record, RecordStore
 
 
-SESSION_LIFE = 1  # in minutes
+SESSION_LIFE = 60  # in minutes
 
 
 class Sessions(Record):
