@@ -34,6 +34,11 @@ class Site(object):
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
 
+            self.secure_cookies = (
+                request.protocol == 'https' and
+                get('sessions', 'secure_cookies', True)
+            )
+
             themes_directory = os.path.join(instance, 'themes')
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(themes_directory, self.theme)

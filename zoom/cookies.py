@@ -91,7 +91,7 @@ def cookie_handler(request, handler, *rest):
         request.session_token,
         request.subject_token,
         request.session_timeout,
-        False,  # request.site.config.get('site', 'secure_cookies', True),
+        request.site.secure_cookies,
     )
     logger.debug('cookies set')
 
