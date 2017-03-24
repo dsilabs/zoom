@@ -299,6 +299,21 @@ class MySQLDatabase(Database):
         return [a[0] for a in self(cmd)]
 
 
+class MySQLdbDatabase(MySQLDatabase):
+
+    def __init__(self, *args, **kwargs):
+        import MySQLdb
+
+        keyword_args = dict(
+            kwargs,
+            charset='utf8'
+        )
+
+        # pylint: disable=star-args
+        # I meant to do that
+        Database.__init__(self, MySQLdb.connect, *args, **keyword_args)
+
+
 def database(engine, *args, **kwargs):
     """create a database object"""
     # pylint: disable=invalid-name
@@ -309,6 +324,11 @@ def database(engine, *args, **kwargs):
 
     elif engine == 'mysql':
         db = MySQLDatabase(*args, **kwargs)
+        db.autocommit(1)
+        return db
+
+    elif engine == 'mysqldb':
+        db = MySQLdbDatabase(*args, **kwargs)
         db.autocommit(1)
         return db
 
@@ -335,6 +355,20 @@ def connect_database(config):
         if password:
             parameters['passwd'] = password
 
+    elif engine == 'mysqldb':
+        host = get('database', 'dbhost', 'database')
+        name = get('database', 'dbname', 'zoomdev')
+        user = get('database', 'dbuser', 'testuser')
+        password = get('database', 'dbpass', 'password')
+        parameters = dict(
+            engine=engine,
+            host=host,
+            db=name,
+            user=user,
+        )
+        if password:
+            parameters['passwd'] = password
+
     elif engine == 'sqlite3':
         name = get('database', 'name', 'zoomdev')
         parameters = dict(
@@ -342,6 +376,8 @@ def connect_database(config):
             database=name,
         )
 
+    else:
+        raise Exception('unknown database engine: {!r}'.format(engine))
     connection = database(**parameters)
 
     if connection:
