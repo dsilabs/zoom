@@ -9,7 +9,9 @@
 import logging
 import timeit
 import collections
+import warnings
 
+warnings.filterwarnings("ignore", "Unknown table.*")
 
 ARRAY_SIZE = 1000
 
@@ -373,7 +375,7 @@ def setup_test():
         db(
             """
             create table if not exists entities (
-                id int not null auto_increment,
+                id int unsigned not null auto_increment,
                 kind      varchar(100),
                 PRIMARY KEY (id)
                 )
@@ -382,7 +384,7 @@ def setup_test():
         db(
             """
             create table if not exists attributes (
-                id int not null auto_increment,
+                id int unsigned not null auto_increment,
                 kind      varchar(100),
                 row_id    int not null,
                 attribute varchar(100),
@@ -395,10 +397,30 @@ def setup_test():
                 )
             """
         )
+        db("""
+            create table if not exists person (
+                id int unsigned not null auto_increment,
+                name      varchar(100),
+                age       smallint,
+                kids      smallint,
+                birthdate date,
+                PRIMARY KEY (id)
+                )
+        """)
+        db("""
+            create table if not exists account (
+                account_id int unsigned not null auto_increment,
+                name varchar(100),
+                added date,
+                PRIMARY KEY (account_id)
+                )
+        """)
 
     def delete_test_tables(db):
         db('drop table if exists attributes')
         db('drop table if exists entities')
+        db('drop table if exists person')
+        db('drop table if exists account')
 
     db = database(
         'mysql',
