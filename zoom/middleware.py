@@ -27,7 +27,9 @@ from zoom.response import (
     JavascriptResponse,
     HTMLResponse,
     ICOResponse,
+    TextResponse,
 )
+import zoom.cookies
 import zoom.session
 import zoom.site
 import zoom.templates
@@ -110,7 +112,7 @@ def debug(request):
     except Exception:
         content = ['<pre>{}</pre>'.format(traceback.format_exc())]
 
-    return HTMLResponse(''.join(content), status=status).as_wsgi()
+    return HTMLResponse(''.join(content), status=status)
 
 
 def serve_response(*path):
@@ -132,13 +134,13 @@ def serve_response(*path):
             if filenamel.endswith('.' + file_type):
                 data = open(filename, 'rb').read()
                 response = known_types[file_type](data)
-                return response.as_wsgi()
-        return HTMLResponse('unknown file type').as_wsgi()
+                return response
+        return HTMLResponse('unknown file type')
     else:
         logger.warning('unable to serve filename %r', filename)
         relative_path = os.path.join(*path[1:])
         msg = 'file not found: {}'
-        return HTMLResponse(msg.format(relative_path)).as_wsgi()
+        return HTMLResponse(msg.format(relative_path))
 
 
 def serve_static(request, handler, *rest):
@@ -203,7 +205,7 @@ def not_found(request):
     """return a 404 page"""
     msg = zoom.templates.app_not_found(request)
     response = msg.format(request.instance)
-    return HTMLResponse(response, status='404 Not Found').as_wsgi()
+    return HTMLResponse(response, status='404 Not Found')
 
 
 def trap_errors(request, handler, *rest):
@@ -212,14 +214,16 @@ def trap_errors(request, handler, *rest):
         >>> def exception_handler(request, *rest):
         ...     raise Exception('error!')
         >>> def content_handler(request, *rest):
-        ...     return '200 OK', [], 'nuthin'
+        ...     return HTMLResponse('nuthin')
         >>> request = {}
-        >>> status, headers, content = trap_errors(request, content_handler)
+        >>> response = trap_errors(request, content_handler)
+        >>> status, headers, content = response.as_wsgi()
         >>> content
-        'nuthin'
+        b'nuthin'
         >>> status
         '200 OK'
-        >>> status, headers, content = trap_errors(request, exception_handler)
+        >>> response = trap_errors(request, exception_handler)
+        >>> status, headers, content = response.as_wsgi()
         >>> status
         '500 Internal Server Error'
         >>> 'Exception: error!' in str(content)
@@ -229,10 +233,7 @@ def trap_errors(request, handler, *rest):
         return handler(request, *rest)
     except Exception:
         status = '500 Internal Server Error'
-        content = traceback.format_exc().encode('utf-8')
-        headers = [('Content-type', 'text/plain'),
-                   ('Content-Length', str(len(content)))]
-        return status, headers, content
+        return TextResponse(traceback.format_exc(), status)
 
 
 def _handle(request, handler, *rest):
@@ -249,6 +250,7 @@ def handle(request, handlers=None):
         serve_themes,
         serve_images,
         serve_html,
+        zoom.cookies.cookie_handler,
         zoom.site.site_handler,
         zoom.database.database_handler,
         zoom.session.session_handler,

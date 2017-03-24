@@ -64,7 +64,7 @@ def respond(content, request):
         else:
             result = HTMLResponse('OK')
 
-    return result.as_wsgi()
+    return result
 
 
 def handle(request):

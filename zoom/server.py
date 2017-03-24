@@ -47,10 +47,8 @@ class WSGIApplication(object):
         reset_modules()
         start_time = timer()
         request = Request(environ, self.instance, start_time)
-        status, headers, content = middleware.handle(
-            request,
-            self.handlers,
-        )
+        response = middleware.handle(request, self.handlers)
+        status, headers, content = response.as_wsgi()
         start_response(status, headers)
         return [content]
 

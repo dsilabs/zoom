@@ -20,11 +20,18 @@
 """
 
 from http.cookies import SimpleCookie
+import logging
+import uuid
 
 
-SESSION_COOKIE_NAME = 'z6sid'
-SUBJECT_COOKIE_NAME = 'z6sub'
+SESSION_COOKIE_NAME = 'zoom_session'
+SUBJECT_COOKIE_NAME = 'zoom_subject'
 ONE_YEAR = 365 * 24 * 60 * 60
+
+
+def new_token():
+    """generate a new subject ID"""
+    return uuid.uuid4().hex
 
 
 def get_cookies(raw_cookie):
@@ -33,27 +40,31 @@ def get_cookies(raw_cookie):
     result = dict([(k, cookie[k].value) for k in cookie])
     return result
 
+
 def make_cookie():
     """construct a cookie"""
     return SimpleCookie()
+
 
 def add_value(cookie, name, value, lifespan, secure):
     """add a value to a cookie"""
     cookie[name] = value
     cookie[name]['httponly'] = True
-    cookie[name]['expires'] = lifespan # in seconds
+    cookie[name]['expires'] = lifespan  # in seconds
     if secure:
         cookie[name]['secure'] = True
+
 
 def get_value(cookie):
     """get the value portion of a cookie"""
     _, value = str(cookie).split(': ', 1)
     return value
 
-def set_session_cookie(response, session_id, subject, lifespan, secure=True):
+
+def set_session_cookie(response, session, subject, lifespan, secure=True):
     """construct a session cookie"""
     cookie = make_cookie()
-    add_value(cookie, SESSION_COOKIE_NAME, session_id, lifespan, secure)
+    add_value(cookie, SESSION_COOKIE_NAME, session, lifespan, secure)
     add_value(cookie, SUBJECT_COOKIE_NAME, subject, ONE_YEAR, secure)
     key, value = str(cookie).split(': ', 1)
 
@@ -61,3 +72,27 @@ def set_session_cookie(response, session_id, subject, lifespan, secure=True):
     value = value.replace('\r', ' ').replace('\n', ' ')
 
     response.headers[key] = value
+
+
+def cookie_handler(request, handler, *rest):
+    logger = logging.getLogger(__name__)
+
+    cookies = get_cookies(request.cookies)
+    request.session_token = cookies.get(SESSION_COOKIE_NAME) or new_token()
+    request.subject_token = cookies.get(SUBJECT_COOKIE_NAME) or new_token()
+    logger.debug('session token: {}'.format(request.session_token))
+
+    logger.debug('cookies read')
+
+    response = handler(request, *rest)
+
+    set_session_cookie(
+        response,
+        request.session_token,
+        request.subject_token,
+        request.session_timeout,
+        False,  # request.site.config.get('site', 'secure_cookies', True),
+    )
+    logger.debug('cookies set')
+
+    return response

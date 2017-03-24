@@ -24,9 +24,9 @@ from zoom.jsonz import dumps
 class Response(object):
     """web response"""
 
-    def __init__(self, content):
+    def __init__(self, content, status='200 OK'):
         self.content = content
-        self.status = '200 OK'
+        self.status = status
         self.headers = OrderedDict()
 
     def render_doc(self):
@@ -105,8 +105,8 @@ class GIFResponse(Response):
 class TextResponse(Response):
     """Plan text response"""
 
-    def __init__(self, content=''):
-        Response.__init__(self, content)
+    def __init__(self, content='', status='200 OK'):
+        Response.__init__(self, content, status)
         self.headers['Content-type'] = 'text'
         self.headers['Cache-Control'] = 'no-cache'
 

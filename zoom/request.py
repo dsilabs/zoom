@@ -14,12 +14,8 @@ import logging
 import uuid
 from timeit import default_timer as timer
 
-from zoom.cookies import (
-    get_cookies,
-    SESSION_COOKIE_NAME,
-    SUBJECT_COOKIE_NAME,
-)
 import zoom.utils
+import zoom.cookies
 
 
 class Webvars(object):
@@ -170,6 +166,8 @@ class Request(object):
         self.start_time = start_time or timer()
         self.ip_address = None
         self.session_token = None
+        self.session_timeout = None
+        self.subject_token = None
         self.server = None
         self.route = []
         self.setup(self.env, instance)
@@ -196,10 +194,6 @@ class Request(object):
 
     def setup(self, env, instance=None):
         """setup the Request attributes"""
-
-        def new_subject():
-            """generate a new subject ID"""
-            return uuid.uuid4().hex
 
         def calc_domain(host):
             """calculate just the high level domain part of the host name
@@ -263,9 +257,7 @@ class Request(object):
         self.query = get('QUERY_STRING')
         self.ip_address = get('REMOTE_ADDR')
         self.remote_user = get('REMOTE_USER')
-        self.cookies = get_cookies(get('HTTP_COOKIE'))
-        self.session_token = self.cookies.get(SESSION_COOKIE_NAME, None)
-        self.subject = self.cookies.get(SUBJECT_COOKIE_NAME, new_subject())
+        self.cookies = zoom.cookies.get_cookies(get('HTTP_COOKIE'))
         self.port = get('SERVER_PORT')
         self.script = get('SCRIPT_FILENAME')
         self.agent = get('HTTP_USER_AGENT')
