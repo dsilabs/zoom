@@ -9,6 +9,22 @@ import imp
 import logging
 
 from zoom.response import Response, HTMLResponse
+from zoom.helpers import url_for, link_to
+
+
+class AppProxy(object):
+
+    def __init__(self, name, filename, site):
+        self.name = name
+        self.filename = filename
+        self.url = site.url + name
+        self.link = link_to(self.name, self.url)
+
+    def __str__(self):
+        return self.link
+
+    def __repr__(self):
+        return str(self)
 
 
 def get_apps(request):
@@ -18,15 +34,17 @@ def get_apps(request):
     apps_paths = request.site.config.get('apps', 'path').split(';')
 
     for app_path in apps_paths:
-        path = os.path.join(
-            request.site.directory,
-            app_path,
+        path = os.path.abspath(
+            os.path.join(
+                request.site.path,
+                app_path,
+            )
         )
         logger.debug('app path: %s', path)
         for app in os.listdir(path):
             filename = os.path.join(path, app, 'app.py')
             if os.path.exists(filename):
-                result.append((app, filename))
+                result.append(AppProxy(app, filename, request.site))
 
     logger.debug(apps_paths)
     logger.debug('%s apps found', len(result))
@@ -35,11 +53,13 @@ def get_apps(request):
 
 def locate_app(request):
     logger = logging.getLogger(__name__)
-    default_app = 'hello'
+    default_app = request.site.config.get('apps', 'default', 'home')
     app_name = request.route and request.route[0] or default_app
     apps_paths = request.site.config.get('apps', 'path').split(';')
     for path in apps_paths:
-        app_path = os.path.abspath(os.path.join(request.site.path, path, app_name))
+        app_path = os.path.abspath(
+            os.path.join(request.site.path, path, app_name)
+        )
         logger.debug('checking %s', app_path)
         if os.path.exists(os.path.join(app_path, 'app.py')):
             logger.debug('located app %s', app_path)

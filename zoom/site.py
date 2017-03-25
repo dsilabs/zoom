@@ -6,6 +6,7 @@ import logging
 import os
 
 import zoom.config
+import zoom.helpers
 
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
@@ -18,7 +19,9 @@ class Site(object):
 
         self.request = request
         instance = request.instance
-        name = request.domain
+        self.name = name = request.domain
+        self.url = '/'
+        self.link = zoom.helpers.link_to(self.name, self.url)
 
         site_path = request.site_path
         if os.path.exists(site_path):
