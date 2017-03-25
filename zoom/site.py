@@ -39,9 +39,10 @@ class Site(object):
                 get('sessions', 'secure_cookies', True)
             )
 
-            themes_directory = os.path.join(instance, 'themes')
+            theme_dir = get('theme', 'path', os.path.join(instance, 'themes'))
+            self.themes_path = theme_dir
             self.theme = get('theme', 'name', 'default')
-            self.theme_path = os.path.join(themes_directory, self.theme)
+            self.theme_path = os.path.join(theme_dir, self.theme)
 
             logger = logging.getLogger(__name__)
             logger.debug('site path: %r', site_path)

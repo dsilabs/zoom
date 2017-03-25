@@ -155,8 +155,11 @@ def serve_static(request, handler, *rest):
 def serve_themes(request, handler, *rest):
     """Serve a theme file"""
     if request.path.startswith('/themes/'):
-        libpath = os.path.dirname(__file__)
-        return serve_response(libpath, '..', 'web', request.path[1:])
+        theme_path = os.path.join(
+            request.site_path,
+            request.site.themes_path,
+        )
+        return serve_response(theme_path, *request.route[1:])
     else:
         return handler(request, *rest)
 
@@ -247,11 +250,11 @@ def handle(request, handlers=None):
         trap_errors,
         serve_favicon,
         serve_static,
-        serve_themes,
         serve_images,
         serve_html,
         zoom.cookies.cookie_handler,
         zoom.site.site_handler,
+        serve_themes,
         zoom.database.database_handler,
         zoom.session.session_handler,
         zoom.user.user_handler,
