@@ -10,4 +10,4 @@ def app(request):
         repr(a) for a in get_apps(request)
         if a.name != 'home'
     )
-    return page(content, title='Home')
+    return page(content)
