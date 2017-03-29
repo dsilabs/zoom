@@ -20,8 +20,6 @@ class Site(object):
         self.request = request
         instance = request.instance
         self.name = name = request.domain
-        self.url = '/'
-        self.link = zoom.helpers.link_to(self.name, self.url)
 
         site_path = request.site_path
         if os.path.exists(site_path):
@@ -32,6 +30,7 @@ class Site(object):
 
             get = self.config.get
             self.url = get('site', 'url', '')
+            self.link = zoom.helpers.link_to(self.name, self.url)
 
             self.owner_name = get('site', 'owner', 'dynamic solutions')
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
