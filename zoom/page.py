@@ -34,15 +34,23 @@ class PageHeader(DynamicView):
     """page header"""
 
     @property
+    def title(self):
+        return self.page.title
+
+    @property
+    def subtitle(self):
+        return self.page.subtitle
+
+    @property
     def action_items(self):
-        return as_actions(self.model.actions)
+        return as_actions(self.page.actions)
 
     @property
     def search_box(self):
-        if self.search == None:
+        if self.page.search is None:
             return ''
         else:
-            search_box = SearchBox(value=self.model.search)
+            search_box = SearchBox(value=self.page.search)
             return ''.join(search_box.render().parts['html'])
 
 
@@ -53,6 +61,7 @@ class Page(object):
         self.content = content
         self.theme = 'default'
         self.template = 'default'
+        self.title = ''
         self.subtitle = ''
         self.actions = []
         self.search = None
@@ -90,7 +99,7 @@ class Page(object):
             )
         ]
 
-        page_header = PageHeader(self).render()
+        page_header = PageHeader(page=self).render()
         save_content = self.content
         full_page = page_header + self.content
         self.content = ''.join(full_page.parts['html'])
