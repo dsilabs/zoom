@@ -39,3 +39,5 @@ def app(request):
         search=request.data.get('q', ''),
         subtitle='this is the subtitle'
     )
+
+app.menu = ['Overview', 'Log']
