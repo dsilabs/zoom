@@ -39,19 +39,6 @@ def owner_link():
     return name
 
 
-def app_menu_items():
-    """Returns app menu items."""
-    return (
-        '<li><a href="<dz:app_url>">Overview</a></li>'
-        '<li><a href="<dz:app_url>/about">About</a></li>'
-    )
-
-
-def app_menu():
-    """Returns app menu."""
-    return '<ul>{}</ul>'.format(app_menu_items())
-
-
 def main_menu_items():
     """Returns main menu items."""
     return '<li><a href="/info">Home</a></li>'
@@ -93,6 +80,12 @@ def tag_for(name, *a, **k):
 def url_for(*a, **k):
     """creates urls
 
+    >>> url_for()
+    ''
+
+    >>> url_for('')
+    ''
+
     >>> url_for('/')
     '<dz:site_url>'
 
@@ -128,7 +121,7 @@ def url_for(*a, **k):
     root = tag_for('site_url')
     a = [str(i) for i in a]
 
-    if a and a[0][0] == '/':
+    if a and a[0] and a[0][0] == '/':
         if len(a[0]) > 1:
             uri = root + '/'.join(a)
         else:

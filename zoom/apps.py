@@ -10,6 +10,7 @@ import logging
 
 from zoom.response import Response, HTMLResponse
 from zoom.helpers import url_for, link_to
+from zoom.components import as_links
 
 
 class AppProxy(object):
@@ -17,8 +18,43 @@ class AppProxy(object):
     def __init__(self, name, filename, site):
         self.name = name
         self.filename = filename
-        self.url = site.url + name
+        self.url = site.url + '/' + name
         self.link = link_to(self.name, self.url)
+        self.path = os.path.dirname(filename)
+        self.method = getattr(imp.load_source('app', self.filename), 'app')
+        self.site = site
+
+    def run(self, request):
+        return self.method(request)
+
+    def menu(self):
+        def by_name(name):
+            def selector(item):
+                logger.debug('item.name: %r', item.name)
+                logger.debug('selected: %r', name)
+                return name == item.name
+            return selector
+
+        route = self.site.request.route
+        logger = logging.getLogger(__name__)
+        logger.debug('constructing menu')
+        logger.debug(route)
+        menu = getattr(self.method, 'menu', [])
+        logger.debug(menu)
+        selected = (
+            len(route) > 2 and route[0] == 'content' and route[2] or
+            len(route) > 1 and route[1] or
+            len(route) == 1 and route[0] != 'content' and 'index'
+        )
+        logger.debug('selected: %s', selected)
+        result = as_links(menu, select=by_name(selected))
+        logger.debug('made it')
+        logger.debug(result)
+        return result
+
+    def menu_items(self):
+        menu = getattr(self.method, 'menu')
+        return
 
     def __str__(self):
         return self.link
@@ -61,9 +97,10 @@ def locate_app(request):
             os.path.join(request.site.path, path, app_name)
         )
         logger.debug('checking %s', app_path)
-        if os.path.exists(os.path.join(app_path, 'app.py')):
+        filename = os.path.join(app_path, 'app.py')
+        if os.path.exists(filename):
             logger.debug('located app %s', app_path)
-            return app_path
+            return AppProxy(app_name, filename, request.site)
 
 
 def respond(content, request):
@@ -90,14 +127,13 @@ def respond(content, request):
 def handle(request):
     """handle a request"""
 
-    location = locate_app(request)
-    if location:
+    app = locate_app(request)
+    if app:
         save_dir = os.getcwd()
         try:
-            os.chdir(os.path.split(location)[0])
-            filename = os.path.join(location, 'app.py')
-            app = getattr(imp.load_source('app', filename), 'app')
-            response = app(request)
+            os.chdir(app.path)
+            request.app = app
+            response = app.run(request)
         finally:
             os.chdir(save_dir)
         return respond(response, request)
@@ -105,7 +141,10 @@ def handle(request):
 
 def helpers(request):
     return dict(
-        app_url='/' + (request.route and request.route[0] or ''),
+        app_url=request.app.url,
+        app_menu_items=request.app.menu_items,
+        app_menu=request.app.menu,
+        app_name=request.app.name,
     )
 
 
