@@ -35,6 +35,7 @@ import zoom.site
 import zoom.templates
 import zoom.user
 import zoom.apps
+from zoom.page import page
 
 SAMPLE_FORM = """
 <form action="" id="dz_form" name="dz_form" method="POST"
@@ -205,10 +206,12 @@ def serve_html(request, handler, *rest):
 
 
 def not_found(request):
-    """return a 404 page"""
-    msg = zoom.templates.app_not_found(request)
-    response = msg.format(request.instance)
-    return HTMLResponse(response, status='404 Not Found')
+    """return a 404 page for site"""
+    logger = logging.getLogger(__name__)
+    logger.debug('responding with 404 for {!r}'.format(request.path))
+    response = page(zoom.templates.page_not_found).render(request)
+    response.status = '404 Not Found'
+    return response
 
 
 def trap_errors(request, handler, *rest):
