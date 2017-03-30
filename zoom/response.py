@@ -62,16 +62,9 @@ class Response(object):
 class PNGResponse(Response):
     """PNG image response"""
 
-    def __init__(self, content):
+    def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
         self.headers['Content-type'] = 'image/png'
-
-
-class PNGCachedResponse(PNGResponse):
-    """Cached PNG image response"""
-
-    def __init__(self, content, max_age=86400):
-        PNGResponse.__init__(self, content)
         self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
