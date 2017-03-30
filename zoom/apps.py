@@ -69,6 +69,7 @@ class App(object):
         )
 
     def __call__(self, request):
+        self.request = request
         return self.process(*request.route, **request.data)
 
 

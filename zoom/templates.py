@@ -4,6 +4,7 @@
 
 from zoom.page import page
 
+
 def app_not_found(request):
     # pylint: disable=unused-argument
     return """
