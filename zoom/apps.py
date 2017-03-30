@@ -13,6 +13,65 @@ from zoom.helpers import url_for, link_to
 from zoom.components import as_links
 
 
+class App(object):
+    """a Zoom application"""
+
+    def __init___(self):
+        self.menu = []
+
+    def process(self, *route, **data):
+
+        def if_callable(method):
+            """test if callable and return it or None"""
+            return callable(method) and method
+
+        logger = logging.getLogger(__name__)
+
+        isfile = os.path.isfile
+        logger.debug('route {!r}'.format(route))
+
+        if len(route) > 1:
+            module = route[1]
+            rest = route[2:]
+        else:
+            module = 'index'
+            rest = route[1:]
+
+        logger.debug('module is {!r}'.format(module))
+        try:
+            method = getattr(self, module)
+            logger.debug('got method for {!r}'.format(module))
+        except AttributeError:
+            method = None
+
+        if method:
+            logger.debug('calling method {!r}'.format(module))
+            result = method(*rest, **data)
+            logger.debug(result)
+            return result
+
+        filename = '{}.py'.format(module)
+        if isfile(filename):
+            logger.debug('file {}.py exists'.format(module))
+            source = imp.load_source(module, filename)
+            app = if_callable(getattr(source, 'app', None))
+            view = if_callable(getattr(source, 'view', None))
+            controller = if_callable(getattr(source, 'controller', None))
+        else:
+            app = None
+            view = None
+            controller = None
+
+        return (
+            app and app(*rest, **data) or
+            controller and controller(*rest, **data) or
+            view and view(*rest, **data)
+        )
+
+    def __call__(self, request):
+        return self.process(*request.route, **request.data)
+
+
 class AppProxy(object):
 
     def __init__(self, name, filename, site):
@@ -121,7 +180,7 @@ def respond(content, request):
         else:
             result = HTMLResponse('OK')
 
-    return result
+        return result
 
 
 def handle(request):
