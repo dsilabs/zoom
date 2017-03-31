@@ -51,8 +51,8 @@ CREATE TABLE `audit_log` (
 --
 -- Table structure for table `entities`
 --
-drop table if exists entities;
-create table if not exists entities (
+drop table if exists `entities`;
+create table if not exists `entities` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
@@ -63,14 +63,14 @@ create table if not exists entities (
 --
 -- Table structure for table `attributes`
 --
-drop table if exists attributes;
-create table if not exists attributes (
+drop table if exists `attributes`;
+create table if not exists `attributes` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
   `row_id` int unsigned not null,
   `attribute` varchar(100),
   `datatype` varchar(30),
-  `value` mediumblob,
+  `value` mediumtext,
   PRIMARY KEY (`id`),
   KEY `row_id_key` (`row_id`),
   KEY `kind_key` (`kind`),
@@ -89,7 +89,7 @@ CREATE TABLE `groups` (
   `description` char(60) default NULL,
   `admin_group_id` int unsigned default NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name_key` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -161,33 +161,31 @@ CREATE TABLE `users` (
 -- Dumping data for table `groups`
 --
 LOCK TABLES `groups` WRITE;
-/*!40000 ALTER TABLE `groups` DISABLE KEYS */;
 INSERT INTO `groups` VALUES
-    (1, 'U','administrators','System Administrators','administrators'),
-    (2, 'U','users','Registered Users','administrators'),
-    (3, 'U','guests','Guests','administrators'),
-    (4, 'U','everyone','All users including guests','administrators'),
-    (5, 'U','managers','Site Content Managers','administrators'),
-    (6, 'A','a_login','Login Application','administrators'),
-    (7, 'A','a_passreset','Password Reset App','administrators'),
-    (8, 'A','a_register','Registration App','administrators'),
-    (9, 'A','a_hello','Hello World App','administrators'),
-    (10,'A','a_logout','Logout application','administrators'),
-    (12,'A','a_home','Home page','administrators'),
-    (13,'A','a_signup','Sign-up Application','administrators'),
-    (14,'A','a_content','Content Editor','administrators'),
-    (16,'A','a_info','Info group','administrators'),
-    (17,'A','a_apps','application manager group','administrators'),
-    (19,'A','a_icons','icons application group','administrators'),
-    (20,'A','a_profile','profile application group','administrators'),
-    (21,'A','a_users','user admin application group','administrators'),
-    (22,'A','a_testapp','testapp application group','administrators'),
-    (26,'A','a_groups','Group application group','administrators'),
-    (27,'A','a_forgot','Forgot Password','administrators'),
-    (28,'A','a_blog','Blog','administrators'),
-    (29,'A','a_flags','Flags','administrators'),
-    (30,'A','a_settings','Settings','administrators');
-/*!40000 ALTER TABLE `groups` ENABLE KEYS */;
+    (1, 'U',1,'System Administrators',1),
+    (2, 'U','users','Registered Users',1),
+    (3, 'U','guests','Guests',1),
+    (4, 'U','everyone','All users including guests',1),
+    (5, 'U','managers','Site Content Managers',1),
+    (6, 'A','a_login','Login Application',1),
+    (7, 'A','a_passreset','Password Reset App',1),
+    (8, 'A','a_register','Registration App',1),
+    (9, 'A','a_hello','Hello World App',1),
+    (10,'A','a_logout','Logout application',1),
+    (12,'A','a_home','Home page',1),
+    (13,'A','a_signup','Sign-up Application',1),
+    (14,'A','a_content','Content Editor',1),
+    (16,'A','a_info','Info group',1),
+    (17,'A','a_apps','application manager group',1),
+    (19,'A','a_icons','icons application group',1),
+    (20,'A','a_profile','profile application group',1),
+    (21,'A','a_users','user admin application group',1),
+    (22,'A','a_testapp','testapp application group',1),
+    (26,'A','a_groups','Group application group',1),
+    (27,'A','a_forgot','Forgot Password',1),
+    (28,'A','a_blog','Blog',1),
+    (29,'A','a_flags','Flags',1),
+    (30,'A','a_settings','Settings',1);
 UNLOCK TABLES;
 
 
@@ -196,13 +194,12 @@ UNLOCK TABLES;
 --
 
 LOCK TABLES `subgroups` WRITE;
-/*!40000 ALTER TABLE `subgroups` DISABLE KEYS */;
 INSERT INTO `subgroups` VALUES
 
 -- Admin
-    ( 2,1),
-    ( 5,1),
-    ( 6,1),
+    (2,1),
+    (5,1),
+    (6,1),
     (12,1),
     (14,1),
     (16,1),
@@ -214,7 +211,7 @@ INSERT INTO `subgroups` VALUES
     (30,1),
 
 -- Users
-    ( 4,2),
+    (4,2),
     (10,2),
     (12,2),
     (20,2),
@@ -222,46 +219,39 @@ INSERT INTO `subgroups` VALUES
     (28,2),
 
 -- Guests (anonymous)
-    ( 4,3),
-    ( 6,3),
-    ( 7,3),
+    (4,3),
+    (6,3),
+    (7,3),
 --    ( 8,3), -- register
     (13,3),
     (27,3),
 
 -- Managers
-     (2,5),
+    (2,5),
     (26,5),
 
 -- Everyone
     (14,4);
 
-/*!40000 ALTER TABLE `subgroups` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
 --
 -- Dumping data for table `users`
 --
-
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
 LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES
-    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),'','','A'),
-    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),'','','I'),
-    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),'','','A');
+    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),NULL,NULL,'A'),
+    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),NULL,NULL,'I'),
+    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),NULL,NULL,'A');
 UNLOCK TABLES;
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 
 --
 -- Dumping data for table `members`
 --
-
 LOCK TABLES `members` WRITE;
-/*!40000 ALTER TABLE `members` DISABLE KEYS */;
 INSERT INTO `members` VALUES
     (1,1),
     (2,2),
     (3,3);
-/*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
