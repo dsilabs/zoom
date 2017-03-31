@@ -194,7 +194,7 @@ class RedirectResponse(Response):
     """Redirect response"""
 
     def __init__(self, url):
-        Response.__init__(self, '')
+        Response.__init__(self, b'')
         self.status = '302 Found'
         self.headers['Location'] = url
 
