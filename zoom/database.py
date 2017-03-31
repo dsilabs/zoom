@@ -6,9 +6,10 @@
     a database that does less
 """
 
-import logging
-import timeit
 import collections
+import logging
+import os
+import timeit
 import warnings
 
 warnings.filterwarnings("ignore", "Unknown table.*")
@@ -406,33 +407,26 @@ def database_handler(request, handler, *rest):
     return handler(request, *rest)
 
 
+def create_mysql_site_tables(db):
+    def split(statements):
+        return [s for s in statements.split(';\n') if s]
+    logger = logging.getLogger(__name__)
+
+    curdir = os.path.dirname(__file__)
+    relpath = '../tools/zoom/sql/setup_mysql.sql'
+    filename = os.path.abspath(os.path.join(curdir, relpath))
+    statements = split(open(filename).read())
+    logger.debug('%s SQL statements', len(statements))
+
+    for statement in statements:
+        db(statement)
+
+    logger.debug('created tables from %s', filename)
+
+
 def setup_test():
+
     def create_test_tables(db):
-        db(
-            """
-            create table if not exists entities (
-                id int unsigned not null auto_increment,
-                kind      varchar(100),
-                PRIMARY KEY (id)
-                )
-            """
-        )
-        db(
-            """
-            create table if not exists attributes (
-                id int unsigned not null auto_increment,
-                kind      varchar(100),
-                row_id    int not null,
-                attribute varchar(100),
-                datatype  varchar(30),
-                value     text,
-                PRIMARY KEY (id),
-                KEY `row_id_key` (`row_id`),
-                KEY `kind_key` (`kind`),
-                KEY `kv` (`kind`, `attribute`, `value`(100))
-                )
-            """
-        )
         db("""
             create table if not exists person (
                 id int unsigned not null auto_increment,
@@ -451,10 +445,9 @@ def setup_test():
                 PRIMARY KEY (account_id)
                 )
         """)
+        create_mysql_site_tables(db)
 
     def delete_test_tables(db):
-        db('drop table if exists attributes')
-        db('drop table if exists entities')
         db('drop table if exists person')
         db('drop table if exists account')
 
