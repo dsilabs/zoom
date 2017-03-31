@@ -35,6 +35,7 @@ class Site(object):
             self.owner_name = get('site', 'owner', 'dynamic solutions')
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
+            self.guest = get('users', 'default', 'guest')
 
             self.secure_cookies = (
                 request.protocol == 'https' and

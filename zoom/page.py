@@ -92,11 +92,9 @@ class Page(object):
         providers = [
             zoom.helpers.__dict__,
             request.site.helpers(),
+            request.user.helpers(),
             zoom.apps.helpers(request),
             self.helpers(request),
-            dict(
-                username='a-user'
-            )
         ]
 
         page_header = PageHeader(page=self).render()

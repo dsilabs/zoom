@@ -4,15 +4,28 @@
 
 import logging
 
+from zoom.users import Users
 
-class User(object):
 
-    def __init__(self, username):
-        self.username = username
-        logger = logging.getLogger(__name__)
-        logger.debug('user loaded: %r', username)
+def get_current_username(request):
+    site = request.site
+    return (
+        site.config.get('users', 'override', '') or
+        getattr(request.session, 'username', None) or
+        request.env.get('REMOTE_USER', None) or
+        site.guest or
+        None
+    )
 
 
 def user_handler(request, handler, *rest):
-    request.user = User(request.remote_user)
+    logger = logging.getLogger(__name__)
+
+    username = get_current_username(request)
+    if username:
+        users = Users(request.site.db)
+        user = users.first(username=username)
+        if user:
+            request.user = user
+            logger.debug('user loaded: %s (%r)', user.full_name, user.username)
     return handler(request, *rest)
