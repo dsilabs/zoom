@@ -28,6 +28,7 @@ from zoom.response import (
     HTMLResponse,
     ICOResponse,
     TextResponse,
+    RedirectResponse,
 )
 import zoom.cookies
 import zoom.session
@@ -36,6 +37,7 @@ import zoom.templates
 import zoom.user
 import zoom.apps
 from zoom.page import page
+from zoom.helpers import tag_for
 
 SAMPLE_FORM = """
 <form action="" id="dz_form" name="dz_form" method="POST"
@@ -114,6 +116,17 @@ def debug(request):
         content = ['<pre>{}</pre>'.format(traceback.format_exc())]
 
     return HTMLResponse(''.join(content), status=status)
+
+
+def serve_redirects(request, handler, *rest):
+    result = handler(request, *rest)
+    if isinstance(result, RedirectResponse):
+        tag = tag_for('abs_site_url')
+        location = result.headers['Location'].replace(tag, request.site.abs_url)
+        result.headers['Location'] = location#.encode('utf8')
+        logger = logging.getLogger(__name__)
+        logger.debug('redirecting to %s', location)
+    return result
 
 
 def serve_response(*path):
@@ -251,6 +264,7 @@ def handle(request, handlers=None):
     """handle a request"""
     default_handlers = (
         trap_errors,
+        serve_redirects,
         serve_favicon,
         serve_static,
         serve_images,

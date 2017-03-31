@@ -7,10 +7,29 @@
 import os
 import imp
 import logging
+import configparser
 
 from zoom.response import Response, HTMLResponse
 from zoom.helpers import url_for, link_to
 from zoom.components import as_links
+import zoom.html as html
+
+
+DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
+DEFAULT_MAIN_APPS = ['home', 'apps', 'users', 'groups', 'info']
+DEFAULT_SETTINGS = dict(
+    title='',
+    icon='blank_doc',
+    version=0.0,
+    enabled=True,
+    visible=True,
+    theme='',
+    description='',
+    categories='',
+    tags='',
+    keywords='',
+    in_development=False,
+)
 
 
 class App(object):
@@ -83,6 +102,10 @@ class AppProxy(object):
         self.path = os.path.dirname(filename)
         self.method = getattr(imp.load_source('app', self.filename), 'app')
         self.site = site
+        self.config_parser = configparser.ConfigParser()
+        self.config = self.get_config(DEFAULT_SETTINGS)
+
+        self.visible = self.config.get('visible')
 
     def run(self, request):
         return self.method(request)
@@ -116,6 +139,41 @@ class AppProxy(object):
         menu = getattr(self.method, 'menu')
         return
 
+    def get_config(self, default=None):
+
+        def as_dict(config):
+            """
+            Converts a ConfigParser object into a dictionary.
+            """
+            the_dict = {}
+            for section in config.sections():
+                for key, val in config.items(section):
+                    the_dict[key] = val
+            return the_dict
+
+        def get_config(pathname):
+            self.config_parser.read(pathname)
+            return as_dict(self.config_parser)
+
+        path = self.path
+        join = os.path.join
+        split = os.path.split
+
+        local_config_file = join(path, 'config.ini')
+        shared_config_file = join(split(path)[0], 'default.ini')
+        system_config_file = join(split(path)[0], '..', '..', 'default.ini')
+
+        local_settings = get_config(local_config_file)
+        shared_settings = get_config(shared_config_file)
+        system_settings = get_config(system_config_file)
+
+        result = {}
+        result.update(default or {})
+        result.update(system_settings)
+        result.update(shared_settings)
+        result.update(local_settings)
+        return result
+
     def __str__(self):
         return self.link
 
@@ -147,20 +205,24 @@ def get_apps(request):
     return result
 
 
-def locate_app(request):
+def locate_app(site, name):
     logger = logging.getLogger(__name__)
-    default_app = request.site.config.get('apps', 'default', 'home')
-    app_name = request.route and request.route[0] or default_app
-    apps_paths = request.site.config.get('apps', 'path').split(';')
+    apps_paths = site.config.get('apps', 'path').split(';')
     for path in apps_paths:
         app_path = os.path.abspath(
-            os.path.join(request.site.path, path, app_name)
+            os.path.join(site.path, path, name)
         )
         logger.debug('checking %s', app_path)
         filename = os.path.join(app_path, 'app.py')
         if os.path.exists(filename):
             logger.debug('located app %s', app_path)
-            return AppProxy(app_name, filename, request.site)
+            return AppProxy(name, filename, site)
+
+
+def locate_current_app(request):
+    default_app = request.site.config.get('apps', 'default', 'home')
+    app_name = request.route and request.route[0] or default_app
+    return locate_app(request.site, app_name)
 
 
 def respond(content, request):
@@ -187,7 +249,7 @@ def respond(content, request):
 def handle(request):
     """handle a request"""
 
-    app = locate_app(request)
+    app = locate_current_app(request)
     if app:
         save_dir = os.getcwd()
         try:
@@ -199,12 +261,33 @@ def handle(request):
         return respond(response, request)
 
 
+def get_system_apps(request):
+    names = DEFAULT_SYSTEM_APPS
+    # apps = [app for app in [locate_app(request.site, name) for name in names] if app]
+    apps = filter(bool, [locate_app(request.site, name) for name in names])
+    return apps
+
+
+def system_menu_items(request):
+    """Returns the system menu."""
+    return html.li([
+        app.link for app in get_system_apps(request) if app.visible
+    ])
+
+
+def system_menu(request):
+    """Returns the system menu."""
+    return '<ul>%s</ul>' % system_menu_items(request)
+
+
 def helpers(request):
     return dict(
         app_url=request.app.url,
         app_menu_items=request.app.menu_items,
         app_menu=request.app.menu,
         app_name=request.app.name,
+        system_menu_items=system_menu_items(request),
+        system_menu=system_menu(request),
     )
 
 

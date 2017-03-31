@@ -54,6 +54,16 @@ class Site(object):
         else:
             raise Exception('site {!r} does not exist'.format(site_path))
 
+    @property
+    def abs_url(self):
+        request = self.request
+        port = (request.port not in ['80', '443']) and ':' + request.port or ''
+        return '{}://{}{}'.format(
+            request.protocol,
+            request.server,
+            port,
+        )
+
     def get_template(self, name=None):
         template = name or 'default'
         filename = os.path.join(self.theme_path, template + '.html')
@@ -65,11 +75,13 @@ class Site(object):
         return dict(
             site_name=self.name,
             site_url=self.url,
+            abs_site_url=self.abs_url,
             owner_name=self.owner_name,
             owner_url=self.owner_url,
             owner_email=self.owner_email,
             theme=self.theme,
             theme_uri='/themes/' + self.theme,
+            request_path=self.request.path,
         )
 
 

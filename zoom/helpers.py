@@ -49,16 +49,6 @@ def main_menu():
     return '<ul>{}</ul>'.format(main_menu_items())
 
 
-def system_menu_items():
-    """Returns system menu items."""
-    return '<li><a href="/logout">Logout</a></li>'
-
-
-def system_menu():
-    """Returns system menu."""
-    return '<ul>{}</ul>'.format(system_menu_items())
-
-
 def tag_for(name, *a, **k):
     """create a zoom tag
     
@@ -141,6 +131,73 @@ def url_for(*a, **k):
         return '?'.join([uri, params])
     else:
         return uri
+
+
+def abs_url_for(*a, **k):
+    """calculates absolute url
+
+    >>> abs_url_for()
+    '<dz:abs_site_url><dz:request_path>'
+
+    >>> abs_url_for('')
+    '<dz:abs_site_url><dz:request_path>'
+
+    >>> abs_url_for('/')
+    '<dz:abs_site_url>'
+
+    >>> abs_url_for('/', 'home')
+    '<dz:abs_site_url>/home'
+
+    >>> abs_url_for('/home')
+    '<dz:abs_site_url>/home'
+
+    >>> abs_url_for('home')
+    '<dz:abs_site_url><dz:request_path>/home'
+
+    >>> abs_url_for('/user', 1234)
+    '<dz:abs_site_url>/user/1234'
+
+    >>> abs_url_for('/user', 1234, q='test one', age=15)
+    '<dz:abs_site_url>/user/1234?age=15&q=test+one'
+
+    >>> abs_url_for('/user', q='test one', age=15)
+    '<dz:abs_site_url>/user?age=15&q=test+one'
+
+    >>> abs_url_for('/', q='test one', age=15)
+    '<dz:abs_site_url>?age=15&q=test+one'
+
+    >>> abs_url_for(q='test one', age=15)
+    '<dz:abs_site_url><dz:request_path>?age=15&q=test+one'
+
+    >>> abs_url_for('https://google.com', q='test one')
+    'https://google.com?q=test+one'
+
+    """
+
+    if a and a[0].startswith('http'):
+        root = a[0]
+        args = a[1:]
+    else:
+        root = tag_for('abs_site_url')
+        path = tag_for('request_path')
+        if a == ('/',):
+            args = []
+        elif a and a[0] == '/':
+            args = list(a[1:])
+            root = root + '/'
+        elif a and a[0] and a[0][0] == '/':
+            args = list(a)
+        elif a:
+            args = [path] + list(a)
+        else:
+            args = [path]
+    result = root + '/'.join(filter(bool, (str(i) for i in args)))
+    if k:
+        items = sorted(k.items())
+        result = result + '?' + (
+            '&'.join('%s=%s' % (j, quote_plus(str(v))) for j, v in items)
+        )
+    return result
 
 
 def link_to(label, *args, **kwargs):
