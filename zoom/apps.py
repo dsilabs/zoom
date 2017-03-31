@@ -263,7 +263,6 @@ def handle(request):
 
 def get_system_apps(request):
     names = DEFAULT_SYSTEM_APPS
-    # apps = [app for app in [locate_app(request.site, name) for name in names] if app]
     apps = filter(bool, [locate_app(request.site, name) for name in names])
     return apps
 
@@ -280,6 +279,24 @@ def system_menu(request):
     return '<ul>%s</ul>' % system_menu_items(request)
 
 
+def get_main_apps(request):
+    names = DEFAULT_MAIN_APPS
+    apps = filter(bool, [locate_app(request.site, name) for name in names])
+    return apps
+
+
+def main_menu_items(request):
+    """Returns the main menu."""
+    return html.li([
+        app.link for app in get_main_apps(request) if app.visible
+    ])
+
+
+def main_menu(request):
+    """Returns the main menu."""
+    return '<ul>%s</ul>' % main_menu_items(request)
+
+
 def helpers(request):
     return dict(
         app_url=request.app.url,
@@ -288,6 +305,8 @@ def helpers(request):
         app_name=request.app.name,
         system_menu_items=system_menu_items(request),
         system_menu=system_menu(request),
+        main_menu_items=main_menu_items(request),
+        main_menu=main_menu(request),
     )
 
 

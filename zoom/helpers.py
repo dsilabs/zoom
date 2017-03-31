@@ -39,16 +39,6 @@ def owner_link():
     return name
 
 
-def main_menu_items():
-    """Returns main menu items."""
-    return '<li><a href="/info">Home</a></li>'
-
-
-def main_menu():
-    """Returns main menu."""
-    return '<ul>{}</ul>'.format(main_menu_items())
-
-
 def tag_for(name, *a, **k):
     """create a zoom tag
     
