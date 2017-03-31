@@ -27,5 +27,6 @@ def user_handler(request, handler, *rest):
         user = users.first(username=username)
         if user:
             request.user = user
+            user.request = request
             logger.debug('user loaded: %s (%r)', user.full_name, user.username)
     return handler(request, *rest)
