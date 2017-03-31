@@ -47,6 +47,15 @@ class Session(object):
                 logger.debug('expired session: replaced %r with %r', old_token, token)
         self._token = token
 
+    def destroy(self):
+        logger = logging.getLogger(__name__)
+        db = self._request.site.db
+        old_token = self._token
+        cmd = 'delete from sessions where id=%s'
+        db(cmd, self._token)
+        self._token = token = self.new(db)
+        logger.debug('destroyed session: replaced %r with %r', old_token, token)
+
     def new(self, db, timeout=SESSION_LIFE):
         """create a new session"""
 
