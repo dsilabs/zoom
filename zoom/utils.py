@@ -10,12 +10,38 @@ import os
 import string
 import decimal
 import datetime
+import zoom.jsonz as json
 
 chars = ''.join(map(chr, range(256)))
 keep_these = string.ascii_letters + string.digits + '- '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+
+def pretty(obj):
+    """return an object in a pretty form
+
+    >>> obj = dict(name='Joe', age=25)
+    >>> pretty(obj)
+    '{\\n  "age": 25,\\n  "name": "Joe"\\n}'
+    """
+    return json.dumps(obj, indent=2, sort_keys=True)
+
+
+def pp(obj):
+    """pretty print an object
+
+    >>> obj = dict(name='Joe', age=25)
+
+    >>> pp(obj)
+    {
+      "age": 25,
+      "name": "Joe"
+    }
+
+    """
+    # pylint: disable=C0103
+    print(pretty(obj))
 
 
 def sorted_column_names(names):
@@ -77,6 +103,11 @@ def id_for(*args):
         return str(text).strip().translate(allowed).lower().replace(' ', '-')
 
     return '~'.join([id_(arg) for arg in args])
+
+
+def name_for(text):
+    """Calculates a valid HTML field name given an arbitrary string."""
+    return text.replace('*', '').replace(' ', '_').strip().lower()
 
 
 def trim(text):

@@ -121,6 +121,15 @@ def h3(text):
     return '<h3>{}</h3>'.format(text)
 
 
+def input(*args, **kwargs):
+    Type = kwargs.pop('type', 'text')
+    return tag('input', type=Type, *args, **kwargs)
+
+
+def hidden(*args, **kwargs):
+    return tag('input', type='hidden', *args, **kwargs)
+
+
 def glyphicon(icon, **kwargs):
     """generates a glpyhicon span
 

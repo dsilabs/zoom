@@ -4,7 +4,9 @@
     rendering tools
 """
 
-from zoom.fill import dzfill
+import os
+
+from zoom.fill import dzfill, fill
 
 
 def apply_helpers(template, obj, providers):
@@ -56,7 +58,17 @@ def apply_helpers(template, obj, providers):
                 repl = helper
             return dzfill(repl, _filler)
         return _filler
+
     helpers = {}
     for provider in providers:
         helpers.update(provider)
     return dzfill(template, filler(helpers))
+
+
+def render(name, *a, **k):
+    """render a view"""
+    path = os.path.dirname(__file__)
+    with open(os.path.join(path, 'views', name+'.html')) as reader:
+        template = reader.read()
+        return template.format(*a, **k)
+    return ''
