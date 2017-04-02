@@ -2,6 +2,8 @@
     zoom.Fields
 """
 
+import os
+
 from zoom.render import render
 from zoom.utils import name_for
 from zoom.tools import (
@@ -36,8 +38,9 @@ def layout_field(label, content, edit=True):
         </div>
         <BLANKLINE>
     """
+    pathname = os.path.join(os.path.dirname(__file__), 'views', 'field.html')
     mode = bool(edit) and 'edit' or 'show'
-    return render('field', **locals())
+    return render(**locals())
 
 
 def args_to_dict(values=None, **kwargs):

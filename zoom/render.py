@@ -65,10 +65,11 @@ def apply_helpers(template, obj, providers):
     return dzfill(template, filler(helpers))
 
 
-def render(name, *a, **k):
+def render(pathname, *a, **k):
     """render a view"""
-    path = os.path.dirname(__file__)
-    with open(os.path.join(path, 'views', name+'.html')) as reader:
+    # path = os.path.dirname(__file__)
+    # with open(os.path.join('views', name+'.html')) as reader:
+    with open(pathname) as reader:
         template = reader.read()
         return template.format(*a, **k)
     return ''
