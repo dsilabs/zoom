@@ -32,6 +32,9 @@ class User(Record):
             username=self.username,
         )
 
+    def can(self, action, object=None):
+        return True
+
 
 class Users(RecordStore):
     """Zoom Users
