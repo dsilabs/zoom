@@ -11,78 +11,45 @@ import sys
 import cgi
 import json
 import logging
-import uuid
 from timeit import default_timer as timer
 
 import zoom.utils
 import zoom.cookies
 
 
-class Webvars(object):
-    """Extracts parameters sent as part of the request"""
-
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self, env=None, body=None):
-        """gather query fields"""
-
-        env = env or os.environ
-        get = env.get
-
-        # switch to binary mode on windows systems
-        # msvcrt and O_BINARY are only defined in Windows Python
-        # pylint: disable=import-error
-        # pylint: disable=no-member
-        try:
-            import msvcrt
-            msvcrt.setmode(0, os.O_BINARY)  # stdin  = 0
-            msvcrt.setmode(1, os.O_BINARY)  # stdout = 1
-        except ImportError:
-            pass
-
-        module = get('wsgi.version', None) and 'wsgi' or 'cgi'
-
-        if get('REQUEST_METHOD', 'GET').upper() in ['GET']:
-            cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
-        else:
-            if module == 'wsgi':
-                body_stream = body
-                post_env = env.copy()
-                post_env['QUERY_STRING'] = ''
-            else:
-                body_stream = body
-                post_env = env.copy()
-
-            cgi_fields = cgi.FieldStorage(
-                fp=body_stream,
-                environ=post_env,
-                keep_blank_values=True
-            )
-
-        items = {}
-        for key in cgi_fields.keys():
-
-            if isinstance(cgi_fields[key], list):
-                items[key] = [item.value for item in cgi_fields[key]]
-            elif cgi_fields[key].filename:
-                items[key] = cgi_fields[key]
-            else:
-                items[key] = cgi_fields[key].value
-        self.__dict__.update(items)
-
-    def __getattr__(self, name):
-        return ''  # return blank for missing attributes
-
-    def __str__(self):
-        return repr(self.__dict__)
-
-    def __repr__(self):
-        return str(self)
-
-
-def get_web_vars(env, body):
+def get_web_vars(env):
     """return web parameters as a dict"""
-    return Webvars(env, body).__dict__
+
+    get = env.get
+    module = get('wsgi.version', None) and 'wsgi' or 'cgi'
+    method = get('REQUEST_METHOD')
+
+    if method == 'GET':
+        cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
+
+    else:
+        post_env = env.copy()
+        if module == 'wsgi':
+            body_stream = get('wsgi.input')
+        else:
+            body_stream = sys.stdin
+
+        cgi_fields = cgi.FieldStorage(
+            fp=body_stream,
+            environ=post_env,
+            keep_blank_values=True
+        )
+
+    items = {}
+    for key in cgi_fields.keys():
+        if isinstance(cgi_fields[key], list):
+            items[key] = [item.value for item in cgi_fields[key]]
+        elif cgi_fields[key].filename:
+            items[key] = cgi_fields[key]
+        else:
+            items[key] = cgi_fields[key].value
+
+    return items
 
 
 def get_parent_dir():
@@ -91,6 +58,13 @@ def get_parent_dir():
 
 
 def get_library_instance():
+    """get the location of the library instance
+
+    If the user doesn't provide an instance whith which to
+    run the server then the request assumes the user wants
+    to run using the built-in instance.  This is most common
+    in development environments.
+    """
     return os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
@@ -130,6 +104,11 @@ def get_instance(directory):
 
 
 def get_site_path(request, location):
+    """get the site path
+
+    Find the site which the system is to run for any given
+    domain name / instance combination.
+    """
     logger = logging.getLogger(__name__)
     exists = os.path.exists
     join = os.path.join
@@ -150,10 +129,33 @@ def get_site_path(request, location):
     return result
 
 
+def calc_domain(host):
+    """calculate just the high level domain part of the host name
+
+    Remove the port and the www. if it exists.
+
+    >>> calc_domain('www.dsilabs.ca:8000')
+    'dsilabs.ca'
+
+    >>> calc_domain('test.dsilabs.ca:8000')
+    'test.dsilabs.ca'
+
+    """
+    if host:
+        return host.split(':')[0].split('www.')[-1:][0]
+    return ''
+
+
 def strim(url):
+    """trim off the trailing '/' character if there is one
+
+    >>> strim('http://localhost/')
+    'http://localhost'
+    """
     if url and url.endswith('/'):
         return url[:-1]
     return url
+
 
 
 class Request(object):
@@ -162,7 +164,10 @@ class Request(object):
     # pylint: disable=too-few-public-methods, too-many-instance-attributes
 
     def __init__(self, env=None, instance=None, start_time=None):
+
         self.env = env or os.environ
+        get = env.get
+
         self.start_time = start_time or timer()
         self.ip_address = None
         self.session_token = None
@@ -170,86 +175,14 @@ class Request(object):
         self.subject_token = None
         self.server = None
         self.route = []
-        self.setup(self.env, instance)
-        self.body_consumed = False
-
-    @property
-    def body(self):
-        """access the body in raw form"""
-        self.body_consumed = True
-        return self._body
-
-    @property
-    def data(self):
-        """access the body as data"""
-        if not self.body_consumed:
-            return get_web_vars(self.env, self._body)
-        else:
-            return {}
-
-    @property
-    def json_body(self):
-        """access and parse the body as json"""
-        return json.loads(self.body.read().decode('utf-8'))
-
-    def setup(self, env, instance=None):
-        """setup the Request attributes"""
-
-        def calc_domain(host):
-            """calculate just the high level domain part of the host name
-
-            remove the port and the www. if it exists
-
-            >>> calc_domain('www.dsilabs.ca:8000')
-            'dsilabs.ca'
-
-            >>> calc_domain('test.dsilabs.ca:8000')
-            'test.dsilabs.ca'
-
-            """
-            if host:
-                return host.split(':')[0].split('www.')[-1:][0]
-            return ''
-
-        logger = logging.getLogger(__name__)
-
-        get = env.get
-
         self._body = None
         self.body_consumed = False
+        self.method = get('REQUEST_METHOD')
+        self.module = get('wsgi.version', None) and 'wsgi' or 'cgi'
+        self.data_values = {}
 
-        path = get('PATH_INFO', get('REQUEST_URI', '').split('?')[0])
-
-        module = get('wsgi.version', None) and 'wsgi' or 'cgi'
-        if module == 'wsgi':
-            self.server = (get('HTTP_HOST') or '').split(':')[0]
-            self.home = os.getcwd()
-            self._body = get('wsgi.input')
-            self.wsgi_version = get('wsgi.version')
-            self.wsgi_urlscheme = get('wsgi.urlscheme')
-            self.wsgi_multiprocess = get('wsgi.multiprocess')
-            self.wsgi_multithread = get('wsgi.multithread')
-            self.wsgi_filewrapper = get('wsgi.filewrapper')
-            self.wsgi_runonce = get('wsgi.runonce')
-            self.wsgi_errors = get('wsgi.errors')
-            self.wsgi_input = get('wsgi.input')
-            self.mode = get('mod_wsgi.process_group', None) \
-                and 'daemon' or 'embedded'
-        else:
-            self.server = get('SERVER_NAME', 'localhost')
-            self.home = os.path.dirname(get('SCRIPT_FILENAME', ''))
-            self._body = sys.stdin
-
-        self.path = path
-
-        self.location = strim(instance)
-        logger.debug('location: {}'.format(self.location))
-
-        self.instance = get_instance(instance)
-        logger.debug('instance: {}'.format(self.instance))
-
-        self.site_path = get_site_path(self, instance)
-        logger.debug('site: {}'.format(self.site_path))
+        self.path = get('PATH_INFO', get('REQUEST_URI', '').split('?')[0])
+        self.route = self.path != '/' and self.path.split('/')[1:] or []
 
         self.host = get('HTTP_HOST')
         self.domain = calc_domain(get('HTTP_HOST'))
@@ -262,13 +195,60 @@ class Request(object):
         self.script = get('SCRIPT_FILENAME')
         self.agent = get('HTTP_USER_AGENT')
         self.method = get('REQUEST_METHOD')
-        self.module = module
         self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
         self.referrer = get('HTTP_REFERER')
-        self.route = path != '/' and path.split('/')[1:] or []
         self.env = env
 
+        if self.module == 'wsgi':
+            self.server = (get('HTTP_HOST') or '').split(':')[0]
+            self.home = os.getcwd()
+            self._body = get('wsgi.input')
+        else:
+            self.server = get('SERVER_NAME', 'localhost')
+            self.home = os.path.dirname(get('SCRIPT_FILENAME', ''))
+            self._body = sys.stdin
+
+        logger = logging.getLogger(__name__)
+
+        self.location = strim(instance)
+        logger.debug('request.location: {}'.format(self.location))
+
+        self.instance = get_instance(instance)
+        logger.debug('request.instance: {}'.format(self.instance))
+
+        self.site_path = get_site_path(self, instance)
+        logger.debug('request.site_path: {}'.format(self.site_path))
+
         logger.debug('request.home: {}'.format(self.home))
+
+    @property
+    def body(self):
+        """access the body in raw form"""
+        logger = logging.getLogger(__name__)
+        if not self.body_consumed:
+            logger.debug('consuming body')
+            self.body_consumed = True
+            if self.module == 'wsgi':
+                result = self.env.get('wsgi.input')
+            else:
+                result = sys.stdin
+            return result
+
+    @property
+    def data(self):
+        """access the body as data"""
+        if not self.body_consumed:
+            self.body_consumed = True
+            self.data_values.update(get_web_vars(self.env))
+            return self.data_values
+        else:
+            return self.data_values
+
+    @property
+    def json_body(self):
+        """access and parse the body as json"""
+        return json.loads(self.body.read().decode('utf-8'))
+
 
     def __str__(self):
         return '{\n%s\n}' % '\n'.join(
