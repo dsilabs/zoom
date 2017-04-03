@@ -218,6 +218,27 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
+def check_csrf(request, handler, *rest):
+
+
+    if request.method == 'POST' and request.site.csrf_validation:
+        logger = logging.getLogger(__name__)
+
+        form_token = request.data.pop('csrf_token', None)
+        csrf_token = request.session.csrf_token
+
+        logger.debug('csrf session %s form %s', csrf_token, form_token)
+
+        if csrf_token and csrf_token == form_token:
+            del request.session.csrf_token
+
+        else:
+            logger.warning('csrf attack attempt detected')
+            return RedirectResponse('/')
+
+    return handler(request, *rest)
+
+
 def not_found(request):
     """return a 404 page for site"""
     logger = logging.getLogger(__name__)
@@ -274,6 +295,7 @@ def handle(request, handlers=None):
         serve_themes,
         zoom.database.database_handler,
         zoom.session.session_handler,
+        check_csrf,
         zoom.user.user_handler,
         zoom.apps.apps_handler,
         not_found,
