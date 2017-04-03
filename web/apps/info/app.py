@@ -15,7 +15,7 @@ class MyApp(App):
 
     menu = 'Overview', 'Log', 'Missing', 'About'
 
-    def index(self):
+    def index(self, q=None):
 
         def serializable(i):
             _, v = i
