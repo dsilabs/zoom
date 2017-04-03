@@ -3,6 +3,7 @@
 """
 
 import os
+import types
 
 from zoom.render import render
 from zoom.utils import name_for
@@ -12,6 +13,11 @@ from zoom.tools import (
     markdown,
 )
 import zoom.html as html
+from zoom.validators import valid_phone
+
+
+def locate_view(name):
+    return os.path.join(os.path.dirname(__file__), 'views', name + '.html')
 
 
 def layout_field(label, content, edit=True):
@@ -124,7 +130,7 @@ class Field(object):
     def edit(self):
         """edit the field"""
         content = render(
-            'hint',
+            locate_view('hint'),
             widget=self.widget(),
             hints=self.render_msg() + self.render_hint(),
             wrap=self.wrap,
@@ -571,3 +577,353 @@ class EditField(MemoField):
 
     def edit(self):
         return layout_field(self.label, self.widget())
+
+
+class PhoneField(TextField):
+    """Phone field
+
+    >>> PhoneField('Phone').widget()
+    '<input class="text_field" id="phone" name="phone" size="20" type="text" value="" />'
+
+    """
+    size=20
+    validators = [valid_phone]
+
+
+class FieldIterator(object):
+
+    def __init__(self, fields):
+        self.field_list = [(n.lower(), v) for n, v in fields.evaluate().items()]
+        self.current = 0
+        self.high = len(self.field_list)
+
+    def __next__(self):
+        if self.current < self.high:
+            self.current += 1
+            return self.field_list[self.current - 1]
+        else:
+            raise StopIteration
+
+
+class Fields(object):
+    """A collection of field objects.
+
+
+    >>> fields = Fields(TextField('Name'), PhoneField('Phone'))
+    >>> print(fields.edit())
+    <div class="field">
+      <div class="field_label">Name</div>
+      <div class="field_edit"><table class="transparent">
+        <tr>
+            <td nowrap><input class="text_field" id="name" maxlength="40" name="name" size="40" type="text" value="" /></td>
+            <td>
+                <div class="hint"></div>
+            </td>
+        </tr>
+    </table>
+    </div>
+    </div>
+    <div class="field">
+      <div class="field_label">Phone</div>
+      <div class="field_edit"><table class="transparent">
+        <tr>
+            <td nowrap><input class="text_field" id="phone" name="phone" size="20" type="text" value="" /></td>
+            <td>
+                <div class="hint"></div>
+            </td>
+        </tr>
+    </table>
+    </div>
+    </div>
+    <BLANKLINE>
+
+    >>> from zoom.utils import pp
+    >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+    >>> pp(fields.as_dict())
+    {
+      'name' ...........: <Field name='name' value='Amy'>
+      'phone' ..........: <Field name='phone' value='2234567890'>
+    }
+
+    >>> fields = Fields(TextField('Name'), MemoField('Notes'))
+    >>> fields.validate({'name': 'Test'})
+    True
+    >>> d = fields.evaluate()
+    >>> d['name']
+    'Test'
+
+    >>> len(d['notes'])
+    0
+    >>> fields.validate({'notes': 'here are some notes'})
+    True
+    >>> d = fields.evaluate()
+    >>> len(d['notes'])
+    19
+
+    >>> pp(fields.as_dict())
+    {
+      'name' ...........: <Field name='name' value='Test'>
+      'notes' ..........: <Field name='notes' value='here are some notes'>
+    }
+
+    >>> record = dict(name='Adam', notes='no text here')
+    >>> pp(record)
+    {
+      "name": "Adam",
+      "notes": "no text here"
+    }
+
+    >>> record.update(fields)
+    >>> record['name']
+    'Test'
+    >>> len(record['notes'])
+    19
+
+    """
+
+    def __init__(self, *args):
+        if len(args) == 1 and type(args[0]) in [list, tuple]:
+            self.fields = args[0]
+        else:
+            self.fields = list(args)
+
+    def show(self):
+        return ''.join([field.show() for field in self.fields])
+
+    def edit(self):
+        return ''.join([field.edit() for field in self.fields])
+
+    def as_dict(self):
+        result = {}
+        for field in self.fields:
+            result = dict(result, **field.as_dict())
+        return result
+
+    def __getitem__(self, name):
+        """access a contained field
+
+        >>> fields = Fields(
+        ...     TextField('Name', value='Amy'),
+        ...     PhoneField('Phone', value='2234567890'),
+        ... )
+        >>> fields['name'].label
+        'Name'
+
+        >>> hint = 'xxx.xxx.xxxx'
+        >>> fields = Fields(
+        ...     Section('Personal', [
+        ...         TextField('Name', value='Amy'),
+        ...         PhoneField('Phone', value='2234567890', hint=hint),
+        ...     ]),
+        ... )
+        >>> fields['personal'].name
+        'personal'
+        >>> fields['personal']['phone'].hint
+        'xxx.xxx.xxxx'
+        """
+        lookup = {f.name.lower(): f for f in self.fields}
+        return lookup[name]
+
+    def initialize(self, *a, **k):
+        """Initialize Field values
+
+        >>> from zoom.utils import pp
+        >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+        >>> fields.initialize(phone='987654321')
+        >>> pp(fields.as_dict())
+        {
+          'name' ...........: <Field name='name' value=''>
+          'phone' ..........: <Field name='phone' value='987654321'>
+        }
+        """
+        if a:
+            values = a[0]
+        elif k:
+            values = k
+        else:
+            values = None
+        if values:
+            for field in self.fields:
+                field.initialize(values)
+
+    def update(self,*a,**k):
+        """Update Field values
+
+        >>> from zoom.utils import pp
+        >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+        >>> fields.update(phone='987654321')
+        >>> pp(fields.as_dict())
+        {
+          'name' ...........: <Field name='name' value='Amy'>
+          'phone' ..........: <Field name='phone' value='987654321'>
+        }
+        """
+        if a:
+            values = a[0]
+        elif k:
+            values = k
+        else:
+            values = None
+        if values:
+            for field in self.fields:
+                field.update(**values)
+
+    def display_value(self):
+        """
+        >>> from zoom.utils import pp
+        >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+        >>> pp(fields.display_value())
+        {
+          "name": "Amy",
+          "phone": "2234567890"
+        }
+        """
+        result = {}
+        for field in self.fields:
+            if hasattr(field, 'name'):
+                result = dict(result, **{field.name: field.display_value()})
+            else:
+                result = dict(result, **field.display_value())
+        return result
+
+    def as_list(self):
+        """
+            >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+            >>> fields.as_list()
+            [<Field name='name' value='Amy'>, <Field name='phone' value='2234567890'>]
+        """
+        result = []
+        for field in self.fields:
+            if hasattr(field, 'name'):
+                result.append(field)
+            else:
+                result.extend(field._fields())
+        return result
+
+    def _fields(self):
+        result = []
+        for field in self.fields:
+            if hasattr(field, 'name'):
+                result.append(field)
+            else:
+                result.extend(field._fields())
+        return result
+
+    def evaluate(self):
+        """
+        >>> from zoom.utils import pp
+        >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
+        >>> pp(fields.evaluate())
+        {
+          "name": "Amy",
+          "phone": "2234567890"
+        }
+        """
+        result = {}
+        for field in self.fields:
+            result = dict(result,**field.evaluate())
+        return result
+
+    def __iter__(self):
+        return FieldIterator(self)
+
+    def __repr__(self):
+        return '\n'.join([repr(field) for field in self.fields if field.evaluate()])
+
+    def valid(self):
+        errors = 0
+        for field in self.fields:
+            if not field.valid():
+                errors += 1
+        return not errors
+
+    def validate(self, *a, **k):
+        self.update(*a, **k)
+        return self.valid()
+
+    def clean(self, *args, **kwargs):
+        errors = 0
+        for field in self.fields:
+            if not field.clean(*args, **kwargs):
+                errors += 1
+        return not errors
+
+    def requires_multipart_form(self):
+        for field in self.fields:
+            if field.requires_multipart_form():
+                return True
+
+
+class Section(Fields):
+    """A collection of field objects with an associated label.
+
+    >>> print(Section('Personal',[TextField('Name',value='Joe')]).show())
+    <h2>Personal</h2>
+    <div class="field">
+      <div class="field_label">Name</div>
+      <div class="field_show">Joe</div>
+    </div>
+    <BLANKLINE>
+    """
+
+    def __init__(self, label, fields, hint=''):
+        Fields.__init__(self, fields)
+        self.label = label
+        self.hint = hint
+
+    @property
+    def name(self):
+        return self.label and name_for(self.label)
+
+    def render_hint(self):
+        if self.hint:
+            return '<span class="hint">%s</span>' % self.hint
+        else:
+            return ''
+
+    def show(self):
+        value = Fields.show(self)
+        return bool(value) and ('<h2>%s</h2>\n%s' % (self.label, value)) or ''
+
+    def edit(self):
+        return '<H2>%s</H2>%s\n%s' % (
+            self.label,
+            self.render_hint(),
+            Fields.edit(self)
+        )
+
+
+class Fieldset(Fields):
+    """A collection of field objects with an associated label.
+
+    >>> print(Section('Personal',[TextField('Name',value='Joe')]).show())
+    <h2>Personal</h2>
+    <div class="field">
+      <div class="field_label">Name</div>
+      <div class="field_show">Joe</div>
+    </div>
+    <BLANKLINE>
+    """
+
+    def __init__(self, label, fields, hint=''):
+        Fields.__init__(self, fields)
+        self.label = label
+        self.hint = hint
+
+    def render_hint(self):
+        if self.hint:
+            return '<span class="hint">%s</span>' % self.hint
+        else:
+            return ''
+
+    def show(self):
+        value = Fields.show(self)
+        tpl = '<fieldset><legend>%s</legend>\n%s</fieldset>'
+        return (
+            bool(value) and
+            (tpl % (self.label, value)) or ''
+        )
+
+    def edit(self):
+        tpl = '<fieldset><legend>%s</legend>%s\n%s</fieldset>'
+        return tpl % (self.label, self.render_hint(), Fields.edit(self))
