@@ -9,10 +9,10 @@ from zoom.fill import dzfill
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
 
-import zoom.helpers
 import zoom.apps
+import zoom.forms
+import zoom.helpers
 import zoom.render
-
 
 class ClearSearch(DynamicView):
     pass
@@ -69,6 +69,9 @@ class Page(object):
         self.args = args
         self.kwargs = kwargs
 
+    def alerts(self, request):
+        return ''
+
     def helpers(self, request):
         """provide page helpers"""
         return dict(
@@ -82,10 +85,18 @@ class Page(object):
             tail='',
             styles='',
             libs='',
+            alerts=self.alerts,
         )
 
     def render(self, request):
         """render page"""
+        
+        def rendered(obj):
+            """call the render method if necessary"""
+            if hasattr(obj, 'render'):
+                # return rendered(obj.render())
+                return obj.render()
+            return obj
 
         template = request.site.get_template(self.template)
 
@@ -93,17 +104,18 @@ class Page(object):
             zoom.helpers.__dict__,
             request.site.helpers(),
             request.user.helpers(),
+            zoom.forms.helpers(request),
             zoom.apps.helpers(request),
             self.helpers(request),
         ]
 
         page_header = PageHeader(page=self).render()
         save_content = self.content
-        full_page = page_header + self.content
+        full_page = page_header + rendered(self.content)
         self.content = ''.join(full_page.parts['html'])
         content = zoom.render.apply_helpers(template, self, providers)
         self.content = save_content
-        
+
         return HTMLResponse(content)
 
 
