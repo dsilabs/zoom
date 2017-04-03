@@ -25,7 +25,16 @@ def pretty(obj):
     >>> pretty(obj)
     '{\\n  "age": 25,\\n  "name": "Joe"\\n}'
     """
-    return json.dumps(obj, indent=2, sort_keys=True)
+    try:
+        return json.dumps(obj, indent=2, sort_keys=True)
+    except TypeError:
+        if type(obj) == dict:
+            return '{\n%s\n}' % '\n'.join([
+                '  {!r} {}: {!r}'.format(key, '.' * (15 - len(key)), value)
+                for key, value in sorted(obj.items())
+            ])
+        else:
+            return repr(obj)
 
 
 def pp(obj):
