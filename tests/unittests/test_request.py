@@ -29,10 +29,23 @@ class TestCGIRequest(unittest.TestCase):
         request = Request(self.env)
         self.assertEqual(request.module, self.server_type)
 
-    def test_query_string(self):
+    def test_get_query_string(self):
+        self.env['REQUEST_METHOD'] = 'GET'
         self.env['QUERY_STRING'] = 'name=joe&age=20'
         request = Request(self.env)
         self.assertEqual(request.data, {'name': 'joe', 'age': '20'})
+
+    def test_post_query_string(self):
+        payload = 'parameter=value&also=another'
+        body = io.BytesIO()
+        body.write(payload.encode('utf-8'))
+        body.seek(0)
+        request = self.get_post_request(body)
+        self.env['REQUEST_METHOD'] = 'POST'
+        self.env['QUERY_STRING'] = 'name=joe&age=20'
+        request = Request(self.env)
+        value =  {'age': '20', 'also': 'another', 'name': 'joe', 'parameter': 'value'}
+        self.assertEqual(request.data, value)
 
     def test_route(self):
         request = Request(self.env)
@@ -68,13 +81,14 @@ class TestCGIRequest(unittest.TestCase):
         request = self.get_post_request(body)
         result = {'also': 'another', 'parameter': 'value'}
         self.assertEqual(request.data, result)
-        self.assertEqual(request.body.read(), b'')
+        self.assertEqual(request.body, None)
 
     def test_body(self):
         payload = b'{"title":"Hello World!","body":"This is my first post!"}'
         body = io.BytesIO()
         body.write(payload)
         body.seek(0)
+        self.env['REQUEST_METHOD'] = 'POST'
         request = self.get_post_request(body)
         self.assertEqual(request.body.read(), payload)
 
