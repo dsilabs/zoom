@@ -3,12 +3,15 @@
 
     classes to support the model, view, controller pattern
 """
+# pylint: disable=R0903
 
+import logging
 from inspect import getargspec, getfile
 from os.path import abspath, split, join, isfile
 
 from zoom.component import component
 from zoom.utils import kind
+from zoom.exceptions import PageMissingException
 
 
 MISSING = '<span class="missing-view">{} missing</span>'
@@ -34,7 +37,7 @@ def evaluate(obj, name, *a, **k):
 
 def remove_buttons(data):
     buttons = {}
-    names = data.keys()
+    names = list(data.keys())
     for name in names:
         lname = name.lower()
         if lname.endswith('_button'):
@@ -74,6 +77,9 @@ class View(Dispatcher):
     """
 
     def __call__(self, *a, **k):
+
+        logger = logging.getLogger(__name__)
+        logger.debug('view called: %r %r', a, k)
 
         buttons, inputs = remove_buttons(k)
 
@@ -218,13 +224,16 @@ class Controller(Dispatcher):
     """
     def __call__(self, *args, **kwargs):
 
+        logger = logging.getLogger(__name__)
+        logger.debug('controller called: %r %r', args, kwargs)
+
         result = None
 
         buttons, inputs = remove_buttons(kwargs)
 
         # Buttons
         if buttons:
-            button_name = buttons.keys()[0]
+            button_name = list(buttons.keys())[0]
             result = evaluate(self, button_name, *args, **inputs)
             if result:
                 return result

@@ -73,15 +73,18 @@ class App(object):
         if isfile(filename):
             logger.debug('file {}.py exists'.format(module))
             source = imp.load_source(module, filename)
+            main = if_callable(getattr(source, 'main', None))
             app = if_callable(getattr(source, 'app', None))
             view = if_callable(getattr(source, 'view', None))
             controller = if_callable(getattr(source, 'controller', None))
         else:
+            main = None
             app = None
             view = None
             controller = None
 
         return (
+            main and main(rest, self.request) or
             app and app(*rest, **data) or
             controller and controller(*rest, **data) or
             view and view(*rest, **data)
@@ -93,6 +96,16 @@ class App(object):
 
 
 class AppProxy(object):
+    """App Proxy
+
+    Contains the various extra supporting parts of an app besides
+    the actual functionality.  Apps themselves are simply callables
+    that accept a requset and return a response.  They can be implemented
+    as simple functions or as something more substantial such as
+    a subclass of the App class above.  That's entirely up to the
+    app developer.  The AppProxy takes care of the other parts that
+    an app needs, from it's location to it's icon to it's config files.
+    """
 
     def __init__(self, name, filename, site):
         self.name = name
@@ -108,9 +121,11 @@ class AppProxy(object):
         self.visible = self.config.get('visible')
 
     def run(self, request):
+        """run the app"""
         return self.method(request)
 
     def menu(self):
+        """generate an app menu"""
         def by_name(name):
             def selector(item):
                 logger.debug('item.name: %r', item.name)
@@ -136,10 +151,12 @@ class AppProxy(object):
         return result
 
     def menu_items(self):
+        """get app menu items"""
         menu = getattr(self.method, 'menu')
         return
 
     def get_config(self, default=None):
+        """get the app config"""
 
         def as_dict(config):
             """
@@ -152,6 +169,7 @@ class AppProxy(object):
             return the_dict
 
         def get_config(pathname):
+            """read a config file"""
             self.config_parser.read(pathname)
             return as_dict(self.config_parser)
 
@@ -206,6 +224,7 @@ def get_apps(request):
 
 
 def locate_app(site, name):
+    """get the location of an app by name"""
     logger = logging.getLogger(__name__)
     apps_paths = site.config.get('apps', 'path').split(';')
     for path in apps_paths:
@@ -220,6 +239,7 @@ def locate_app(site, name):
 
 
 def locate_current_app(request):
+    """get the location of the current app"""
     default_app = request.site.config.get('apps', 'default', 'home')
     app_name = request.route and request.route[0] or default_app
     return locate_app(request.site, app_name)
@@ -249,19 +269,26 @@ def respond(content, request):
 def handle(request):
     """handle a request"""
 
+    logger = logging.getLogger(__name__)
+    logger.debug('apps.handle')
+
     app = locate_current_app(request)
     if app:
         save_dir = os.getcwd()
         try:
             os.chdir(app.path)
             request.app = app
+            logger.debug('ready')
             response = app.run(request)
+            logger.debug('done')
+            result = respond(response, request)
         finally:
             os.chdir(save_dir)
-        return respond(response, request)
+        return result
 
 
 def get_system_apps(request):
+    """get a list of system apps"""
     names = DEFAULT_SYSTEM_APPS
     apps = filter(bool, [locate_app(request.site, name) for name in names])
     return apps
@@ -298,6 +325,7 @@ def main_menu(request):
 
 
 def helpers(request):
+    """return a dict of app helpers"""
     return dict(
         app_url=request.app.url,
         app_menu_items=request.app.menu_items,
@@ -312,4 +340,6 @@ def helpers(request):
 
 def apps_handler(request, handler, *rest):
     """Dispatch request to an application"""
+    logger = logging.getLogger(__name__)
+    logger.debug('apps_handler')
     return handle(request) or handler(request, *rest)
