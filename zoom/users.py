@@ -9,6 +9,81 @@ from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
 
 
+def get_groups(db, user):
+    """get groups for a user
+
+    >>> from zoom.database import setup_test
+    >>> db = setup_test()
+    >>> users = Users(db)
+    >>> guest = users.first(username='guest')
+    >>> guest.username
+    'guest'
+    >>> guest._id
+    3
+
+    >>> groups = get_groups(db, guest)
+    >>> len(groups)
+    7
+    >>> 'everyone' in groups
+    True
+    >>> 'a_login' in groups
+    True
+    >>> 'managers' in groups
+    False
+    >>> 'administrators' in groups
+    False
+
+    >>> admin = users.first(username='admin')
+    >>> groups = get_groups(db, admin)
+    >>> 'everyone' in groups
+    True
+    >>> 'a_login' in groups
+    True
+    >>> 'managers' in groups
+    True
+    >>> 'administrators' in groups
+    True
+    """
+    # logger = logging.getLogger(__name__)
+    # logger.debug(user)
+
+    def get_memberships(group, memberships, depth=0):
+        """get group memberships"""
+        result = [group]
+        if depth < 10:
+            for grp, sgrp in memberships:
+                if group == sgrp and grp not in result:
+                    result += get_memberships(grp, memberships, depth+1)
+        return result
+
+    my_groups = [
+        rec[0]
+        for rec in db(
+            'SELECT group_id FROM members WHERE user_id=%s',
+            user._id
+        )
+    ]
+
+    subgroups = list(db(
+        'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
+    ))
+
+    memberships = []
+    for group in my_groups:
+        memberships += get_memberships(group, subgroups)
+
+    groups = my_groups + memberships
+
+    named_groups = []
+    for rec in db('SELECT id, name FROM groups'):
+        groupid = rec[0]
+        name = rec[1].strip()
+        if groupid in groups:
+            named_groups += [name]
+
+    return named_groups
+
+
 class User(Record):
     """Zoom User"""
 
@@ -74,6 +149,34 @@ class User(Record):
     def default_app(self):
         return '/home'
 
+    def deactivate(self):
+        self.status = 'D'
+
+    def activate(self):
+        self.status = 'A'
+
+    def get_groups(self):
+        """get groups this user belongs to
+
+        >>> from zoom.database import setup_test
+        >>> users = Users(setup_test())
+        >>> user = users.first(username='guest')
+        >>> user.get_groups()[-4:]
+        ['a_passreset', 'a_signup', 'everyone', 'guests']
+
+        >>> user = users.first(username='admin')
+        >>> user.get_groups()[:2]
+        ['administrators', 'a_apps']
+        """
+        store = self.get('__store')
+        if store:
+            return get_groups(store.db, self)
+        return []
+
+    @property
+    def groups(self):
+        return self.get_groups()
+
     def can(self, action, object=None):
         """test if user can peform action on an object"""
         return True
@@ -104,6 +207,7 @@ class Users(RecordStore):
       link ................: '<a href="<dz:site_url>/users/guest">guest</a>'
       email ...............: 'guest@datazoomer.com'
       phone ...............: ''
+      groups ..............: ['a_content', 'a_forgot', 'a_login', 'a_passreset', 'a_signup', 'everyone', 'guests']
       status ..............: 'A'
       created .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
       updated .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
