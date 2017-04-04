@@ -6,6 +6,7 @@
 
 import datetime
 import decimal
+import logging
 
 import zoom.utils
 import zoom.exceptions
@@ -17,10 +18,11 @@ Record = Entity = zoom.utils.Record
 EntityList = zoom.utils.RecordList
 
 
-def entify(rs, klass):
+def entify(rs, storage):
     """
     converts query result into an EntityList
     """
+    klass = storage.klass
     entities = {}
 
     if hasattr(rs, 'data'):  # maintain backward compatibility with
@@ -77,7 +79,7 @@ def entify(rs, klass):
             msg = 'unsupported data type: ' + repr(datatype)
             raise zoom.exceptions.TypeException(msg)
 
-        entities.setdefault(row_id, klass(_id=row_id))[attribute] = value
+        entities.setdefault(row_id, klass(_id=row_id, __store=storage))[attribute] = value
 
     return EntityList(entities.values())
 
@@ -167,7 +169,7 @@ class EntityStore(object):
         >>> people.kind
         'person'
         >>> print(sorted(people.first(name='Sally').items()))
-        [('_id', 2), ('birthdate', datetime.date(1992, 5, 5)), ('kids', 3), ('name', 'Sally')]
+        [('__store', <EntityStore(dict)>), ('_id', 2), ('birthdate', datetime.date(1992, 5, 5)), ('kids', 3), ('name', 'Sally')]
         >>> print(Person(people.first(name='Sally')))
         Person
           name ................: 'Sally'
@@ -187,6 +189,8 @@ class EntityStore(object):
         self.db = db
         self.klass = type(klass) == str and dict or klass
         self.kind = type(klass) == str and klass or zoom.utils.kind(klass())
+        self.key = 'id'
+        self.id_name = '_id'
 
     def put(self, entity):
         """
@@ -255,7 +259,7 @@ class EntityStore(object):
 
         db = self.db
 
-        keys = [k for k in list(entity.keys()) if k != '_id']
+        keys = [k for k in list(entity.keys()) if k not in ('_id', '__store')]
         values = [entity[k] for k in keys]
         datatypes = [get_type_str(v) for v in values]
         values = [fixval(i) for i in values]  # same fix as above
@@ -276,6 +280,9 @@ class EntityStore(object):
         else:
             db('insert into entities (kind) values (%s)', self.kind)
             id = entity['_id'] = db.lastrowid
+            logger = logging.getLogger(__name__)
+            logger.debug('inserted %r - %r', id, entity)
+            entity['__store'] = self
 
         n = len(keys)
         lkeys = [k.lower() for k in keys]
@@ -347,7 +354,7 @@ class EntityStore(object):
             )
         rs = self.db(cmd, self.kind, *keys)
 
-        result = entify(rs, self.klass)
+        result = entify(rs, self)
 
         if as_list:
             return result
@@ -497,7 +504,7 @@ class EntityStore(object):
 
         """
         cmd = 'select * from attributes where kind="%s"' % (self.kind)
-        return entify(self.db(cmd), self.klass)
+        return entify(self.db(cmd), self)
 
     def zap(self):
         """
@@ -805,15 +812,15 @@ class EntityStore(object):
             >>> id = people.put(Person(name='Sam', age=25))
             >>> id = people.put(Person(name='Sally', age=55))
             >>> id = people.put(Person(name='Bob', age=25))
-            >>> repr(people) == (
-            ...     "[<Person {'name': 'Sam', 'age': 25}>, "
-            ...     "<Person {'name': 'Sally', 'age': 55}>, "
-            ...     "<Person {'name': 'Bob', 'age': 25}>]"
-            ... )
-            True
+            >>> repr(people)
+            '<EntityStore(Person)>'
+            >>> len(people)
+            3
             >>> people.zap()
             >>> people
-            []
+            <EntityStore(Person)>
+            >>> len(people)
+            0
 
         """
-        return repr(self.all())
+        return '<EntityStore({})>'.format(self.klass.__name__)

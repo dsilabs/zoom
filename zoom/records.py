@@ -12,23 +12,27 @@ from zoom.utils import Record, RecordList, kind
 from zoom.database import setup_test
 
 
-def get_result_iterator(rows, cls):
+def get_result_iterator(rows, storage):
     """returns an iterator that iterates over the rows and zips the names onto
     the items being iterated so they come back as dicts"""
+    cls = storage.record_class
     names = [d[0] == 'id' and '_id' or d[0] for d in rows.cursor.description]
     for rec in rows:
-        yield cls((k, v) for k, v in zip(names, rec) if v is not None)
+        yield cls(
+            ((k, v) for k, v in zip(names, rec) if v is not None),
+            __store=storage,
+        )
 
 
 class Result(object):
     """rows resulting from a method call"""
     # pylint: disable=too-few-public-methods
-    def __init__(self, rows, cls=dict):
+    def __init__(self, rows, storage):
         self.rows = rows
-        self.cls = cls
+        self.storage = storage
 
     def __iter__(self):
-        return get_result_iterator(self.rows, self.cls)
+        return get_result_iterator(self.rows, self.storage)
 
     def __len__(self):
         return self.rows.cursor.rowcount
@@ -255,8 +259,9 @@ class RecordStore(object):
             cmd = 'insert into %s (%s) values (%s)' % (
                 self.kind, names, placeholders)
             _id = self.db(cmd, *values)
-            record['_id'] = _id
 
+        record[self.id_name] = _id
+        record['__store'] = self
         return _id
 
     def get(self, keys):
@@ -320,9 +325,9 @@ class RecordStore(object):
         rows = self.db(cmd, *keys)
 
         if as_list:
-            return Result(rows, self.record_class)
+            return Result(rows, self)
 
-        for rec in Result(rows, self.record_class):
+        for rec in Result(rows, self):
             return rec
 
     def get_attributes(self):
@@ -555,7 +560,7 @@ class RecordStore(object):
         where_clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
         cmd = 'select * from ' + self.kind + ' where ' + where_clause
         result = self.db(cmd, *[v for _, v in items])
-        return Result(result, self.record_class)
+        return Result(result, self)
 
     def first(self, **kwargs):
         """
@@ -624,7 +629,10 @@ class RecordStore(object):
         """
         def matches(item, terms):
             """returns True if an item matches the given search terms"""
-            values = [str(i).lower() for i in item.values()]
+            values = [
+                str(v).lower() for k, v in item.items()
+                if not k.startswith('_')
+            ]
             return all(any(t in s for s in values) for t in terms)
 
         search_terms = list(set([i.lower() for i in text.strip().split()]))
@@ -683,7 +691,7 @@ class RecordStore(object):
         """
         cmd = 'select * from '+self.kind
         rows = self.db(cmd)
-        return get_result_iterator(rows, self.record_class)
+        return get_result_iterator(rows, self)
 
     def __getitem__(self, index):
         """
@@ -750,15 +758,14 @@ class RecordStore(object):
             >>> id = people.put(Person(name='Sam', age=25))
             >>> id = people.put(Person(name='Sally', age=55))
             >>> id = people.put(Person(name='Bob', age=25))
-            >>> repr(people) == (
-            ...     "[<Person {'name': 'Sam', 'age': 25}>, "
-            ...     "<Person {'name': 'Sally', 'age': 55}>, "
-            ...     "<Person {'name': 'Bob', 'age': 25}>]"
-            ... )
-            True
+            >>> repr(people)
+            '<RecordStore(Person)>'
             >>> people.zap()
             >>> people
-            []
+            <RecordStore(Person)>
+            >>> len(people)
+            0
 
         """
-        return repr(self.all())
+        return '<RecordStore({})>'.format(self.record_class.__name__)
+        # return repr(self.all())

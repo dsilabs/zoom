@@ -75,6 +75,7 @@ class TestRecordStore(unittest.TestCase):
     def test_put(self):
         jane_id = self.people.put(Person(name='Jane', age=25))
         person = self.people.get(jane_id)
+        del person['__store']
         self.assertEqual(
             dict(person),
             {
@@ -86,6 +87,7 @@ class TestRecordStore(unittest.TestCase):
 
     def test_get(self):
         joe = self.people.get(self.joe_id)
+        del joe['__store']
         self.assertEqual(
             dict(joe),
             {
@@ -119,6 +121,27 @@ class TestRecordStore(unittest.TestCase):
         self.assertEqual(len(self.people), 3)
         person = self.people.get(self.sam_id)
         self.assertEqual(person.age, 26)
+
+    def test_get_save(self):
+        sam = self.people.get(self.sam_id)
+        self.assertEqual(sam.age, 25)
+        self.assertEqual(len(self.people), 3)
+        sam.age += 1
+        sam.save()
+        self.assertEqual(len(self.people), 3)
+        person = self.people.get(self.sam_id)
+        self.assertEqual(person.age, 26)
+
+    def test_resave(self):
+        jane = Person(name='Jane', age=25)
+        jane_id = self.people.put(jane)
+        self.assertEqual(jane[self.id_name], 4)
+        jane['age'] += 1
+        jane.age += 1
+        new_id = jane.save()
+        self.assertEqual(new_id, 4)
+        person = self.people.get(jane_id)
+        self.assertEqual(person.age, 27)
 
     def test_delete_by_entity(self):
         sam = self.people.get(self.sam_id)

@@ -6,6 +6,7 @@
 
 import collections
 import configparser
+import logging
 import os
 import string
 import decimal
@@ -573,6 +574,14 @@ class Record(Storage):
 
     """
 
+    def save(self):
+        """save record"""
+        logger = logging.getLogger(__name__)
+        id = self['__store'].put(self)
+        key = self['__store'].id_name
+        logger.debug('saved %s(%s) to %s', self, self[key], self['__store'])
+        return id
+
     def attributes(self):
         return get_attributes(self)
 
@@ -704,19 +713,16 @@ class RecordList(list):
             3 person records
 
         """
-        def get_names(obj):
-            try:
-                result = obj.attributes()
-            except AttributeError:
-                result = list(obj.keys())
-            return result
+
+        def visible(name):
+            return not name.startswith('__')
 
         if not bool(self):
             return 'Empty list'
 
         title = '%s\n' % kind(self[0])
 
-        keys = labels = get_attributes(self[0])
+        keys = labels = list(filter(visible, get_attributes(self[0])))
         rows = [[record.get(key, None) for key in keys] for record in self]
 
         footer = '\n{} {} records'.format(len(self), kind(self[0]))
