@@ -225,7 +225,7 @@ def check_csrf(request, handler, *rest):
         logger = logging.getLogger(__name__)
 
         form_token = request.data.pop('csrf_token', None)
-        csrf_token = request.session.csrf_token
+        csrf_token = getattr(request.session, 'csrf_token', None)
 
         logger.debug('csrf session %s form %s', csrf_token, form_token)
 
@@ -233,7 +233,7 @@ def check_csrf(request, handler, *rest):
             del request.session.csrf_token
 
         else:
-            logger.warning('csrf attack attempt detected')
+            logger.warning('csrf token missing or invalid')
             return RedirectResponse('/')
 
     return handler(request, *rest)
