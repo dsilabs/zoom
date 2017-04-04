@@ -54,6 +54,7 @@ class User(Record):
                 request.user = self
                 self.is_authenticated = True
                 logger.debug('user authenticated')
+                return True
                 # if remember_me:
                 #     self.request.session.lifetime = TWO_WEEKS
             else:
@@ -69,15 +70,19 @@ class User(Record):
         else:
             logger.debug('cannot logout')
 
+    @property
+    def default_app(self):
+        return '/home'
+
+    def can(self, action, object=None):
+        """test if user can peform action on an object"""
+        return True
+
     def helpers(self):
         """provide user helpers"""
         return dict(
             username=self.username,
         )
-
-    def can(self, action, object=None):
-        """test if user can peform action on an object"""
-        return True
 
 
 class Users(RecordStore):
@@ -106,6 +111,7 @@ class Users(RecordStore):
       username ............: 'guest'
       full_name ...........: 'Guest User'
       is_active ...........: True
+      default_app .........: '/home'
       is_authenticated ....: False
     
     """

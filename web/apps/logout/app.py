@@ -3,7 +3,6 @@
 """
 
 import logging
-import os
 
 from zoom.tools import redirect_to, warning
 
@@ -29,4 +28,5 @@ def app(request):
             return 'null'
         else:
             logger.info('user %s successfully logged out', user.link)
-    return redirect_to('/')
+
+    return redirect_to(user.default_app)

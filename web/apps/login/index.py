@@ -8,6 +8,7 @@ from zoom.mvc import DynamicView, Controller, View
 from zoom.page import page
 from zoom.render import render
 from zoom.users import Users
+from zoom.tools import redirect_to
 import zoom.html as html
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,8 @@ class LoginController(Controller):
             users = Users(site.db)
             user = users.first(username=username)
             if user:
-                user.login(self.model, password)
+                if user.login(self.model, password):
+                    return redirect_to(user.default_app)
 
 
 def main(route, request):
