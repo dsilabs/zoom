@@ -8,6 +8,7 @@ from zoom.users import Users
 
 
 def get_current_username(request):
+    """get current user username"""
     site = request.site
     return (
         site.config.get('users', 'override', '') or
@@ -19,6 +20,7 @@ def get_current_username(request):
 
 
 def user_handler(request, handler, *rest):
+    """handle user"""
     logger = logging.getLogger(__name__)
 
     username = get_current_username(request)
