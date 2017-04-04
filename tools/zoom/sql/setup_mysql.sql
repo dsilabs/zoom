@@ -162,7 +162,7 @@ CREATE TABLE `users` (
 --
 LOCK TABLES `groups` WRITE;
 INSERT INTO `groups` VALUES
-    (1, 'U',1,'System Administrators',1),
+    (1, 'U','administrators','System Administrators',1),
     (2, 'U','users','Registered Users',1),
     (3, 'U','guests','Guests',1),
     (4, 'U','everyone','All users including guests',1),
