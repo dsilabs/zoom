@@ -105,6 +105,8 @@ class Users(RecordStore):
       password ............: ''
       username ............: 'guest'
       full_name ...........: 'Guest User'
+      is_active ...........: True
+      is_authenticated ....: False
     
     """
     def __init__(self, db, entity=User):
