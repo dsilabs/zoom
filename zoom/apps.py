@@ -11,6 +11,7 @@ import configparser
 
 from zoom.response import Response, HTMLResponse
 from zoom.helpers import url_for, link_to
+from zoom.tools import redirect_to
 from zoom.components import as_links
 import zoom.html as html
 
@@ -119,10 +120,19 @@ class AppProxy(object):
         self.config = self.get_config(DEFAULT_SETTINGS)
 
         self.visible = self.config.get('visible')
+        self.enabled = self.config.get('enabled')
 
     def run(self, request):
         """run the app"""
-        return self.method(request)
+        save_dir = os.getcwd()
+        try:
+            os.chdir(self.path)
+            request.app = self
+            response = self.method(request)
+            result = respond(response, request)
+        finally:
+            os.chdir(save_dir)
+        return result
 
     def menu(self):
         """generate an app menu"""
@@ -199,6 +209,39 @@ class AppProxy(object):
         return str(self)
 
 
+class NoApp(object):
+    """default app used when no app is available
+
+    This is mostly used so the helpers remain valid
+    and return reasonable values when no app is available.
+    """
+    url = ''
+    menu_items = []
+    menu = ''
+    name = 'none'
+
+
+def respond(content, request):
+    """construct a response"""
+    if content:
+        if isinstance(content, Response):
+            result = content
+
+        elif hasattr(content, 'render') and content.render:
+            result = content.render(request)
+
+        elif isinstance(content, (list, set, tuple)):
+            result = HTMLResponse(''.join(content))
+
+        elif isinstance(content, str):
+            result = HTMLResponse(content)
+
+        else:
+            result = HTMLResponse('OK')
+
+        return result
+
+
 def get_apps(request):
     """get list of apps installed on this site"""
     logger = logging.getLogger(__name__)
@@ -223,7 +266,7 @@ def get_apps(request):
     return result
 
 
-def locate_app(site, name):
+def load_app(site, name):
     """get the location of an app by name"""
     logger = logging.getLogger(__name__)
     apps_paths = site.config.get('apps', 'path').split(';')
@@ -238,36 +281,18 @@ def locate_app(site, name):
             return AppProxy(name, filename, site)
 
 
-def locate_current_app(request):
-    """get the location of the current app"""
-    user = request.user
+def get_default_app_name(site, user):
+    """get the default app for the currrent user"""
+    msg = 'Configuration error: user %r unable to run default app'
     if user.is_authenticated:
-        default_app = request.site.config.get('apps', 'default', 'home')
+        default_app = site.config.get('apps', 'home', 'home')
+        if not user.can(default_app):
+            raise Exception(msg, user.username)
     else:
-        default_app = request.site.config.get('apps', 'index', 'content')
-    app_name = request.route and request.route[0] or default_app
-    return locate_app(request.site, app_name)
-
-
-def respond(content, request):
-    """construct a response"""
-    if content:
-        if isinstance(content, Response):
-            result = content
-
-        elif hasattr(content, 'render') and content.render:
-            result = content.render(request)
-
-        elif isinstance(content, (list, set, tuple)):
-            result = HTMLResponse(''.join(content))
-
-        elif isinstance(content, str):
-            result = HTMLResponse(content)
-
-        else:
-            result = HTMLResponse('OK')
-
-        return result
+        default_app = site.config.get('apps', 'index', 'content')
+        if not user.can(default_app):
+            raise Exception(msg, user.username)
+    return default_app
 
 
 def handle(request):
@@ -276,25 +301,38 @@ def handle(request):
     logger = logging.getLogger(__name__)
     logger.debug('apps.handle')
 
-    app = locate_current_app(request)
-    if app:
-        save_dir = os.getcwd()
-        try:
-            os.chdir(app.path)
-            request.app = app
-            logger.debug('ready')
-            response = app.run(request)
-            logger.debug('done')
-            result = respond(response, request)
-        finally:
-            os.chdir(save_dir)
-        return result
+    user = request.user
+    app_name = request.route and request.route[0] or None
+    app = app_name and load_app(request.site, app_name)
 
+    if app and app.enabled and user.can(app_name):
+        logger.debug('running requested app')
+        request.app = app
+        return app.run(request)
+
+    elif app and app.enabled:
+        logger.debug('redirecting to login')
+        return redirect_to('/login')
+
+    elif app:
+        logger.debug('app disabled, redirecting to default')
+        return redirect_to('/')
+
+    else:
+        if app_name:
+            logger.debug('unable to run requested app %r', app_name)
+        app_name = get_default_app_name(request.site, request.user)
+        app = load_app(request.site, app_name)
+        if app and app.enabled and user.can(app_name):
+            logger.debug('redirecting to default app %r', app_name)
+            return redirect_to(app.url)
+
+    request.app = NoApp()
 
 def get_system_apps(request):
     """get a list of system apps"""
     names = DEFAULT_SYSTEM_APPS
-    apps = filter(bool, [locate_app(request.site, name) for name in names])
+    apps = filter(bool, [load_app(request.site, name) for name in names])
     return apps
 
 
@@ -311,8 +349,9 @@ def system_menu(request):
 
 
 def get_main_apps(request):
+    """Returns the main apps."""
     names = DEFAULT_MAIN_APPS
-    apps = filter(bool, [locate_app(request.site, name) for name in names])
+    apps = filter(bool, [load_app(request.site, name) for name in names])
     return apps
 
 
