@@ -29,4 +29,4 @@ def app(request):
         else:
             logger.info('user %s successfully logged out', user.link)
 
-    return redirect_to(user.default_app)
+    return redirect_to('/')

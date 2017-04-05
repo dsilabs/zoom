@@ -240,7 +240,11 @@ def locate_app(site, name):
 
 def locate_current_app(request):
     """get the location of the current app"""
-    default_app = request.site.config.get('apps', 'default', 'home')
+    user = request.user
+    if user.is_authenticated:
+        default_app = request.site.config.get('apps', 'default', 'home')
+    else:
+        default_app = request.site.config.get('apps', 'index', 'content')
     app_name = request.route and request.route[0] or default_app
     return locate_app(request.site, app_name)
 

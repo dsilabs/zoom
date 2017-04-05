@@ -7,7 +7,7 @@
 import os
 
 from zoom.fill import dzfill, fill
-
+from zoom.tools import markdown
 
 def apply_helpers(template, obj, providers):
     """employ helpers to fill in a template
@@ -71,5 +71,12 @@ def render(pathname, *a, **k):
     # with open(os.path.join('views', name+'.html')) as reader:
     with open(pathname) as reader:
         template = reader.read()
-        return template.format(*a, **k)
+        content = template.format(*a, **k)
+
+        if pathname.endswith('.md'):
+            result = markdown(content)
+        else:
+            result = content
+
+        return result
     return ''
