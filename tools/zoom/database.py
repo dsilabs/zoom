@@ -5,7 +5,10 @@
 from argparse import ArgumentParser
 import logging
 
-from zoom.database import database as connect
+from zoom.database import (
+    database as connect,
+    create_mysql_site_tables,
+)
 
 
 def database():
@@ -53,8 +56,8 @@ def database():
                 parameters['user'] = args.user
             if args.password:
                 parameters['passwd'] = args.password
-            if args.args:
-                parameters['db'] = args.args[0]
+            # if args.args:
+            #     parameters['db'] = args.args[0]
 
         logger = logging.getLogger(__name__)
         logger.error('connecting to %s %s', engine, parameters)
@@ -68,7 +71,16 @@ def database():
                 print(db.get_tables())
 
         elif command == 'create':
-            logging.error('create is not implemented')
+            database_name = args.args[0]
+            if engine == 'mysql':
+                logging.error('creating site database %r' % database_name)
+                db = connect(engine, **parameters)
+                db('create database {}'.format(database_name))
+                db = db.use(database_name)
+                create_mysql_site_tables(db)
+                logging.error('finished creating site tables')
+            else:
+                logging.error('create not implmeented for %s engine' % engine)
 
         else:
             logging.error('unknown command %r', command)
