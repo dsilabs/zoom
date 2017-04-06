@@ -283,15 +283,15 @@ def load_app(site, name):
 
 def get_default_app_name(site, user):
     """get the default app for the currrent user"""
-    msg = 'Configuration error: user %r unable to run default app'
+    msg = 'Configuration error: user %r unable to run default app %r'
     if user.is_authenticated:
         default_app = site.config.get('apps', 'home', 'home')
-        if not user.can(default_app):
-            raise Exception(msg, user.username)
+        if not user.can_run(default_app):
+            raise Exception(msg % (user.username, default_app))
     else:
         default_app = site.config.get('apps', 'index', 'content')
-        if not user.can(default_app):
-            raise Exception(msg, user.username)
+        if not user.can_run(default_app):
+            raise Exception(msg % (user.username, default_app))
     return default_app
 
 
@@ -305,7 +305,7 @@ def handle(request):
     app_name = request.route and request.route[0] or None
     app = app_name and load_app(request.site, app_name)
 
-    if app and app.enabled and user.can(app_name):
+    if app and app.enabled and user.can_run(app_name):
         logger.debug('running requested app')
         request.app = app
         return app.run(request)
@@ -323,7 +323,7 @@ def handle(request):
             logger.debug('unable to run requested app %r', app_name)
         app_name = get_default_app_name(request.site, request.user)
         app = load_app(request.site, app_name)
-        if app and app.enabled and user.can(app_name):
+        if app and app.enabled and user.can_run(app_name):
             logger.debug('redirecting to default app %r', app_name)
             return redirect_to(app.url)
 

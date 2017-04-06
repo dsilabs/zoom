@@ -92,6 +92,8 @@ class User(Record):
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)
         self.is_authenticated = self.username != 'guest'
+        self.is_developer = False
+        self.is_admin = False
 
     @property
     def is_active(self):
@@ -118,17 +120,34 @@ class User(Record):
         match, phash = validate_password(password, self.password, self.created)
         return match
 
+    def is_member(self, group):
+        """determine if user is a member of a group"""
+        return group in self.groups
+
     def login(self, request, password, remember_me=False):
         """log user in"""
         logger = logging.getLogger(__name__)
-        if self.is_active and self.username != request.site.guest:
+        site = request.site
+
+        if self.is_active and self.username != site.guest:
             logger.debug('authenticating user %s with hash %r', self.username, self.password)
             if self.authenticate(password):
                 request.user.logout()
                 request.session.username = self.username
                 request.user = self
+
                 self.is_authenticated = True
+                # self.groups = self.get_groups()
+                self.is_admin = self.is_member(site.administrators_group)
+                self.is_developer = self.is_member(site.developers_group)
+
+                if self.is_developer:
+                    logger.debug('user is a developer')
+                if self.is_admin:
+                    logger.debug('user is an administrator')
                 logger.debug('user authenticated')
+                logger.debug('groups: %r' % self.groups)
+                logger.debug('apps: %r' % self.apps)
                 return True
                 # if remember_me:
                 #     self.request.session.lifetime = TWO_WEEKS
@@ -143,7 +162,7 @@ class User(Record):
             self.request.session.destroy()
             logger.debug('user authenticated')
         else:
-            logger.debug('cannot logout')
+            logger.debug('cannot logout %r' % self.username)
 
     @property
     def default_app(self):
@@ -175,7 +194,15 @@ class User(Record):
 
     @property
     def groups(self):
-        return self.get_groups()
+        return [g for g in self.get_groups() if not g.startswith('a_')]
+
+    @property
+    def apps(self):
+        return [g[2:] for g in self.get_groups() if g.startswith('a_')]
+
+    def can_run(self, app_name):
+        """test if user can run an app"""
+        return self.is_admin or self.is_developer or app_name in self.apps
 
     def can(self, action, object=None):
         """test if user can peform action on an object"""
