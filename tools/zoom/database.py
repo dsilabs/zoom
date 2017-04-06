@@ -31,6 +31,8 @@ def database():
                         help='database password')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
+    parser.add_argument("-f", "--force", action='store_true',
+                        help='force database creation (drop existing)')
 
     parser.add_argument('command', nargs=1, default=None)
     parser.add_argument('args', nargs='*', default=None)
@@ -75,6 +77,8 @@ def database():
             if engine == 'mysql':
                 logging.error('creating site database %r' % database_name)
                 db = connect(engine, **parameters)
+                if args.force:
+                    db('drop database if exists {}'.format(database_name))
                 db('create database {}'.format(database_name))
                 db = db.use(database_name)
                 create_mysql_site_tables(db)
