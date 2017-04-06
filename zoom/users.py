@@ -231,18 +231,21 @@ class Users(RecordStore):
       first_name ..........: 'Guest'
       last_name ...........: 'User'
       url .................: '<dz:site_url>/users/guest'
+      apps ................: ['content', 'forgot', 'login', 'passreset', 'signup']
       link ................: '<a href="<dz:site_url>/users/guest">guest</a>'
       email ...............: 'guest@datazoomer.com'
       phone ...............: ''
-      groups ..............: ['a_content', 'a_forgot', 'a_login', 'a_passreset', 'a_signup', 'everyone', 'guests']
+      groups ..............: ['everyone', 'guests']
       status ..............: 'A'
       created .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
       updated .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
+      is_admin ............: False
       password ............: ''
       username ............: 'guest'
       full_name ...........: 'Guest User'
       is_active ...........: True
       default_app .........: '/home'
+      is_developer ........: False
       is_authenticated ....: False
     
     """
