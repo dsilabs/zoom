@@ -131,7 +131,6 @@ class Database(object):
 
     paramstyle = 'pyformat'
 
-
     def __init__(self, factory, *args, **keywords):
         """Initialize with factory method to generate DB connection
         (e.g. odbc.odbc, cx_Oracle.connect) plus any positional and/or
@@ -216,7 +215,6 @@ class Database(object):
 
     def execute_many(self, command, sequence):
         """execute a SQL command with a sequence of parameters"""
-        # pylint: disable=star-args
         cursor = self.cursor()
         return self._execute(cursor, cursor.executemany, command, *sequence)
 
@@ -225,11 +223,10 @@ class Database(object):
 
     def use(self, name):
         """use another database on the same instance"""
-        # pylint: disable=star-args
         args = list(self.__args)
         keywords = dict(self.__keywords, db=name)
         return Database(self.__factory, *args, **keywords)
-        
+
     def report(self):
         """produce a SQL log report"""
         if self.log:
@@ -260,15 +257,15 @@ class Sqlite3Database(Database):
         def adapt_decimal(value):
             """adapt decimal values to their string representation"""
             return str(value)
+
         def convert_decimal(bytetext):
             """convert bytesring representatinos of decimal values to actual
             Decimal values"""
             return Decimal(bytetext.decode())
+
         sqlite3.register_adapter(Decimal, adapt_decimal)
         sqlite3.register_converter('decimal', convert_decimal)
 
-        # pylint: disable=star-args
-        # I meant to do that
         Database.__init__(self, sqlite3.connect, *args, **keyword_args)
 
     def get_tables(self):
@@ -290,8 +287,6 @@ class MySQLDatabase(Database):
             charset='utf8'
         )
 
-        # pylint: disable=star-args
-        # I meant to do that
         Database.__init__(self, pymysql.connect, *args, **keyword_args)
 
     def get_tables(self):
@@ -300,7 +295,10 @@ class MySQLDatabase(Database):
         return [a[0] for a in self(cmd)]
 
 
-class MySQLdbDatabase(MySQLDatabase):
+class MySQLdbDatabase(Database):
+    """MySQLdb Database"""
+
+    paramstyle = 'pyformat'
 
     def __init__(self, *args, **kwargs):
         import MySQLdb
@@ -310,8 +308,6 @@ class MySQLdbDatabase(MySQLDatabase):
             charset='utf8'
         )
 
-        # pylint: disable=star-args
-        # I meant to do that
         Database.__init__(self, MySQLdb.connect, *args, **keyword_args)
 
 
@@ -338,6 +334,7 @@ def database(engine, *args, **kwargs):
 
 
 def connect_database(config):
+    """establish a database connection"""
     get = config.get
 
     engine = get('database', 'engine', 'sqlite3')
@@ -402,13 +399,15 @@ def database_handler(request, handler, *rest):
 
     else:
         logger = logging.getLogger(__name__)
-        logger.warning('no database specified for {}'.format(site.name))
+        logger.warning('no database specified for %s', site.name)
 
     return handler(request, *rest)
 
 
 def create_mysql_site_tables(db):
+    """create the tables for a site in a mysql server"""
     def split(statements):
+        """split the sql statements"""
         return [s for s in statements.split(';\n') if s]
     logger = logging.getLogger(__name__)
 
@@ -425,8 +424,10 @@ def create_mysql_site_tables(db):
 
 
 def setup_test():
+    """create a set of test tables"""
 
     def create_test_tables(db):
+        """create the extra test tables"""
         db("""
             create table if not exists person (
                 id int unsigned not null auto_increment,
@@ -448,6 +449,7 @@ def setup_test():
         create_mysql_site_tables(db)
 
     def delete_test_tables(db):
+        """drop the extra test tables"""
         db('drop table if exists person')
         db('drop table if exists account')
 
