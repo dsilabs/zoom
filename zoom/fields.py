@@ -927,3 +927,70 @@ class Fieldset(Fields):
     def edit(self):
         tpl = '<fieldset><legend>%s</legend>%s\n%s</fieldset>'
         return tpl % (self.label, self.render_hint(), Fields.edit(self))
+
+
+class Button(Field):
+    """Button field.
+
+    >>> Button('Save').show()
+    ''
+
+    >>> Button('Save').edit()
+    '<input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" />'
+
+    >>> Button('Save', cancel='/app/cancel').edit()
+    '<input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" />&nbsp;<a href="/app/cancel">cancel</a>'
+    """
+    def __init__(self, caption='Save', **keywords):
+        Field.__init__(self, caption+' Button', **keywords)
+        self.caption = caption
+
+    def show(self):
+        return ""
+
+    def edit(self):
+        if hasattr(self, 'cancel'):
+            cancel_link = '&nbsp;' + \
+                html.tag('a', 'cancel', href=getattr(self, 'cancel'))
+        else:
+            cancel_link = ''
+        return html.tag(
+            'input',
+            Type='submit',
+            Class='button',
+            name=self.name,
+            style=self.style,
+            id=self.id,
+            value=self.caption
+            ) + cancel_link
+
+    def evaluate(self):
+        return {}
+
+    def __repr__(self):
+        return ''
+
+
+class ButtonField(Button):
+    """Button field.
+
+    >>> ButtonField('Save').show()
+    ''
+
+    >>> print(ButtonField('Save').edit())
+    <div class="field">
+      <div class="field_label">&nbsp;</div>
+      <div class="field_edit"><input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" /></div>
+    </div>
+    <BLANKLINE>
+
+    """
+
+    def edit(self):
+        return layout_field('&nbsp;', Button.edit(self))
+
+    def evaluate(self):
+        return {}
+
+    def __repr__(self):
+        return ''
