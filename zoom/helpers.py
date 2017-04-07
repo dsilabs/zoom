@@ -41,7 +41,7 @@ def owner_link():
 
 def tag_for(name, *a, **k):
     """create a zoom tag
-    
+
     >>> tag_for('name')
     '<dz:name>'
 
@@ -193,3 +193,16 @@ def abs_url_for(*a, **k):
 def link_to(label, *args, **kwargs):
     """produce a link"""
     return html.tag('a', label, href=url_for(*args, **kwargs))
+
+
+def lorem():
+    """Returns some sample latin text to use for prototyping."""
+    return """
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+        eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+        enim ad minim veniam, quis nostrud exercitation ullamco laboris
+        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+        in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+        nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+        sunt in culpa qui officia deserunt mollit anim id est laborum.
+        """
