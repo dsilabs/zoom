@@ -332,7 +332,10 @@ def handle(request):
 def get_system_apps(request):
     """get a list of system apps"""
     names = DEFAULT_SYSTEM_APPS
-    apps = filter(bool, [load_app(request.site, name) for name in names])
+    user = request.user
+    apps = filter(bool, [
+        load_app(request.site, name) for name in names if user.can_run(name)
+        ])
     return apps
 
 
@@ -351,7 +354,10 @@ def system_menu(request):
 def get_main_apps(request):
     """Returns the main apps."""
     names = DEFAULT_MAIN_APPS
-    apps = filter(bool, [load_app(request.site, name) for name in names])
+    user = request.user
+    apps = filter(bool, [
+        load_app(request.site, name) for name in names if user.can_run(name)
+        ])
     return apps
 
 

@@ -91,9 +91,37 @@ class User(Record):
 
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)
-        self.is_authenticated = self.username != 'guest'
-        self.is_developer = False
         self.is_admin = False
+        self.is_developer = False
+        self.is_authenticated = False
+
+    def initialize(self, request):
+        logger = logging.getLogger(__name__)
+        logger.debug('initializing user %r', self.username)
+
+        self.request = request
+        site = request.site
+
+        self.is_authenticated = (
+            self.username != site.guest and
+            self.username == request.session.username
+        )
+        logger.debug(
+            'user %r is_authenticated: %r',
+            self.username, self.is_authenticated
+        )
+
+        self.is_admin = self.is_member(site.administrators_group)
+        self.is_admin = self.is_member(site.administrators_group)
+        self.is_developer = self.is_member(site.developers_group)
+
+        if self.is_developer:
+            logger.debug('user is a developer')
+        if self.is_admin:
+            logger.debug('user is an administrator')
+
+        logger.debug('groups: %r' % self.groups)
+        logger.debug('apps: %r' % self.apps)
 
     @property
     def is_active(self):
@@ -135,19 +163,7 @@ class User(Record):
                 request.user.logout()
                 request.session.username = self.username
                 request.user = self
-
-                self.is_authenticated = True
-                # self.groups = self.get_groups()
-                self.is_admin = self.is_member(site.administrators_group)
-                self.is_developer = self.is_member(site.developers_group)
-
-                if self.is_developer:
-                    logger.debug('user is a developer')
-                if self.is_admin:
-                    logger.debug('user is an administrator')
-                logger.debug('user authenticated')
-                logger.debug('groups: %r' % self.groups)
-                logger.debug('apps: %r' % self.apps)
+                self.initialize(request)
                 return True
                 # if remember_me:
                 #     self.request.session.lifetime = TWO_WEEKS
@@ -247,7 +263,7 @@ class Users(RecordStore):
       default_app .........: '/home'
       is_developer ........: False
       is_authenticated ....: False
-    
+
     """
     def __init__(self, db, entity=User):
         RecordStore.__init__(
