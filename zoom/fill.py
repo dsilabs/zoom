@@ -73,8 +73,32 @@ def _fill(tag_start, tag_end, text, callback):
 
 
 def fill(text, callback):
-    """fill a tag in the double handlebars style"""
-    return _fill('{{', '}}', text, callback)
+    """fill a tag in the double handlebars style
+
+    >>> def filler(name, *args, **kwargs):
+    ...     if name == 'name':
+    ...         name = kwargs.get('language')=='french' and 'Jacques' or 'James'
+    ...         if 'upper' in args:
+    ...             return name.upper()
+    ...         elif 'lower' in args:
+    ...             return name.lower()
+    ...         else:
+    ...             return name
+    >>> fill('Hello {{name}}!', filler)
+    'Hello James!'
+    >>> fill('Hello {{name language=\"french\"}}!', filler)
+    'Hello Jacques!'
+    >>> fill('Hello {{name upper}}!', filler)
+    'Hello JAMES!'
+    >>> fill('Hello {{name lower language=\"french\"}}!', filler)
+    'Hello jacques!'
+    >>> fill('Hello {{name lower language=french}}!', filler)
+    'Hello jacques!'
+    >>> fill('Hello {{name}}!', lambda a: None )
+    'Hello {{name}}!'
+    >>>
+    """
+    return dzfill(_fill('{{', '}}', text, callback), callback)
 
 
 def dzfill(text, callback):
