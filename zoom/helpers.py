@@ -123,6 +123,12 @@ def url_for(*a, **k):
         return uri
 
 
+def url_for_page(*args, **kwargs):
+    """returns a url for a page of the current app
+    """
+    return url_for('/<dz:app_name>', *args, **kwargs)
+
+
 def abs_url_for(*a, **k):
     """calculates absolute url
 
