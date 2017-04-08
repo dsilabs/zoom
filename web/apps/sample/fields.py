@@ -36,7 +36,7 @@ form1 = Form(
     #     hint='click or drag and drop to upload'
     #     ),
     # TwitterField('Twitter', hint='test hint'),
-    # URLField('Web', hint='test hint'),
+    URLField('Web', hint='test hint'),
     PasswordField('Password', hint='test hint'),
     # NumberField('Number of Things', hint='test hint'),
     # NumberField('Area', units='ft<sup>2</sup>', hint='test hint'),

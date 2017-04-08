@@ -17,6 +17,7 @@ from zoom.validators import (
     valid_phone,
     valid_email,
     valid_postal_code,
+    valid_url,
 )
 
 
@@ -1031,3 +1032,63 @@ class PostalCodeField(TextField):
 
     def __init__(self, label='Postal Code', *validators, **keywords):
         TextField.__init__(self, label, valid_postal_code, *validators, **keywords)
+
+
+class URLField(TextField):
+    """URL Field
+
+    >>> URLField('Website', default='www.google.com').display_value()
+    '<a target="_window" href="http://www.google.com">http://www.google.com</a>'
+
+    >>> f = URLField('Website', default='www.google.com')
+    >>> f.assign('www.dsilabs.ca')
+    >>> f.display_value()
+    '<a target="_window" href="http://www.dsilabs.ca">http://www.dsilabs.ca</a>'
+
+    >>> f = URLField('Website', default='www.google.com')
+    >>> f.assign('http://www.dsilabs.ca')
+    >>> f.display_value()
+    '<a target="_window" href="http://www.dsilabs.ca">http://www.dsilabs.ca</a>'
+
+    >>> f = URLField('Website', default='www.google.com', trim=True)
+    >>> f.assign('http://www.dsilabs.ca/')
+    >>> f.display_value()
+    '<a target="_window" href="http://www.dsilabs.ca">www.dsilabs.ca</a>'
+
+    >>> f = URLField('Website', default='www.google.com')
+    >>> f.assign('https://www.dsilabs.ca/')
+    >>> f.display_value()
+    '<a target="_window" href="https://www.dsilabs.ca/">https://www.dsilabs.ca/</a>'
+
+    >>> f = URLField('Website', default='www.google.com', trim=True)
+    >>> f.assign('https://www.dsilabs.ca/')
+    >>> f.display_value()
+    '<a target="_window" href="https://www.dsilabs.ca">www.dsilabs.ca</a>'
+
+    """
+
+    size = 60
+    maxlength = 120
+    trim = False
+
+    def __init__(self, label, *validators, **keywords):
+        TextField.__init__(self, label, valid_url, *validators, **keywords)
+
+    def display_value(self):
+        url = text = websafe(self.value) or self.default
+        if url:
+            if not (url.startswith('http') or url.startswith('ftp:')):
+                url = 'http://' + url
+                if not self.trim:
+                    text = 'http://' + text
+        if self.trim and text.startswith('http://'):
+            text = text[7:]
+        if self.trim and text.startswith('https://'):
+            text = text[8:]
+        if self.trim and text.endswith('/'):
+            text = text[:-1]
+            url = url[:-1]
+        return self.visible and url and ('<a target="_window" href="%s">%s</a>' % (url, text)) or ''
+
+    def assign(self, value):
+        self.value = value
