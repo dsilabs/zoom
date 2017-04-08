@@ -41,7 +41,7 @@ form1 = Form(
     NumberField('Number of Things', hint='test hint'),
     NumberField('Area', units='ft<sup>2</sup>', hint='test hint'),
     # IntegerField('Count', hint='test hint'),
-    # FloatField('Size', units='meters', hint='test hint'),
+    FloatField('Size', units='meters', hint='test hint'),
     # DecimalField('Decimal', hint='test hint'),
     # MoneyField('Amount', hint='test hint'),
     # MoneyField('Placeholder', placeholder=100, hint='test hint'),

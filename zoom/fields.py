@@ -1180,3 +1180,43 @@ class NumberField(TextField):
         units = self.units and (' ' + self.units) or ''
         value = self.value and ('{:,}{}'.format(self.value, units)) or ''
         return websafe(value)
+
+
+class FloatField(NumberField):
+    """Float Field
+
+    >>> FloatField('Count', value=2.1).display_value()
+    '2.1'
+
+    >>> FloatField('Count').widget()
+    '<input class="float_field" type="text" id="count" maxlength="10" name="count" size="10" value="" />'
+
+    >>> n = FloatField('Size')
+    >>> n.assign(2.1)
+    >>> n.value
+    2.1
+
+    >>> n.assign(0)
+    >>> n.value
+    0.0
+
+    >>> n.assign('0')
+    >>> n.value
+    0.0
+
+    >>> n.assign('2.1')
+    >>> n.value
+    2.1
+
+    >>> n.assign('')
+    >>> n.evaluate()
+    {'size': None}
+    """
+
+    size = maxlength = 10
+    css_class = 'float_field'
+    value = 0
+    converter = float
+
+    def evaluate(self):
+        return {self.name: self.value}
