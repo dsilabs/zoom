@@ -3,6 +3,7 @@
 """
 
 import os
+import logging
 
 from zoom.components import as_actions
 from zoom.fill import dzfill
@@ -108,6 +109,9 @@ class Page(object):
             zoom.apps.helpers(request),
             self.helpers(request),
         ]
+
+        logger = logging.getLogger(__name__)
+        logger.debug('rendering page')
 
         page_header = PageHeader(page=self).render()
         save_content = self.content
