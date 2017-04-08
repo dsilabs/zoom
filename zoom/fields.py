@@ -13,7 +13,7 @@ from zoom.tools import (
     markdown,
 )
 import zoom.html as html
-from zoom.validators import valid_phone
+from zoom.validators import valid_phone, valid_email
 
 
 def locate_view(name):
@@ -994,3 +994,23 @@ class ButtonField(Button):
 
     def __repr__(self):
         return ''
+
+
+class EmailField(TextField):
+    """Email field
+
+    >>> EmailField('Email').widget()
+    '<input class="text_field" id="email" name="email" type="text" value="" />'
+    """
+
+    def __init__(self, label, *validators, **keywords):
+        TextField.__init__(self, label, valid_email, *validators, **keywords)
+
+    def display_value(self):
+        def antispam_format(address):
+            t = markdown('<%s>' % address)
+            if t.startswith('<p>') and t.endswith('</p>'):
+                return t[3:-4]
+            return t
+        address = htmlquote(self.value or self.default)
+        return self.visible and address and antispam_format(address) or ''
