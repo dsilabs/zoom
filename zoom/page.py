@@ -2,11 +2,9 @@
     zoom.page
 """
 
-import os
 import logging
 
 from zoom.components import as_actions
-from zoom.fill import dzfill
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
 
@@ -91,7 +89,7 @@ class Page(object):
 
     def render(self, request):
         """render page"""
-        
+
         def rendered(obj):
             """call the render method if necessary"""
             if hasattr(obj, 'render'):
