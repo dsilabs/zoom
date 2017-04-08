@@ -540,7 +540,7 @@ class MemoField(Field):
             (bool(self.value) or bool(self.default)) and
             layout_field(
                 self.label,
-                html.tag('textarea', self.display_value(), Class='textarea'),
+                html.tag('div', self.display_value(), Class='textarea'),
                 edit=False
             ) or ''
         )
