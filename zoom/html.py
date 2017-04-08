@@ -4,30 +4,41 @@
 # pylint: disable=invalid-name
 
 
-def tag(element, content=None, *args, **kwargs):
-    """
-    generates an HTML tag
+def tag(element, *args, **kwargs):
+    """generates an HTML tag
 
-        >>> tag('div', 'some content')
-        '<div>some content</div>'
+    >>> tag('div', 'some content')
+    '<div>some content</div>'
 
-        >>> tag('a', href='http://www.google.com')
-        '<a href="http://www.google.com" />'
+    >>> tag('a', href='http://www.google.com')
+    '<a href="http://www.google.com"></a>'
 
     """
     empty = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img',
              'input', 'link', 'meta', 'param', 'source']
 
     name = element.lower()
+    params = list(args)
+
+    if name not in empty and 'content' not in kwargs:
+        if params:
+            content = params.pop(0)
+        else:
+            content = ''
+    elif 'content' in kwargs:
+        content = kwargs.pop('content')
+    else:
+        content = ''
+
     parts = \
         [name] + \
-        [str(arg).lower for arg in args] + \
+        [str(param).lower() for param in params if param] + \
         [
             '{}="{}"'.format(k.lower(), v)
             for k, v in sorted(kwargs.items())
         ]
 
-    if content is None or name in empty:
+    if name in empty:
         return '<{} />'.format(' '.join(parts))
     else:
         return '<{}>{}</{}>'.format(' '.join(parts), content, name)
