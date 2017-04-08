@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+
 """
     zoom.Fields
 """
 
+import locale
+import logging
 import os
 import types
 from decimal import Decimal
@@ -1268,3 +1272,116 @@ class DecimalField(NumberField):
     css_class = 'decimal_field'
     value = 0
     converter = Decimal
+
+
+class MoneyField(DecimalField):
+    """Money Field
+
+    >>> f = MoneyField("Amount")
+    >>> f.widget()
+    '<div class="input-group"><span class="input-group-addon">$</span><input class="decimal_field" type="text" id="amount" maxlength="10" name="amount" size="10" value="" /></div>'
+    >>> f.display_value()
+    '$0.00'
+    >>> f.assign(Decimal(1000))
+    >>> f.display_value()
+    '$1,000.00'
+
+    >>> from platform import system
+    >>> l = system()=='Windows' and 'eng' or 'en_GB.utf8'
+    >>> f = MoneyField("Amount", locale=l)
+    >>> f.display_value()
+    '\\xa30.00'
+
+    >>> f.assign(Decimal(1000))
+    >>> f.display_value()
+    '\\xa31,000.00'
+    >>> print(f.show())
+    <div class="field">
+      <div class="field_label">Amount</div>
+      <div class="field_show">£1,000.00</div>
+    </div>
+    <BLANKLINE>
+
+    >>> f.widget()
+    '<div class="input-group"><span class="input-group-addon">£</span><input class="decimal_field" type="text" id="amount" maxlength="10" name="amount" size="10" value="1000" /></div>'
+    >>> f.units = 'per month'
+    >>> f.display_value()
+    '\\xa31,000.00 per month'
+    >>> f.units = ''
+    >>> f.display_value()
+    '\\xa31,000.00'
+    >>> f.assign('')
+    >>> f.display_value()
+    ''
+    >>> f.assign('0')
+    >>> f.display_value()
+    '\\xa30.00'
+    >>> f.assign(' ')
+    >>> f.display_value()
+    ''
+
+    >>> f = MoneyField("Amount", placeholder='0')
+    >>> f.widget()
+    '<div class="input-group"><span class="input-group-addon">$</span><input class="decimal_field" type="text" id="amount" maxlength="10" name="amount" placeholder="0" size="10" value="" /></div>'
+
+    >>> f = MoneyField("Amount", symbol='£', value=1)
+    >>> f.widget()
+    '<div class="input-group"><span class="input-group-addon">£</span><input class="decimal_field" type="text" id="amount" maxlength="10" name="amount" size="10" value="1" /></div>'
+
+    """
+
+    locale = None
+    symbol = '$'
+
+    def widget(self):
+        if self.locale:
+            locale.setlocale(locale.LC_ALL, self.locale)
+            self.symbol = locale.localeconv()['currency_symbol']
+
+        t = '<div class="input-group"><span class="input-group-addon">{}</span>{}{}</div>'
+        tu = '<span class="input-group-addon">{}</span>'
+
+        if self.placeholder is not None:
+            result = t.format(
+                self.symbol,
+                html.tag(
+                    'input',
+                    name=self.name,
+                    id=self.id,
+                    size=self.size,
+                    placeholder=self.placeholder,
+                    maxlength=self.maxlength,
+                    value=self.value or self.default,
+                    Type=self._type,
+                    Class=self.css_class,
+                    ),
+                self.units and tu.format(self.units) or '',
+                )
+        else:
+            result = t.format(
+                self.symbol,
+                html.tag(
+                    'input',
+                    name=self.name,
+                    id=self.id,
+                    size=self.size,
+                    maxlength=self.maxlength,
+                    value=self.value or self.default,
+                    Type=self._type,
+                    Class=self.css_class,
+                    ),
+                self.units and tu.format(self.units) or '',
+                )
+        return result
+
+    def display_value(self):
+        if self.value is None:
+            return ''
+        if self.locale:
+            locale.setlocale(locale.LC_ALL, self.locale)
+            v = locale.currency(self.value, grouping=True)
+        else:
+            v = self.symbol + ('{:20,.2f}'.format(self.value)).strip()
+        if self.units and self.value is not None:
+            v += ' ' + self.units
+        return v
