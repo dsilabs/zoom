@@ -1104,5 +1104,79 @@ class TwitterField(TextField):
     '<a target="_window" href="http://www.twitter.com/dsilabs">@dsilabs</a>'
     """
     def display_value(self):
-        twitter_id = (self.value or self.default).strip().strip('@')
+        twitter_id = (
+            self.value or
+            self.default).strip().strip('@')
         return self.visible and twitter_id and '<a target="_window" href="http://www.twitter.com/%(twitter_id)s">@%(twitter_id)s</a>' % locals() or ''
+
+
+class NumberField(TextField):
+    """Number Field
+
+    >>> NumberField('Size', value=2).display_value()
+    '2'
+
+    >>> NumberField('Size').widget()
+    '<input class="number_field" type="text" id="size" maxlength="10" name="size" size="10" value="" />'
+
+    >>> n = NumberField('Size')
+    >>> n.assign('2')
+    >>> n.value
+    2
+
+    >>> n = NumberField('Size', units='units')
+    >>> n.assign('2,123')
+    >>> n.value
+    2123
+    >>> n.evaluate()
+    {'size': 2123}
+    >>> n.display_value()
+    '2,123 units'
+
+    >>> n.assign(None)
+    >>> n.value == None
+    True
+    >>> n.display_value()
+    ''
+
+    """
+
+    size = maxlength = 10
+    css_class = 'number_field'
+    units = ''
+    converter = int
+
+    def assign(self, value):
+        try:
+            if type(value) == str:
+                value = ''.join(c for c in value if c in '0123456789.-')
+            self.value = self.converter(value)
+        except:
+            self.value = None
+
+    def widget(self):
+        w = html.tag(
+            'input',
+            name=self.name,
+            id=self.id,
+            size=self.size,
+            maxlength=self.maxlength,
+            value=self.value or self.default,
+            Type=self._type,
+            Class=self.css_class,
+        )
+
+        if self.units:
+            return """
+            <div class="input-group">
+              {w}
+              <span class="input-group-addon">{u}</span>
+            </div>
+            """.format(w=w, u=self.units)
+        else:
+            return w
+
+    def display_value(self):
+        units = self.units and (' ' + self.units) or ''
+        value = self.value and ('{:,}{}'.format(self.value, units)) or ''
+        return websafe(value)
