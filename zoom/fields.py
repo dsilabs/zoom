@@ -4,6 +4,7 @@
 
 import os
 import types
+from decimal import Decimal
 
 from zoom.render import render
 from zoom.utils import name_for
@@ -1181,6 +1182,9 @@ class NumberField(TextField):
         value = self.value and ('{:,}{}'.format(self.value, units)) or ''
         return websafe(value)
 
+    def evaluate(self):
+        return {self.name: self.value}
+
 
 class FloatField(NumberField):
     """Float Field
@@ -1220,3 +1224,47 @@ class FloatField(NumberField):
 
     def evaluate(self):
         return {self.name: self.value}
+
+
+class DecimalField(NumberField):
+    """
+    Decimal Field
+
+        >>> DecimalField('Count',value="2.1").display_value()
+        '2.1'
+
+        >>> DecimalField('Count', value=Decimal('10.24')).widget()
+        '<input class="decimal_field" type="text" id="count" maxlength="10" name="count" size="10" value="10.24" />'
+
+        >>> DecimalField('Count').widget()
+        '<input class="decimal_field" type="text" id="count" maxlength="10" name="count" size="10" value="" />'
+
+        >>> n = DecimalField('Size')
+        >>> n.assign('2.1')
+        >>> n.value
+        Decimal('2.1')
+
+        >>> n.assign(0)
+        >>> n.value
+        Decimal('0')
+
+        >>> n.assign('0')
+        >>> n.value
+        Decimal('0')
+
+        >>> n.assign('2.1')
+        >>> n.value
+        Decimal('2.1')
+
+        >>> n.assign('')
+        >>> n.evaluate()
+        {'size': None}
+
+        >>> DecimalField('Hours').evaluate()
+        {'hours': 0}
+    """
+
+    size = maxlength = 10
+    css_class = 'decimal_field'
+    value = 0
+    converter = Decimal
