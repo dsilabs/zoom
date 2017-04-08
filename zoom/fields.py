@@ -8,8 +8,10 @@ import locale
 import logging
 import os
 import types
+import datetime
 from decimal import Decimal
 
+from zoom.component import component
 from zoom.render import render
 from zoom.utils import name_for
 from zoom.tools import (
@@ -23,6 +25,7 @@ from zoom.validators import (
     valid_email,
     valid_postal_code,
     valid_url,
+    valid_date,
 )
 
 
@@ -1385,3 +1388,141 @@ class MoneyField(DecimalField):
         if self.units and self.value is not None:
             v += ' ' + self.units
         return v
+
+
+class DateField(Field):
+    """Date Field
+
+    DatField values can be either actual dates (datetime.date) or string
+    representations of dates.  Values coming from databases or from code
+    will typically be dates, while dates coming in from forms will
+    typically be strings.
+
+    DateFields always evaluate to date types and always display as string
+    representations of those dates formatted according to the specified
+    format.
+
+    >>> DateField("Start Date").widget()
+    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="" />'
+
+    >>> from datetime import date, datetime
+
+    >>> f = DateField("Start Date")
+    >>> f.display_value()
+    ''
+    >>> f.assign('')
+    >>> f.display_value()
+    ''
+
+    >>> f = DateField("Start Date", value=date(2015,1,1))
+    >>> f.value
+    datetime.date(2015, 1, 1)
+
+    >>> f = DateField("Start Date", value=datetime(2015,1,1))
+    >>> f.value
+    datetime.datetime(2015, 1, 1, 0, 0)
+    >>> f.evaluate()
+    {'start_date': datetime.date(2015, 1, 1)}
+
+    >>> f.assign('Jan 01, 2015') # forms assign with strings
+    >>> f.display_value()
+    'Jan 01, 2015'
+    >>> f.evaluate()
+    {'start_date': datetime.date(2015, 1, 1)}
+
+    >>> f.assign('2015-12-31') # forms assign with strings
+    >>> f.display_value()
+    'Dec 31, 2015'
+    >>> f.evaluate()
+    {'start_date': datetime.date(2015, 12, 31)}
+
+    >>> f.assign(date(2015,1,31))
+    >>> f.display_value()
+    'Jan 31, 2015'
+
+    >>> f.assign('TTT 01, 2015')
+    >>> f.display_value()
+    'TTT 01, 2015'
+    >>> failed = False
+    >>> try:
+    ...     f.evaluate()
+    ... except ValueError:
+    ...     failed = True
+    >>> failed
+    True
+
+    >>> DateField("Start Date", value=date(2015,1,1)).widget()
+    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
+
+    """
+
+    value = default = None
+    size = maxlength = 12
+    input_format = '%b %d, %Y'
+    alt_input_format = '%Y-%m-%d'
+    format = '%b %d, %Y'
+    _type = 'date'
+    css_class = 'date_field'
+    validators = [valid_date]
+    min = max = None
+
+    def display_value(self, alt_format=None):
+        format = alt_format or self.format
+        if self.value:
+            strftime = datetime.datetime.strftime
+            try:
+                result = strftime(self.evaluate()[self.name], format)
+            except ValueError:
+                result = self.value
+        else:
+            result = self.default and self.default.strftime(format) or ''
+        return result
+
+    def widget(self):
+        value = self.display_value(self.input_format)
+        parameters = dict(
+            name=self.name,
+            id=self.id,
+            maxlength=self.maxlength,
+            value=value,
+            Type='text',
+            Class=self.css_class,
+        )
+        js = []
+        if self.min != None:
+            js.append("""
+            $(function(){
+                $('#%s').datepicker('option', 'minDate', '%s');
+            });
+            """ % (self.id, self.min.strftime(self.input_format)))
+
+        if self.max != None:
+            js.append("""
+            $(function(){
+                $('#%s').datepicker('option', 'maxDate', '%s');
+            });
+            """ % (self.id, self.max.strftime(self.input_format)))
+        return html.tag('input', **parameters)
+
+    def show(self):
+        return self.visible and bool(self.value) and layout_field(self.label,self.display_value()) or ''
+
+    def evaluate(self):
+        if self.value:
+            if type(self.value) == datetime.datetime:
+                value = self.value.date()
+            elif type(self.value) == datetime.date:
+                value = self.value
+            else:
+                strptime = datetime.datetime.strptime
+                try:
+                    value = strptime(self.value, self.input_format).date()
+                except ValueError:
+                    value = strptime(self.value, self.alt_input_format).date()
+            return {self.name: value or self.default}
+        return {self.name: self.default}
+
+
+class BirthdateField(DateField):
+    size = maxlength = 12
+    css_class = 'birthdate_field'
