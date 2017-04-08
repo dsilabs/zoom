@@ -50,9 +50,9 @@ form1 = Form(
     DateField('Min Max Date', min=date1, max=date2, hint='test hint'),
     DateField('Formatted Date', format='%Y-%m-%d (%A)', hint='test hint'),
     BirthdateField('Birth Date', hint='test hint'),
-    # CheckboxesField(
-    #     'Select', values=['One', 'Two', 'Three'], hint='test hint'),
-    # CheckboxField('Publish', hint='test hint'),
+    CheckboxesField(
+        'Select', values=['One', 'Two', 'Three'], hint='test hint'),
+    CheckboxField('Publish', hint='test hint'),
     # RadioField('Radio', values=['One', 'Two', 'Three'], hint='test hint'),
     # PulldownField(
     #     'Pulldown', options=['One', 'Two', 'Three'], hint='test hint'),

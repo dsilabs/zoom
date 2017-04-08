@@ -1526,3 +1526,186 @@ class DateField(Field):
 class BirthdateField(DateField):
     size = maxlength = 12
     css_class = 'birthdate_field'
+
+
+class CheckboxesField(Field):
+    """Checkboxes field.
+
+    >>> cb = CheckboxesField('Select', value='One', values=['One','Two','Three'], hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="One" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Two" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+    """
+
+    def widget(self):
+        result = []
+        for value in self.values:
+            checked = value in self.value and 'checked' or ''
+            tag = html.tag(
+                'input',
+                checked,
+                name=self.name,
+                id=self.id,
+                Type='checkbox',
+                Class='checkbox_field',
+                value=value,
+                )
+            result.append('<li>%s<div>%s</div></li>\n' % (tag, value))
+        result = '<ul class="checkbox_field">\n%s</ul>' % (''.join(result))
+        return result
+
+    def show(self):
+        value = has_iterator_protocol(self.value) and self.value or [self.value]
+        return layout_field(self.label, ', '.join(value))
+
+
+class CheckboxField(TextField):
+    """
+    Checkbox Field
+
+        >>> CheckboxField('Done').display_value()
+        'no'
+
+        >>> CheckboxField('Done', value=True).display_value()
+        'yes'
+
+        >>> CheckboxField('Done').widget()
+        '<input class="checkbox_field" type="checkbox" id="done" name="done" />'
+
+        >>> f = CheckboxField('Done', value=True)
+        >>> f.widget()
+        '<input checked class="checkbox_field" type="checkbox" id="done" name="done" />'
+        >>> f.validate(**{'DONE': 'on'})
+        True
+        >>> f.evaluate()
+        {'done': True}
+
+        >>> f = CheckboxField('Done')
+        >>> f.widget()
+        '<input class="checkbox_field" type="checkbox" id="done" name="done" />'
+        >>> f.evaluate()
+        {'done': None}
+        >>> f.validate(**{})
+        True
+        >>> f.evaluate()
+        {'done': None}
+
+        >>> f = CheckboxField('Done')
+        >>> f.widget()
+        '<input class="checkbox_field" type="checkbox" id="done" name="done" />'
+        >>> f.evaluate()
+        {'done': None}
+        >>> f.validate(**{'DONE': 'on'})
+        True
+        >>> f.evaluate()
+        {'done': True}
+
+        >>> f = CheckboxField('Done', options=['yes','no'], value=False)
+        >>> f
+        <Field name='done' value=False>
+        >>> f.validate(**{'done': True})
+        True
+        >>> f
+        <Field name='done' value=True>
+        >>> f.validate(**{'DoNE': False})
+        True
+        >>> f
+        <Field name='done' value=False>
+        >>> f.validate(**{'done': 'on'})
+        True
+        >>> f
+        <Field name='done' value='on'>
+        >>> f.display_value()
+        'yes'
+        >>> f.evaluate()
+        {'done': True}
+
+        >>> f = CheckboxField('Done', options=['yep','nope'], default=True)
+        >>> f.evaluate()
+        {'done': True}
+        >>> f.widget()
+        '<input checked class="checkbox_field" type="checkbox" id="done" name="done" />'
+
+        >>> f.update(other='test')
+        >>> f.widget()
+        '<input class="checkbox_field" type="checkbox" id="done" name="done" />'
+
+        >>> f = CheckboxField('Done', options=['yep','nope'])
+        >>> f.evaluate()
+        {'done': None}
+        >>> f.validate(**{'OTHERDATA': 'some value'})
+        True
+        >>> f.evaluate()
+        {'done': False}
+
+        >>> CheckboxField('Done', options=['yep','nope']).display_value()
+        'nope'
+
+        >>> CheckboxField('Done', options=['yep','nope'], default=False).display_value()
+        'nope'
+
+        >>> CheckboxField('Done', options=['yep','nope'], default=True).display_value()
+        'nope'
+
+        >>> CheckboxField('Done', options=['yep','nope'], default=True).evaluate()
+        {'done': True}
+
+        >>> CheckboxField('Done', options=['yep','nope'], default=True, value=False).display_value()
+        'nope'
+
+        >>> CheckboxField('Done', options=['yep','nope'], value=True).display_value()
+        'yep'
+
+        >>> CheckboxField('Done', options=['yep','nope'], value=False).evaluate()
+        {'done': False}
+
+        >>> CheckboxField('Done', options=['yep','nope'], value='True').value
+        'True'
+
+    """
+    options = ['yes','no']
+    truthy = [True,'True','yes','on']
+    default = None
+    value = None
+
+    def assign(self, value):
+        self.value = value in self.truthy and value or False
+
+    def widget(self):
+        value = self.value is None and self.default or self.value
+        checked = value and 'checked' or ''
+        tag = html.tag(
+            'input',
+            checked,
+            name = self.name,
+            id = self.id,
+            Type='checkbox',
+            Class='checkbox_field',
+            )
+        return tag
+
+    def display_value(self):
+        return self.value in self.truthy and self.options[0] or self.options[1] or ''
+
+    def show(self):
+        return layout_field(self.label, self.display_value(), False)
+
+    def update(self,**values):
+        for value in values:
+            if value.lower() == self.name.lower():
+                self.assign(values[value])
+                return
+        if values:
+            self.assign(False)
+
+    def evaluate(self):
+        if self.value in self.truthy:
+            v = True
+        elif self.value in [False]:
+            v = False
+        else:
+            v = self.default
+        return {self.name: v}
