@@ -13,7 +13,11 @@ from zoom.tools import (
     markdown,
 )
 import zoom.html as html
-from zoom.validators import valid_phone, valid_email
+from zoom.validators import (
+    valid_phone,
+    valid_email,
+    valid_postal_code,
+)
 
 
 def locate_view(name):
@@ -1014,3 +1018,16 @@ class EmailField(TextField):
             return t
         address = htmlquote(self.value or self.default)
         return self.visible and address and antispam_format(address) or ''
+
+
+class PostalCodeField(TextField):
+    """Postal code field
+
+    >>> PostalCodeField('Postal Code').widget()
+    '<input class="text_field" id="postal_code" maxlength="7" name="postal_code" size="7" type="text" value="" />'
+    """
+
+    size = maxlength = 7
+
+    def __init__(self, label='Postal Code', *validators, **keywords):
+        TextField.__init__(self, label, valid_postal_code, *validators, **keywords)

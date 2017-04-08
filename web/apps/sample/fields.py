@@ -29,7 +29,7 @@ form1 = Form(
     TextField('Nickname', placeholder='Jack', hint='test hint'),
     EmailField('Email', hint='test hint'),
     PhoneField('Phone', hint='phone number'),
-    # PostalCodeField('Postal Code', hint='test hint'),
+    PostalCodeField('Postal Code', hint='test hint'),
     # ImagesField(
     #     'Photos',
     #     url='/{}/fields/'.format(system.app.name),
