@@ -75,7 +75,7 @@ class Page(object):
         """provide page helpers"""
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
-            title=request.site.name,
+            page_title=request.site.title,
             site_url=request.site.url,
             request_path=request.path,
             css='',
@@ -119,7 +119,6 @@ class Page(object):
         self.content = save_content
 
         return HTMLResponse(content)
-
 
 
 page = Page  # pylint: disable=invalid-name

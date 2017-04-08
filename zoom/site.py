@@ -30,6 +30,7 @@ class Site(object):
 
             get = self.config.get
             self.url = get('site', 'url', '')
+            self.title = get('site', 'name', self.name)
             self.link = zoom.helpers.link_to(self.name, self.url)
             self.csrf_validation = True
 
