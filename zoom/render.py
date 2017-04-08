@@ -4,10 +4,12 @@
     rendering tools
 """
 
-import os
 
-from zoom.fill import dzfill, fill
+import logging
+
+from zoom.fill import fill
 from zoom.tools import markdown
+
 
 def apply_helpers(template, obj, providers):
     """employ helpers to fill in a template
@@ -22,24 +24,15 @@ def apply_helpers(template, obj, providers):
     'Hello Sam!'
 
     >>> apply_helpers('Hello <dz:other>!', user, {})
-    'Hello &lt;dz:other&gt; missing!'
+    'Hello <dz:other>!'
+
+    >>> apply_helpers('Hello {{other}}!', user, {})
+    'Hello {{other}}!'
     """
-    def not_found(name):
-        """what happens when a helper is not found"""
-        def missing_helper(*args, **kwargs):
-            """provide some info for missing helpers"""
-            parts = ' '.join(
-                [name] +
-                ['{!r}'.format(a) for a in args] +
-                ['{}={!r}'.format(k, v) for k, v in kwargs.items()]
-            )
-            return '&lt;dz:{}&gt; missing'.format(
-                parts,
-            )
-        return missing_helper
 
     def filler(helpers):
         """callback for filling in templates"""
+
         def _filler(name, *args, **kwargs):
             """handle the details of filling in templates"""
 
@@ -49,29 +42,35 @@ def apply_helpers(template, obj, providers):
                     repl = attr(obj, *args, **kwargs)
                 else:
                     repl = attr
-                return dzfill(repl, _filler)
+                    logger.debug('object helped with %r', (name, args, kwargs))
+                return fill(repl, _filler)
 
-            helper = helpers.get(name, not_found(name))
-            if callable(helper):
-                repl = helper(*args, **kwargs)
-            else:
-                repl = helper
-            return dzfill(repl, _filler)
+            helper = helpers.get(name)
+            if helper is not None:
+                if callable(helper):
+                    repl = helper(*args, **kwargs)
+                else:
+                    repl = helper
+                logger.debug('helpers helped with %r', (name, args, kwargs))
+                return fill(repl, _filler)
+
+            logger.debug('not helped %r', (name, args, kwargs))
+
         return _filler
+
+    logger = logging.getLogger(__name__)
 
     helpers = {}
     for provider in providers:
         helpers.update(provider)
-    return dzfill(template, filler(helpers))
+    return fill(template, filler(helpers))
 
 
 def render(pathname, *a, **k):
     """render a view"""
-    # path = os.path.dirname(__file__)
-    # with open(os.path.join('views', name+'.html')) as reader:
     with open(pathname) as reader:
         template = reader.read()
-        content = template.format(*a, **k)
+        content = apply_helpers(template, None, [k]).format(*a, **k)
 
         if pathname.endswith('.md'):
             result = markdown(content)
