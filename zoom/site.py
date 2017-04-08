@@ -34,7 +34,8 @@ class Site(object):
             self.link = zoom.helpers.link_to(self.name, self.url)
             self.csrf_validation = True
 
-            self.owner_name = get('site', 'owner', 'dynamic solutions')
+            self.owner = get('site', 'owner', 'Company Name')
+            self.owner_name = get('site', 'owner', 'Company Name')
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
 

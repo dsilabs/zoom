@@ -62,6 +62,8 @@ class Page(object):
         self.template = 'default'
         self.title = ''
         self.subtitle = ''
+        self.keywords = ''
+        self.description = ''
         self.actions = []
         self.search = None
         self.__dict__.update(kwargs)
@@ -78,6 +80,7 @@ class Page(object):
             page_title=request.site.title,
             site_url=request.site.url,
             request_path=request.path,
+            author=request.site.owner_name,
             css='',
             js='',
             head='',
