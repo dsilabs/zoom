@@ -105,6 +105,24 @@ def div(content='', **kwargs):
     return tag('div', content, **kwargs)
 
 
+def span(content='', **kwargs):
+    """
+    generates an div tag
+
+        >>> span('some content')
+        '<span>some content</span>'
+
+        >>> span('')
+        '<span></span>'
+
+        >>> span(Class='header')
+        '<span class="header"></span>'
+
+
+    """
+    return tag('span', content, **kwargs)
+
+
 def h1(text):
     """h1 tag
 
