@@ -35,7 +35,7 @@ form1 = Form(
     #     url='/{}/fields/'.format(system.app.name),
     #     hint='click or drag and drop to upload'
     #     ),
-    # TwitterField('Twitter', hint='test hint'),
+    TwitterField('Twitter', hint='test hint'),
     URLField('Web', hint='test hint'),
     PasswordField('Password', hint='test hint'),
     # NumberField('Number of Things', hint='test hint'),

@@ -1092,3 +1092,17 @@ class URLField(TextField):
 
     def assign(self, value):
         self.value = value
+
+
+class TwitterField(TextField):
+    """Twitter field
+
+    >>> TwitterField('Twitter').widget()
+    '<input class="text_field" id="twitter" name="twitter" type="text" value="" />'
+
+    >>> TwitterField('Twitter', value='dsilabs').display_value()
+    '<a target="_window" href="http://www.twitter.com/dsilabs">@dsilabs</a>'
+    """
+    def display_value(self):
+        twitter_id = (self.value or self.default).strip().strip('@')
+        return self.visible and twitter_id and '<a target="_window" href="http://www.twitter.com/%(twitter_id)s">@%(twitter_id)s</a>' % locals() or ''
