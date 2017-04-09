@@ -73,7 +73,9 @@ def ul(items):
         '<ul><li>this</li><li>that</li></ul>'
 
     """
-    return tag('ul', li(items))
+    if items:
+        return tag('ul', li(items))
+    return ''
 
 
 def ol(items):
@@ -84,7 +86,9 @@ def ol(items):
         '<ol><li>this</li><li>that</li></ol>'
 
     """
-    return tag('ol', li(items))
+    if items:
+        return tag('ol', li(items))
+    return ''
 
 
 def div(content='', **kwargs):
