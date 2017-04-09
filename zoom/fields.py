@@ -1767,6 +1767,8 @@ class RadioField(TextField):
 class PulldownField(TextField):
     """Pulldown Field
 
+    >>> from zoom.component import composition, Component
+    >>> composition.parts = Component()
     >>> PulldownField('Type',value='One',options=['One','Two']).display_value()
     'One'
 
