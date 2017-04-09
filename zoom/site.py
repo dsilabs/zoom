@@ -33,6 +33,7 @@ class Site(object):
             self.title = get('site', 'name', self.name)
             self.link = zoom.helpers.link_to(self.name, self.url)
             self.csrf_validation = True
+            self.tracking_id = get('site', 'tracking_id', '')
 
             self.owner = get('site', 'owner', 'Company Name')
             self.owner_name = get('site', 'owner', 'Company Name')
@@ -65,6 +66,14 @@ class Site(object):
             raise Exception('site {!r} does not exist'.format(site_path))
 
     @property
+    def tracker(self):
+        if self.tracking_id:
+            path = os.path.join(os.path.dirname(__file__), 'views', 'google_tracker.html')
+            with open(path) as reader:
+                return reader.read() % self.tracking_id
+        return ''
+
+    @property
     def abs_url(self):
         request = self.request
         port = (request.port not in ['80', '443']) and ':' + request.port or ''
@@ -92,6 +101,7 @@ class Site(object):
             theme=self.theme,
             theme_uri='/themes/' + self.theme,
             request_path=self.request.path,
+            tracker=self.tracker,
         )
 
 
