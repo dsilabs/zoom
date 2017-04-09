@@ -121,31 +121,49 @@ def name_for(text):
 
 
 def trim(text):
+    """Remove the left most spaces for markdown
+
+    >>> trim('remove right ')
+    'remove right'
+
+    >>> trim(' remove left')
+    'remove left'
+
+    >>> print(trim(' remove spaces\\n    from block\\n    of text'))
+    remove spaces
+       from block
+       of text
+
+    >>> print(trim('    remove spaces\\n  from block\\n  of text'))
+      remove spaces
+    from block
+    of text
+
+    >>> print(trim('\\n  remove spaces\\n    from block\\n  of text'))
+    <BLANKLINE>
+    remove spaces
+      from block
+    of text
+
+    >>> text = '\\nremove spaces  \\n    from block\\nof text'
+    >>> print('\\n'.join(repr(t) for t in trim(text).splitlines()))
+    'remove spaces  '
+    '    from block'
+    'of text'
+
     """
-        Remove the left most spaces for markdown
-
-        >>> trim('remove right ')
-        'remove right'
-
-        >>> trim(' remove left')
-        'remove left'
-
-        >>> trim(' remove spaces \\n    from block\\n    of text ')
-        'remove spaces\\n   from block\\n   of text'
-
-    """
-    n = 0
-    for line in text.splitlines():
+    trim_size = None
+    lines = text.splitlines()
+    for line in lines:
         if line.isspace():
             continue
-        if line.startswith(' '):
-            n = len(line) - len(line.lstrip())
-            break
-    if n:
-        lines = []
-        for line in text.splitlines():
-            lines.append(line[n:].rstrip())
-        return '\n'.join(lines)
+        n = len(line) - len(line.lstrip())
+        trim_size = trim_size is not None and min([trim_size, n]) or n
+    if trim_size:
+        result = []
+        for line in lines:
+            result.append(line[trim_size:])
+        return '\n'.join(result)
     else:
         return text.strip()
 
