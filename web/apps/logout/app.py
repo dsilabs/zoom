@@ -4,7 +4,8 @@
 
 import logging
 
-from zoom.tools import redirect_to, warning
+from zoom.tools import redirect_to
+from zoom.components import warning
 
 
 def app(request):
