@@ -51,7 +51,7 @@ def home(view=None):
     """Redirect to application home.
 
     >>> home().content
-    b''
+    ''
     >>> home('old').headers['Location']
     '<dz:abs_site_url><dz:request_path>/<dz:site_url>/<dz:app_name>/old'
 

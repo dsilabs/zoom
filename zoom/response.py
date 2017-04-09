@@ -24,14 +24,14 @@ from zoom.jsonz import dumps
 class Response(object):
     """web response"""
 
-    def __init__(self, content, status='200 OK'):
+    def __init__(self, content='', status='200 OK'):
         self.content = content
         self.status = status
         self.headers = OrderedDict()
 
     def render_doc(self):
         """Renders the payload"""
-        return self.content
+        return self.content.encode('utf8')
 
     def render(self):
         """Renders the entire response"""
@@ -103,9 +103,6 @@ class TextResponse(Response):
         self.headers['Content-type'] = 'text'
         self.headers['Cache-Control'] = 'no-cache'
 
-    def render_doc(self):
-        return self.content.encode('utf8')
-
 
 class HTMLResponse(TextResponse):
     """
@@ -168,12 +165,12 @@ class JSONResponse(TextResponse):
     """JSON response"""
 
     def __init__(
-        self,
-        content,
-        indent=4,
-        sort_keys=True,
-        ensure_ascii=False,
-        **kwargs
+            self,
+            content,
+            indent=4,
+            sort_keys=True,
+            ensure_ascii=False,
+            **kwargs
     ):
         content = dumps(content, indent, sort_keys, ensure_ascii, **kwargs)
         TextResponse.__init__(self, content)
@@ -194,7 +191,7 @@ class RedirectResponse(Response):
     """Redirect response"""
 
     def __init__(self, url):
-        Response.__init__(self, b'')
+        Response.__init__(self)
         self.status = '302 Found'
         self.headers['Location'] = url
 
@@ -203,7 +200,7 @@ class FileResponse(Response):
     """File download response"""
 
     def __init__(self, filename, content=None):
-        Response.__init__(self, '')
+        Response.__init__(self)
         if content:
             self.content = content
         else:

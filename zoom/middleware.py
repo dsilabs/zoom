@@ -13,6 +13,8 @@
 # useful respose to the browser.  That's not usually advised but in this
 # case it's what we want.
 
+
+import io
 import os
 import sys
 import traceback
@@ -31,6 +33,7 @@ from zoom.response import (
     RedirectResponse,
 )
 import zoom.cookies
+import zoom.html as html
 import zoom.session
 import zoom.site
 import zoom.templates
@@ -249,6 +252,23 @@ def not_found(request):
     return response
 
 
+def capture_stdout(request, handler, *rest):
+    """Capture printed output for debugging purposes"""
+    real_stdout = sys.stdout
+    sys.stdout = io.StringIO()
+    try:
+        result = handler(request, *rest)
+    finally:
+        printed_output = sys.stdout.getvalue()
+        sys.stdout.close()
+        sys.stdout = real_stdout
+        result.content = result.content.replace(
+            '{*stdout*}', html.pre(printed_output))
+    logger = logging.getLogger(__name__)
+    logger.debug('captured stdout')
+    return result
+
+
 def trap_errors(request, handler, *rest):
     """Trap exceptions and raise a server error
 
@@ -292,6 +312,7 @@ def handle(request, handlers=None):
         serve_images,
         serve_html,
         zoom.cookies.cookie_handler,
+        capture_stdout,
         zoom.site.site_handler,
         serve_themes,
         zoom.database.database_handler,

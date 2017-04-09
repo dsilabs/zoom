@@ -161,6 +161,7 @@ class Page(object):
             styles=get_styles(),
             libs=get_libs(),
             alerts=get_alerts(request),
+            stdout='{*stdout*}',
         )
 
     def render(self, request):

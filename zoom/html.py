@@ -91,6 +91,11 @@ def ol(items):
     return ''
 
 
+def pre(content):
+    if content:
+        return tag('pre', content)
+    return ''
+
 def div(content='', **kwargs):
     """
     generates an div tag

@@ -11,15 +11,21 @@ from zoom.components import success, warning, error
 
 
 class MyView(View):
-    
+
     def index(self):
         content = markdown("""
+        Alerts
+        ====
         * [Success](alerts/success)
         * [Warning](alerts/warning)
         * [Error](alerts/error)
         * [Random](alerts/random)
+
+        Developer
+        ====
+        * [Stdout](alerts/stdout)
         """)
-        return page(content, title="Alerts")
+        return page(content)
 
 
 class MyController(Controller):
@@ -34,6 +40,10 @@ class MyController(Controller):
 
     def error(self):
         error('that was bad!')
+        return redirect_to('/sample/alerts')
+
+    def stdout(self):
+        print('here is some stdout output!')
         return redirect_to('/sample/alerts')
 
     def random(self):
