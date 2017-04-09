@@ -4,6 +4,7 @@
 
 import logging
 
+from zoom.component import composition#, requires
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
@@ -75,18 +76,55 @@ class Page(object):
 
     def helpers(self, request):
         """provide page helpers"""
+
+        def get(part, wrapper='{}'):
+            parts = composition.parts.parts.get(part, [])
+            return parts and '\n'.join(wrapper.format(part) for part in parts) or ''
+
+        def get_css():
+            wrapper = '<styles>\n{}\n</styles>'
+            return get('css', wrapper)
+
+        def get_js():
+            parts = composition.parts.parts.get('js', [])
+            code = '\n'.join(parts)
+            if code:
+                result = """
+                <script>
+                $(function(){{
+                    {}
+                }});
+                </script>
+                """.format(code)
+                return result
+            return 'test'
+
+        def get_libs():
+            wrapper = '<script src="{}"></script>'
+            return get('libs', wrapper)
+
+        def get_styles():
+            wrapper = '<link rel="stylesheet" href="{}">'
+            return get('styles', wrapper)
+
+        def get_head():
+            return get('head')
+
+        def get_tail():
+            return get('tail')
+
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
             site_url=request.site.url,
             request_path=request.path,
             author=request.site.owner_name,
-            css='',
-            js='',
-            head='',
-            tail='',
-            styles='',
-            libs='',
+            css=get_css(),
+            js=get_js(),
+            head=get_head(),
+            tail=get_tail(),
+            styles=get_styles(),
+            libs=get_libs(),
             alerts=self.alerts,
         )
 
