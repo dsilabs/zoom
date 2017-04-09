@@ -36,6 +36,7 @@ import zoom.site
 import zoom.templates
 import zoom.user
 import zoom.apps
+import zoom.component
 from zoom.page import page
 from zoom.helpers import tag_for
 
@@ -291,6 +292,7 @@ def handle(request, handlers=None):
         serve_images,
         serve_html,
         zoom.cookies.cookie_handler,
+        zoom.component.handler,
         zoom.site.site_handler,
         serve_themes,
         zoom.database.database_handler,
