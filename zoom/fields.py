@@ -1761,7 +1761,168 @@ class RadioField(TextField):
                     Class='radio',
                 ) + '\n'
             )
-            # '<span class="radio"><input type="radio" name="%s" value="%s" %sclass="radio" />%s</span>\n' % (name, value, checked, text))
-            # result.append(
-            # '<span class="radio"><input type="radio" name="%s" value="%s" %sclass="radio" />%s</span>\n' % (name, value, checked, text))
+        return ''.join(result)
+
+
+class PulldownField(TextField):
+    """Pulldown Field
+
+    >>> PulldownField('Type',value='One',options=['One','Two']).display_value()
+    'One'
+
+    >>> print(PulldownField('Type',value='One',options=['One','Two']).widget())
+    <select class="pulldown" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two">Two</option>
+    </select>
+
+    >>> print(PulldownField('Type',options=['One','Two']).widget())
+    <select class="pulldown" name="type" id="type">
+    <option value=""></option>
+    <option value="One">One</option>
+    <option value="Two">Two</option>
+    </select>
+
+    >>> f = PulldownField('Type', options=[('',''),('One',1),('Two',2)])
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value="" selected></option>
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    </select>
+
+    >>> f.assign(2)
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value=""></option>
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    </select>
+
+    >>> f.assign('2')
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value=""></option>
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    </select>
+
+    >>> f = PulldownField('Type', options=[('',''),('One','1'),('Two','2')])
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value="" selected></option>
+    <option value="1">One</option>
+    <option value="2">Two</option>
+    </select>
+
+    >>> f.assign(2)
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value=""></option>
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    </select>
+
+    >>> f.assign('2')
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value=""></option>
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    </select>
+
+    >>> f = PulldownField('Type',value='One',options=[('One','uno'),('Two','dos')])
+    >>> print(f.widget())
+    <select class="pulldown" name="type" id="type">
+    <option value="uno" selected>One</option>
+    <option value="dos">Two</option>
+    </select>
+
+    >>> f.value
+    'uno'
+    >>> f.evaluate()
+    {'type': 'uno'}
+    >>> f.value = 'One'
+    >>> f.value
+    'One'
+    >>> f.evaluate()
+    {'type': 'uno'}
+    >>> f.update(**{'tYpe':'dos'})
+    >>> f.value
+    'dos'
+    >>> f.evaluate()
+    {'type': 'dos'}
+
+    >>> f = PulldownField('Type',value='uno',options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One'
+
+    >>> f = PulldownField('Type',default='uno',options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One'
+    >>> f.evaluate()
+    {'type': 'uno'}
+
+    >>> p = PulldownField('Date', name='TO_DATE', options=[('JAN','jan'), ('FEB','feb'),], default='feb')
+    >>> p.evaluate()
+    {'TO_DATE': 'feb'}
+    >>> p.display_value()
+    'FEB'
+    """
+
+    value = None
+    css_class = 'pulldown'
+    select_layout = '<select class="{classed}" name="{name}" id="{name}">\n'
+
+    def __init__(self, *a, **k):
+        TextField.__init__(self, *a, **k)
+        if 'placeholder' not in k:
+            self.placeholder = 'Select ' + self.label
+
+    def evaluate(self):
+        for option in self.options:
+            if type(option) in (list, tuple) and len(option) == 2:
+                label, value = option
+                if self.value == label:
+                    return {self.name: value}
+        return {self.name: self.value is None and self.default or self.value}
+
+    def display_value(self):
+        t = self.value is None and self.default or self.value
+        if t:
+            for option in self.options:
+                if type(option) in (list, tuple) and len(option)==2:
+                    label, value = option
+                    if t == value:
+                        return label
+        return t
+
+    def assign(self,new_value):
+        self.value = new_value
+        for option in self.options:
+            if type(option) in (list, tuple) and len(option)==2:
+                label, value = option
+                if new_value == label:
+                    self.value = value
+
+    def widget(self):
+        current_value = str(self.value or self.default) or ''
+        result = []
+        name = self.name
+        found = False
+        result.append(self.select_layout.format(**dict(place=self.placeholder, classed=self.css_class, name=name)))
+        for option in self.options:
+            if type(option) in (list, tuple) and len(option)==2:
+                label, value = option
+            else:
+                label, value = option, option
+            if str(value) == current_value:
+                result.append('<option value="%s" selected>%s</option>\n' % (value,label))
+                found = True
+            else:
+                result.append('<option value="%s">%s</option>\n' % (value,label))
+        if not found and not current_value:
+            blank_option = '<option value=""></option>\n'
+            result.insert(1, blank_option)
+        result.append('</select>')
         return ''.join(result)
