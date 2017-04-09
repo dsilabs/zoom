@@ -228,6 +228,9 @@ class User(Record):
         """provide user helpers"""
         return dict(
             username=self.username,
+            user_full_name=self.full_name,
+            user_first_name=self.first_name,
+            user_last_name=self.last_name,
         )
 
 
