@@ -2131,3 +2131,62 @@ class MultiselectField(TextField):
                 result.append('<option %svalue="%s">%s</option>\n' % (style, value, label))
         result.append('</select>')
         return ''.join(result)
+
+
+class ChosenMultiselectField(MultiselectField):
+    """
+    Chosen Multiselect field.
+
+    >>> from zoom.component import composition, Component
+    >>> composition.parts = Component()
+    >>> f = ChosenMultiselectField('Choose', options=['One','Two','Three'], hint='test hint')
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="One">One</option>
+    <option value="Two">Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', options=['One','Two','Three'], hint='test hint', placeholder='my placeholder')
+    >>> print(f.widget())
+    <select data-placeholder="my placeholder" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="One">One</option>
+    <option value="Two">Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+
+
+    """
+    css_class = 'chosen'
+    select_layout = '<select data-placeholder="{}" multiple="multiple" class="{}" name="{}" id="{}">\n'
+
+    def __init__(self, *a, **k):
+        MultiselectField.__init__(self, *a, **k)
+        if not 'placeholder' in k:
+            self.placeholder = 'Select ' + self.label
+
+    def widget(self):
+        libs = ['/static/dz/chosen/chosen.jquery.js']
+        styles = ['/static/dz/chosen/chosen.css']
+        if self.value == None:
+            current_values = self.default
+        else:
+            current_values = self.value
+        current_values = ensure_listy(current_values)
+        current_labels = self._scan(current_values, lambda a: a[0])
+        result = []
+        name = self.name
+        result.append(self.select_layout.format(self.placeholder, self.css_class, name, name))
+        for option in self.options:
+            if is_listy(option) and len(option)==2:
+                label, value = option
+            else:
+                label, value = option, option
+            style = self.option_style(label, value)
+            if value in current_values:
+                result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value,label))
+            else:
+                result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
+        result.append('</select>')
+        return compose(''.join(result), libs=libs, styles=styles)
