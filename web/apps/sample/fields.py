@@ -58,8 +58,8 @@ form1 = Form(
         'Pulldown', options=['One', 'Two', 'Three'], hint='test hint'),
     ChosenSelectField(
         'Chosen Select', options=['One', 'Two', 'Three'], hint='test hint'),
-    # MultiselectField(
-    #     'Multiselect', options=['One', 'Two', 'Three'], hint='test hint'),
+    MultiselectField(
+        'Multiselect', options=['One', 'Two', 'Three'], hint='test hint'),
     # ChosenMultiselectField(
     #     'Sizes', options=['One', 'Two', 'Three', 'Four'],
     #     hint='test hint', placeholder='Choose as you wish'),

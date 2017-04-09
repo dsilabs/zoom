@@ -18,6 +18,7 @@ from zoom.tools import (
     htmlquote,
     websafe,
     markdown,
+    is_listy,
     ensure_listy,
 )
 import zoom.html as html
@@ -1937,3 +1938,196 @@ class ChosenSelectField(PulldownField):
     libs = ['/static/zoom/chosen/chosen.jquery.js']
     styles = ['/static/zoom/chosen/chosen.css']
     select_layout = '<select data-placeholder="{place}" class="{classed}" name="{name}" id="{name}">\n'
+
+
+class MultiselectField(TextField):
+    """Multiselect Field
+
+    >>> MultiselectField('Type',value='One',options=['One','Two']).display_value()
+    'One'
+
+    >>> f = MultiselectField('Type', default='One', options=['One','Two'])
+    >>> f.evaluate()
+    {'type': []}
+    >>> f.display_value()
+    ''
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two">Two</option>
+    </select>
+
+    >>> f.value
+    >>> f.assign([])
+    >>> f.value
+    []
+    >>> f.evaluate()
+    {'type': []}
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One">One</option>
+    <option value="Two">Two</option>
+    </select>
+
+    >>> f= MultiselectField('Type',value='One',options=['One','Two'])
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two">Two</option>
+    </select>
+
+    >>> f = MultiselectField('Type',value=['One','Three'],options=['One','Two','Three'])
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two">Two</option>
+    <option value="Three" selected>Three</option>
+    </select>
+
+    >>> f = MultiselectField('Type',default=['One'],options=['One','Two','Three'])
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two">Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+    >>> f = MultiselectField('Type',default=['One','Two'],options=['One','Two','Three'])
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="One" selected>One</option>
+    <option value="Two" selected>Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+    >>> f = MultiselectField('Type',value='One',options=[('One','uno'),('Two','dos')])
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="uno" selected>One</option>
+    <option value="dos">Two</option>
+    </select>
+    >>> f.value
+    ['uno']
+    >>> f.evaluate()
+    {'type': ['uno']}
+    >>> f.value = ['One']
+    >>> f.value
+    ['One']
+    >>> f.evaluate()
+    {'type': ['uno']}
+    >>> f.update(**{'type':['dos']})
+    >>> f.value
+    ['dos']
+    >>> f.evaluate()
+    {'type': ['dos']}
+
+    >>> f = MultiselectField('Type',value='uno',options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One'
+
+    >>> f = MultiselectField('Type',value='uno',options=[('One','uno'),('One','dos')])
+    >>> f.display_value()
+    'One'
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option value="uno" selected>One</option>
+    <option value="dos">One</option>
+    </select>
+
+    >>> f = MultiselectField('Type',value=['One','dos'],options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One; Two'
+    >>> f.evaluate()
+    {'type': ['uno', 'dos']}
+
+    >>> f = MultiselectField('Type',value=['uno','dos'],options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One; Two'
+    >>> f.evaluate()
+    {'type': ['uno', 'dos']}
+    >>> f.option_style('zero','nada')
+    ''
+
+    >>> s = lambda label, value: value.startswith('d') and 's1' or 's0'
+    >>> f = MultiselectField('Type',value=['uno','dos'],options=[('One','uno'),('Two','dos')], styler=s)
+    >>> print(f.widget())
+    <select multiple="multiple" class="multiselect" name="type" id="type">
+    <option class="s0" value="uno" selected>One</option>
+    <option class="s1" value="dos" selected>Two</option>
+    </select>
+
+    >>> f.styler('test','dos')
+    's1'
+    >>> f.option_style('zero','nada')
+    'class="s0" '
+
+    # test for iterating over a string vs. a sequence type (iteration protocol)
+    >>> m1 = MultiselectField('Type', default='11', options=[('One','1'),('Two','2'),('Elves','11'),]).widget()
+    >>> m2 = MultiselectField('Type', default=('11',), options=[('One','1'),('Two','2'),('Elves','11'),]).widget()
+    >>> assert m1 == m2
+
+    """
+
+    value = None
+    default = []
+    css_class = 'multiselect'
+    styler = None
+
+    def _scan(self, t, f):
+        if t:
+            t = ensure_listy(t)
+            result = []
+            for option in self.options:
+                if len(option) == 2 and is_listy(option):
+                    label, value = option
+                    if label in t or value in t:
+                        result.append(f(option))
+                elif option in t:
+                    result.append(option)
+            return result
+        return []
+
+    def evaluate(self):
+        return {self.name: self._scan(self.value, lambda a: a[1])}
+
+    def display_value(self):
+        return '; '.join(self._scan(self.value, lambda a: a[0]))
+
+    def assign(self, new_value):
+        self.value = self._scan(new_value, lambda a: a[1])
+
+    def update(self, **values):
+        for value in values:
+            if value.lower() == self.name.lower():
+                self.assign(values[value])
+                return
+        self.assign([])
+
+    def option_style(self, label, value):
+        if self.styler is not None:
+            return 'class="{}" '.format(self.styler(label, value))
+        return ''
+
+    def widget(self):
+        if self.value is None:
+            current_values = self.default
+        else:
+            current_values = self.value
+        current_values = ensure_listy(current_values)
+        current_labels = self._scan(current_values, lambda a: a[0])
+        result = []
+        name = self.name
+        tpl = '<select multiple="multiple" class="%s" name="%s" id="%s">\n'
+        result.append(tpl%(self.css_class, name, name))
+        for option in self.options:
+            if is_listy(option) and len(option) == 2:
+                label, value = option
+            else:
+                label, value = option, option
+            style = self.option_style(label, value)
+            if value in current_values:
+                result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value, label))
+            else:
+                result.append('<option %svalue="%s">%s</option>\n' % (style, value, label))
+        result.append('</select>')
+        return ''.join(result)
