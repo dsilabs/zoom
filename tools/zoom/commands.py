@@ -35,6 +35,8 @@ def server(instance='.'):
                         help='use special debugging middleware stack')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
+    parser.add_argument("-f", "--filter", type=str, default=None,
+                        help='log filter')
     parser.add_argument('instance', nargs='?', default=None)
     args = parser.parse_args()
 
@@ -55,6 +57,9 @@ def server(instance='.'):
             root_logger = logging.getLogger()
             root_logger.setLevel(logging.DEBUG)
             root_logger.addHandler(console_handler)
+
+            if args.filter:
+                console_handler.addFilter(logging.Filter(name=args.filter))
 
             if args.verbose:
                 console_handler.setLevel(logging.DEBUG)
