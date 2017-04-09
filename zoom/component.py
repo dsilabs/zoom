@@ -18,7 +18,11 @@
     in future releases.
 """
 
+import threading
+
 from zoom.utils import OrderedSet
+
+composition = threading.local()
 
 
 class Component(object):
@@ -162,13 +166,24 @@ class Component(object):
         return '<Component: {{{}}}>'.format(
             ', '.join(
                 '{!r}: {!r}'.format(i, j)
-                for i, j in sorted(self.parts.items()
+                for i, j in sorted(self.parts.items())
             )
         )
-    )
+
 
 component = Component
-# 
+
+
+def compose(*args, **kwargs):
+    composition.parts += component(**kwargs)
+    return ''.join(args)
+
+
+def handler(request, handler, *rest):
+    composition.parts = Component()
+    return handler(request, *rest)
+
+
 # def component(*args, **kwargs):
 #     """assemble parts of a component
 #     
