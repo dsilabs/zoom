@@ -3,6 +3,7 @@
 """
 
 from urllib.parse import quote_plus
+import datetime
 
 import zoom.html as html
 
@@ -203,8 +204,33 @@ def abs_url_for(*a, **k):
 
 
 def link_to(label, *args, **kwargs):
-    """produce a link"""
-    return html.tag('a', label, href=url_for(*args, **kwargs))
+    """produce a link
+
+    >>> link_to('Company', 'http://company.com')
+    '<a href="http://company.com">Company</a>'
+
+    >>> link_to('http://company.com')
+    '<a href="http://company.com">http://company.com</a>'
+
+    >>> link_to('http://company.com', q='test')
+    '<a href="http://company.com?q=test">http://company.com</a>'
+    """
+    nargs = args or [label]
+    return html.tag('a', label, href=url_for(*nargs, **kwargs))
+
+
+def mail_to(name, *args, **kwargs):
+    """produce an email link
+
+    >>> mail_to('Tester', 'test@testco.com')
+    '<a href="test@testco.com">Tester</a>'
+
+    >>> mail_to('test@testco.com')
+    '<a href="test@testco.com">test@testco.com</a>'
+
+    """
+    nargs = args or [name]
+    return html.tag('a', name, href=url_for(*nargs, **kwargs))
 
 
 def lorem():
@@ -218,3 +244,15 @@ def lorem():
         nulla pariatur. Excepteur sint occaecat cupidatat non proident,
         sunt in culpa qui officia deserunt mollit anim id est laborum.
         """
+
+def upper(text):
+    """Returns the given text in upper case."""
+    return text.upper()
+
+def date():
+    """Returns the current date in text form."""
+    return '%s' % datetime.date.today()
+
+def year():
+    """Returns the current year in text form."""
+    return datetime.date.today().strftime('%Y')
