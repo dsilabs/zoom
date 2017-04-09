@@ -249,10 +249,18 @@ class Request(object):
         """access and parse the body as json"""
         return json.loads(self.body.read().decode('utf-8'))
 
+    def get_elapsed(self):
+        return '{:1.3f}'.format(timer() - self.start_time)
+
     def helpers(self):
         """provide helpers"""
         return dict(
             protocol=self.protocol,
+            domain=self.domain,
+            host=self.host,
+            remote_address=self.ip_address,
+            ip_address=self.ip_address,
+            elapsed=self.get_elapsed,
         )
 
 
