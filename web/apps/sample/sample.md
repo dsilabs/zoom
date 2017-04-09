@@ -189,10 +189,35 @@ Helpers
 
 &lt;dz:owner_email&gt; : "<dz:owner_email>"
 
+&lt;dz:owner_link&gt; : "<dz:owner_link>"
+
 &lt;dz:admin_email&gt; : "<dz:admin_email>"
 
 &lt;dz:protocol&gt; : "<dz:protocol>"
 
+&lt;dz:domain&gt; : "<dz:domain>"
+
+&lt;dz:host&gt; : "<dz:host>"
+
+&lt;dz:username&gt; : "<dz:username>"
+
+&lt;dz:user_first_name&gt; : "<dz:user_first_name>"
+
+&lt;dz:user_last_name&gt; : "<dz:user_last_name>"
+
+&lt;dz:user_full_name&gt; : "<dz:user_full_name>"
+
+&lt;dz:user_id&gt; : "<dz:user_id>"
+
+&lt;dz:elapsed&gt; : "<dz:elapsed>"
+
+&lt;dz:upper "test"&gt; : "<dz:upper "test">"
+
+&lt;dz:current_date&gt; : "<dz:current_date>"
+
+&lt;dz:date&gt; : "<dz:date>"
+
+&lt;dz:year&gt; : "<dz:year>"
 
 
 Missing Substitutions
