@@ -7,16 +7,37 @@ from zoom.response import RedirectResponse
 from zoom.helpers import abs_url_for
 
 
-def has_iterator_protocol(obj):
-    # does the parameter support the iteration protocol
-    # (sequences do, but not a string)
-    return hasattr(a, '__iter__')
+def is_listy(obj):
+    """test to see if an object will iterate like a list
+
+    >>> is_listy([1,2,3])
+    True
+
+    >>> is_listy(set([3,4,5]))
+    True
+
+    >>> is_listy((3,4,5))
+    True
+
+    >>> is_listy(dict(a=1, b=2))
+    False
+
+    >>> is_listy('123')
+    False
+    """
+    return isinstance(obj, (list, tuple, set))
 
 
-def wrap_iterator(obj):
-    # wrap the argument in a list if it does not support the
-    # iteration protocol (i.e. to avoid iterating over a string)
-    has_iterator_protocol(obj) and a or [a]
+def ensure_listy(obj):
+    """ensure object is wrapped in a list if it can't behave like one
+
+    >>> ensure_listy('not listy')
+    ['not listy']
+
+    >>> ensure_listy(['already listy'])
+    ['already listy']
+    """
+    return is_listy(obj) and obj or [obj]
 
 
 def redirect_to(*args, **kwargs):
