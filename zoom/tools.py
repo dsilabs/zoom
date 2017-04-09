@@ -4,7 +4,8 @@
 
 from markdown import Markdown
 from zoom.response import RedirectResponse
-from zoom.helpers import abs_url_for
+from zoom.helpers import abs_url_for, url_for_page
+from zoom.utils import trim
 
 
 def is_listy(obj):
@@ -46,11 +47,22 @@ def redirect_to(*args, **kwargs):
     return RedirectResponse(abs_url)
 
 
-def warning(message):
-    pass
+def home(view=None):
+    """Redirect to application home.
+
+    >>> home().content
+    b''
+    >>> home('old').headers['Location']
+    '<dz:abs_site_url><dz:request_path>/<dz:site_url>/<dz:app_name>/old'
+
+    """
+    if view:
+        return redirect_to(url_for_page(view))
+    return redirect_to(url_for_page())
 
 
 def unisafe(val):
+    """safely convert to unicode"""
     if val is None:
             return u''
     elif isinstance(val, bytes):
@@ -108,4 +120,4 @@ def markdown(content):
     extras = ['tables', 'def_list', 'wikilinks', 'toc']
     configs = {'wikilinks': [('build_url', url_builder)]}
     md = Markdown(extensions=extras, extension_configs=configs)
-    return md.convert(unisafe(content))
+    return md.convert(unisafe(trim(content)))
