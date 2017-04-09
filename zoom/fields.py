@@ -1195,6 +1195,51 @@ class NumberField(TextField):
         return {self.name: self.value}
 
 
+class IntegerField(TextField):
+    """Integer Field
+
+    >>> IntegerField('Count', value=2).display_value()
+    '2'
+
+    >>> IntegerField('Count').widget()
+    '<input class="number_field" id="count" maxlength="10" name="count" size="10" type="text" value="" />'
+
+    >>> n = IntegerField('Size')
+    >>> n.assign('2')
+    >>> n.value
+    2
+    >>> n.evaluate()
+    {'size': 2}
+
+    >>> n = IntegerField('Size', units='meters')
+    >>> n.assign('22234')
+    >>> n.value
+    22234
+    >>> n.display_value()
+    '22,234 meters'
+
+    >>> n.assign('')
+    >>> n.evaluate()
+    {'size': ''}
+    """
+
+    size = maxlength = 10
+    css_class = 'number_field'
+    value = 0
+    units = ''
+
+    def assign(self, value):
+        try:
+            self.value = int(value)
+        except:
+            self.value = self.default
+
+    def display_value(self):
+        units = self.units and (' ' + self.units) or ''
+        value = self.value and ('{:,}{}'.format(self.value, units)) or ''
+        return websafe(value)
+
+
 class FloatField(NumberField):
     """Float Field
 
@@ -2167,8 +2212,8 @@ class ChosenMultiselectField(MultiselectField):
             self.placeholder = 'Select ' + self.label
 
     def widget(self):
-        libs = ['/static/dz/chosen/chosen.jquery.js']
-        styles = ['/static/dz/chosen/chosen.css']
+        libs = ['/static/zoom/chosen/chosen.jquery.js']
+        styles = ['/static/zoom/chosen/chosen.css']
         if self.value == None:
             current_values = self.default
         else:
@@ -2190,3 +2235,73 @@ class ChosenMultiselectField(MultiselectField):
                 result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
         result.append('</select>')
         return compose(''.join(result), libs=libs, styles=styles)
+
+
+class RangeSliderField(IntegerField):
+    """ jQuery UI Range Slider
+
+    >>> r = RangeSliderField('Price', min=0, max=1500)
+    >>> r.assign(0)
+    >>> r.value
+    (0, 1500)
+    >>> r.assign((10, 20))
+    >>> r.value
+    (10, 20)
+    """
+    js_formatter = """var formatter = function(v) { return v;};"""
+    js = """
+        $( "#%(name)s" ).slider({
+          range: true,
+          min: %(tmin)s,
+          max: %(tmax)s,
+          values: [ %(minv)s, %(maxv)s ],
+          change: function( event, ui ) {
+            var v = ui.values,
+                t = v[0] + ',' + v[1];
+            $("input[name='%(name)s']").val(t);
+            %(formatter)s
+            $( "div[data-id='%(name)s'] span:nth-of-type(1)" ).html( formatter(ui.values[ 0 ]) );
+            $( "div[data-id='%(name)s'] span:nth-of-type(2)" ).html( formatter(ui.values[ 1 ]) );
+          },
+          slide: function( event, ui ) {
+            var v = ui.values;
+            %(formatter)s
+            $( "div[data-id='%(name)s'] span:nth-of-type(1)" ).html( formatter(ui.values[ 0 ]) );
+            $( "div[data-id='%(name)s'] span:nth-of-type(2)" ).html( formatter(ui.values[ 1 ]) );
+          }
+        });
+        $("#%(name)s").slider("values", $("#%(name)s").slider("values")); // set formatted label
+    """
+    min = 0
+    max = 10
+    show_labels = True
+    css_class = 'range-slider'
+
+    def assign(self, v):
+        if v is None or not v or (isinstance(v, str) and v.strip()==','):
+            self.value = (self.min, self.max)
+        elif ',' in v:
+            self.value = map(int, v.split(','))
+        else:
+            self.value = (int(v[0]), int(v[1]))
+
+    def widget(self):
+        name = self.name
+        tmin, tmax = self.min, self.max
+        minv, maxv = self.value or (tmin, tmax)
+
+        formatter = self.js_formatter
+        js = self.js % locals()
+        labels = """<div data-id="{}" class="{}"><span class="min pull-left">{}</span><span class="max pull-right">{}</span></div>""".format(
+            name,
+            not self.show_labels and "hidden" or "",
+            minv, maxv
+          )
+        slider = '<div id="{}"><input type="hidden" name="{}" value="{}, {}"></div>'.format(name, name, minv, maxv)
+        return compose('<div class="{}">{}{}</div>'.format(self.css_class, slider, labels), js=js)
+
+    def display_value(self):
+        units = self.units and (' ' + self.units) or ''
+        value1, value2 = self.value
+        value = self.value and ('{:,} to {:,}{}'.format(value1, value2, units)) or ''
+        return websafe(value)
