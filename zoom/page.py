@@ -177,6 +177,7 @@ class Page(object):
 
         providers = [
             zoom.helpers.__dict__,
+            request.helpers(),
             request.site.helpers(),
             request.user.helpers(),
             zoom.forms.helpers(request),

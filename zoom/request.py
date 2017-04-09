@@ -249,6 +249,12 @@ class Request(object):
         """access and parse the body as json"""
         return json.loads(self.body.read().decode('utf-8'))
 
+    def helpers(self):
+        """provide helpers"""
+        return dict(
+            protocol=self.protocol,
+        )
+
 
     def __str__(self):
         return '{\n%s\n}' % '\n'.join(
