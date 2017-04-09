@@ -39,6 +39,7 @@ class Site(object):
             self.owner_name = get('site', 'owner', 'Company Name')
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
+            self.admin_email = get('site', 'admin_email', 'admin@testco.com')
 
             self.guest = get('users', 'default', 'guest')
             self.administrators_group = get(
@@ -89,6 +90,14 @@ class Site(object):
         with open(filename) as reader:
             return reader.read()
 
+    def get_owner_link(self):
+        """Returns a link for the site owner."""
+        if self.owner_url:
+            return link_to(self.owner_name, self.owner_url)
+        if self.owner_email:
+            return mail_to(self.owner_name, self.owner_email)
+        return name
+
     def helpers(self):
         """provide helpers"""
         return dict(
@@ -98,6 +107,7 @@ class Site(object):
             owner_name=self.owner_name,
             owner_url=self.owner_url,
             owner_email=self.owner_email,
+            admin_email=self.admin_email,
             theme=self.theme,
             theme_uri='/themes/' + self.theme,
             request_path=self.request.path,
