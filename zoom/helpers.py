@@ -125,6 +125,12 @@ def url_for(*a, **k):
 
 def url_for_page(*args, **kwargs):
     """returns a url for a page of the current app
+
+    >>> url_for_page()
+    '<dz:site_url>/<dz:app_name>'
+
+    >>> url_for_page('page1')
+    '<dz:site_url>/<dz:app_name>/page1'
     """
     return url_for('/<dz:app_name>', *args, **kwargs)
 
