@@ -18,9 +18,10 @@
     in future releases.
 """
 
+import logging
 import threading
 
-from zoom.utils import OrderedSet
+from zoom.utils import OrderedSet, pp
 
 composition = threading.local()
 
@@ -180,9 +181,32 @@ def compose(*args, **kwargs):
 
 
 def handler(request, handler, *rest):
-    composition.parts = Component()
-    return handler(request, *rest)
 
+    composition.parts = Component()
+
+    result = handler(request, *rest)
+
+    logger = logging.getLogger(__name__)
+
+    success_alerts = composition.parts.parts.get('success')
+    if success_alerts:
+        if not hasattr(request.session, 'system_successes'):
+            request.session.system_successes = []
+        request.session.system_successes = list(success_alerts)
+
+    warning_alerts = composition.parts.parts.get('warning')
+    if warning_alerts:
+        if not hasattr(request.session, 'system_warnings'):
+            request.session.system_warnings = []
+        request.session.system_warnings = list(warning_alerts)
+
+    error_alerts = composition.parts.parts.get('error')
+    if error_alerts:
+        if not hasattr(request.session, 'system_errors'):
+            request.session.system_errors = []
+        request.session.system_errors = list(error_alerts)
+
+    return result
 
 # def component(*args, **kwargs):
 #     """assemble parts of a component

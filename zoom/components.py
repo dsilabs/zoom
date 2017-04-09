@@ -7,6 +7,7 @@ import logging
 from zoom.utils import id_for
 from zoom.helpers import url_for, tag_for
 from zoom.html import a, div, ul, tag, li
+from zoom.component import compose
 
 
 def as_actions(items):
@@ -109,3 +110,13 @@ def as_links(items, select=None, filter=None):
             )
         )
     return tag('ul', ''.join(links))
+
+
+def success(message):
+    compose(success=message)
+
+def warning(message):
+    compose(warning=message)
+
+def error(message):
+    compose(error=message)
