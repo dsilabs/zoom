@@ -53,7 +53,7 @@ form1 = Form(
     CheckboxesField(
         'Select', values=['One', 'Two', 'Three'], hint='test hint'),
     CheckboxField('Publish', hint='test hint'),
-    # RadioField('Radio', values=['One', 'Two', 'Three'], hint='test hint'),
+    RadioField('Radio', values=['One', 'Two', 'Three'], hint='test hint'),
     # PulldownField(
     #     'Pulldown', options=['One', 'Two', 'Three'], hint='test hint'),
     # ChosenSelectField(

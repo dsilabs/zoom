@@ -1709,3 +1709,59 @@ class CheckboxField(TextField):
         else:
             v = self.default
         return {self.name: v}
+
+
+class RadioField(TextField):
+    """Radio Field
+
+    >>> RadioField('Choice', value='One', values=['One','Two']).display_value()
+    'One'
+
+    >>> print(RadioField('Choice', value='One', values=['One','Two']).widget())
+    <span class="radio"><input checked class="radio" name="choice" type="radio" value="One" />One</span>
+    <span class="radio"><input class="radio" name="choice" type="radio" value="Two" />Two</span>
+    <BLANKLINE>
+
+    >>> r = RadioField('Choice',value='1',values=[('One','1'),('Two','2')])
+    >>> print(r.widget())
+    <span class="radio"><input checked class="radio" name="choice" type="radio" value="1" />One</span>
+    <span class="radio"><input class="radio" name="choice" type="radio" value="2" />Two</span>
+    <BLANKLINE>
+
+
+    >>> r.assign('1')
+    >>> r.evaluate()
+    {'choice': '1'}
+    >>> r.display_value()
+    '1'
+
+    """
+    values = []
+
+    def widget(self):
+        current_value = self.display_value()
+        result = []
+        name = self.name
+        for option in self.values:
+            if type(option) in (list, tuple) and len(option) == 2:
+                text, value = option
+            else:
+                text = value = option
+            label = self.label
+            checked = (value == current_value) and 'checked' or ''
+            result.append(
+                html.span(
+                    html.input(
+                        checked,
+                        type='radio',
+                        name=name,
+                        value=value,
+                        Class='radio'
+                    ) + text,
+                    Class='radio',
+                ) + '\n'
+            )
+            # '<span class="radio"><input type="radio" name="%s" value="%s" %sclass="radio" />%s</span>\n' % (name, value, checked, text))
+            # result.append(
+            # '<span class="radio"><input type="radio" name="%s" value="%s" %sclass="radio" />%s</span>\n' % (name, value, checked, text))
+        return ''.join(result)
