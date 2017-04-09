@@ -11,13 +11,14 @@ import types
 import datetime
 from decimal import Decimal
 
-from zoom.component import component
+from zoom.component import compose
 from zoom.render import render
 from zoom.utils import name_for
 from zoom.tools import (
     htmlquote,
     websafe,
     markdown,
+    ensure_listy,
 )
 import zoom.html as html
 from zoom.validators import (
@@ -1558,8 +1559,7 @@ class CheckboxesField(Field):
         return result
 
     def show(self):
-        value = has_iterator_protocol(self.value) and self.value or [self.value]
-        return layout_field(self.label, ', '.join(value))
+        return layout_field(self.label, ', '.join(ensure_listy(self.value)))
 
 
 class CheckboxField(TextField):
@@ -1873,6 +1873,8 @@ class PulldownField(TextField):
     value = None
     css_class = 'pulldown'
     select_layout = '<select class="{classed}" name="{name}" id="{name}">\n'
+    libs = []
+    styles = []
 
     def __init__(self, *a, **k):
         TextField.__init__(self, *a, **k)
@@ -1925,4 +1927,11 @@ class PulldownField(TextField):
             blank_option = '<option value=""></option>\n'
             result.insert(1, blank_option)
         result.append('</select>')
-        return ''.join(result)
+        return compose(''.join(result), libs=self.libs, styles=self.styles)
+
+
+class ChosenSelectField(PulldownField):
+    css_class = 'chosen'
+    libs = ['/static/zoom/chosen/chosen.jquery.js']
+    styles = ['/static/zoom/chosen/chosen.css']
+    select_layout = '<select data-placeholder="{place}" class="{classed}" name="{name}" id="{name}">\n'

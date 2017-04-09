@@ -56,8 +56,8 @@ form1 = Form(
     RadioField('Radio', values=['One', 'Two', 'Three'], hint='test hint'),
     PulldownField(
         'Pulldown', options=['One', 'Two', 'Three'], hint='test hint'),
-    # ChosenSelectField(
-    #     'Chosen Select', options=['One', 'Two', 'Three'], hint='test hint'),
+    ChosenSelectField(
+        'Chosen Select', options=['One', 'Two', 'Three'], hint='test hint'),
     # MultiselectField(
     #     'Multiselect', options=['One', 'Two', 'Three'], hint='test hint'),
     # ChosenMultiselectField(
