@@ -1,78 +1,247 @@
+/* navbars */
+.navbar {
+  min-height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.nav2 {
+  background: #f8f8f8;
+  border-bottom: 1px solid #dadada;
+}
+
+/* brand */
+a.navbar-brand {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 10px 0 10px;
+  color: white;
+}
+
+a:hover.navbar-brand {
+  color: #eee;
+}
+
+/* user info */
+.user-info {
+  height: 48px;
+  line-height: 48px;
+  font-size: 12px;
+  float: right;
+  padding: 0 15px;
+  color: #eee;
+}
+
 /* system menu */
-div.system_menu {
-  font-size: 0.8em;
+.system-menu {
+  font-size: 12px;
   display: inline;
 }
-div.system_menu ul {
+.system-menu ul {
   text-align: left;
   display: inline;
+  padding: 0;
 }
-div.system_menu li {
-  margin: 0 7px;
+.system-menu li {
   display: inline;
 }
-div.system_menu a {
-  height: 3em;
-  line-height: 3em;
+.system-menu a {
+  padding: 0 7px;
+  height: 48px;
+  line-height: 48px;
   color: #ddd;
   text-decoration: none;
 }
-div.system_menu a:hover {
+.system-menu a:hover {
   color: white;
 }
 
 /* main menu */
-div.main_menu {
+.main-menu {
   font-size: 14px;
-  padding: 1px;
   display: inline;
 }
-div.main_menu ul {
+.main-menu ul {
   text-align: left;
   display: inline;
-  line-height: 3em;
+  line-height: 48px;
+  padding: 0;
+  margin-left: -15px;
 }
-div.main_menu li {
+.main-menu li {
   display: inline;
 }
-div.main_menu a {
-  height: 3em;
-  line-height: 3em;
+.main-menu a {
+  height: 48px;
+  line-height: 48px;
   color: #ddd;
   text-decoration: none;
+  padding: 0 10px;
 }
-div.main_menu a:hover {
+.main-menu a:hover {
   color: white;
   background: #444;
 }
-div.main_menu a#current {
+.main-menu a#current {
   color: white;
   background: #222;
 }
 
 /* app menu */
-div.app_menu {
-  font-size: 12px;
-  background-color: #ccc;
+.app-menu {
+  background: #f8f8f8;
+  font-size: 13px;
 }
-div.app_menu ul {
+.app-menu ul {
   text-align: left;
   display: block;
+  margin: 0;
+  padding: 0;
 }
-div.app_menu li {
+.app-menu li {
   display: inline;
-  line-height: 25px;
+  line-height: 40px;
 }
-div.app_menu a {
-  color: #444;
+.app-menu a {
+  height: 40px;
+  line-height: 40px;
+  color: #888;
   text-decoration: none;
-  padding: 1em;
+  padding: 0 10px;
+  font-weight: bold;
 }
-div.app_menu a:hover {
+.app-menu a:hover {
   color: black;
   text-decoration: none;
 }
-div.app_menu a#current {
-  color: white;
-  background: #222;
+.app-menu a#current {
+  background: #cacaca;
+}
+
+@media (max-width: 979px) {
+  .app-menu {
+    margin-top: 0;
+  }
+}
+.navbar-zoom .navbar-inner {
+  background: #f36c00;
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f68a28), color-stop(100%, #f36c00));
+  background: -webkit-linear-gradient(top, #f68a28, #f36c00);
+  background: -moz-linear-gradient(top, #f68a28, #f36c00);
+  background: -o-linear-gradient(top, #f68a28, #f36c00);
+  background: -ms-linear-gradient(top, #f68a28, #f36c00);
+  background: linear-gradient(top, #f68a28, #f36c00);
+}
+
+.navbar-zoom .navbar-inner .nav {
+  float: right;
+}
+
+.navbar-zoom .brand {
+  color: #fff;
+  text-shadow: none;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.navbar-zoom .navbar-inner .nav li a {
+  color: #fff;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  text-shadow: none;
+  background: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  -webkit-transition: background 0.1s linear, opacity 0.1s linear;
+  -moz-transition: background 0.1s linear, opacity 0.1s linear;
+  -ms-transition: background 0.1s linear, opacity 0.1s linear;
+  -o-transition: background 0.1s linear, opacity 0.1s linear;
+  transition: background 0.1s linear, opacity 0.1s linear;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0.9;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.navbar-zoom .navbar-inner .nav li a:hover {
+  background: #f67d0f;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  color: #fff;
+  opacity: 1;
+}
+
+.nav {
+  color: black;
+}
+.nav > li > a:hover, .nav > li > a:focus {
+  background: #fff;
+}
+.nav .open > a {
+  background: #fff;
+}
+.nav .open > a:hover, .nav .open > a:focus {
+  background: #fff;
+}
+
+.navbar-zoom .navbar-inner .nav .dropdown-menu > li > a {
+  color: #428bca;
+  padding: 7px 15px;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.dropdown ul.dropdown-menu {
+  border-radius: 4px;
+  box-shadow: none;
+  margin-top: 5px;
+}
+.dropdown ul.dropdown-menu:before {
+  content: "";
+  border-bottom: 10px solid #fff;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  z-index: 10;
+}
+.dropdown ul.dropdown-menu:after {
+  content: "";
+  border-bottom: 12px solid #ccc;
+  border-right: 12px solid transparent;
+  border-left: 12px solid transparent;
+  position: absolute;
+  top: -12px;
+  right: 14px;
+  z-index: 9;
+}
+
+.navbar-zoom .navbar-inner .nav li a.system-menu-toggle {
+  font-size: 12px;
+}
+
+.dropdown a, .dropdown button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 7px 15px;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.pulldown-user-info {
+  padding: 0 15px;
+  font-size: 14px;
+  font-weight: bold;
 }

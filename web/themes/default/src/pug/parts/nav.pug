@@ -1,18 +1,31 @@
 
 // hamburger menu navigation
-.navbar.navbar-default
-  .navbar-header
-    button.navbar-toggle(type=button data-toggle=collapse data-target=".navbar-collapse")
-      .icon-bar
-      .icon-bar
-      .icon-bar
-    a.navbar-brand(href="/") <dz:site_name>
-  
-  .navbar-collapse.collapse
-    ul.nav.navbar-nav <dz:main_menu_items>
-    ul.nav.navbar-nav.navbar-right <dz:system_menu_items>
-    .user-info
-      span.user_info <dz:username>
+.navbar.navbar-zoom
+  .navbar-inner
+    .container
+      .navbar-header
+        button.navbar-toggle(type=button data-toggle=collapse data-target=".navbar-collapse")
+          .icon-bar
+          .icon-bar
+          .icon-bar
+        // a.navbar-brand(href="/") <dz:site_name>
+      
+      .navbar-collapse.collapse
+        .nav.navbar-nav.navbar-left
+          .main-menu
+            ul
+              <dz:main_menu_items>
+
+        .nav.navbar-nav.navbar-right
+          li.dropdown
+            a(href="#" class="dropdown-toggle system-menu-toggle" data-toggle="dropdown") <dz:username> <span class="caret"></span>
+            ul.dropdown-menu
+              .pulldown-user-info
+                | <dz:user_full_name>
+              <li class="divider"></li>
+              <dz:system_menu_items>
+              
 
 .nav2
-  .app-menu <dz:app_menu>
+  .container
+    .app-menu <dz:app_menu>

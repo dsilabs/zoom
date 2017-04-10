@@ -10,12 +10,13 @@
     <!-- standard css-->
     <link rel="stylesheet" href="/themes/default/css/content.css">
     <link rel="stylesheet" href="/themes/default/css/widget.css">
-    <link rel="stylesheet" href="/themes/default/css/navigation.css">
     <link rel="stylesheet" href="/themes/default/css/print.css" media="print">
     <link rel="stylesheet" href="/static/zoom/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/themes/default/css/style.css">
     <link rel="stylesheet" href="/themes/default/css/social.css">
     <link rel="stylesheet" href="/static/zoom/jquery-ui/themes/smoothness/jquery-ui.min.css">
+    <link rel="stylesheet" href="/themes/default/css/navigation.css">
+    <link rel="stylesheet" href="/themes/default/css/buttons.css">
     
     <!-- app specific css-->
     <dz:styles>
@@ -29,25 +30,42 @@
   </head>
   <body>
     <div class="wrapper">
-      <div class="container">
-        <!-- hamburger menu navigation-->
-        <div class="navbar navbar-default">
-          <div class="navbar-header">
-            <button class="navbar-toggle" data-target=".navbar-collapse">
-              <div class="icon-bar"></div>
-              <div class="icon-bar"></div>
-              <div class="icon-bar"></div>
-            </button><a class="navbar-brand" href="/"><dz:site_name></a>
-          </div>
-          <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav"><dz:main_menu_items></ul>
-            <ul class="nav navbar-nav navbar-right"><dz:system_menu_items></ul>
-            <div class="user-info"><span class="user_info"><dz:username></span></div>
+      <!-- hamburger menu navigation-->
+      <div class="navbar navbar-zoom">
+        <div class="navbar-inner">
+          <div class="container">
+            <div class="navbar-header">
+              <button class="navbar-toggle" data-target=".navbar-collapse">
+                <div class="icon-bar"></div>
+                <div class="icon-bar"></div>
+                <div class="icon-bar"></div>
+              </button>
+              <!-- a.navbar-brand(href="/") <dz:site_name>-->
+            </div>
+            <div class="navbar-collapse collapse">
+              <div class="nav navbar-nav navbar-left">
+                <div class="main-menu">
+                  <ul><dz:main_menu_items></ul>
+                </div>
+              </div>
+              <div class="nav navbar-nav navbar-right">
+                <li class="dropdown"><a class="dropdown-toggle system-menu-toggle" href="#" data-toggle="dropdown"><dz:username> <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <div class="pulldown-user-info"><dz:user_full_name></div><li class="divider"></li>
+<dz:system_menu_items>
+                  </ul>
+                </li>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="nav2">
+      </div>
+      <div class="nav2">
+        <div class="container">
           <div class="app-menu"><dz:app_menu></div>
         </div>
+      </div>
+      <div class="container">
         <div class="content"><dz:stdout>
 <dz:alerts>
 <dz:content>
@@ -55,17 +73,17 @@
       </div>
       <div class="push"></div>
     </div>
-    <div class="container">
-      <div class="bottom">
+    <div class="bottom">
+      <div class="container">
         <div class="footer">
           <div class="footer-left">
             <ul>
-              <li><a href="/privacy.html">privacy policy</a></li>
-              <li><a href="/terms.html">terms of use</a></li>
-              <li><a href="/contact.html">contact us</a></li>
+              <li><a href="/privacy.html">Privacy</a></li>
+              <li><a href="/terms.html">Terms</a></li>
+              <li><a href="/contact.html">Contact</a></li>
             </ul>
           </div>
-          <div class="footer-right"><dz:owner_link></div>
+          <div class="footer-right"><a href="/"><dz:site_name></a></div>
         </div>
       </div>
     </div>
@@ -77,10 +95,6 @@
   <script src="/static/zoom/jquery/jquery.min.js"></script>
   <script src="/static/zoom/jquery-ui/jquery-ui.min.js"></script>
   <script src="/static/zoom/bootstrap/bootstrap.min.js"></script>
-  <script src="/static/zoom/zoom.js"></script>
-  
-  <dz:libs>
-  <dz:js>
-  
-  <script src="/static/zoom/fouc.js"></script>
+  <script src="/static/zoom/zoom.js"></script><dz:libs>
+<dz:js><script src="/static/zoom/fouc.js"></script>
 </html>

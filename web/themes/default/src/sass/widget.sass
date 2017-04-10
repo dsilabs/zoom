@@ -222,31 +222,6 @@ select.pulldown
   font-size: 14px
 
 .content
-  .action, .button, .search_button, input.field_button
-    background: #325A90
-    line-height: 25px
-    font-weight: bold
-    font-size: 14px
-    font-family: Arial
-    padding: 5px 15px
-    color: white
-    min-width: 40px
-    border: 1px outset #aaaaaa
-    text-align: center
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-  .action:hover, .button:hover, .search_button:hover
-    background: #668FC8
-    text-decoration: none
-    color: white
-  input
-    &.button
-      height: 40px
-    &.field_button
-      height: 30px
-      padding: 0 15px
-
-.content
   fieldset
     border: 1px solid #ccc
     padding: 1em
@@ -291,10 +266,11 @@ div
       display: inline
 
 @media (max-width: 560px)
-  div.search
+  .search
     margin-top: 0.2em
     input.text_field
       width: 40%
+
 
 /* Actions
  *==========================
@@ -320,11 +296,6 @@ div
 /* Misc
  *==========================
 
-.user_info
-  font-size: 0.8em
-  display: inline
-  height: 40px
-
 .meta
   color: #555
   font-size: 0.8em
@@ -342,32 +313,53 @@ div
   margin-left: 4px
   font-size: 0.9em
 
-/* Message Boxes
+/* Alerts
  *==========================
-
-.content div
-  &.errors ul, &.warnings ul, &.messages ul
-    padding: 0.5em
-    border-style: solid
-    border-width: medium
+.content
+  // .errors ul, .warnings ul, .messages ul
+  //   padding: 15px
+  //   margin-bottom: 20px
+  //   border: 1px solid transparent
+  //   border-radius: 4px  
+  // 
+  // .errors li, .warnings li, .messages li
+  //   list-style-type: none
+  //   padding: 0.25em
+  //   margin: 0
+  .alert
+    padding: 0
     margin: 0
+    border: 1px solid transparent
+    border-radius: 4px
     margin-top: 5px
-  &.errors li, &.warnings li, &.messages li
+
+  .alert ul
+    padding: 0.5em
+    // border-style: solid
+    // border-width: medium
+    margin: 0
+    // margin-top: 5px
+  
+  .alert li
     list-style-type: none
     padding: 0.25em
     margin: 0
 
-.messages
-  color: green
-  background-color: #ddeedd
+  .alert.success
+    color: #3c763d
+    background-color: #dff0d8
+    border-color: #d6e9c6
 
-.warnings
-  color: #A66E00
-  background-color: #FFEA73
+  .alert.warning
+    color: #8a6d3b
+    background-color: #fcf8e3
+    border-color: #faebcc
 
-.errors
-  color: red
-  background-color: #eeddee
+  .alert.danger
+    color: #a94442
+    background-color: #f2dede
+    border-color: #ebccd1
+
 
 /* Tables
  *==========================
@@ -375,14 +367,20 @@ div
 .content
   table
     border-collapse: collapse
-    border: 1px solid #ccc
+    border-top: 1px solid #ccc
+    border-bottom: 1px solid #ccc
     background: white
   th, td
-    padding: 0.4em 1.0em
-    border: 1px solid #ccc
-  th
-    background-color: #d2e2f2
+    padding: 0.4em 12px 0.4em
+    border-top: 1px solid #ccc
     border-bottom: 1px solid #ccc
+  th
+    background-color: #f2f2f2
+    border-bottom: 1px solid #ccc
+    color: #999
+    font-weight: normal
+    font-size: 0.9em
+    background: #f2f2f2
   .transparent
     border: none
     background: none
@@ -407,44 +405,37 @@ div
     border-spacing: 0
     margin: 0
     padding: 0
-    border: 1px solid #ccc
+    border-top: 1px solid #ccc
+    border-bottom: 1px solid #ccc
     border-spacing: 0px
-    th
-      border-bottom: 1px solid #ccc
-      text-transform: capitalize
-    tbody
+    thead
+      // border-bottom: 1px solid #ccc
       th
-        color: black
-        background-color: #d2e2f2
         line-height: 25px
         text-align: left
-        padding-top: 0.3em
-        padding-bottom: 0.3em
-        padding-right: 0.3em
-        padding-left: 0.5em
+        // padding: 0.3em 0.5em
         margin: 0
         white-space: nowrap
         vertical-align: top
-        text-transform: capitalize
       > tr > td:first-child
         white-space: nowrap
-  tr
-    line-height: 25px
-    p
-      line-height: 1em
-    &:nth-child(odd)
-      background-color: #E8E8E8
-    &:hover
-      background-color: #B0B0B0
-  a
-    color: #284a80
-    text-decoration: none
-    &:visited
-      color: #284a80
-      text-decoration: none
-    &:hover
-      color: #4d84bd
-      text-decoration: underline
+    tbody
+      tr
+        line-height: 25px
+        &:hover
+          background-color: #ecf7ff
+        p
+          line-height: 1em
+        a
+          color: #284a80
+          text-decoration: none
+          &:visited
+            color: #284a80
+            text-decoration: none
+          &:hover
+            color: #4d84bd
+            text-decoration: underline
+
   div
     &.header
       display: inline-block
@@ -469,13 +460,13 @@ div
       font-size: 0.8em
       margin: 5px
       padding: 0
+
   h1, h2, h3
     font-size: 1em
     font-weight: bold
     margin: 0
     padding: 0
 
-.baselist
   a.action
     cursor: pointer
     text-decoration: none
