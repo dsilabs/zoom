@@ -4,11 +4,10 @@
 
 import logging
 
-from zoom.component import composition#, requires
+from zoom.component import composition, Component
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
-from zoom.utils import pp
 
 import zoom.html as html
 import zoom.apps
@@ -168,9 +167,14 @@ class Page(object):
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
 
-        page_header = PageHeader(page=self).render()
         save_content = self.content
-        full_page = page_header + rendered(self.content)
+
+        if self.title or self.subtitle or self.actions or self.search:
+            page_header = PageHeader(page=self).render()
+            full_page = page_header + rendered(self.content)
+        else:
+            full_page = Component(rendered(self.content))
+
         self.content = ''.join(full_page.parts['html'])
         content = zoom.render.apply_helpers(template, self, providers)
         self.content = save_content
