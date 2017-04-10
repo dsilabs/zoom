@@ -79,14 +79,19 @@ class Page(object):
 
             pop = request.session.__dict__.pop
 
+            def show(alerts, Class):
+                if alerts:
+                    return html.div(html.ul(alerts), Class='alert %s' % Class)
+                return ''
+
             success_alerts = pop('system_successes', [])
-            successes = html.div(html.ul(success_alerts), Class='messages')
+            successes = show(success_alerts, 'success')
 
             warning_alerts = pop('system_warnings', [])
-            warnings = html.div(html.ul(warning_alerts), Class='warnings')
+            warnings = show(warning_alerts, 'warning')
 
             error_alerts = pop('system_errors', [])
-            errors = html.div(html.ul(error_alerts), Class='errors')
+            errors = show(error_alerts, 'danger')
 
             return errors + warnings + successes
 
@@ -110,7 +115,7 @@ class Page(object):
                 </script>
                 """.format(code)
                 return result
-            return 'test'
+            return ''
 
         def get_libs():
             wrapper = '<script src="{}"></script>'
