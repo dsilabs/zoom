@@ -101,7 +101,7 @@ class Site(object):
     def helpers(self):
         """provide helpers"""
         return dict(
-            site_name=self.name,
+            site_name=self.title,
             site_url=self.url,
             abs_site_url=self.abs_url,
             owner_name=self.owner_name,
