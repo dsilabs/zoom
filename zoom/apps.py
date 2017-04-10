@@ -112,15 +112,19 @@ class AppProxy(object):
         self.name = name
         self.filename = filename
         self.url = site.url + '/' + name
-        self.link = link_to(self.name, self.url)
         self.path = os.path.dirname(filename)
         self.method = getattr(imp.load_source('app', self.filename), 'app')
         self.site = site
         self.config_parser = configparser.ConfigParser()
         self.config = self.get_config(DEFAULT_SETTINGS)
+        self.link = link_to(self.title, self.url)
 
         self.visible = self.config.get('visible')
         self.enabled = self.config.get('enabled')
+
+    @property
+    def title(self):
+        return self.config.get('title', self.name) or self.name.capitalize()
 
     def run(self, request):
         """run the app"""
