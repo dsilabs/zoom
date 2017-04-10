@@ -24,14 +24,14 @@ from zoom.jsonz import dumps
 class Response(object):
     """web response"""
 
-    def __init__(self, content='', status='200 OK'):
+    def __init__(self, content=b'', status='200 OK'):
         self.content = content
         self.status = status
         self.headers = OrderedDict()
 
     def render_doc(self):
         """Renders the payload"""
-        return self.content.encode('utf8')
+        return self.content
 
     def render(self):
         """Renders the entire response"""
@@ -78,6 +78,10 @@ class ICOResponse(Response):
         self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
+    def render_doc(self):
+        """Renders the payload"""
+        return self.content
+
 
 class JPGResponse(Response):
     """JPG image response"""
@@ -102,6 +106,10 @@ class TextResponse(Response):
         Response.__init__(self, content, status)
         self.headers['Content-type'] = 'text'
         self.headers['Cache-Control'] = 'no-cache'
+
+    def render_doc(self):
+        """Renders the payload"""
+        return self.content.encode('utf8')
 
 
 class HTMLResponse(TextResponse):
@@ -187,11 +195,11 @@ class CSSResponse(Response):
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
-class RedirectResponse(Response):
+class RedirectResponse(TextResponse):
     """Redirect response"""
 
     def __init__(self, url):
-        Response.__init__(self)
+        Response.__init__(self, '')
         self.status = '302 Found'
         self.headers['Location'] = url
 
