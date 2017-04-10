@@ -173,7 +173,7 @@ class Page(object):
             page_header = PageHeader(page=self).render()
             full_page = page_header + rendered(self.content)
         else:
-            full_page = Component(rendered(self.content))
+            full_page = Component() + rendered(self.content)
 
         self.content = ''.join(full_page.parts['html'])
         content = zoom.render.apply_helpers(template, self, providers)
