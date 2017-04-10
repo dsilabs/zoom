@@ -78,37 +78,16 @@ class Page(object):
 
         def get_alerts(request):
 
-            # def get(kind):
-            #     try:
-            #         return getattr(session, 'system_' + kind)
-            #         # delattr(session, 'system_' + kind)
-            #     except AttributeError:
-            #         return []
-            logger = logging.getLogger(__name__)
-            logger.debug(pp(request.session.__dict__))
-
             pop = request.session.__dict__.pop
 
             success_alerts = pop('system_successes', [])
-            if success_alerts:
-                logger.debug('success: %r', success_alerts)
-                successes = html.div(html.ul(success_alerts), Class='messages')
-            else:
-                successes = ''
+            successes = html.div(html.ul(success_alerts), Class='messages')
 
             warning_alerts = pop('system_warnings', [])
-            if warning_alerts:
-                logger.debug('warnings: %r', warning_alerts)
-                warnings = html.div(html.ul(warning_alerts), Class='warnings')
-            else:
-                warnings = ''
+            warnings = html.div(html.ul(warning_alerts), Class='warnings')
 
             error_alerts = pop('system_errors', [])
-            # if error_alerts:
-            #     logger.debug('errors: %r', error_alerts)
             errors = html.div(html.ul(error_alerts), Class='errors')
-            # else:
-            #     errors = ''
 
             return errors + warnings + successes
 
