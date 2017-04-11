@@ -99,3 +99,7 @@ a:hover {
   background-color: #ccc;
   padding: 2px 20px 2px 10px;
 }
+
+pre {
+  margin-top: 5px;
+}
