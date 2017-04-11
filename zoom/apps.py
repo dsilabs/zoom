@@ -113,6 +113,7 @@ class AppProxy(object):
         self.name = name
         self.filename = filename
         self.url = site.url + '/' + name
+        self.abs_url = site.abs_url + '/' + name
         self.path = os.path.dirname(filename)
         self.method = getattr(imp.load_source('app', self.filename), 'app')
         self.site = site
