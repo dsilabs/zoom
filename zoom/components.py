@@ -25,7 +25,7 @@ def as_actions(items):
     for item in reversed(items):
         if type(item) == str:
             text = item
-            url = url_for(id_for(item))
+            url = url_for('./' + id_for(item))
         elif hasattr(item, '__iter__'):
             text, url = item[:2]
         else:

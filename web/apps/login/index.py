@@ -17,13 +17,13 @@ class LoginForm(DynamicView):
 
     @property
     def registration_link(self):
-        if self.user.can('register'):
+        if self.user.can_run('register'):
             return html.a('New User?', href='/register')
         return ''
 
     @property
     def forgot_password(self):
-        if self.user.can('forgot'):
+        if self.user.can_run('forgot'):
             return render('views/forgot_password.html')
         return ''
 

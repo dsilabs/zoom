@@ -5,7 +5,9 @@
 import logging
 
 from zoom.browse import browse
-from zoom.helpers import url_for_page
+from zoom.fields import ButtonField
+from zoom.forms import form_for
+from zoom.helpers import url_for_item
 from zoom.models import Model
 from zoom.store import EntityStore
 from zoom.mvc import View, Controller
@@ -85,6 +87,14 @@ class CollectionView(View):
         return page(content, title=c.name, actions=actions, search=q)
 
 
+    def new(self, *args, **kwargs):
+        """Return a New Item form"""
+        c = self.collection
+        c.user.authorize('create', c)
+        form = form_for(c.fields, ButtonField('Create', cancel=c.url))
+        return page(form, title='New '+c.item_name)
+
+
 class CollectionController(Controller):
     """Perform operations on a Collection"""
 
@@ -120,7 +130,7 @@ class Collection(object):
         self.fields = callable(fields) and fields() or fields
         self.item_name = get('item_name', name_from(fields))
         self.name = get('name', self.item_name + 's')
-        self.url = get('url', url_for_page())
+        self.url = get('url', url_for_item())
         self.filter = get('filter', None)
         self.labels = get('labels', self.calc_labels())
         self.columns = get('labels', self.calc_columns())

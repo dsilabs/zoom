@@ -9,7 +9,7 @@ from zoom.fields import Fields
 import zoom.html as html
 
 
-def form_for(content=None, **kwargs):
+def form_for(*args, **kwargs):
     """returns a form with optional hidden values
 
     >>> print(form_for('test'))
@@ -28,6 +28,8 @@ def form_for(content=None, **kwargs):
     action = params.pop('action', '<dz:request_path>')
     enctype = params.pop('enctype', 'application/x-www-form-urlencoded')
 
+    content = [type(arg) == str and arg or arg.edit() for arg in args if arg]
+
     t = []
     for key, value in params.items():
         t.append(
@@ -41,7 +43,7 @@ def form_for(content=None, **kwargs):
 
     return html.tag(
         'form',
-        '\n' + '\n'.join(t + [content or '']) + '\n',
+        '\n' + '\n'.join(t + content) + '\n',
         action=action,
         name=name,
         id=name,
