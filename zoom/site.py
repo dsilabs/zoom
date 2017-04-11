@@ -84,6 +84,13 @@ class Site(object):
             port,
         )
 
+    @property
+    def apps_paths(self):
+        isdir = os.path.isdir
+        apps_paths = self.config.get('apps', 'path').split(';')
+        return apps_paths
+        return filter(isdir, apps_paths)
+
     def get_template(self, name=None):
         template = name or 'default'
         filename = os.path.join(self.theme_path, template + '.html')
