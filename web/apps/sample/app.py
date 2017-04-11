@@ -10,4 +10,4 @@ import logging
 from zoom.apps import App
 
 app = App()
-app.menu = 'Content', 'Fields', 'Alerts'
+app.menu = 'Content', 'Fields', 'Collection', 'Alerts'
