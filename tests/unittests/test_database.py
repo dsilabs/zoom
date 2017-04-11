@@ -217,7 +217,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             host='database',
             user='testuser',
             passwd='password',
-            db='test'
+            db='zoomtest'
         )
         self.create_cmd  = """
             create table dzdb_test_table
