@@ -220,9 +220,21 @@ class User(Record):
         """test if user can run an app"""
         return self.is_admin or self.is_developer or app_name in self.apps
 
-    def can(self, action, object=None):
-        """test if user can peform action on an object"""
-        return True
+    def can(self, action, thing):
+        """test to see if user can action a thing object.
+
+        Object thing must provide allows(user, action) method.
+        """
+        return bool(thing and thing.allows(self, action))
+
+    def authorize(self, action, thing):
+        """authorize a user to perform an action on thing
+
+        If user is not allowed to perform the action an exception is raised.
+        Object thing must provide allows(user, action) method.
+        """
+        if not thing.allows(self, action):
+            raise UnauthorizedException('Unauthorized')
 
     def helpers(self):
         """provide user helpers"""
