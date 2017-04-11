@@ -22,7 +22,8 @@ def as_attr(text):
     return text.replace('-', '_').lower()
 
 
-def evaluate(obj, name, *a, **k):
+def evaluate(obj, name, route, data):
+    """Get the value of an attribute"""
     try:
         attr = getattr(obj, as_attr(name))
     except AttributeError:
@@ -30,7 +31,7 @@ def evaluate(obj, name, *a, **k):
     if attr:
         method = callable(attr) and attr
         if method:
-            return method(*a, **k)
+            return method(*route, **data)
         else:
             return attr
 
@@ -67,7 +68,7 @@ class Dispatcher(object):
 
     def __call__(self, *args, **kwargs):
         method_name = len(args) and args[0] or 'index'
-        return evaluate(self, method_name, *args[1:], **kwargs)
+        return evaluate(self, method_name, args[1:], kwargs)
 
 
 class View(Dispatcher):
@@ -89,7 +90,7 @@ class View(Dispatcher):
 
             if hasattr(self, view_name):
                 """Show a specific collection view"""
-                result = evaluate(self, view_name, *a[1:], **inputs)
+                result = evaluate(self, view_name, a[1:], inputs)
 
             elif len(a) == 1:
                 """Show the default view of an item"""
@@ -105,14 +106,14 @@ class View(Dispatcher):
                         raise
 
             elif len(a) > 1:
-                result = evaluate(self, a[-1:][0], '/'.join(a[:-1]), **inputs)
+                result = evaluate(self, a[-1:][0], ('/'.join(a[:-1])), inputs)
 
             else:
                 """No view"""
                 result = None
         else:
             """Default collection view"""
-            result = evaluate(self, 'index', **inputs)
+            result = evaluate(self, 'index', (), inputs)
 
         if result:
             return result
@@ -234,7 +235,7 @@ class Controller(Dispatcher):
         # Buttons
         if buttons:
             button_name = list(buttons.keys())[0]
-            result = evaluate(self, button_name, *args, **inputs)
+            result = evaluate(self, button_name, args, inputs)
             if result:
                 return result
 
@@ -242,12 +243,12 @@ class Controller(Dispatcher):
 
         # Collection methods
         if hasattr(self, method_name):
-            result = evaluate(self, method_name, *args[1:], **inputs)
+            result = evaluate(self, method_name, args[1:], inputs)
 
         # Object methods
         elif len(args) > 1:
             method_name = len(args) and as_attr(args[-1:][0])
-            result = evaluate(self, method_name, *args[:-1], **inputs)
+            result = evaluate(self, method_name, args[:-1], inputs)
 
         # If controller returned a result, we're done
         if result:
@@ -266,13 +267,13 @@ class Controller(Dispatcher):
 #             raise UnauthorizedException('Unauthorized')
 #         return authorize_and_call
 #     return wrapper
-# 
-# 
+#
+#
 # def can(action):
 #     """activity based authentication
-# 
+#
 #     Tests to see if user can perform some activity.
-# 
+#
 #         >>> class TheUser(object):
 #         ...
 #         ...     def __init__(self, name):
@@ -280,7 +281,7 @@ class Controller(Dispatcher):
 #         ...
 #         ...     def can(self, action, thing):
 #         ...         return thing and thing.allows(self, action)
-# 
+#
 #         >>> class Thing(object):
 #         ...
 #         ...     def __init__(self, name):
@@ -302,42 +303,42 @@ class Controller(Dispatcher):
 #         ...     def zap(self):
 #         ...         return 'zapped!'
 #         ...
-# 
+#
 #         >>> user.name = 'joe'
 #         >>> user.name
 #         'joe'
-# 
+#
 #         >>> user.can('edit', None)
 #         False
-# 
+#
 #         >>> thing = Thing(name='rain')
-# 
+#
 #         >>> user.can('edit', thing)
 #         True
-# 
+#
 #         >>> user.can('delete', thing)
 #         False
-# 
+#
 #         >>> try:
 #         ...    thing.zap()
 #         ... except UnauthorizedException, e:
 #         ...    'access denied'
 #         'access denied'
-# 
+#
 #         >>> user.name = 'sam'
 #         >>> try:
 #         ...    thing.update('clouds')
 #         ... except UnauthorizedException, e:
 #         ...    'sunshine prevails'
 #         'sunshine prevails'
-# 
+#
 #         >>> thing.zap()
 #         'zapped!'
-# 
+#
 #         >>> user = TheUser(name='sally')
 #         >>> user.can('edit', thing)
 #         False
-# 
+#
 #     """
 #     def wrapper(func):
 #         def authorize_and_call(self, *args, **kwargs):
