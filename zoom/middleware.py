@@ -298,6 +298,28 @@ def trap_errors(request, handler, *rest):
         return TextResponse(traceback.format_exc(), status)
 
 
+def display_errors(request, handler, *rest):
+    """Display errors for developers
+    """
+    try:
+        return handler(request, *rest)
+    except Exception:
+        content = """
+        <h2>Exception</h2>
+        {}
+
+        <h2>Request</h2>
+        <pre>{}</pre>
+        """.format(
+            html.pre(traceback.format_exc()),
+            str(request),
+        )
+        return page(
+                content,
+                title='Application Error'
+            ).render(request)
+
+
 def reset_modules(request, handler, *rest):
     """reset the modules to a known starting set
 
@@ -345,6 +367,7 @@ def handle(request, handlers=None):
         zoom.component.handler,
         check_csrf,
         zoom.user.user_handler,
+        display_errors,
         zoom.apps.apps_handler,
         not_found,
     )
