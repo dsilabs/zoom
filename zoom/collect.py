@@ -5,16 +5,18 @@
 import logging
 
 from zoom.browse import browse
+from zoom.components import success
 from zoom.fields import ButtonField
 from zoom.forms import form_for
-from zoom.helpers import url_for_item
+from zoom.helpers import abs_url_for
 from zoom.models import Model
 from zoom.store import EntityStore
 from zoom.mvc import View, Controller
 from zoom.utils import name_for
 from zoom.page import page
 from zoom.tools import redirect_to
-
+from zoom.tools import now
+import zoom.html as html
 
 class CollectionStore(object):
     """Decorate a Store
@@ -71,7 +73,7 @@ class CollectionView(View):
         items = sorted(filtered, key=c.order)
 
         if len(items) != 1:
-            footer_name = c.name
+            footer_name = c.title
         else:
             footer_name = c.item_name
         footer = '%s %s' % (len(items), footer_name.lower())
@@ -84,7 +86,7 @@ class CollectionView(View):
             footer=footer
         )
 
-        return page(content, title=c.name, actions=actions, search=q)
+        return page(content, title=c.title, actions=actions, search=q)
 
 
     def new(self, *args, **kwargs):
@@ -92,7 +94,7 @@ class CollectionView(View):
         c = self.collection
         c.user.authorize('create', c)
         form = form_for(c.fields, ButtonField('Create', cancel=c.url))
-        return page(form, title='New '+c.item_name)
+        return page(form, title='New '+c.item_title)
 
 
 class CollectionController(Controller):
@@ -104,7 +106,41 @@ class CollectionController(Controller):
 
     def create_button(self, *args, **data):
         """Create a record"""
-        pass
+        collection = self.collection
+        user = collection.user
+        if collection.fields.validate(data):
+            record = collection.model(
+                collection.fields,
+                created=now(),
+                updated=now(),
+                owner_id=user._id,
+                created_by=user._id,
+                updated_by=user._id,
+            )
+            try:
+                # convert property to data attribute
+                # so it gets stored as data
+                record.key = record.key
+            except AttributeError:
+                # can happen when key depends on database
+                # auto-increment value.
+                pass
+
+            # collection.store.put(record)
+            logger = logging.getLogger(__name__)
+            logger.info(
+                '%s added %s %s' % (
+                    user.link,
+                    collection.item_name.lower(),
+                    record.link),
+                )
+            logger.debug('redirect to: {}'.format(collection.url))
+            # content = html.pre(record) + html.pre(collection)
+            # return page(content, title='Saving')
+            # return page('redirecting to {}'.format(collection.url), title='ok')
+            success('record saved')
+            return redirect_to(collection.url)
+        # return page('got it')
         # store = self.collection.store
         #
         # self.collection.form.save(data)
@@ -117,6 +153,7 @@ class Collection(object):
     view = CollectionView
     store_type = EntityStore
     store = None
+    url = None
 
     def __init__(self, fields, **kwargs):
 
@@ -124,13 +161,18 @@ class Collection(object):
             """make a name from the field function provided"""
             return name_for(
                 fields.__name__.rstrip('_fields').rstrip('_form')
-            ).capitalize()
+            )
+
+        def default_url():
+            return
 
         get = kwargs.pop
         self.fields = callable(fields) and fields() or fields
         self.item_name = get('item_name', name_from(fields))
         self.name = get('name', self.item_name + 's')
-        self.url = get('url', url_for_item())
+        self.title = self.name.capitalize()
+        self.item_title = self.item_name.capitalize()
+        # self.url = get('url', url_for_item())
         self.filter = get('filter', None)
         self.labels = get('labels', self.calc_labels())
         self.columns = get('labels', self.calc_columns())
@@ -176,6 +218,10 @@ class Collection(object):
         self.user = request.user
         self.request = request
         self.route = route
+        logger.debug('redirect %r', request.route[:1])
+        self.url = self.url or '/'.join(
+            [request.site.abs_url] + request.route[:2],
+        )
         self.store = self.store or (
             self.store_type(
                 request.site.db,
@@ -191,4 +237,4 @@ class Collection(object):
         return self.handle(route, request)
 
     def __str__(self):
-        return 'collection of ' + str(self.store)
+        return 'collection of ' + str(self.store.kind)
