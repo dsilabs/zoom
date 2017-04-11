@@ -2,10 +2,17 @@
     zoom.tools
 """
 
+import datetime
+
 from markdown import Markdown
 from zoom.response import RedirectResponse
 from zoom.helpers import abs_url_for, url_for_page
 from zoom.utils import trim
+
+
+def now():
+    """Return the current time"""
+    return datetime.datetime.now()
 
 
 def is_listy(obj):
