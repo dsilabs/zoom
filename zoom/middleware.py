@@ -310,12 +310,14 @@ def reset_modules(request, handler, *rest):
     # way intentionally.
     global init_modules
     if 'init_modules' in globals():
-        for module in [x for x in sys.modules if x not in init_modules]:
+        current_modules = list(sys.modules)
+        removable = [x for x in current_modules if x not in init_modules]
+        for module in removable:
             del sys.modules[module]
         logger = logging.getLogger(__name__)
-        logger.debug('resetting modules')
+        logger.debug('reset_modules removed: %r', removable)
     else:
-        init_modules = sys.modules.keys()
+        init_modules = list(sys.modules)
     return handler(request, *rest)
 
 
