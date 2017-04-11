@@ -5,6 +5,7 @@
 """
 
 from zoom.utils import DefaultRecord, id_for
+from zoom.helpers import link_to, url_for_item
 
 
 class Model(DefaultRecord):
