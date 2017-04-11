@@ -298,6 +298,27 @@ def trap_errors(request, handler, *rest):
         return TextResponse(traceback.format_exc(), status)
 
 
+def reset_modules(request, handler, *rest):
+    """reset the modules to a known starting set
+
+    Memorizes the modules currently in use and then removes any other
+    modules when called again.  This is useful during development
+    so changes can be tried without restarting the server.
+    """
+    # pylint: disable=global-variable-undefined, invalid-name
+    # We know init_modules is undefined.  We are using it this
+    # way intentionally.
+    global init_modules
+    if 'init_modules' in globals():
+        for module in [x for x in sys.modules if x not in init_modules]:
+            del sys.modules[module]
+        logger = logging.getLogger(__name__)
+        logger.debug('resetting modules')
+    else:
+        init_modules = sys.modules.keys()
+    return handler(request, *rest)
+
+
 def _handle(request, handler, *rest):
     """invoke the next handler"""
     return handler(request, *rest)
@@ -312,6 +333,7 @@ def handle(request, handlers=None):
         serve_static,
         serve_images,
         serve_html,
+        reset_modules,
         zoom.cookies.cookie_handler,
         capture_stdout,
         zoom.site.site_handler,
