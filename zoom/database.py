@@ -456,7 +456,7 @@ def setup_test():
     db = database(
         'mysql',
         host='database',
-        db='test',
+        db='zoomtest',
         user='testuser',
         passwd='password'
     )

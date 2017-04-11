@@ -251,7 +251,8 @@ def get_apps(request):
     """get list of apps installed on this site"""
     logger = logging.getLogger(__name__)
     result = []
-    apps_paths = request.site.config.get('apps', 'path').split(';')
+
+    apps_paths = request.site.apps_paths
 
     for app_path in apps_paths:
         path = os.path.abspath(
@@ -274,7 +275,9 @@ def get_apps(request):
 def load_app(site, name):
     """get the location of an app by name"""
     logger = logging.getLogger(__name__)
-    apps_paths = site.config.get('apps', 'path').split(';')
+
+    apps_paths = site.apps_paths
+    logger.debug('apps paths: %s', list(apps_paths))
     for path in apps_paths:
         app_path = os.path.abspath(
             os.path.join(site.path, path, name)
@@ -330,8 +333,18 @@ def handle(request):
         app = load_app(request.site, app_name)
         if app and app.enabled and user.can_run(app_name):
             logger.debug('redirecting to default app %r', app_name)
-            return redirect_to(app.url)
+            return app.run(request)
 
+        elif app and app.enabled:
+            logger.debug('user %r cannot run %r', user.username, app_name)
+
+        elif app:
+            logger.debug('app %r is disabled', app_name)
+
+        else:
+            logger.debug('unable to load app %r', app_name)
+
+    logger.debug('using NoApp()')
     request.app = NoApp()
 
 
