@@ -8,15 +8,13 @@ from zoom.browse import browse
 from zoom.components import success
 from zoom.fields import ButtonField
 from zoom.forms import form_for
-from zoom.helpers import abs_url_for, link_to
+from zoom.helpers import link_to
 from zoom.models import Model
 from zoom.store import EntityStore
 from zoom.mvc import View, Controller
-from zoom.utils import name_for
+from zoom.utils import name_for, id_for
 from zoom.page import page
-from zoom.tools import redirect_to
-from zoom.tools import now
-import zoom.html as html
+from zoom.tools import redirect_to, now
 
 
 def shared_collection_policy(group):
@@ -39,6 +37,21 @@ def shared_collection_policy(group):
 
         return actions.get(action)(user)
     return policy
+
+
+def locate(collection, key):
+    """locate a record"""
+    def scan(store, key):
+        for rec in store:
+            if rec.key == key:
+                return rec
+    return (
+        key.isdigit() and
+        collection.store.get(key) or
+        collection.store.first(key=key) or
+        scan(collection.store, key)
+    )
+
 
 class CollectionStore(object):
     """Decorate a Store
@@ -119,6 +132,51 @@ class CollectionView(View):
         form = form_for(c.fields, ButtonField('Create', cancel=c.url))
         return page(form, title='New '+c.item_title)
 
+    def show(self, key):
+        """show a record"""
+        def action_for(record, name):
+            return name, '/'.join([record.url, id_for(name)])
+
+        def actions_for(record, *names):
+            return [action_for(record, n) for n in names]
+
+        c = self.collection
+        user = c.user
+        record = locate(c, key)
+        if record:
+            user.authorize('read', record)
+
+            actions = []
+            if user.can('update', record):
+                actions.append(action_for(record, 'Edit'))
+            if user.can('delete', record):
+                actions.append(action_for(record, 'Delete'))
+            c.fields.initialize(c.model(record))
+
+            if 'updated' in record and 'updated_by' in record:
+                memo = (
+                    '<div class="meta" style="float:right">'
+                    ' record updated %(updated)s by %(updated_by)s'
+                    '</div>'
+                    '<div style="clear:both"></div>'
+                ) % record
+            else:
+                memo = ''
+
+            return page(
+                c.fields.show() + memo,
+                title=c.item_title,
+                actions=actions
+            )
+        else:
+            raise PageMissingException
+
+    def edit(self, key):
+        return page('edit pressed')
+
+    def delete(self, key):
+        return page('delete pressed')
+
 
 class CollectionController(Controller):
     """Perform operations on a Collection"""
@@ -157,16 +215,9 @@ class CollectionController(Controller):
                     collection.item_name.lower(),
                     record.link),
                 )
-            # logger.debug('redirect to: {}'.format(collection.url))
-            # content = html.pre(record) + html.pre(collection)
-            # return page(content, title='Saving')
-            # return page('redirecting to {}'.format(collection.url), title='ok')
+
             success('record saved')
             return redirect_to(collection.url)
-        # return page('got it')
-        # store = self.collection.store
-        #
-        # self.collection.form.save(data)
 
 
 class Collection(object):
