@@ -5,7 +5,7 @@
 import logging
 
 from zoom.browse import browse
-from zoom.components import success
+from zoom.components import success, error
 from zoom.fields import ButtonField
 from zoom.forms import form_for, delete_form
 from zoom.helpers import link_to
@@ -171,8 +171,23 @@ class CollectionView(View):
         else:
             raise PageMissingException
 
-    def edit(self, key):
-        return page('edit pressed')
+    def edit(self, key, **data):
+        c = self.collection
+        user = c.user
+
+        user.authorize('update', c)
+
+        record = locate(c, key)
+        if record:
+            user.authorize('read', record)
+            user.authorize('update', record)
+
+            c.fields.initialize(record)
+            c.fields.update(data)
+            form = form_for(c.fields, ButtonField('Save', cancel=c.url))
+            return page(form, title=c.item_title)
+        else:
+            return page('%s missing' % key)
 
     def delete(self, key, confirm='yes'):
         if confirm == 'yes':
@@ -221,6 +236,39 @@ class CollectionController(Controller):
 
             success('record saved')
             return redirect_to(collection.url)
+
+    def save_button(self, key, *a, **data):
+        collection = self.collection
+        user = collection.user
+
+        user.authorize('update', collection)
+
+        if collection.fields.validate(data):
+            record = locate(collection, key)
+            if record:
+                user.authorize('update', record)
+                record.update(collection.fields)
+                record.pop('key', None)
+                if record.key != key and locate(collection, record.key):
+                    error('That {} already exists'.format(collection.item_name))
+                else:
+                    record.updated = now()
+                    record.updated_by = user._id
+
+                    # convert property to data attribute
+                    # so it gets stored as data
+                    record.key = record.key
+
+                    collection.store.put(record)
+                    logger = logging.getLogger(__name__)
+                    logger.info(
+                        '%s edited %s %s' % (
+                            user.link,
+                            collection.item_name.lower(),
+                            record.link
+                        )
+                    )
+                    return redirect_to(record.url)
 
 
     def delete(self, key, confirm='yes'):
