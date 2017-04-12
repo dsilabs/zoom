@@ -152,9 +152,7 @@ class AppProxy(object):
         route = self.site.request.route
         logger = logging.getLogger(__name__)
         logger.debug('constructing menu')
-        logger.debug(route)
         menu = getattr(self.method, 'menu', [])
-        logger.debug(menu)
         selected = (
             len(route) > 2 and route[0] == 'content' and route[2] or
             len(route) > 1 and route[1] or
@@ -268,7 +266,6 @@ def get_apps(request):
             if os.path.exists(filename):
                 result.append(AppProxy(app, filename, request.site))
 
-    logger.debug(apps_paths)
     logger.debug('%s apps found', len(result))
     return result
 
@@ -278,12 +275,10 @@ def load_app(site, name):
     logger = logging.getLogger(__name__)
 
     apps_paths = site.apps_paths
-    logger.debug('apps paths: %s', list(apps_paths))
     for path in apps_paths:
         app_path = os.path.abspath(
             os.path.join(site.path, path, name)
         )
-        logger.debug('checking %s', app_path)
         filename = os.path.join(app_path, 'app.py')
         if os.path.exists(filename):
             logger.debug('located app %s', app_path)
