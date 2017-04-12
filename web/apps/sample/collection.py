@@ -3,14 +3,9 @@
 """
 
 import zoom.collect
-from zoom.fields import (Fields, TextField, DateField, RadioField, EditField)
 import zoom.models
+from zoom.fields import (Fields, TextField, DateField, RadioField, EditField)
 from zoom.validators import required, MinimumLength
-from zoom.page import page
-
-# class SampleContact(zoom.models.Model):
-#     """Contacts"""
-#     pass
 
 
 statuses = [

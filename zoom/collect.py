@@ -8,7 +8,7 @@ from zoom.browse import browse
 from zoom.components import success
 from zoom.fields import ButtonField
 from zoom.forms import form_for
-from zoom.helpers import abs_url_for
+from zoom.helpers import abs_url_for, link_to
 from zoom.models import Model
 from zoom.store import EntityStore
 from zoom.mvc import View, Controller
@@ -17,6 +17,28 @@ from zoom.page import page
 from zoom.tools import redirect_to
 from zoom.tools import now
 import zoom.html as html
+
+
+def shared_collection_policy(group):
+    """Authourization policy for a shared collection
+    """
+    def policy(item, user, action):
+        """Policy rules for shared collection"""
+        def is_manager(user):
+            return user.is_member('managers')
+
+        actions = {
+            'create': is_manager,
+            'read': is_manager,
+            'update': is_manager,
+            'delete': is_manager,
+        }
+
+        if action not in actions:
+            raise Exception('action missing: {}'.format(action))
+
+        return actions.get(action)(user)
+    return policy
 
 class CollectionStore(object):
     """Decorate a Store
@@ -28,17 +50,18 @@ class CollectionStore(object):
     def __init__(self, store):
         self.store = store
 
-    # def create(self):
-    #     record.created = now
-    #     record.updated = now
-    #     record.owner = user.username
-    #     record.owner_id = user.user_id
-    #     record.created_by = user.username
-    #     record.updated_by = user.username
-
 
 class CollectionModel(Model):
-    pass
+    """CollectionModel"""
+
+    @property
+    def link(self):
+        """Return a link"""
+        return link_to(self.name, self.url)
+
+    def allows(self, user, action):
+        """Item level policy"""
+        return True
 
 
 class CollectionView(View):
@@ -54,12 +77,13 @@ class CollectionView(View):
         def matches(item, search_text):
             """match a search by field values"""
             terms = search_text and search_text.split()
-            f.update(item)
-            v = repr(f.display_value()).lower()
+            fields.update(item)
+            v = repr(fields.display_value()).lower()
             return terms and not any(t.lower() not in v for t in terms)
 
         c = self.collection
         user = c.user
+        fields = c.fields
 
         if c.request.route[-1:] == ['index']:
             return redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
@@ -70,7 +94,7 @@ class CollectionView(View):
         matching = (i for i in authorized if not q or matches(i, q))
         filtered = (not q and hasattr(c, 'filter') and
                     c.filter and filter(c.filter, matching)) or matching
-        items = sorted(filtered, key=c.order)
+        items = sorted(authorized, key=c.order)
 
         if len(items) != 1:
             footer_name = c.title
@@ -87,7 +111,6 @@ class CollectionView(View):
         )
 
         return page(content, title=c.title, actions=actions, search=q)
-
 
     def new(self, *args, **kwargs):
         """Return a New Item form"""
@@ -126,7 +149,7 @@ class CollectionController(Controller):
                 # auto-increment value.
                 pass
 
-            # collection.store.put(record)
+            collection.store.put(record)
             logger = logging.getLogger(__name__)
             logger.info(
                 '%s added %s %s' % (
@@ -134,7 +157,7 @@ class CollectionController(Controller):
                     collection.item_name.lower(),
                     record.link),
                 )
-            logger.debug('redirect to: {}'.format(collection.url))
+            # logger.debug('redirect to: {}'.format(collection.url))
             # content = html.pre(record) + html.pre(collection)
             # return page(content, title='Saving')
             # return page('redirecting to {}'.format(collection.url), title='ok')
@@ -154,6 +177,7 @@ class Collection(object):
     store_type = EntityStore
     store = None
     url = None
+    allows = shared_collection_policy('managers')
 
     def __init__(self, fields, **kwargs):
 
@@ -163,16 +187,13 @@ class Collection(object):
                 fields.__name__.rstrip('_fields').rstrip('_form')
             )
 
-        def default_url():
-            return
-
         get = kwargs.pop
+
         self.fields = callable(fields) and fields() or fields
         self.item_name = get('item_name', name_from(fields))
         self.name = get('name', self.item_name + 's')
         self.title = self.name.capitalize()
         self.item_title = self.item_name.capitalize()
-        # self.url = get('url', url_for_item())
         self.filter = get('filter', None)
         self.labels = get('labels', self.calc_labels())
         self.columns = get('labels', self.calc_columns())
@@ -180,7 +201,11 @@ class Collection(object):
         self.store = get('store', None)
         self.filter = get('filter', None)
 
+        if 'policy' in kwargs:
+            self.allows = get('policy')
+
     def order(self, item):
+        """Returns the sort key"""
         return item.name.lower()
 
     def calc_labels(self):
@@ -194,40 +219,47 @@ class Collection(object):
             for n, f in enumerate(self.fields.as_list())
         ]
 
-    def allows(self, user, action):
-
-        def is_manager(user):
-            return user.is_member('managers')
-
-        actions = {
-            'create': is_manager,
-            'read': is_manager,
-            'update': is_manager,
-            'delete': is_manager,
-        }
-
-        if action not in actions:
-            raise Exception('action missing: {}'.format(action))
-
-        return actions.get(action)(user)
-
     def handle(self, route, request):
         """handle a request"""
+
+        def get_model(url):
+            class CustomCollectionModel(CollectionModel):
+                url = property(lambda self: '/'.join([url, self.key]))
+            return CustomCollectionModel
+
         logger = logging.getLogger(__name__)
         logger.debug('Collection handler called')
+
+        # store some handy references in case the View
+        # or Controller need them.
         self.user = request.user
         self.request = request
         self.route = route
-        logger.debug('redirect %r', request.route[:1])
-        self.url = self.url or '/'.join(
-            [request.site.abs_url] + request.route[:2],
-        )
+
+        # If we're not provided with a URL for the collection
+        # we assume it is the most common case, which is where the
+        # app is the first part of the URL and the collection
+        # name is the second part of the URL.  Together they
+        # make up the URL for the collection.
+        if self.url is None:
+            self.url = '/'.join(
+                [request.site.abs_url] + request.route[:2],
+            )
+            logger.debug('Collection URL: %r', self.url)
+
+        # If we're not provided with a place to store the data
+        # we assume that the collection will be stored in an
+        # entity store.
         self.store = self.store or (
-            self.store_type(
+            EntityStore(
                 request.site.db,
+                get_model(self.url),
                 self.item_name + '_collection',
             )
         )
+
+        # self.store_type.store = self.store
+        # self.store_type.collection = self
         return (
             self.controller(self)(*route, **request.data) or
             self.view(self)(*route, **request.data)
@@ -238,3 +270,4 @@ class Collection(object):
 
     def __str__(self):
         return 'collection of ' + str(self.store.kind)
+kind)
