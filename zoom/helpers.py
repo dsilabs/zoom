@@ -108,6 +108,9 @@ def url_for(*a, **k):
         else:
             uri = '/'.join([root] + a[1:])
 
+    elif a and a[0] == '..':
+        uri = tag_for('parent_path')
+
     elif a and a[0].startswith('./'):
         uri = tag_for('request_path') + '/' + '/'.join([a[0][2:]] + a[1:])
 

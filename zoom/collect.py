@@ -7,7 +7,7 @@ import logging
 from zoom.browse import browse
 from zoom.components import success
 from zoom.fields import ButtonField
-from zoom.forms import form_for
+from zoom.forms import form_for, delete_form
 from zoom.helpers import link_to
 from zoom.models import Model
 from zoom.store import EntityStore
@@ -174,8 +174,11 @@ class CollectionView(View):
     def edit(self, key):
         return page('edit pressed')
 
-    def delete(self, key):
-        return page('delete pressed')
+    def delete(self, key, confirm='yes'):
+        if confirm == 'yes':
+            record = locate(self.collection, key)
+            if record:
+                return page(delete_form(record.name))
 
 
 class CollectionController(Controller):
@@ -218,6 +221,28 @@ class CollectionController(Controller):
 
             success('record saved')
             return redirect_to(collection.url)
+
+
+    def delete(self, key, confirm='yes'):
+        c = self.collection
+        c.user.authorize('delete', c)
+
+        if confirm == 'no':
+            record = locate(c, key)
+            if record:
+                c.user.authorize('delete', record)
+                c.store.delete(record)
+
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    self.collection.request.app.name,
+                    '%s deleted %s %s' % (
+                        c.user.link,
+                        c.item_name.lower(),
+                        record.link
+                    )
+                )
+                return redirect_to(c.url)
 
 
 class Collection(object):

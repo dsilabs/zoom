@@ -136,7 +136,6 @@ class Page(object):
             page_title=request.site.title,
             page_name=len(request.route) > 1 and request.route[1] or '',
             site_url=request.site.url,
-            request_path=request.path,
             author=request.site.owner_name,
             css=get_css(),
             js=get_js(),

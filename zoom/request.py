@@ -252,6 +252,10 @@ class Request(object):
     def get_elapsed(self):
         return '{:1.3f}'.format(timer() - self.start_time)
 
+    @property
+    def parent_path(self):
+        return '/' + '/'.join(self.route[:-1])
+
     def helpers(self):
         """provide helpers"""
         return dict(
@@ -261,6 +265,8 @@ class Request(object):
             remote_address=self.ip_address,
             ip_address=self.ip_address,
             elapsed=self.get_elapsed,
+            request_path=self.path,
+            parent_path=self.parent_path,
         )
 
 

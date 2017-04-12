@@ -4,8 +4,8 @@
 
 import uuid
 
-from zoom.helpers import tag_for
-from zoom.fields import Fields
+from zoom.helpers import tag_for, url_for
+from zoom.fields import Fields, MarkdownText, Hidden, Button
 import zoom.html as html
 
 
@@ -127,6 +127,19 @@ class Form(Fields):
             method=self.method,
             enctype=self.enctype,
         )
+
+
+def delete_form(name, cancel=None):
+    """produce a delete form"""
+    return Form(
+        MarkdownText('Are you sure you want to delete **%s**?' % name),
+        Hidden(name='confirm', value='no'),
+        Button(
+            'Yes, I''m sure.  Please delete.',
+            name='delete_button',
+            cancel=cancel or url_for('..')
+        )
+    ).edit()
 
 
 def helpers(request):
