@@ -107,7 +107,7 @@ class CollectionView(View):
         matching = (i for i in authorized if not q or matches(i, q))
         filtered = (not q and hasattr(c, 'filter') and
                     c.filter and filter(c.filter, matching)) or matching
-        items = sorted(authorized, key=c.order)
+        items = sorted(matching, key=c.order)
 
         if len(items) != 1:
             footer_name = c.title
@@ -124,6 +124,10 @@ class CollectionView(View):
         )
 
         return page(content, title=c.title, actions=actions, search=q)
+
+    def clear(self):
+        """Clear the search"""
+        return redirect_to('/' + '/'.join(route[:-1]))
 
     def new(self, *args, **kwargs):
         """Return a New Item form"""
@@ -205,37 +209,53 @@ class CollectionController(Controller):
 
     def create_button(self, *args, **data):
         """Create a record"""
+
         collection = self.collection
         user = collection.user
+
         if collection.fields.validate(data):
+
             record = collection.model(
                 collection.fields,
-                created=now(),
-                updated=now(),
-                owner_id=user._id,
-                created_by=user._id,
-                updated_by=user._id,
             )
+
+            record.pop('key', None)
             try:
-                # convert property to data attribute
-                # so it gets stored as data
-                record.key = record.key
+                key = record.key
             except AttributeError:
-                # can happen when key depends on database
-                # auto-increment value.
-                pass
+                key = None
 
-            collection.store.put(record)
-            logger = logging.getLogger(__name__)
-            logger.info(
-                '%s added %s %s' % (
-                    user.link,
-                    collection.item_name.lower(),
-                    record.link),
-                )
+            if key and locate(collection, record.key) is not None:
+                error('That {} already exists'.format(collection.item_name))
+            else:
 
-            success('record saved')
-            return redirect_to(collection.url)
+                try:
+                    # convert property to data attribute
+                    # so it gets stored as data
+                    record.key = record.key
+                except AttributeError:
+                    # can happen when key depends on database
+                    # auto-increment value.
+                    pass
+
+                record.update(dict(
+                    created=now(),
+                    updated=now(),
+                    owner_id=user._id,
+                    created_by=user._id,
+                    updated_by=user._id,
+                ))
+
+                collection.store.put(record)
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    '%s added %s %s' % (
+                        user.link,
+                        collection.item_name.lower(),
+                        record.link),
+                    )
+
+                return redirect_to(collection.url)
 
     def save_button(self, key, *a, **data):
         collection = self.collection

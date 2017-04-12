@@ -297,8 +297,8 @@ div.content input.search_button {
 }
 div.search span.clear {
   position: absolute;
-  right: 100px;
-  top: 7px;
+  right: 80px;
+  top: 5px;
 }
 div.search span.clear a {
   display: inline;
