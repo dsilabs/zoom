@@ -42,7 +42,6 @@ def apply_helpers(template, obj, providers):
                     repl = attr(obj, *args, **kwargs)
                 else:
                     repl = attr
-                    logger.debug('object helped with %r', (name, args, kwargs))
                 return fill(repl, _filler)
 
             helper = helpers.get(name)
@@ -51,10 +50,9 @@ def apply_helpers(template, obj, providers):
                     repl = helper(*args, **kwargs)
                 else:
                     repl = helper
-                logger.debug('helpers helped with %r', (name, args, kwargs))
                 return fill(repl, _filler)
 
-            logger.debug('not helped %r', (name, args, kwargs))
+            logger.debug('no help for %r', (name, args, kwargs))
 
         return _filler
 
