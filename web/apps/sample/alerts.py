@@ -43,8 +43,13 @@ class MyController(Controller):
         return redirect_to('/sample/alerts')
 
     def stdout(self):
-        print('here is some stdout output!')
-        return redirect_to('/sample/alerts')
+        print('Here is some stdout output!')
+        msg = """
+        stdout output
+        <br><br>
+        <a href="<dz:parent_path>">Go Back</a>
+        """
+        return page(msg, title='Stdout')
 
     def random(self):
         for n in range(5):
@@ -55,7 +60,7 @@ class MyController(Controller):
             ])()
         return redirect_to('/sample/alerts')
 
-    
+
 def main(route, request):
     view = MyView(request)
     controller = MyController(request)
