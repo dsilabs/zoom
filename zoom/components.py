@@ -14,9 +14,10 @@ def as_actions(items):
     """returns actions
 
     >>> as_actions(['New'])
-    '<div class="actions"><ul><li><a class="action" href="new" id="new-action">New</a></li></ul></div>'
+    '<div class="actions"><ul><li><a class="action" href="<dz:request_path>/new" id="new-action">New</a></li></ul></div>'
+
     >>> as_actions(['New','Delete'])
-    '<div class="actions"><ul><li><a class="action" href="delete" id="delete-action">Delete</a></li><li><a class="action" href="new" id="new-action">New</a></li></ul></div>'
+    '<div class="actions"><ul><li><a class="action" href="<dz:request_path>/delete" id="delete-action">Delete</a></li><li><a class="action" href="<dz:request_path>/new" id="new-action">New</a></li></ul></div>'
 
     """
     if not items:

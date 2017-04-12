@@ -270,4 +270,3 @@ class Collection(object):
 
     def __str__(self):
         return 'collection of ' + str(self.store.kind)
-kind)
