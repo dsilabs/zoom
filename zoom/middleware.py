@@ -42,6 +42,7 @@ import zoom.apps
 import zoom.component
 from zoom.page import page
 from zoom.helpers import tag_for
+from zoom.tools import websafe
 
 SAMPLE_FORM = """
 <form action="" id="dz_form" name="dz_form" method="POST"
@@ -264,7 +265,7 @@ def capture_stdout(request, handler, *rest):
         sys.stdout = real_stdout
         if isinstance(result.content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
-                '{*stdout*}', html.pre(printed_output))
+                '{*stdout*}', html.pre(websafe(printed_output)))
     logger = logging.getLogger(__name__)
     logger.debug('captured stdout')
     return result
