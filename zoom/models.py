@@ -28,11 +28,6 @@ class Model(DefaultRecord):
     """
 
     @property
-    def name(self):
-        """Return the key"""
-        return str(self.id)
-
-    @property
     def key(self):
         """Return the key"""
         return id_for(self.name)
@@ -47,5 +42,5 @@ class Model(DefaultRecord):
         """Return a link"""
         return link_to(self.name, self.url)
 
-    def allows(self, actor, action):
+    def allows(self, user, action):
         return False
