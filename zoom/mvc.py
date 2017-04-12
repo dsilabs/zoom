@@ -106,7 +106,7 @@ class View(Dispatcher):
                         raise
 
             elif len(a) > 1:
-                result = evaluate(self, a[-1:][0], ('/'.join(a[:-1])), inputs)
+                result = evaluate(self, a[-1:][0], ('/'.join(a[:-1]),), inputs)
 
             else:
                 """No view"""
