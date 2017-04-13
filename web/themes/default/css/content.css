@@ -103,3 +103,24 @@ a:hover {
 pre {
   margin-top: 5px;
 }
+
+dl {
+  padding: 0.5em;
+}
+
+dt {
+  float: left;
+  clear: left;
+  width: 150px;
+  text-align: right;
+  font-weight: bold;
+}
+
+dt::after {
+  content: ":";
+}
+
+dd {
+  margin: 0 0 0 160px;
+  padding: 0 0 0.5em 0;
+}

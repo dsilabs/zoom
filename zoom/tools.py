@@ -10,9 +10,76 @@ from zoom.helpers import abs_url_for, url_for_page
 from zoom.utils import trim
 
 
+one_day = datetime.timedelta(1)
+one_week = one_day * 7
+one_hour = datetime.timedelta(hours=1)
+one_minute = datetime.timedelta(minutes=1)
+
+
 def now():
-    """Return the current time"""
+    """Return the current datetime"""
     return datetime.datetime.now()
+
+
+def today():
+    """Return the current date"""
+    return datetime.date.today()
+
+
+def yesterday(any_date=None):
+    """Return date for yesterday"""
+    return (any_date or today()) - one_day
+
+
+def tomorrow(any_date=None):
+    """Return date for tomorrow"""
+    return (any_date or today()) + one_day
+
+
+def first_day_of_the_month(any_date):
+    """returns the first day of the month for any date"""
+    return datetime.date(any_date.year, any_date.month, 1)
+
+
+def last_day_of_the_month(any_date):
+    """returns the last day of the month for any date"""
+    next_month = any_date.replace(day=28) + datetime.timedelta(days=4)
+    return next_month - datetime.timedelta(days=next_month.day)
+
+
+def first_day_of_next_month(any_date):
+    """returns the first day of next month for any date"""
+    return last_day_of_the_month(any_date) + one_day
+
+
+def last_day_of_next_month(any_date):
+    """returns the last day of next month for any date"""
+    return last_day_of_the_month(first_day_of_next_month(any_date))
+
+
+def first_day_of_last_month(any_date):
+    """Returns the first day of last month for any date"""
+    return first_day_of_the_month(last_day_of_last_month(any_date))
+
+
+def last_day_of_last_month(any_date):
+    """Returns the first day of last month for any date"""
+    return first_day_of_the_month(any_date) - one_day
+
+
+def this_month(any_date):
+    """Returns date range for last month for any date"""
+    return (first_day_of_the_month(any_date), last_day_of_the_month(any_date))
+
+
+def next_month(any_date):
+    """Returns date range for next month for any date"""
+    return (first_day_of_next_month(any_date), last_day_of_next_month(any_date))
+
+
+def last_month(any_date):
+    """Returns date range for last month for any date"""
+    return (first_day_of_last_month(any_date), last_day_of_last_month(any_date))
 
 
 def is_listy(obj):
