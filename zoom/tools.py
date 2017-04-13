@@ -82,6 +82,93 @@ def last_month(any_date):
     return (first_day_of_last_month(any_date), last_day_of_last_month(any_date))
 
 
+def how_long(time1, time2):
+    """Returns a string that describes the difference between two times.
+
+    >>> now = now()
+
+    >>> how_long(now, now + 2 * one_day)
+    '2 days'
+
+    >>> how_long(now, now + 15 * one_day)
+    '2 weeks'
+
+    >>> how_long(now, now + 35 * one_day)
+    'over a month'
+
+    >>> how_long(now, now + 361 * one_day)
+    'almost a year'
+
+    >>> how_long(now, now + 20 * one_minute)
+    '20 minutes'
+
+    """
+    #pylint: disable=R0912
+
+    def as_datetime(anytime):
+        """Convert value to datetime"""
+        if type(anytime) == datetime.datetime:
+            return anytime
+        elif type(anytime) == datetime.date:
+            return datetime.datetime(anytime.year, anytime.month, anytime.day)
+        elif anytime == None:
+            return None
+        else:
+            return datetime.datetime.fromtimestamp(anytime)
+
+    diff = as_datetime(time2) - as_datetime(time1)
+
+    if diff.days > 365*2:
+        result = 'over %d years' % (diff.days / 365)
+    elif diff.days > 365*1.75:
+        result = 'almost two years'
+    elif diff.days > 365:
+        result = 'over a year'
+    elif diff.days > 360:
+        result = 'almost a year'
+    elif diff.days > 60:
+        result = 'over %d months' % (diff.days / 30)
+    elif diff.days > 30:
+        result = 'over a month'
+    elif diff.days > 14:
+        result = '%d weeks' % (diff.days / 7)
+    elif diff.days > 1:
+        result = '%d days' % diff.days
+    elif diff.days == 1:
+        result = '1 day'
+    elif diff.seconds > 3600:
+        result = '%d hours' % int(diff.seconds / 3600)
+    elif diff.seconds > 60:
+        result = '%d minutes' % int(diff.seconds / 60)
+    elif diff.seconds > 0:
+        result = '%d seconds' % int(diff.seconds)
+    else:
+        result = 'a moment'
+    return result
+
+def how_long_ago(anytime):
+    """
+    Returns a string that describes the difference between any time and now.
+
+    >>> now = now()
+
+    >>> how_long_ago(now - datetime.timedelta(1) * 2)
+    '2 days ago'
+
+    >>> how_long_ago(now + 20 * one_minute)
+    '19 minutes from now'
+
+    >>> how_long_ago(now - 20 * one_minute)
+    '20 minutes ago'
+
+    """
+    right_now = now()
+    if anytime < right_now:
+        return how_long(anytime, right_now) + ' ago'
+    else:
+        return how_long(right_now, anytime) + ' from now'
+
+
 def is_listy(obj):
     """test to see if an object will iterate like a list
 
