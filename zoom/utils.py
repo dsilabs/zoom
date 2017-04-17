@@ -762,3 +762,18 @@ class RecordList(list):
             result = self[self._n]
             self._n += 1
         return result
+
+
+def matches(item, terms):
+    """Returns True if an item matches search terms"""
+    if not terms: return True
+    v = [str(i).lower() for i in item.values()]
+    return all(any(t in s for s in v) for t in terms)
+
+
+def search(items, text):
+    """Returns items that match search terms"""
+    search_terms = list(set([i.lower() for i in text.strip().split()]))
+    for item in items:
+        if matches(item, search_terms):
+            yield item
