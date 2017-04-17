@@ -6,9 +6,8 @@ import logging
 
 from zoom.mvc import DynamicView, Controller, View
 from zoom.page import page
-from zoom.render import render
 from zoom.users import Users
-from zoom.tools import redirect_to
+from zoom.tools import redirect_to, load_content
 import zoom.html as html
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,7 @@ class LoginForm(DynamicView):
     @property
     def forgot_password(self):
         if self.user.can_run('forgot'):
-            return render('views/forgot_password.html')
+            return load_content('views/forgot_password.html')
         return ''
 
 

@@ -12,7 +12,6 @@ import datetime
 from decimal import Decimal
 
 from zoom.component import compose
-from zoom.render import render
 from zoom.utils import name_for
 from zoom.tools import (
     htmlquote,
@@ -20,6 +19,7 @@ from zoom.tools import (
     markdown,
     is_listy,
     ensure_listy,
+    load_content,
 )
 import zoom.html as html
 from zoom.validators import (
@@ -61,7 +61,7 @@ def layout_field(label, content, edit=True):
     """
     pathname = os.path.join(os.path.dirname(__file__), 'views', 'field.html')
     mode = bool(edit) and 'edit' or 'show'
-    return render(**locals())
+    return load_content(**locals())
 
 
 def args_to_dict(values=None, **kwargs):
@@ -144,7 +144,7 @@ class Field(object):
 
     def edit(self):
         """edit the field"""
-        content = render(
+        content = load_content(
             locate_view('hint'),
             widget=self.widget(),
             hints=self.render_msg() + self.render_hint(),

@@ -12,9 +12,8 @@ import sys
 
 from zoom.response import Response, HTMLResponse
 from zoom.helpers import url_for, link_to
-from zoom.tools import redirect_to
+from zoom.tools import redirect_to, load_content
 from zoom.components import as_links
-from zoom.render import render
 import zoom.html as html
 
 
@@ -368,7 +367,7 @@ def system_menu(request):
     if request.user.is_authenticated:
         path = os.path.dirname(__file__)
         filename = os.path.join(path, 'views', 'system_pulldown_menu.html')
-        return render(filename)
+        return load_content(filename)
     else:
         return '<div class="system-menu"><ul>{}</ul></div>'.format(
             system_menu_items(request)

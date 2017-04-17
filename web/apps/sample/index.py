@@ -2,7 +2,7 @@
 
 from zoom.mvc import View
 from zoom.page import page
-from zoom.render import render
+from zoom.tools import load_content
 from zoom.browse import browse
 from zoom.fields import *
 from zoom.validators import required
@@ -33,7 +33,7 @@ class MyView(View):
         cmd = 'select id, username, email, phone from users limit 10'
         data = browse(db(cmd))
 
-        content = render(
+        content = load_content(
             'sample.md',
             data=data,
             name='a name',

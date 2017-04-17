@@ -8,7 +8,7 @@ from markdown import Markdown
 from zoom.response import RedirectResponse
 from zoom.helpers import abs_url_for, url_for_page
 from zoom.utils import trim
-
+from zoom.render import apply_helpers
 
 one_day = datetime.timedelta(1)
 one_week = one_day * 7
@@ -225,7 +225,7 @@ def home(view=None):
 def unisafe(val):
     """safely convert to unicode"""
     if val is None:
-            return u''
+        return u''
     elif isinstance(val, bytes):
         try:
             val = val.decode('utf-8')
@@ -236,8 +236,9 @@ def unisafe(val):
     return val
 
 
-def websafe(val):
-    return htmlquote(unisafe(val))
+def websafe(content):
+    """Return htmlquoted version of content"""
+    return htmlquote(unisafe(content))
 
 
 def htmlquote(text):
@@ -263,6 +264,8 @@ def htmlquote(text):
 
 
 def markdown(content):
+    """Transform content with markdown
+    """
     def make_page_name(text):
         result = []
         for c in text.lower():
@@ -280,5 +283,27 @@ def markdown(content):
 
     extras = ['tables', 'def_list', 'wikilinks', 'toc']
     configs = {'wikilinks': [('build_url', url_builder)]}
-    md = Markdown(extensions=extras, extension_configs=configs)
-    return md.convert(unisafe(trim(content)))
+    converter = Markdown(extensions=extras, extension_configs=configs)
+    return converter.convert(unisafe(trim(content)))
+
+
+def load(pathname):
+    """Load a file into memory"""
+    with open(pathname) as reader:
+        return reader.read()
+    return ''
+
+
+def load_content(pathname, *args, **kwargs):
+    """Load a content file and use it to format parameters
+    """
+    template = load(pathname)
+    if template:
+        # content = template.format(*args, **kwargs)
+        content = apply_helpers(template, None, [kwargs]).format(*args, **kwargs)
+        if pathname.endswith('.md'):
+            result = markdown(content)
+        else:
+            result = content
+        return result
+    return ''

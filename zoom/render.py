@@ -8,7 +8,7 @@
 import logging
 
 from zoom.fill import fill
-from zoom.tools import markdown
+# from zoom.tools import markdown
 
 
 def apply_helpers(template, obj, providers):
@@ -64,16 +64,16 @@ def apply_helpers(template, obj, providers):
     return fill(template, filler(helpers))
 
 
-def render(pathname, *a, **k):
-    """render a view"""
-    with open(pathname) as reader:
-        template = reader.read()
-        content = apply_helpers(template, None, [k]).format(*a, **k)
-
-        if pathname.endswith('.md'):
-            result = markdown(content)
-        else:
-            result = content
-
-        return result
-    return ''
+# def render(pathname, *a, **k):
+#     """render a view"""
+#     with open(pathname) as reader:
+#         template = reader.read()
+#         content = apply_helpers(template, None, [k]).format(*a, **k)
+#
+#         if pathname.endswith('.md'):
+#             result = markdown(content)
+#         else:
+#             result = content
+#
+#         return result
+#     return ''
