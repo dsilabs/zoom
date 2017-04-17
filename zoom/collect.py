@@ -127,7 +127,7 @@ class CollectionView(View):
 
     def clear(self):
         """Clear the search"""
-        return redirect_to('/' + '/'.join(route[:-1]))
+        return redirect_to('/' + '/'.join(self.collection.request.route[:-1]))
 
     def new(self, *args, **kwargs):
         """Return a New Item form"""
