@@ -199,7 +199,6 @@ INSERT INTO `subgroups` VALUES
 -- Admin
     (2,1),
     (5,1),
-    (6,1),
     (12,1),
     (14,1),
     (16,1),
