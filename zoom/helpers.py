@@ -237,6 +237,11 @@ def link_to(label, *args, **kwargs):
     return html.tag('a', label, href=url_for(*nargs, **kwargs))
 
 
+def link_to_page(label, *args, **kwargs):
+    nargs = args or [label]
+    return html.tag('a', label, href=url_for_page(*nargs, **kwargs))
+
+
 def mail_to(name, *args, **kwargs):
     """produce an email link
 
