@@ -237,11 +237,6 @@ def redirect_to(*args, **kwargs):
 def home(view=None):
     """Redirect to application home.
 
-    >>> home().content
-    ''
-    >>> home('old').headers['Location']
-    '<dz:abs_site_url><dz:request_path>/<dz:site_url>/<dz:app_name>/old'
-
     """
     if view:
         return redirect_to(url_for_page(view))

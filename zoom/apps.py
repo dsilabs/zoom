@@ -12,7 +12,7 @@ import sys
 
 from zoom.response import Response, HTMLResponse, RedirectResponse
 from zoom.helpers import url_for, link_to
-from zoom.tools import redirect_to, load_content
+from zoom.tools import load_content
 from zoom.components import as_links
 import zoom.html as html
 
