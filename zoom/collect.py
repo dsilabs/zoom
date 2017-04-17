@@ -77,6 +77,13 @@ class CollectionModel(Model):
         return True
 
 
+CollectionRecord = CollectionModel
+# Typically these are the same thing but occassionally
+# a Model is more than just a Record.  So, we provide
+# both names purely for readability so you can use whatever
+# makes sense in your app.
+
+
 class CollectionView(View):
     """View a collection"""
 
@@ -327,8 +334,13 @@ class Collection(object):
 
         def name_from(fields):
             """make a name from the field function provided"""
+            def rtrim(text, suffix):
+                if text.endswith(suffix):
+                    return text[:-len(suffix)]
+                return text
+
             return name_for(
-                fields.__name__.rstrip('_fields').rstrip('_form')
+                rtrim(rtrim(fields.__name__, '_fields'), '_form')
             )
 
         get = kwargs.pop
@@ -397,7 +409,7 @@ class Collection(object):
         self.store = self.store or (
             EntityStore(
                 request.site.db,
-                get_model(self.url),
+                self.model or get_model(self.url),
                 self.item_name + '_collection',
             )
         )
