@@ -6,6 +6,7 @@ import logging
 
 from zoom.tools import redirect_to
 from zoom.components import warning
+from zoom.response import RedirectResponse
 
 
 def app(request):
@@ -30,4 +31,4 @@ def app(request):
         else:
             logger.info('user %s successfully logged out', user.link)
 
-    return redirect_to('/')
+    return RedirectResponse('/')

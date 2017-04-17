@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 
-from zoom.response import Response, HTMLResponse
+from zoom.response import Response, HTMLResponse, RedirectResponse
 from zoom.helpers import url_for, link_to
 from zoom.tools import redirect_to, load_content
 from zoom.components import as_links
@@ -316,11 +316,11 @@ def handle(request):
 
     elif app and app.enabled:
         logger.debug('redirecting to login')
-        return redirect_to('/login')
+        return RedirectResponse('/login')
 
     elif app:
         logger.debug('app disabled, redirecting to default')
-        return redirect_to('/')
+        return RedirectResponse('/')
 
     else:
         if app_name:
