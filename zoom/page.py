@@ -134,7 +134,6 @@ class Page(object):
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
-            page_name=len(request.route) > 1 and request.route[1] or '',
             site_url=request.site.url,
             author=request.site.owner_name,
             css=get_css(),

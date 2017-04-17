@@ -409,6 +409,7 @@ def helpers(request):
         system_menu=system_menu(request),
         main_menu_items=main_menu_items(request),
         main_menu=main_menu(request),
+        page_name=len(request.route)>1 and request.route[1] or '',
     )
 
 
