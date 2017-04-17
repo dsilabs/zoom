@@ -3,10 +3,13 @@
 """
 
 import datetime
+import logging
 
 from markdown import Markdown
 from zoom.response import RedirectResponse
-from zoom.helpers import abs_url_for, url_for_page
+import zoom.helpers
+import zoom.apps
+from zoom.helpers import abs_url_for, url_for_page, url_for
 from zoom.utils import trim
 from zoom.render import apply_helpers
 
@@ -202,10 +205,33 @@ def ensure_listy(obj):
     return is_listy(obj) and obj or [obj]
 
 
+
+class Redirector(object):
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def render(self, request):
+        """render redirect"""
+
+        providers = [
+            zoom.helpers.__dict__,
+            request.helpers(),
+            request.site.helpers(),
+            request.user.helpers(),
+            zoom.apps.helpers(request),
+        ]
+
+        location = url_for(*self.args, **self.kwargs)
+        location = zoom.render.apply_helpers(location, self, providers)
+        location = abs_url_for(location)
+        location = zoom.render.apply_helpers(location, self, providers)
+        return RedirectResponse(location)
+
+
 def redirect_to(*args, **kwargs):
     """Return a redirect response for a URL."""
-    abs_url = abs_url_for(*args, **kwargs)
-    return RedirectResponse(abs_url)
+    return Redirector(*args, **kwargs)
 
 
 def home(view=None):
