@@ -134,12 +134,12 @@ def url_for_page(*args, **kwargs):
     """returns a url for a page of the current app
 
     >>> url_for_page()
-    '<dz:site_url>/<dz:app_name>'
+    '<dz:app_url>'
 
     >>> url_for_page('page1')
-    '<dz:site_url>/<dz:app_name>/page1'
+    '<dz:app_url>/page1'
     """
-    return url_for('/<dz:app_name>', *args, **kwargs)
+    return url_for('<dz:app_url>', *args, **kwargs)
 
 
 def url_for_item(*args, **kwargs):
