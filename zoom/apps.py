@@ -386,8 +386,10 @@ def get_main_apps(request):
 
 def main_menu_items(request):
     """Returns the main menu."""
+    default_app_name = get_default_app_name(request.site, request.user)
     return html.li([
-        app.link for app in get_main_apps(request) if app.visible
+        app.name == default_app_name and '<a href="<dz:site_url>">{}</a>'.format(app.title) or app.link
+        for app in get_main_apps(request) if app.visible
     ])
 
 
