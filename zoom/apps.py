@@ -51,7 +51,7 @@ class App(object):
         isfile = os.path.isfile
         logger.debug('route {!r}'.format(route))
 
-        if len(route) > 1:
+        if len(route) > 1 and isfile('%s.py' % route[1]):
             module = route[1]
             rest = route[2:]
         else:
