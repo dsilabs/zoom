@@ -4,10 +4,11 @@
     handles requests by locating and calling a suitable app
 """
 
-import os
+import configparser
 import imp
 import logging
-import configparser
+import os
+import sys
 
 from zoom.response import Response, HTMLResponse
 from zoom.helpers import url_for, link_to
@@ -414,4 +415,6 @@ def apps_handler(request, handler, *rest):
     """Dispatch request to an application"""
     logger = logging.getLogger(__name__)
     logger.debug('apps_handler')
+    if '.' not in sys.path:
+        sys.path.insert(0, '.')
     return handle(request) or handler(request, *rest)
