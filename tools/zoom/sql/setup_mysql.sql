@@ -240,9 +240,9 @@ UNLOCK TABLES;
 --
 LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES
-    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),NULL,NULL,'A'),
-    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),NULL,NULL,'A'),
-    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),NULL,NULL,'A');
+    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),1,1,'A'),
+    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),1,1,'A'),
+    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),1,1,'A');
 UNLOCK TABLES;
 
 --
