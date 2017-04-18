@@ -134,9 +134,14 @@ class User(Record):
         return ' '.join(filter(bool, [self.first_name, self.last_name]))
 
     @property
+    def name(self):
+        """user full name"""
+        return self.full_name
+
+    @property
     def url(self):
         """user view url"""
-        return url_for('/users/{}'.format(self.username))
+        return url_for('/admin/users/{}'.format(self.key))
 
     @property
     def link(self):
@@ -259,11 +264,12 @@ class Users(RecordStore):
     >>> print(user)
     User
       key .................: 'guest'
+      name ................: 'Guest User'
       first_name ..........: 'Guest'
       last_name ...........: 'User'
-      url .................: '<dz:site_url>/users/guest'
+      url .................: '<dz:site_url>/admin/users/guest'
       apps ................: ['content', 'forgot', 'login', 'passreset', 'signup']
-      link ................: '<a href="<dz:site_url>/users/guest">guest</a>'
+      link ................: '<a href="<dz:site_url>/admin/users/guest">guest</a>'
       email ...............: 'guest@datazoomer.com'
       phone ...............: ''
       groups ..............: ['everyone', 'guests']
@@ -275,9 +281,12 @@ class Users(RecordStore):
       username ............: 'guest'
       full_name ...........: 'Guest User'
       is_active ...........: True
+      created_by ..........: 1
+      updated_by ..........: 1
       default_app .........: '/home'
       is_developer ........: False
       is_authenticated ....: False
+
 
     """
     def __init__(self, db, entity=User):

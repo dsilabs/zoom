@@ -18,7 +18,7 @@ import zoom.html as html
 
 
 DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
-DEFAULT_MAIN_APPS = ['home', 'apps', 'users', 'groups', 'info']
+DEFAULT_MAIN_APPS = ['home', 'admin', 'apps', 'info']
 DEFAULT_SETTINGS = dict(
     title='',
     icon='blank_doc',
