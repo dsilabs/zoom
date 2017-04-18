@@ -51,14 +51,14 @@ class App(object):
         isfile = os.path.isfile
         logger.debug('route {!r}'.format(route))
 
-        if len(route) > 1 and isfile('%s.py' % route[1]):
+        if len(route) > 1:
             module = route[1]
             rest = route[2:]
         else:
             module = 'index'
             rest = route[1:]
-
         logger.debug('module is {!r}'.format(module))
+
         try:
             method = getattr(self, module)
             logger.debug('got method for {!r}'.format(module))
@@ -70,6 +70,13 @@ class App(object):
             result = method(*rest, **data)
             logger.debug(result)
             return result
+
+        if len(route) > 1 and isfile('%s.py' % route[1]):
+            module = route[1]
+            rest = route[2:]
+        else:
+            module = 'index'
+            rest = route[1:]
 
         filename = '{}.py'.format(module)
         if isfile(filename):
