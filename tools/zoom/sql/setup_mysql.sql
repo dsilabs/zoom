@@ -172,6 +172,7 @@ INSERT INTO `groups` VALUES
     (8, 'A','a_register','Registration App',1),
     (9, 'A','a_hello','Hello World App',1),
     (10,'A','a_logout','Logout application',1),
+    (11,'A','a_admin','Admin application',1),
     (12,'A','a_home','Home page',1),
     (13,'A','a_signup','Sign-up Application',1),
     (14,'A','a_content','Content Editor',1),
@@ -199,6 +200,7 @@ INSERT INTO `subgroups` VALUES
 -- Admin
     (2,1),
     (5,1),
+    (11,1),
     (12,1),
     (14,1),
     (16,1),
