@@ -48,7 +48,7 @@ def locate(collection, key):
     return (
         key.isdigit() and
         collection.store.get(key) or
-        collection.store.first(key=key) or
+        collection.store.first(**{collection.store.key: key}) or
         scan(collection.store, key)
     )
 
@@ -253,7 +253,12 @@ class CollectionController(Controller):
                     updated_by=user._id,
                 ))
 
+                self.before_insert(record)
+
                 collection.store.put(record)
+
+                self.after_insert(record)
+
                 logger = logging.getLogger(__name__)
                 logger.info(
                     '%s added %s %s' % (
@@ -286,7 +291,12 @@ class CollectionController(Controller):
                     # so it gets stored as data
                     record.key = record.key
 
+                    self.before_update(record)
+
                     collection.store.put(record)
+
+                    self.after_update(record)
+
                     logger = logging.getLogger(__name__)
                     logger.info(
                         '%s edited %s %s' % (
@@ -306,7 +316,12 @@ class CollectionController(Controller):
             record = locate(c, key)
             if record:
                 c.user.authorize('delete', record)
+
+                self.before_delete(record)
+
                 c.store.delete(record)
+
+                self.after_delete(record)
 
                 logger = logging.getLogger(__name__)
                 logger.info(
@@ -318,6 +333,24 @@ class CollectionController(Controller):
                     )
                 )
                 return redirect_to(c.url)
+
+    def before_update(self, record):
+        pass
+
+    def after_update(self, record):
+        pass
+
+    def before_insert(self, record):
+        pass
+
+    def after_insert(self, record):
+        pass
+
+    def before_delete(self, record):
+        pass
+
+    def after_delete(self, record):
+        pass
 
 
 class Collection(object):
@@ -346,16 +379,18 @@ class Collection(object):
         get = kwargs.pop
 
         self.fields = callable(fields) and fields() or fields
-        self.item_name = get('item_name', name_from(fields))
+        self.item_name = get('item_name', None) or name_from(fields)
         self.name = get('name', self.item_name + 's')
         self.title = self.name.capitalize()
         self.item_title = self.item_name.capitalize()
         self.filter = get('filter', None)
-        self.labels = get('labels', self.calc_labels())
-        self.columns = get('labels', self.calc_columns())
+        self.columns = get('columns', None) or self.calc_columns()
+        self.labels = get('labels', None) or self.calc_labels()
         self.model = get('model', CollectionModel)
         self.store = get('store', None)
         self.filter = get('filter', None)
+        self.url = get('url', None)
+        self.controller = get('controller', self.controller)
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -366,14 +401,16 @@ class Collection(object):
 
     def calc_labels(self):
         """Calculate labels based on fields"""
-        return [f.label for f in self.fields.as_list()]
+        lookup = {f.name: f.label for f in self.fields.as_dict().values()}
+        lookup.update(dict(
+            link=self.item_title,
+        ))
+        labels = [lookup.get(name, name.capitalize()) for name in self.columns]
+        return labels
 
     def calc_columns(self):
         """Calculate columns based on fields"""
-        return [
-            (n == 0 and 'link' or f.name.lower())
-            for n, f in enumerate(self.fields.as_list())
-        ]
+        return ['link'] + [f.name for f in self.fields.as_dict().values()]
 
     def handle(self, route, request):
         """handle a request"""
