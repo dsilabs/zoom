@@ -49,6 +49,9 @@ class MyApp(App):
 
         return page('overview', title='my page')
 
+    def missing(self):
+        return None
+
     def log(self):
         return page('log goes here', title='Log')
 

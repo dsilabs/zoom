@@ -150,8 +150,9 @@ class User(Record):
 
     def authenticate(self, password):
         """authenticate user credentials"""
-        match, phash = validate_password(password, self.password, self.created)
-        return match
+        if self.is_active:
+            match, phash = validate_password(password, self.password, self.created)
+            return match
 
     def is_member(self, group):
         """determine if user is a member of a group"""
