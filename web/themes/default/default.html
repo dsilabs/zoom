@@ -6,7 +6,11 @@
     <meta name="keywords"  content="<dz:keywords>">
     <meta name="description" content="<dz:description>">
     <meta name="author" content="<dz:author>">
-    
+
+    <!-- flash of unstyled content (FOUC) -->
+    <style type="text/css">html.js .nojs, html.js .inojs { display: none;}</style>
+    <script type="text/javascript">document.documentElement.className += ' js';</script>
+
     <!-- standard css-->
     <link rel="stylesheet" href="/static/zoom/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/themes/default/css/content.css">
@@ -17,17 +21,17 @@
     <link rel="stylesheet" href="/static/zoom/jquery-ui/themes/smoothness/jquery-ui.min.css">
     <link rel="stylesheet" href="/themes/default/css/navigation.css">
     <link rel="stylesheet" href="/themes/default/css/buttons.css">
-    
+
     <!-- app specific css-->
     <dz:styles>
     <dz:css>
-    
+
     <!-- app specific head-->
     <dz:head>
-    
+
     <!-- tracker-->
     <dz:tracker>
-    
+
   </head>
   <body>
     <div class="wrapper">
@@ -84,7 +88,7 @@
   </body>
   <!-- tail-->
   <dz:tail>
-  
+
   <!-- js-->
   <script src="/static/zoom/jquery/jquery.min.js"></script>
   <script src="/static/zoom/jquery-ui/jquery-ui.min.js"></script>
