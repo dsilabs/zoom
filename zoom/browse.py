@@ -2,7 +2,7 @@
     zoom.browse
 """
 
-from zoom.utils import name_for
+from zoom.utils import name_for, sorted_column_names, Record
 from zoom.components import as_actions
 from zoom.html import tag, div
 
@@ -11,7 +11,9 @@ def browse(data, **kwargs):
     """browse data"""
 
     def getcol(item, index):
-        if isinstance(item, (dict, tuple, list)):
+        if isinstance(item, dict):
+            return item.get(index, None)
+        elif isinstance(item, (tuple, list)):
             return item[index]
         else:
             return getattr(item, index)
@@ -41,10 +43,13 @@ def browse(data, **kwargs):
         if columns:
             labels = columns
         else:
-            if (len(items) and hasattr(items[0], 'keys') and
+            if (len(items) and isinstance(items[0], Record)):
+                labels = columns = items[0].attributes()
+
+            elif (len(items) and hasattr(items[0], 'keys') and
                     callable(getattr(items[0], 'keys'))):
                 # list of dicts
-                labels = columns = items[0].keys()
+                labels = columns = sorted_column_names(items[0].keys())
 
             elif len(items) and hasattr(items[0], '__dict__'):
                 # list of objects
@@ -70,14 +75,17 @@ def browse(data, **kwargs):
     labels = list(labels)
 
     if fields:
-        #labels = []
         lookup = fields.as_dict()
-        for col in columns[len(labels):]:
+        for n, col in enumerate(columns):
             if col in lookup:
-                label = lookup[col].label
+                better_label = lookup[col].label
             else:
-                label = col
-            labels.append(label)
+                better_label = None
+            if better_label:
+                if n > len(labels):
+                    labels.append(better_label)
+                else:
+                    labels[n] = better_label
 
         alist = []
         for item in items:
@@ -100,16 +108,20 @@ def browse(data, **kwargs):
         t.append('</tr></thead>')
 
     t.append('<tbody>')
- 
+
     count = 0
     for row in alist:
         count += 1
         t.append('<tr id="row-%s">' % (count))
 
         for item in row:
-            wrapping = len(str(item)) < 80 and ' nowrap' or ''
+            try:
+                value = str(item)
+            except Exception:
+                value = repr(item)
+            wrapping = len(value) < 80 and ' nowrap' or ''
             cell_tpl = '<td {}>%s</td>'.format(wrapping)
-            t.append(cell_tpl % item)
+            t.append(cell_tpl % value)
 
         t.append('</tr>')
 
