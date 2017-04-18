@@ -38,7 +38,7 @@ def get_groups(db, user):
     >>> 'everyone' in groups
     True
     >>> 'a_login' in groups
-    True
+    False
     >>> 'managers' in groups
     True
     >>> 'administrators' in groups

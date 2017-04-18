@@ -6,3 +6,4 @@ testsold
 .coverage
 .linter*
 __pycache__
+*png

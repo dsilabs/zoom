@@ -70,3 +70,30 @@ It attempts to do this by adhering to the following key prinicples:
 
 ### When would you use it?
 Zoom is ideally suited to web developers that just want to get something up and running quickly without committing a lot of code to things they may want to change later. This is it's sweet spot. Because of this it is great for prototyping and rapid iterations of applications under active development.
+
+
+## Contributing
+To contribute your own code to Zoom you'll need to setup a development
+environment.
+
+### Setting Up The Easy way
+The simplest way to hack on Zoom is to use one of our Vagrant boxes or Docker
+containers.
+
+### Setting Up The Hard Way
+If you can't use the prepared boxes then the best way to do that is to look
+at the Dockerfile or Vagrantfile of the boxes and see how those are set up.
+
+### Testing
+Once your box is setup you can run the tests by switching to the directory
+and running nosetests.  
+
+    $ cd source/libs/zoom
+    $ nosetests
+
+This will run the unittests, doctests and sidetests.  If your box is not
+setup for sidetests (which uses webdriver, and various other libraries) you
+can skipthem by specifying only the other directories for tests.
+
+    $ cd soure/libs/zoom
+    $ nosetests zoom tests/unitttests
