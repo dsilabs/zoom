@@ -477,16 +477,13 @@ class Storage(dict):
         2
         >>> del o.a
         >>> o.a
-        Traceback (most recent call last):
-            ...
-        AttributeError: 'a'
 
     """
     def __getattr__(self, key):
         try:
             return self[key]
         except KeyError as k:
-            raise AttributeError(k)
+            return None
 
     def __setattr__(self, key, value):
         self[key] = value
@@ -550,10 +547,8 @@ class Record(Storage):
         >>> o['double']
         4
         >>> del o.a
-        >>> o.a
-        Traceback (most recent call last):
-            ...
-        AttributeError: 'a'
+        >>> print(o.a)
+        None
 
         >>> class Foo(Record):
         ...     full = property(lambda a: a.fname + ' ' + a.lname)
@@ -586,9 +581,6 @@ class Record(Storage):
         4
         >>> del o.a
         >>> o.a
-        Traceback (most recent call last):
-            ...
-        AttributeError: 'a'
 
     """
 
@@ -640,7 +632,7 @@ class Record(Storage):
         t = []
 
         items = [
-            (key, self[key]) for key in attributes
+            (key, self.get(key, None)) for key in attributes
             if not key.startswith('_')
         ]
 
