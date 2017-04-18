@@ -431,6 +431,9 @@ div.search span.clear a {
 
 /* Lists (like tables but for data records)
  *========================== */
+.baselist {
+  overflow-x: auto;
+}
 .baselist table {
   width: 100%;
   border-spacing: 0;
