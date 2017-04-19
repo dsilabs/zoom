@@ -11,7 +11,6 @@ from os.path import abspath, split, join, isfile
 
 from zoom.component import component
 from zoom.utils import kind
-from zoom.exceptions import PageMissingException
 
 
 MISSING = '<span class="missing-view">{} missing</span>'
@@ -119,7 +118,7 @@ class View(Dispatcher):
             return result
 
     def show(self, *a, **k):
-        raise PageMissingException
+        pass
 
 
 class DynamicView(View):
