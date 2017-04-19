@@ -8,6 +8,7 @@ from zoom.users import Users
 from zoom.browse import browse
 from zoom.tools import load_content
 from zoom.component import component
+
 from users import user_fields
 
 class MyView(View):

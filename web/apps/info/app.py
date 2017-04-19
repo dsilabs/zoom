@@ -13,7 +13,7 @@ from zoom.helpers import url_for, link_to
 
 class MyApp(App):
 
-    menu = 'Overview', 'Log', 'Missing', 'About'
+    menu = 'Overview', 'Log', 'About'
 
     def index(self, q=None):
 

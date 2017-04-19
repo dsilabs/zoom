@@ -51,14 +51,14 @@ class App(object):
         isfile = os.path.isfile
         logger.debug('route {!r}'.format(route))
 
-        if len(route) > 1 and isfile('%s.py' % route[1]):
+        if len(route) > 1:
             module = route[1]
             rest = route[2:]
         else:
             module = 'index'
             rest = route[1:]
-
         logger.debug('module is {!r}'.format(module))
+
         try:
             method = getattr(self, module)
             logger.debug('got method for {!r}'.format(module))
@@ -70,6 +70,13 @@ class App(object):
             result = method(*rest, **data)
             logger.debug(result)
             return result
+
+        if len(route) > 1 and isfile('%s.py' % route[1]):
+            module = route[1]
+            rest = route[2:]
+        else:
+            module = 'index'
+            rest = route[1:]
 
         filename = '{}.py'.format(module)
         if isfile(filename):
@@ -123,6 +130,7 @@ class AppProxy(object):
 
         self.visible = self.config.get('visible')
         self.enabled = self.config.get('enabled')
+        self.in_development = self.config.get('in_development')
 
     @property
     def title(self):
@@ -290,12 +298,12 @@ def get_default_app_name(site, user):
     msg = 'Configuration error: user %r unable to run default app %r'
     if user.is_authenticated:
         default_app = site.config.get('apps', 'home', 'home')
-        if not user.can_run(default_app):
-            raise Exception(msg % (user.username, default_app))
+        # if not user.can_run(default_app):
+        #     raise Exception(msg % (user.username, default_app))
     else:
         default_app = site.config.get('apps', 'index', 'content')
-        if not user.can_run(default_app):
-            raise Exception(msg % (user.username, default_app))
+        # if not user.can_run(default_app):
+        #     raise Exception(msg % (user.username, default_app))
     return default_app
 
 
@@ -309,7 +317,7 @@ def handle(request):
     app_name = request.route and request.route[0] or None
     app = app_name and load_app(request.site, app_name)
 
-    if app and app.enabled and user.can_run(app_name):
+    if app and app.enabled and user.can_run(app):
         logger.debug('running requested app')
         request.app = app
         return app.run(request)
@@ -327,7 +335,7 @@ def handle(request):
             logger.debug('unable to run requested app %r', app_name)
         app_name = get_default_app_name(request.site, request.user)
         app = load_app(request.site, app_name)
-        if app and app.enabled and user.can_run(app_name):
+        if app and app.enabled and user.can_run(app):
             logger.debug('redirecting to default app %r', app_name)
             return app.run(request)
 
@@ -348,8 +356,8 @@ def get_system_apps(request):
     """get a list of system apps"""
     names = DEFAULT_SYSTEM_APPS
     user = request.user
-    apps = filter(bool, [
-        load_app(request.site, name) for name in names if user.can_run(name)
+    apps = filter(user.can_run, [
+        load_app(request.site, name) for name in names
         ])
     return apps
 
@@ -378,8 +386,8 @@ def get_main_apps(request):
     """Returns the main apps."""
     names = DEFAULT_MAIN_APPS
     user = request.user
-    apps = filter(bool, [
-        load_app(request.site, name) for name in names if user.can_run(name)
+    apps = filter(user.can_run, [
+        load_app(request.site, name) for name in names
         ])
     return apps
 

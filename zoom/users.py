@@ -150,8 +150,9 @@ class User(Record):
 
     def authenticate(self, password):
         """authenticate user credentials"""
-        match, phash = validate_password(password, self.password)
-        return match
+        if self.is_active:
+            match, phash = validate_password(password, self.password)
+            return match
 
     def is_member(self, group):
         """determine if user is a member of a group"""
@@ -206,7 +207,7 @@ class User(Record):
 
         >>> user = users.first(username='admin')
         >>> user.get_groups()[:2]
-        ['administrators', 'a_apps']
+        ['administrators', 'a_admin']
         """
         store = self.get('__store')
         if store:
@@ -221,9 +222,9 @@ class User(Record):
     def apps(self):
         return [g[2:] for g in self.get_groups() if g.startswith('a_')]
 
-    def can_run(self, app_name):
+    def can_run(self, app):
         """test if user can run an app"""
-        return self.is_admin or self.is_developer or app_name in self.apps
+        return app and (app.name in self.apps or app.in_development and (self.is_developer or self.is_admin))
 
     def can(self, action, thing):
         """test to see if user can action a thing object.

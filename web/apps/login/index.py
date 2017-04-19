@@ -8,21 +8,21 @@ from zoom.mvc import DynamicView, Controller, View
 from zoom.page import page
 from zoom.users import Users
 from zoom.tools import redirect_to, load_content
+from zoom.components import error
 import zoom.html as html
 
-logger = logging.getLogger(__name__)
 
 class LoginForm(DynamicView):
 
     @property
     def registration_link(self):
-        if self.user.can_run('register'):
+        if self.user.is_member('a_register'):
             return html.a('New User?', href='/register')
         return ''
 
     @property
     def forgot_password(self):
-        if self.user.can_run('forgot'):
+        if self.user.is_member('a_forgot'):
             return load_content('views/forgot_password.html')
         return ''
 
@@ -30,7 +30,6 @@ class LoginForm(DynamicView):
 class LoginView(View):
 
     def index(self, *a, **k):
-        logger.debug('view called')
         username = k.get('username', '')
         user = self.model.user
         referrer_url = k.get('referrer')
@@ -49,15 +48,24 @@ class LoginView(View):
 class LoginController(Controller):
 
     def login_button(self, **data):
+        logger = logging.getLogger(__name__)
+        logger.debug('login_button called')
         site = self.model.site
         username = data.get('username')
         password = data.get('password')
         if username and password:
             users = Users(site.db)
-            user = users.first(username=username)
+            user = users.first(username=username, status='A')
             if user:
                 if user.login(self.model, password):
+                    logger.info('user {!r} sucesfully logged in'.format(username))
                     return redirect_to(user.default_app)
+            logger.debug('failed login attempt for user {!r}'.format(username))
+            error('incorrect username or password')
+        elif username:
+            error('password missing')
+        else:
+            error('username missing')
 
 
 def main(route, request):
