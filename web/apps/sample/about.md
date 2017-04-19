@@ -1,6 +1,6 @@
 # About Sample
 
-Sample application demonostrating many of the features of the [Zoom framework](https://github.com/dsilabs/zoom).
+Sample application demonstrating many of the features of the [Zoom framework](https://github.com/dsilabs/zoom).
 
 Written by [Dynamic Solutions](https://www.dynamic-solutions.com).
 
