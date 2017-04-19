@@ -43,6 +43,9 @@ class MyView(View):
         )
         return page(content)
 
+    def about(self):
+        return page(load_content('about.md'))
+
 
 def main(route, request):
     view = MyView(request.site)
