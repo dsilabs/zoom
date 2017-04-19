@@ -151,7 +151,7 @@ class User(Record):
     def authenticate(self, password):
         """authenticate user credentials"""
         if self.is_active:
-            match, phash = validate_password(password, self.password, self.created)
+            match, phash = validate_password(password, self.password)
             return match
 
     def is_member(self, group):
