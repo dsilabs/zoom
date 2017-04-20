@@ -23,6 +23,7 @@ import threading
 
 from zoom.utils import OrderedSet, pp
 
+# TODO: rename this to context (or system?)
 composition = threading.local()
 
 
@@ -187,7 +188,9 @@ def handler(request, handler, *rest):
     result = handler(request, *rest)
 
     logger = logging.getLogger(__name__)
+    logger.debug('component middleware')
 
+    # TODO: clean this up, use a single alerts list with an alert type value
     success_alerts = composition.parts.parts.get('success')
     if success_alerts:
         if not hasattr(request.session, 'system_successes'):
@@ -210,44 +213,44 @@ def handler(request, handler, *rest):
 
 # def component(*args, **kwargs):
 #     """assemble parts of a component
-#     
+#
 #     >>> system.setup()
 #     >>> system.css
 #     OrderedSet()
-# 
+#
 #     >>> component('test', css='mycss')
 #     'test'
 #     >>> system.css
 #     OrderedSet(['mycss'])
-# 
+#
 #     >>> component(100, css='mycss')
 #     '100'
-# 
+#
 #     >>> component(css='mycss', html='test')
 #     'test'
 #     >>> system.css
 #     OrderedSet(['mycss'])
-# 
+#
 #     >>> component('test', html='more', css='mycss')
 #     'testmore'
 #     >>> system.css
 #     OrderedSet(['mycss'])
-# 
+#
 #     >>> component('test', 'two', css=['mycss','css2'], js='myjs')
 #     'testtwo'
 #     >>> system.css
 #     OrderedSet(['mycss', 'css2'])
 #     >>> system.js
 #     OrderedSet(['myjs'])
-# 
+#
 #     >>> component('test', js='js2')
 #     'test'
 #     >>> system.js
 #     OrderedSet(['myjs', 'js2'])
-# 
+#
 #     >>> component(['test1'], ('test2',), 'test3')
 #     'test1test2test3'
-# 
+#
 #     >>> from mvc import DynamicView
 #     >>> class MyThing(DynamicView):
 #     ...     def __str__(self):
@@ -267,7 +270,7 @@ def handler(request, handler, *rest):
 #     'test4test5'
 #     >>> component(*list(args))
 #     'test4test5'
-# 
+#
 #     >>> system.setup()
 #     >>> component('test', js=[])
 #     'test'
@@ -276,14 +279,14 @@ def handler(request, handler, *rest):
 #     """
 #     def is_iterable(item):
 #         return hasattr(item, '__iter__')
-# 
+#
 #     def as_iterable(item):
 #         return not is_iterable(item) and (item,) or item
-# 
+#
 #     def flatten(items):
 #         items_as_iterables = list(is_iterable(i) and i or (i,) for i in items)
 #         return [i for j in items_as_iterables for i in j]
-# 
+#
 #     parts = {
 #         'html': flatten(args),
 #     }

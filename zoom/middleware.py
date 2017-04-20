@@ -225,7 +225,7 @@ def serve_html(request, handler, *rest):
 
 
 def check_csrf(request, handler, *rest):
-
+    """Check csrf token"""
 
     if request.method == 'POST' and request.site.csrf_validation:
         logger = logging.getLogger(__name__)
