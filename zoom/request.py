@@ -269,11 +269,5 @@ class Request(object):
             parent_path=self.parent_path,
         )
 
-
     def __str__(self):
-        return '{\n%s\n}' % '\n'.join(
-            '  %s: %r' % (
-                key,
-                self.__dict__[key]
-            ) for key in self.__dict__
-        )
+        return zoom.utils.pretty(self)
