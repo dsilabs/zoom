@@ -140,6 +140,10 @@ class Topic(object):
         return [self.put(message) for message in messages]
 
     def _peek(self, newest=None):
+        def decoded(value):
+            if type(value) is bytes:
+                return value.decode('utf8')
+            return value
         top_one = newest is not None and newest or self.newest or 0
         db = self.db
         if self.last() > self.newest:
@@ -167,7 +171,7 @@ class Topic(object):
             if row_id:
                 message = self.messages.get(row_id)
                 if message:
-                    return row_id, message.topic, json.loads(message.body)
+                    return row_id, decoded(message.topic), json.loads(decoded(message.body))
         raise EmptyException
 
     def peek(self, newest=None):
