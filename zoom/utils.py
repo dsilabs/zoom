@@ -34,6 +34,11 @@ def pretty(obj):
                 '  {!r} {}: {!r}'.format(key, '.' * (15 - len(key)), value)
                 for key, value in sorted(obj.items())
             ])
+        elif hasattr(obj, '__dict__'):
+            return '<%s \n%s\n>' % (obj.__class__.__name__, '\n'.join([
+                '  {} {}: {!r}'.format(key, '.' * (15 - len(key)), value)
+                for key, value in sorted(obj.__dict__.items())
+            ]))
         else:
             return repr(obj)
 
@@ -52,6 +57,24 @@ def pp(obj):
     """
     # pylint: disable=C0103
     print(pretty(obj))
+
+
+def dictify(item):
+    """prepare an object for transmission by marshalling it's members
+
+    Marshals only members that json can handle.
+    """
+    # pylint: disable=W0703
+
+    result = {}
+    for k, v in item.__dict__.items():
+        try:
+            json.dumps(v)
+        except Exception:
+            pass
+        else:
+            result[k] = v
+    return result
 
 
 def sorted_column_names(names):
