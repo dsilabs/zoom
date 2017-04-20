@@ -174,6 +174,7 @@ def serve_static(request, handler, *rest):
 def serve_themes(request, handler, *rest):
     """Serve a theme file"""
     if request.path.startswith('/themes/'):
+        # TODO: use site.theme_path
         theme_path = os.path.join(
             request.site_path,
             request.site.themes_path,
@@ -194,16 +195,16 @@ def serve_images(request, handler, *rest):
 def serve_favicon(request, handler, *rest):
     """Serve a favicon file
 
-        >>> from zoom.request import Request
-        >>> def content_handler(request, *rest):
-        ...     return '200 OK', [], 'nuthin'
-        >>> request = Request(
-        ...     dict(REQUEST_URI='/'),
-        ... )
-        >>> status, _, content = serve_favicon(
-        ...     request,
-        ...     content_handler,
-        ... )
+    >>> from zoom.request import Request
+    >>> def content_handler(request, *rest):
+    ...     return '200 OK', [], 'nuthin'
+    >>> request = Request(
+    ...     dict(REQUEST_URI='/'),
+    ... )
+    >>> status, _, content = serve_favicon(
+    ...     request,
+    ...     content_handler,
+    ... )
     """
     if request.path == '/favicon.ico':
         libpath = os.path.dirname(__file__)
@@ -238,7 +239,10 @@ def check_csrf(request, handler, *rest):
             del request.session.csrf_token
 
         else:
-            logger.warning('csrf token missing or invalid')
+            if csrf_token:
+                logger.warning('csrf token invalid')
+            else:
+                logger.warning('csrf token missing')
             return RedirectResponse('/')
 
     return handler(request, *rest)
