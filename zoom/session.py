@@ -32,8 +32,6 @@ class Session(object):
         self.ip_address = request.ip_address
 
         if not token:
-            purge(db)
-
             token = self.new(db)
             request.session_token = token
             logger.info('new user')
