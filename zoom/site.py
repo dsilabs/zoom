@@ -21,6 +21,7 @@ class Site(object):
         instance = request.instance
         self.name = name = request.domain
 
+        # TODO: consider getting site to do this calculation instead of reqeust
         site_path = request.site_path
         if os.path.exists(site_path):
 
@@ -121,6 +122,12 @@ class Site(object):
             tracker=self.tracker,
         )
 
+    def __repr__(self):
+        from zoom.utils import pretty
+        return '<Site {!r} {!r}>'.format(self.abs_url, self.path)
+
+    def __str__(self):
+        return zoom.utils.pretty(self)
 
 def site_handler(request, handler, *rest):
     """install site object"""
