@@ -112,9 +112,8 @@ class CollectionView(View):
 
         authorized = (i for i in c.store if user.can('read', i))
         matching = (i for i in authorized if not q or matches(i, q))
-        filtered = (not q and hasattr(c, 'filter') and
-                    c.filter and filter(c.filter, matching)) or matching
-        items = sorted(matching, key=c.order)
+        filtered = c.filter and filter(c.filter, matching) or matching
+        items = sorted(filtered, key=c.order)
 
         if len(items) != 1:
             footer_name = c.title
@@ -388,7 +387,6 @@ class Collection(object):
         self.labels = get('labels', None) or self.calc_labels()
         self.model = get('model', CollectionModel)
         self.store = get('store', None)
-        self.filter = get('filter', None)
         self.url = get('url', None)
         self.controller = get('controller', self.controller)
 
