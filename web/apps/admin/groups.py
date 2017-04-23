@@ -64,6 +64,10 @@ class GroupCollectionController(CollectionController):
 
 
 def main(route, request):
+
+    def user_group(group):
+        return group.type == 'U' and not group.name.startswith('a_')
+
     db = request.site.db
     users = Groups(db)
     fields = group_fields(request)
@@ -74,4 +78,5 @@ def main(route, request):
         store=users,
         item_name='group',
         url='/admin/groups',
+        filter=user_group,
     )(route, request)
