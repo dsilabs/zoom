@@ -56,6 +56,26 @@ class Component(object):
     >>> Component() + 'test1' + dict(css='mycss')
     <Component: {'css': OrderedSet(['mycss']), 'html': ['test1']}>
 
+    >>> Component('test1', Component('test2'))
+    <Component: {'html': ['test1', 'test2']}>
+
+    >>> Component(
+    ...    Component('test1', css='css1'),
+    ...    Component('test2', Component('test3', css='css3')),
+    ... )
+    <Component: {'css': OrderedSet(['css1', 'css3']), 'html': ['test1', 'test2', 'test3']}>
+
+    >>> Component((Component('test1', css='css1'), Component('test2', css='css2')))
+    <Component: {'css': OrderedSet(['css1', 'css2']), 'html': ['test1', 'test2']}>
+
+    >>> Component(Component('test1', css='css1'), Component('test2', css='css2'))
+    <Component: {'css': OrderedSet(['css1', 'css2']), 'html': ['test1', 'test2']}>
+
+    >>> composition.parts = Component()
+    >>> c = Component(Component('test1', css='css1'), Component('test2', css='css2'))
+    >>> c.render()
+    'test1test2'
+
     >>> page2 = \\
     ...    Component() + \\
     ...    '<h1>Title</h1>' + \\
@@ -95,9 +115,21 @@ class Component(object):
         ... )
         True
         """
+
+        def is_iterable(obj):
+            """Returns True if object is an iterable but not a string"""
+            return hasattr(obj, '__iter__') and not isinstance(obj, str)
+
+        def flatten(items):
+            """Returns list of items with sublists incorporated into list"""
+            items_as_iterables = list(is_iterable(i) and i or (i,) for i in items)
+            return [i for j in items_as_iterables for i in j]
+
         self.parts = {
-            'html': list(args),
+            'html': [],
         }
+        for arg in flatten(args):
+            self += arg
         self += kwargs
 
     def __iadd__(self, other):
@@ -125,23 +157,30 @@ class Component(object):
         <Component: {'html': ['test', 'text']}>
 
         """
-        kind = type(other)
-        if kind == str:
+        def rendered(obj):
+            """call the render method if necessary"""
+            if not isinstance(obj, Component) and hasattr(obj, 'render'):
+                return obj.render()
+            return obj
+
+        other = rendered(other)
+
+        if isinstance(other, str):
             self.parts['html'].append(other)
-        elif kind == dict:
+        elif isinstance(other, dict):
             for key, value in other.items():
                 part = self.parts.setdefault(key, OrderedSet())
                 if key == 'html':
-                    if type(value) == list:
+                    if isinstance(value, list):
                         part.extend(value)
                     else:
                         part.append(value)
                 else:
-                    if type(value) == list:
+                    if isinstance(value, list):
                         part |= value
                     else:
                         part |= [value]
-        elif kind == Component:
+        elif isinstance(other, Component):
             for key, value in other.parts.items():
                 part = self.parts.setdefault(key, OrderedSet())
                 if key == 'html':
@@ -172,16 +211,26 @@ class Component(object):
             )
         )
 
+    def render(self):
+        """renders the component"""
+        composition.parts += self
+        return ''.join(self.parts['html'])
+
+    def __str__(self):
+        return self.render()
+
 
 component = Component
 
 
 def compose(*args, **kwargs):
+    """Compose a response - DEPRECATED"""
     composition.parts += component(**kwargs)
     return ''.join(args)
 
 
 def handler(request, handler, *rest):
+    """Component handler"""
 
     composition.parts = Component()
 
