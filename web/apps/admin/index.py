@@ -36,6 +36,26 @@ class MyView(View):
         )
         return page(content, title='Overview', subtitle='Raw dump of main tables', search=q)
 
+    def requests(self):
+        db = self.model.site.db
+        log_data = db("""
+            select *
+            from log
+            where status in ('C', 'I')
+            order by timestamp desc
+            limit 100""")
+        return page(browse(log_data), title='Requests')
+
+    def errors(self):
+        db = self.model.site.db
+        log_data = db("""
+            select *
+            from log
+            where status='E'
+            order by timestamp desc
+            limit 100""")
+        return page(browse(log_data), title='Errors')
+
     def about(self, *a):
         return page(load_content('about.md'))
 
