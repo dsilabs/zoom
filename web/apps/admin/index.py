@@ -9,7 +9,7 @@ from zoom.browse import browse
 from zoom.tools import load_content
 from zoom.component import Component
 
-from users import user_fields
+# from users import user_fields
 from views import PanelView, index_metrics_view, IndexPageLayoutView
 
 
