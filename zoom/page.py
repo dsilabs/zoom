@@ -97,11 +97,13 @@ class Page(object):
 
         def get(part, wrapper='{}'):
             parts = composition.parts.parts.get(part, [])
+            logger = logging.getLogger(__name__)
+            logger.debug('get_{}: {}'.format(part, parts))
             return parts and '\n'.join(wrapper.format(part) for part in parts) or ''
 
         def get_css():
-            wrapper = '<styles>\n{}\n</styles>'
-            return get('css', wrapper)
+            wrapper = '<style>\n{}\n</style>'
+            return get('css', wrapper) or '<!-- css missing -->'
 
         def get_js():
             parts = composition.parts.parts.get('js', [])
@@ -136,7 +138,7 @@ class Page(object):
             page_title=request.site.title,
             site_url=request.site.url,
             author=request.site.owner_name,
-            css=get_css(),
+            css=get_css,
             js=get_js(),
             head=get_head(),
             tail=get_tail(),
@@ -152,7 +154,6 @@ class Page(object):
         def rendered(obj):
             """call the render method if necessary"""
             if hasattr(obj, 'render'):
-                # return rendered(obj.render())
                 return obj.render()
             return obj
 
@@ -174,12 +175,11 @@ class Page(object):
         save_content = self.content
 
         if self.title or self.subtitle or self.actions or self.search:
-            page_header = PageHeader(page=self).render()
-            full_page = page_header + rendered(self.content)
+            full_page = Component(PageHeader(page=self), self.content)
         else:
-            full_page = Component() + rendered(self.content)
+            full_page = Component(self.content)
 
-        self.content = ''.join(full_page.parts['html'])
+        self.content = full_page.render()
         content = zoom.render.apply_helpers(template, self, providers)
         self.content = save_content
 
