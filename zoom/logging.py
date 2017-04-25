@@ -20,12 +20,12 @@ def add_entry(request, status, entry):
         'admin',
         request.path,
         status,
-        request.user._id,
+        hasattr(request, 'user') and request.user._id or None,
         request.ip_address,
         request.remote_user,
         request.host,
         now(),
-        int(float(request.get_elapsed()) * 100),
+        int(float(request.get_elapsed()) * 1000),
         entry,
     )
 
