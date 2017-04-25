@@ -2,7 +2,7 @@
     admin model
 """
 
-from zoom import context
+# from zoom import context
 
 def search_all(text):
     users = Users()
