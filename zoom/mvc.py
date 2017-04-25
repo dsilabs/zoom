@@ -215,6 +215,9 @@ class DynamicView(View):
             css=MISSING_CSS
             )
 
+    def __str__(self):
+        return self.render().render()
+
 
 class Controller(Dispatcher):
     """Controller
