@@ -4,6 +4,7 @@
 
 import logging
 
+from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
@@ -191,7 +192,7 @@ class User(Record):
         return '/home'
 
     def deactivate(self):
-        self.status = 'D'
+        self.status = 'I'
 
     def activate(self):
         self.status = 'A'

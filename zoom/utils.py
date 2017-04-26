@@ -612,7 +612,12 @@ class Record(Storage):
         logger = logging.getLogger(__name__)
         id = self['__store'].put(self)
         key = self['__store'].id_name
-        logger.debug('saved %s(%s) to %s', self, self[key], self['__store'])
+        logger.debug('saved record %s(%s=%r) to %r',
+            self.__class__.__name__,
+            key,
+            self[key],
+            self['__store']
+        )
         return id
 
     def attributes(self):
