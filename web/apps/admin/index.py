@@ -7,7 +7,7 @@ from zoom.mvc import View
 from zoom.page import page
 from zoom.users import Users
 from zoom.browse import browse
-from zoom.tools import load_content
+from zoom.tools import load_content, today
 from zoom.component import Component
 
 # from users import user_fields
@@ -19,7 +19,7 @@ class MyView(View):
     def index(self, q=''):
         db = self.model.site.db
 
-        users = Users(db)
+        users = sorted(Users(db).find(status='A'), key=lambda a: a.name)
         groups = db('select * from groups')
         members = db('select * from members')
         subgroups = db('select * from subgroups')
