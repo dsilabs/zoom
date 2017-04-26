@@ -32,6 +32,7 @@ from zoom.response import (
     TextResponse,
     RedirectResponse,
 )
+import zoom.context
 import zoom.cookies
 import zoom.html as html
 import zoom.logging
@@ -374,6 +375,7 @@ def handle(request, handlers=None):
         zoom.component.handler,
         check_csrf,
         zoom.user.user_handler,
+        zoom.context.handler,
         display_errors,
         zoom.apps.apps_handler,
         not_found,

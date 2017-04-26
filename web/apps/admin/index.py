@@ -2,6 +2,7 @@
     users index
 """
 
+from zoom.audit import audit
 from zoom.mvc import View
 from zoom.page import page
 from zoom.users import Users
@@ -35,6 +36,16 @@ class MyView(View):
             ),
         )
         return page(content, title='Overview', subtitle='Raw dump of main tables', search=q)
+
+    def audit(self):
+        db = self.model.site.db
+        audit('requested', 'page', 'audit')
+        log_data = db("""
+            select *
+            from audit_log
+            order by timestamp desc
+            limit 100""")
+        return page(browse(log_data), title='Activity')
 
     def requests(self):
         db = self.model.site.db
