@@ -4,6 +4,7 @@
 
 import logging
 
+from zoom.context import context
 from zoom.tools import now
 
 cmd = """
@@ -17,7 +18,7 @@ cmd = """
 def add_entry(request, status, entry):
     db = request.site.db
     db(cmd,
-        'admin',
+        'admin', #TODO: get actual app
         request.path,
         status,
         hasattr(request, 'user') and request.user._id or None,
@@ -28,6 +29,12 @@ def add_entry(request, status, entry):
         int(float(request.get_elapsed()) * 1000),
         entry,
     )
+
+
+def log_activity(message, *args, **kwargs):
+    # I think this should actually be a verb of some sort but I am
+    # drawing a blank at this moment of what to call it. :/
+    add_entry(context.request, 'A', message, *args, **kwargs)
 
 
 class LogHandler(logging.Handler):

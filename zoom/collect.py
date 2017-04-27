@@ -15,6 +15,7 @@ from zoom.mvc import View, Controller
 from zoom.utils import name_for, id_for
 from zoom.page import page
 from zoom.tools import redirect_to, now
+from zoom.logging import log_activity
 
 
 def shared_collection_policy(group):
@@ -109,6 +110,10 @@ class CollectionView(View):
             return redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
 
         actions = user.can('create', c) and ['New'] or []
+
+        if q:
+            msg = '%s searched %s with %r' % (user.link, c.name.lower(), q)
+            log_activity(msg)
 
         authorized = (i for i in c.store if user.can('read', i))
         matching = (i for i in authorized if not q or matches(i, q))
@@ -258,13 +263,14 @@ class CollectionController(Controller):
 
                 self.after_insert(record)
 
+                msg = '%s added %s %s' % (
+                    user.link,
+                    collection.item_name.lower(),
+                    record.link
+                )
                 logger = logging.getLogger(__name__)
-                logger.info(
-                    '%s added %s %s' % (
-                        user.link,
-                        collection.item_name.lower(),
-                        record.link),
-                    )
+                logger.info(msg)
+                log_activity(msg)
 
                 return redirect_to(collection.url)
 
@@ -296,14 +302,14 @@ class CollectionController(Controller):
 
                     self.after_update(record)
 
-                    logger = logging.getLogger(__name__)
-                    logger.info(
-                        '%s edited %s %s' % (
-                            user.link,
-                            collection.item_name.lower(),
-                            record.link
-                        )
+                    msg = '%s updated %s %s' % (
+                        user.link,
+                        collection.item_name.lower(),
+                        record.link
                     )
+                    logger = logging.getLogger(__name__)
+                    logger.info(msg)
+                    log_activity(msg)
                     return redirect_to(record.url)
 
 
@@ -322,15 +328,14 @@ class CollectionController(Controller):
 
                 self.after_delete(record)
 
-                logger = logging.getLogger(__name__)
-                logger.info(
-                    self.collection.request.app.name,
-                    '%s deleted %s %s' % (
-                        c.user.link,
-                        c.item_name.lower(),
-                        record.link
-                    )
+                msg = '%s deleted %s %s' % (
+                    c.user.link,
+                    c.item_name.lower(),
+                    record.name
                 )
+                logger = logging.getLogger(__name__)
+                logger.info(msg)
+                log_activity(msg)
                 return redirect_to(c.url)
 
     def before_update(self, record):

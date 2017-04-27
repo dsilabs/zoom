@@ -52,7 +52,6 @@ def user_fields(request):
 class UserCollectionController(CollectionController):
 
     def before_update(self, record):
-        success('updating status')
         record['status'] = 'A'
         record['updated'] = now()
         record['updated_by'] = self.collection.user._id
@@ -62,7 +61,7 @@ def main(route, request):
     db = request.site.db
     users = Users(db)
     fields = user_fields(request)
-    columns = 'link', 'name', 'phone', 'email', 'username', 'status', 'updated', 'updated_by'
+    columns = 'link', 'username', 'phone', 'email', 'username', 'status', 'updated', 'updated_by'
     return Collection(
         fields,
         model=User,

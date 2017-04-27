@@ -7,6 +7,7 @@ from zoom.mvc import View
 from zoom.page import page
 from zoom.users import Users
 from zoom.browse import browse
+from zoom.logging import log_activity
 from zoom.tools import load_content, today
 from zoom.component import Component
 
@@ -39,7 +40,6 @@ class MyView(View):
 
     def audit(self):
         db = self.model.site.db
-        audit('requested', 'page', 'audit')
         log_data = db("""
             select *
             from audit_log
@@ -56,6 +56,16 @@ class MyView(View):
             order by timestamp desc
             limit 100""")
         return page(browse(log_data), title='Requests')
+
+    def activity(self):
+        db = self.model.site.db
+        log_data = db("""
+            select *
+            from log
+            where status in ('A')
+            order by timestamp desc
+            limit 100""")
+        return page(browse(log_data), title='Activity')
 
     def errors(self):
         db = self.model.site.db
