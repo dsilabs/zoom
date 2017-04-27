@@ -45,7 +45,8 @@ class LogHandler(logging.Handler):
 
     def emit(self, record):
         entry = self.format(record)
-        add_entry(self.request, 'I', entry)
+        status = record.levelname[0]
+        add_entry(self.request, status, entry)
 
 
 def add_log_handler(request):

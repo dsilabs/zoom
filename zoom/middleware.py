@@ -311,6 +311,9 @@ def display_errors(request, handler, *rest):
     try:
         return handler(request, *rest)
     except Exception:
+        msg = traceback.format_exc()
+        logger = logging.getLogger(__name__)
+        logger.error(msg)
         content = """
         <h2>Exception</h2>
         {}
@@ -318,7 +321,7 @@ def display_errors(request, handler, *rest):
         <h2>Request</h2>
         <pre>{}</pre>
         """.format(
-            html.pre(traceback.format_exc()),
+            html.pre(msg),
             str(request),
         )
         return page(
