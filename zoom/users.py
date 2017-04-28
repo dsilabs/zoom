@@ -96,6 +96,9 @@ class User(Record):
         self.is_developer = False
         self.is_authenticated = False
 
+    def allows(self, user, action):
+        return action != 'delete' or self.username != 'admin'
+
     def initialize(self, request):
         logger = logging.getLogger(__name__)
         logger.debug('initializing user %r', self.username)
