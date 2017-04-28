@@ -310,6 +310,15 @@ class CollectionController(Controller):
                     logger = logging.getLogger(__name__)
                     logger.info(msg)
                     log_activity(msg)
+                    if record.key != key:
+                        log_activity(
+                            '%s changed %s %s to %s' % (
+                                user.link,
+                                collection.item_name.lower(),
+                                key,
+                                record.key
+                            )
+                        )
                     return redirect_to(record.url)
 
 
@@ -366,6 +375,7 @@ class Collection(object):
     store = None
     url = None
     allows = shared_collection_policy('managers')
+    verbose = True
 
     def __init__(self, fields, **kwargs):
 
@@ -456,6 +466,13 @@ class Collection(object):
 
         # self.store_type.store = self.store
         # self.store_type.collection = self
+        if self.verbose and request.route[1:]:
+            msg = '%s viewed %s %s' % (
+                self.user.link,
+                route and self.item_name.lower() or '',
+                route and ' '.join(route) or ' '.join(request.route[1:])
+            )
+            log_activity(msg)
         return (
             self.controller(self)(*route, **request.data) or
             self.view(self)(*route, **request.data)
@@ -466,3 +483,8 @@ class Collection(object):
 
     def __str__(self):
         return 'collection of ' + str(self.store.kind)
+
+
+class SilentCollection(Collection):
+    """A collection of Records where we do not audit "View" events"""
+    verbose = False

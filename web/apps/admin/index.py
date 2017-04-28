@@ -63,7 +63,7 @@ class MyView(View):
             select *
             from log
             where status in ('A')
-            order by timestamp desc
+            order by timestamp desc, id desc
             limit 100""")
         return page(browse(log_data), title='Activity')
 
