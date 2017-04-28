@@ -44,3 +44,15 @@ class Model(DefaultRecord):
 
     def allows(self, user, action):
         return False
+
+
+def get_user_groups(site):
+    return list(
+        (name, str(id)) for name, id in
+        site.db('select name, id from groups where type="U" order by name')
+    )
+
+
+def handler(request, handler, *rest):
+    request.site.user_groups = get_user_groups(request.site)
+    return handler(request, *rest)

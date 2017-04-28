@@ -41,7 +41,7 @@ def user_fields(request):
         f.TextField('First Name', v.required, v.valid_name),
         f.TextField('Last Name', v.required, v.valid_name),
         # f.TextField('Email', v.required, v.valid_email, not_registered(request)),
-        f.TextField('Email', v.required, v.valid_email),
+        f.EmailField('Email', v.required, v.valid_email),
         f.PhoneField('Phone', v.valid_phone, hint='optional'),
         ])
 
@@ -50,13 +50,8 @@ def user_fields(request):
         f.TextField('Username', v.required, v.valid_username),
         ])
 
-    groups = list(
-        (name, str(id)) for name, id in
-        request.site.db('select name, id from groups where type="U" order by name')
-    )
-
     security_fields = f.Section('Security', [
-        UserGroupsField('Groups', options=groups)
+        UserGroupsField('Groups', options=request.site.user_groups)
     ])
 
     return f.Fields(personal_fields, account_fields, security_fields)
