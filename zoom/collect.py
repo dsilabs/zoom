@@ -24,7 +24,7 @@ def shared_collection_policy(group):
     def policy(item, user, action):
         """Policy rules for shared collection"""
         def is_manager(user):
-            return user.is_member('managers')
+            return user.is_member(group)
 
         actions = {
             'create': is_manager,
