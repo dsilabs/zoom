@@ -30,6 +30,12 @@ class Group(Record):
         """user as link"""
         return link_to(self.name, self.url)
 
+    def allows(self, user, action):
+        system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
+        return (
+            self.name not in system_groups or action != 'delete'
+        )
+
 class Groups(RecordStore):
 
     def __init__(self, db, entity=Group):
@@ -46,13 +52,13 @@ class Groups(RecordStore):
 def group_fields(request):
 
     db = request.site.db
-    group_options = db('select id, name from groups where type="U"')
+    group_options = db('select name, id from groups where type="U"')
 
     fields = f.Fields([
         f.TextField('Name', v.required, v.valid_name),
-        f.RadioField('Type', v.required, options=[('A', 'Application'), ('U', 'User Group')]),
+        f.RadioField('Type', v.required, values=[('Application', 'A'), ('User Group', 'U')]),
         f.MemoField('Description', v.required),
-        f.NumberField('Administrators', options=group_options),
+        f.PulldownField('Administrators', default='administrators', options=group_options),
     ])
     return fields
 
