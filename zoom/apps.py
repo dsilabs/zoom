@@ -122,7 +122,6 @@ class AppProxy(object):
         self.url = site.url + '/' + name
         self.abs_url = site.abs_url + '/' + name
         self.path = os.path.dirname(filename)
-        self.method = getattr(imp.load_source('app', self.filename), 'app')
         self.site = site
         self.config_parser = configparser.ConfigParser()
         self.config = self.get_config(DEFAULT_SETTINGS)
@@ -131,6 +130,10 @@ class AppProxy(object):
         self.visible = self.config.get('visible')
         self.enabled = self.config.get('enabled')
         self.in_development = self.config.get('in_development')
+
+    @property
+    def method(self):
+        return getattr(imp.load_source('app', self.filename), 'app')
 
     @property
     def title(self):

@@ -32,8 +32,10 @@ from zoom.response import (
     TextResponse,
     RedirectResponse,
 )
+import zoom.context
 import zoom.cookies
 import zoom.html as html
+import zoom.logging
 import zoom.session
 import zoom.site
 import zoom.templates
@@ -309,6 +311,9 @@ def display_errors(request, handler, *rest):
     try:
         return handler(request, *rest)
     except Exception:
+        msg = traceback.format_exc()
+        logger = logging.getLogger(__name__)
+        logger.error(msg)
         content = """
         <h2>Exception</h2>
         {}
@@ -316,7 +321,7 @@ def display_errors(request, handler, *rest):
         <h2>Request</h2>
         <pre>{}</pre>
         """.format(
-            html.pre(traceback.format_exc()),
+            html.pre(msg),
             str(request),
         )
         return page(
@@ -368,10 +373,12 @@ def handle(request, handlers=None):
         zoom.site.site_handler,
         serve_themes,
         zoom.database.database_handler,
+        zoom.logging.handler,
         zoom.session.session_handler,
         zoom.component.handler,
         check_csrf,
         zoom.user.user_handler,
+        zoom.context.handler,
         display_errors,
         zoom.apps.apps_handler,
         not_found,

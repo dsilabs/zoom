@@ -192,7 +192,7 @@ class User(Record):
         return '/home'
 
     def deactivate(self):
-        self.status = 'D'
+        self.status = 'I'
 
     def activate(self):
         self.status = 'A'

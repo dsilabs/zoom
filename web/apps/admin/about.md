@@ -10,3 +10,4 @@ Written by [Dynamic Solutions](https://www.dynamic-solutions.com).
 ## Change Log
 
 * 2017-04-18 - Initial Release
+* 2017-04-27 - Added logging
