@@ -10,6 +10,9 @@ from zoom.tools import now
 import zoom.validators as v
 import zoom.fields as f
 
+from fields import UserGroupsField
+from model import update_members
+
 #
 # def not_registered(request):
 #     db = request.site.db
@@ -46,7 +49,17 @@ def user_fields(request):
         # f.TextField('Username', v.required, v.valid_username, username_available(request)),
         f.TextField('Username', v.required, v.valid_username),
         ])
-    return f.Fields(personal_fields, account_fields)
+
+    groups = list(
+        (name, str(id)) for name, id in
+        request.site.db('select name, id from groups where type="U" order by name')
+    )
+
+    security_fields = f.Section('Security', [
+        UserGroupsField('Groups', options=groups)
+    ])
+
+    return f.Fields(personal_fields, account_fields, security_fields)
 
 
 class UserCollectionController(CollectionController):
@@ -55,6 +68,7 @@ class UserCollectionController(CollectionController):
         record['status'] = 'A'
         record['updated'] = now()
         record['updated_by'] = self.collection.user._id
+        update_members(record)
 
 
 def main(route, request):
