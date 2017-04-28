@@ -1779,13 +1779,19 @@ class RadioField(TextField):
     >>> r.evaluate()
     {'choice': '1'}
     >>> r.display_value()
-    '1'
+    'One'
+
+    >>> r.assign('2')
+    >>> r.evaluate()
+    {'choice': '2'}
+    >>> r.display_value()
+    'Two'
 
     """
     values = []
 
     def widget(self):
-        current_value = self.display_value()
+        current_value = self.value #self.display_value()
         result = []
         name = self.name
         for option in self.values:
@@ -1809,6 +1815,15 @@ class RadioField(TextField):
             )
         return ''.join(result)
 
+    def display_value(self):
+        t = self.value
+        if t:
+            for option in self.values:
+                if isinstance(option, (list, tuple)) and len(option) == 2:
+                    label, value = option
+                    if t == value:
+                        return label
+        return t or ''
 
 class PulldownField(TextField):
     """Pulldown Field
