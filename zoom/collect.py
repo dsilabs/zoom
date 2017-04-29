@@ -199,7 +199,7 @@ class CollectionView(View):
 
             c.fields.initialize(record)
             c.fields.update(data)
-            form = form_for(c.fields, ButtonField('Save', cancel=c.url))
+            form = form_for(c.fields, ButtonField('Save', cancel=record.url))
             return page(form, title=c.item_title)
         else:
             return page('%s missing' % key)
@@ -287,6 +287,8 @@ class CollectionController(Controller):
                 record.update(collection.fields)
                 record.pop('key', None)
                 if record.key != key and locate(collection, record.key):
+                    # record key should always be a str, even if the actual
+                    # record.id is being used as the key.
                     error('That {} already exists'.format(collection.item_name))
                 else:
                     record.updated = now()
