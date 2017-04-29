@@ -77,6 +77,9 @@ class MyView(View):
             limit 100""")
         return page(browse(log_data), title='Errors')
 
+    def configuration(self):
+        return page(load_content('configuration.md').format(request=self.model))
+
     def about(self, *a):
         return page(load_content('about.md'))
 
