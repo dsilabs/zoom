@@ -11,7 +11,7 @@ import zoom.validators as v
 import zoom.fields as f
 
 from fields import UserGroupsField
-from model import update_members
+from model import update_user_groups
 
 #
 # def not_registered(request):
@@ -63,7 +63,7 @@ class UserCollectionController(CollectionController):
         record['status'] = 'A'
         record['updated'] = now()
         record['updated_by'] = self.collection.user._id
-        update_members(record)
+        update_user_groups(record)
 
 
 def main(route, request):

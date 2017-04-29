@@ -5,68 +5,39 @@
 from zoom.components import success, error
 from zoom.collect import Collection, CollectionController
 from zoom.forms import Form
-from zoom.utils import Record
-# from zoom.users import User, Users
 from zoom.helpers import link_to, url_for
-from zoom.records import RecordStore
+from zoom.models import Group, Groups
 from zoom.tools import now
 import zoom.validators as v
 import zoom.fields as f
 
 
-class Group(Record):
-
-    @property
-    def key(self):
-        return self._id
-
-    @property
-    def url(self):
-        """user view url"""
-        return url_for('/admin/groups/{}'.format(self.key))
-
-    @property
-    def link(self):
-        """user as link"""
-        return link_to(self.name, self.url)
-
-    def allows(self, user, action):
-        system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
-        return (
-            self.name not in system_groups or action != 'delete'
-        )
-
-class Groups(RecordStore):
-
-    def __init__(self, db, entity=Group):
-        RecordStore.__init__(
-            self,
-            db,
-            entity,
-            name='groups',
-            key='id'
-            )
-
+from model import update_group_members
 
 
 def group_fields(request):
 
-    db = request.site.db
-    group_options = db('select name, id from groups where type="U"')
-
     fields = f.Fields([
         f.TextField('Name', v.required, v.valid_name),
-        f.RadioField('Type', v.required, values=[('Application', 'A'), ('User Group', 'U')]),
-        f.MemoField('Description', v.required),
-        f.PulldownField('Administrators', default='administrators', options=group_options),
+        f.MemoField('Description'),
+        f.PulldownField('Administrators', default='administrators', options=request.site.user_groups),
     ])
-    return fields
+    personal_fields = f.Section('Includes',[
+        # f.ChosenMultiselectField('Groups', options=request.site.user_groups),
+        f.ChosenMultiselectField('Users', options=request.site.user_options),
+    ])
+    return f.Fields(fields, personal_fields)
 
 
 class GroupCollectionController(CollectionController):
 
+    def before_insert(self, record):
+        record['type'] = 'U'
+        update_group_members(record)
+
     def before_update(self, record):
-        pass
+        record['type'] = 'U'
+        update_group_members(record)
 
 
 def main(route, request):
@@ -77,6 +48,7 @@ def main(route, request):
     db = request.site.db
     users = Groups(db)
     fields = group_fields(request)
+    columns = 'link', 'description', 'administrators'
     return Collection(
         fields,
         model=Group,
@@ -85,4 +57,5 @@ def main(route, request):
         item_name='group',
         url='/admin/groups',
         filter=user_group,
+        columns=columns,
     )(route, request)

@@ -31,7 +31,7 @@ def get_index_metrics(db):
     return metrics
 
 
-def update_members(record):
+def update_user_groups(record):
     logger = logging.getLogger(__name__)
     db = context.site.db
 
@@ -51,11 +51,46 @@ def update_members(record):
     for member in current_members:
         if member not in updated_members:
             group_id, user_id = member
-            logger.debug('deleting', member)
+            logger.debug('deleting %r', member)
             db('delete from members where group_id=%s and user_id=%s', group_id, user_id)
 
     for member in updated_members:
         if member not in current_members:
             group_id, user_id = member
-            logger.debug('inserting', member)
+            logger.debug('inserting %r', member)
+            db('insert into members (group_id, user_id) values (%s, %s)', group_id, user_id)
+
+
+def update_group_members(record):
+    logger = logging.getLogger(__name__)
+    db = context.site.db
+
+    logger.debug(str(db('select group_id, user_id from members')))
+
+    current_members = list(
+        db('select group_id, user_id from members where group_id=%s', record['_id'])
+    )
+
+    logger.debug('current_members: {!r}'.format(current_members))
+
+    print(current_members)
+    print(record)
+
+    updated_members = [(
+        (int(record['_id']), int(user))
+    ) for user in record['users']]
+    logger.debug('updated_members: {!r}'.format(updated_members))
+
+    # raise Exception('stopped')
+
+    for member in current_members:
+        if member not in updated_members:
+            group_id, user_id = member
+            logger.debug('deleting %r', member)
+            db('delete from members where group_id=%s and user_id=%s', group_id, user_id)
+
+    for member in updated_members:
+        if member not in current_members:
+            group_id, user_id = member
+            logger.debug('inserting %r', member)
             db('insert into members (group_id, user_id) values (%s, %s)', group_id, user_id)

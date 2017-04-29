@@ -5,7 +5,10 @@
 """
 
 from zoom.utils import DefaultRecord, id_for
-from zoom.helpers import link_to, url_for_item
+from zoom.helpers import link_to, url_for_item, url_for
+from zoom.utils import Record, id_for
+from zoom.records import RecordStore
+from zoom.users import Users
 
 
 class Model(DefaultRecord):
@@ -46,13 +49,80 @@ class Model(DefaultRecord):
         return False
 
 
+def get_users(db, group):
+    my_users = [
+        str(user_id)
+        for user_id, in db("""
+        select distinct
+            users.id
+            from users, members
+            where
+                users.id = members.user_id
+                and group_id = %s
+        """,
+        group._id)
+    ]
+    return my_users
+
+
+class Group(Record):
+
+    @property
+    def key(self):
+        return str(self._id)
+
+    @property
+    def url(self):
+        """user view url"""
+        return url_for('/admin/groups/{}'.format(self.key))
+
+    @property
+    def link(self):
+        """user as link"""
+        return link_to(self.name, self.url)
+
+    def allows(self, user, action):
+        system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
+        return (
+            self.name not in system_groups or action != 'delete'
+        )
+
+    def get_users(self):
+        store = self.get('__store')
+        if store:
+            return get_users(store.db, self)
+        return []
+
+    @property
+    def users(self):
+        return self.get_users()
+
+
+class Groups(RecordStore):
+
+    def __init__(self, db, entity=Group):
+        RecordStore.__init__(
+            self,
+            db,
+            entity,
+            name='groups',
+            key='id'
+            )
+
 def get_user_groups(site):
     return list(
         (name, str(id)) for name, id in
         site.db('select name, id from groups where type="U" order by name')
     )
 
+def get_user_options(site):
+    return list(
+        (user.link, str(user._id)) for user in Users(site.db)
+    )
 
 def handler(request, handler, *rest):
+    request.site.groups = Groups(request.site.db)
+    request.site.users = Users(request.site.db)
     request.site.user_groups = get_user_groups(request.site)
+    request.site.user_options = get_user_options(request.site)
     return handler(request, *rest)
