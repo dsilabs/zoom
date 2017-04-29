@@ -91,7 +91,7 @@ def browse(data, **kwargs):
         for item in items:
             fields.initialize(item)
             flookup = fields.display_value()
-            row = [flookup.get(col.upper(), getcol(item, col)) for col in columns]
+            row = [flookup.get(col, getcol(item, col)) for col in columns]
             alist.append(row)
     else:
         alist = [[getcol(item, col) for col in columns] for item in items]
