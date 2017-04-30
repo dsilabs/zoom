@@ -111,14 +111,16 @@ class CollectionView(View):
 
         actions = user.can('create', c) and ['New'] or []
 
-        if q:
-            msg = '%s searched %s with %r' % (user.link, c.name.lower(), q)
-            log_activity(msg)
-
         authorized = (i for i in c.store if user.can('read', i))
         matching = (i for i in authorized if not q or matches(i, q))
         filtered = c.filter and filter(c.filter, matching) or matching
         items = sorted(filtered, key=c.order)
+
+        if q:
+            msg = '%s searched %s with %r (%d found)' % (
+                user.link, c.link, q, len(items)
+            )
+            log_activity(msg)
 
         if len(items) != 1:
             footer_name = c.title
@@ -178,6 +180,14 @@ class CollectionView(View):
             else:
                 memo = ''
 
+            if c.verbose:
+                msg = '%s viewed %s %s' % (
+                    user.link,
+                    c.link,
+                    record.link,
+                )
+                log_activity(msg)
+
             return page(
                 c.fields.show() + memo,
                 title=c.item_title,
@@ -200,6 +210,15 @@ class CollectionView(View):
             c.fields.initialize(record)
             c.fields.update(data)
             form = form_for(c.fields, ButtonField('Save', cancel=record.url))
+
+            if c.verbose:
+                msg = '%s edited %s %s' % (
+                    user.link,
+                    c.link,
+                    record.link,
+                )
+                log_activity(msg)
+
             return page(form, title=c.item_title)
         else:
             return page('%s missing' % key)
@@ -265,7 +284,7 @@ class CollectionController(Controller):
 
                 msg = '%s added %s %s' % (
                     user.link,
-                    collection.item_name.lower(),
+                    collection.link,
                     record.link
                 )
                 logger = logging.getLogger(__name__)
@@ -306,7 +325,7 @@ class CollectionController(Controller):
 
                     msg = '%s updated %s %s' % (
                         user.link,
-                        collection.item_name.lower(),
+                        collection.link,
                         record.link
                     )
                     logger = logging.getLogger(__name__)
@@ -316,7 +335,7 @@ class CollectionController(Controller):
                         log_activity(
                             '%s changed %s %s to %s' % (
                                 user.link,
-                                collection.item_name.lower(),
+                                collection.link,
                                 key,
                                 record.key
                             )
@@ -341,7 +360,7 @@ class CollectionController(Controller):
 
                 msg = '%s deleted %s %s' % (
                     c.user.link,
-                    c.item_name.lower(),
+                    c.link,
                     record.name
                 )
                 logger = logging.getLogger(__name__)
@@ -406,6 +425,7 @@ class Collection(object):
         self.store = get('store', None)
         self.url = get('url', None)
         self.controller = get('controller', self.controller)
+        self.link = link_to(self.name, self.url)
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -466,15 +486,6 @@ class Collection(object):
             )
         )
 
-        # self.store_type.store = self.store
-        # self.store_type.collection = self
-        if self.verbose and request.route[1:]:
-            msg = '%s viewed %s %s' % (
-                self.user.link,
-                route and self.item_name.lower() or '',
-                route and ' '.join(route) or ' '.join(request.route[1:])
-            )
-            log_activity(msg)
         return (
             self.controller(self)(*route, **request.data) or
             self.view(self)(*route, **request.data)
