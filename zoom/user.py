@@ -19,7 +19,7 @@ def get_current_username(request):
     )
 
 
-def user_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     """handle user"""
     logger = logging.getLogger(__name__)
 

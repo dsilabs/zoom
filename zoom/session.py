@@ -168,7 +168,7 @@ class Session(object):
                 logger.warning('session not loaded')
 
 
-def session_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     logger = logging.getLogger(__name__)
     session = request.session = Session(request)
     request.session_token = session._token

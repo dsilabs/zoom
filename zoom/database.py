@@ -388,7 +388,7 @@ def connect_database(config):
     return connection
 
 
-def database_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     """Connect a database to the site if specified"""
     site = request.site
     if site.config.get('database', 'dbname', False):

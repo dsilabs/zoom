@@ -129,7 +129,7 @@ class Site(object):
     def __str__(self):
         return zoom.utils.pretty(self)
 
-def site_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     """install site object"""
     request.site = Site(request)
     return handler(request, *rest)

@@ -424,7 +424,7 @@ def helpers(request):
     )
 
 
-def apps_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     """Dispatch request to an application"""
     logger = logging.getLogger(__name__)
     logger.debug('apps_handler')

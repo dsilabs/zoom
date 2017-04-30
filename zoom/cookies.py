@@ -74,7 +74,7 @@ def set_session_cookie(response, session, subject, lifespan, secure=True):
     response.headers[key] = value
 
 
-def cookie_handler(request, handler, *rest):
+def handler(request, handler, *rest):
     logger = logging.getLogger(__name__)
 
     cookies = get_cookies(request.cookies)
