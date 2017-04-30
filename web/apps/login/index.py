@@ -53,11 +53,12 @@ class LoginController(Controller):
         site = self.model.site
         username = data.get('username')
         password = data.get('password')
+        remember_me = bool(data.get('remember_me'))
         if username and password:
             users = Users(site.db)
             user = users.first(username=username, status='A')
             if user:
-                if user.login(self.model, password):
+                if user.login(self.model, password, remember_me):
                     logger.info('user {!r} sucesfully logged in'.format(username))
                     return redirect_to(user.default_app)
             logger.debug('failed login attempt for user {!r}'.format(username))

@@ -174,9 +174,10 @@ class User(Record):
                 request.session.username = self.username
                 request.user = self
                 self.initialize(request)
+                if remember_me:
+                    two_weeks = 14 * 24 * 60 * 60
+                    request.session.lifetime = two_weeks
                 return True
-                # if remember_me:
-                #     self.request.session.lifetime = TWO_WEEKS
             else:
                 logger.debug('user authentication failed')
 

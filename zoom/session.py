@@ -121,7 +121,7 @@ class Session(object):
 
             cmd = 'update sessions set expiry=%s, value=%s where id=%s'
             db(cmd, expiry, value, self._token)
-            logger.debug('saved session: %r', self._token)
+            logger.debug('saved session %r expires %s', self._token, time.strftime('%c', time.localtime(expiry)))
             logger.debug('session values saved: {}'.format(values))
             return timeout_in_seconds
 
