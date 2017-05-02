@@ -6,8 +6,6 @@ import os, unittest
 import datetime
 import logging
 
-import MySQLdb
-
 from zoom.database import setup_test
 from zoom.users import User, Users
 from zoom.exceptions import UnauthorizedException
