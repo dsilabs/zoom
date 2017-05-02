@@ -7,7 +7,6 @@ import logging
 
 from zoom.database import (
     database as connect,
-    create_mysql_site_tables,
 )
 
 
@@ -40,6 +39,11 @@ def database():
 
     # positionals = []
     parameters = {}
+    logger = logging.getLogger(__name__)
+    if args.verbose:
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.DEBUG)
+        logger.debug('verbose logging')
 
     if args.engine not in ['sqlite3', 'mysql']:
         print('{!r} is not a valid engine'.format(args.engine))
@@ -61,7 +65,6 @@ def database():
             # if args.args:
             #     parameters['db'] = args.args[0]
 
-        logger = logging.getLogger(__name__)
         logger.error('connecting to %s %s', engine, parameters)
 
         command = args.command[0]
@@ -81,10 +84,20 @@ def database():
                     db('drop database if exists {}'.format(database_name))
                 db('create database {}'.format(database_name))
                 db = db.use(database_name)
-                create_mysql_site_tables(db)
-                logging.error('finished creating site tables')
+                db.create_site_tables(db)
+                logging.debug('finished creating site tables')
+            elif engine == 'sqlite3':
+                logging.info('creating site database %r' % database_name)
+                db = connect(engine, **parameters)
+                db.create_site_tables()
+                logging.debug(db.get_tables())
+                logging.debug('finished creating site tables')
             else:
-                logging.error('create not implmeented for %s engine' % engine)
+                logging.error('create not implemented for %s engine' % engine)
+
+        elif command == 'list':
+            db = connect(engine, **parameters)
+            print(db('show databases'))
 
         else:
             logging.error('unknown command %r', command)
