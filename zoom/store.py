@@ -381,7 +381,7 @@ class EntityStore(object):
         # order by id desc so that newly introduced attributes appear at
         # the end of the keys list
         cmd = (
-            'select distinct attribute '
+            'select distinct attribute, id '
             'from attributes '
             'where kind=%s order by id desc'
         )
