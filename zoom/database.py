@@ -273,6 +273,48 @@ class Sqlite3Database(Database):
         cmd = 'select name from sqlite_master where type="table"'
         return [a[0] for a in self(cmd)]
 
+    def create_site_tables(self, filename=None):
+        def split(statements):
+            return [s for s in statements.split(';\n') if s]
+        logger = logging.getLogger(__name__)
+
+        curdir = os.path.dirname(__file__)
+        relpath = '../tools/zoom/sql/setup_sqlite3g.sql'
+        filename = filename or os.path.abspath(os.path.join(curdir, relpath))
+        statements = split(open(filename).read())
+        logger.debug('%s SQL statements', len(statements))
+
+        for statement in statements:
+            self(statement)
+
+        logger.debug('created tables from %s', filename)
+
+    def create_test_tables(self):
+        """create the extra test tables"""
+        self("""
+            create table if not exists person (
+                id int unsigned not null auto_increment,
+                name      varchar(100),
+                age       smallint,
+                kids      smallint,
+                birthdate date,
+                PRIMARY KEY (id)
+                )
+        """)
+        self("""
+            create table if not exists account (
+                account_id int unsigned not null auto_increment,
+                name varchar(100),
+                added date,
+                PRIMARY KEY (account_id)
+                )
+        """)
+        self.create_site_tables()
+
+    def delete_test_tables(self):
+        """drop the extra test tables"""
+        self('drop table if exists person')
+        self('drop table if exists account')
 
 class MySQLDatabase(Database):
     """MySQL Database"""
@@ -293,6 +335,52 @@ class MySQLDatabase(Database):
         """return table names"""
         cmd = 'show tables'
         return [a[0] for a in self(cmd)]
+
+    def create_site_tables(self):
+        """create the tables for a site in a mysql server"""
+        def split(statements):
+            """split the sql statements"""
+            return [s for s in statements.split(';\n') if s]
+        logger = logging.getLogger(__name__)
+
+        curdir = os.path.dirname(__file__)
+        relpath = '../tools/zoom/sql/setup_mysql.sql'
+        filename = os.path.abspath(os.path.join(curdir, relpath))
+        statements = split(open(filename).read())
+        logger.debug('%s SQL statements', len(statements))
+
+        for statement in statements:
+            self(statement)
+
+        logger.debug('created tables from %s', filename)
+
+
+    def create_test_tables(self):
+        """create the extra test tables"""
+        self("""
+            create table if not exists person (
+                id int unsigned not null auto_increment,
+                name      varchar(100),
+                age       smallint,
+                kids      smallint,
+                birthdate date,
+                PRIMARY KEY (id)
+                )
+        """)
+        self("""
+            create table if not exists account (
+                account_id int unsigned not null auto_increment,
+                name varchar(100),
+                added date,
+                PRIMARY KEY (account_id)
+                )
+        """)
+        self.create_site_tables()
+
+    def delete_test_tables(self):
+        """drop the extra test tables"""
+        self('drop table if exists person')
+        self('drop table if exists account')
 
 
 class MySQLdbDatabase(Database):
@@ -376,8 +464,8 @@ def connect_database(config):
 
     else:
         raise Exception('unknown database engine: {!r}'.format(engine))
-    connection = database(**parameters)
 
+    connection = database(**parameters)
     if connection:
         logger = logging.getLogger(__name__)
         if 'passwd' in parameters:
@@ -404,62 +492,19 @@ def handler(request, handler, *rest):
     return handler(request, *rest)
 
 
-def create_mysql_site_tables(db):
-    """create the tables for a site in a mysql server"""
-    def split(statements):
-        """split the sql statements"""
-        return [s for s in statements.split(';\n') if s]
-    logger = logging.getLogger(__name__)
-
-    curdir = os.path.dirname(__file__)
-    relpath = '../tools/zoom/sql/setup_mysql.sql'
-    filename = os.path.abspath(os.path.join(curdir, relpath))
-    statements = split(open(filename).read())
-    logger.debug('%s SQL statements', len(statements))
-
-    for statement in statements:
-        db(statement)
-
-    logger.debug('created tables from %s', filename)
-
-
-def setup_test():
+def setup_test(engine='mysql'):
     """create a set of test tables"""
 
-    def create_test_tables(db):
-        """create the extra test tables"""
-        db("""
-            create table if not exists person (
-                id int unsigned not null auto_increment,
-                name      varchar(100),
-                age       smallint,
-                kids      smallint,
-                birthdate date,
-                PRIMARY KEY (id)
-                )
-        """)
-        db("""
-            create table if not exists account (
-                account_id int unsigned not null auto_increment,
-                name varchar(100),
-                added date,
-                PRIMARY KEY (account_id)
-                )
-        """)
-        create_mysql_site_tables(db)
-
-    def delete_test_tables(db):
-        """drop the extra test tables"""
-        db('drop table if exists person')
-        db('drop table if exists account')
-
-    db = database(
-        'mysql',
-        host='database',
-        db='zoomtest',
-        user='testuser',
-        passwd='password'
-    )
-    delete_test_tables(db)
-    create_test_tables(db)
+    if engine == 'mysql':
+        db = database(
+            'mysql',
+            host='database',
+            db='zoomtest',
+            user='testuser',
+            passwd='password'
+        )
+        db.delete_test_tables()
+        db.create_test_tables()
+    else:
+        raise Exception('Invalid engine parameter: {!r}'.format(engine))
     return db
