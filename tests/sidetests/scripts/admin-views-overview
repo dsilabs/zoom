@@ -18,13 +18,13 @@
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>link=Simple App</td>
+	<td>link=Sample</td>
 	<td></td>
 </tr>
 <tr>
 	<td>assertText</td>
 	<td>css=h1</td>
-	<td>Test Page</td>
+	<td>Sample</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
