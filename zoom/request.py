@@ -42,12 +42,22 @@ def get_web_vars(env):
 
     items = {}
     for key in cgi_fields.keys():
+        fn = items.__setitem__
         if isinstance(cgi_fields[key], list):
-            items[key] = [item.value for item in cgi_fields[key]]
+            value = (key, [item.value for item in cgi_fields[key]])
         elif cgi_fields[key].filename:
-            items[key] = cgi_fields[key]
+            value = (key, cgi_fields[key])
         else:
-            items[key] = cgi_fields[key].value
+            value = (key, cgi_fields[key].value)
+        if '[' in key and key.endswith(']'):
+            # some libs append an index myfield[0], we choose to put them
+            # in a list
+            param = key[:key.find('[')]
+            items.setdefault(param, [])
+            fn = items[param].append
+            value = value[1:]
+
+        fn(*value)
 
     return items
 
