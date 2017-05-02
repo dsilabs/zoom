@@ -28,8 +28,13 @@ def form_for(*args, **kwargs):
     action = params.pop('action', '<dz:request_path>')
     enctype = params.pop('enctype', 'application/x-www-form-urlencoded')
 
-    content = [type(arg) == str and arg or arg.edit() for arg in args if arg]
-
+    content = []
+    for arg in args:
+        if arg:
+            content.append(type(arg) == str and arg or arg.edit())
+            if hasattr(arg, 'requires_multipart_form') and arg.requires_multipart_form():
+                enctype = "multipart/form-data"
+    
     t = []
     for key, value in params.items():
         t.append(
