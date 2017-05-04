@@ -68,6 +68,7 @@ form1 = Form(
     MemoField('Memo', hint='test hint'),
     MarkdownField('Markdown', hint='test hint'),
     EditField('Editor', hint='test hint'),
+    ImageField('Photo'),
     ButtonField('Save', cancel=url_for_page('fields'))
     )
 
@@ -165,14 +166,14 @@ class MyView(View):
     #         url=url_for('get_image', item_id=a.attachment_id),
     #         ) for a in attachments.find(field_value=value)]
     #     return json.dumps(t)
-    # 
+    #
     # def get_image(self, *a, **k):
     #     """return one of the images from an ImagesField value"""
     #     item_id = k.get('item_id', None)
     #     path = os.path.join(system.site.data_path, 'buckets')
     #     bucket = Bucket(path)
     #     return image_response('house.png', bucket.get(item_id))
-    # 
+    #
 
 class MyController(Controller):
 
@@ -189,7 +190,7 @@ class MyController(Controller):
     #     data = f.file.read()
     #     item_id = bucket.put(data)
     #     return item_id
-    # 
+    #
     # def remove_image(self, *a, **k):
     #     """remove a ImagesField image"""
     #     path = os.path.join(system.site.data_path, 'buckets')
