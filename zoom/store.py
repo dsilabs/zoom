@@ -292,7 +292,7 @@ class EntityStore(object):
             '    kind, row_id, attribute, datatype, value'
             ') values (%s,%s,%s,%s,%s)'
             )
-        db.cursor().executemany(cmd, param_list)
+        db.execute_many(cmd, param_list)
 
         return id
 
