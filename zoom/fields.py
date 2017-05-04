@@ -2381,7 +2381,7 @@ var photoDropzone = new Dropzone("#zoom_form", {{
       maxFiles: {self.maximum_files},
       acceptedFiles: 'image/*',
       addRemoveLinks: true,
-      clickable: ".fileinput-button",
+      clickable: ".dz-clickable",
       method: "post",
       previewsContainer: "#dropzonePreview",
 
@@ -2475,9 +2475,12 @@ var photoDropzone = new Dropzone("#zoom_form", {{
             status: Dropzone.QUEUED,
             kind: 'image'
           }};
-          var tempFile = new File([dataURItoBlob(opts.imageURL)], opts.fileName, {{
+          //var tempFile = new File([dataURItoBlob(opts.imageURL)], opts.fileName, {{type: "text/plain",}});
+          // File() not supported by Edge
+          var tempFile = new Blob([dataURItoBlob(opts.imageURL)], {{
             type: "text/plain",
           }});
+          tempFile.name = opts.fileName;
           mockFile = tempFile;
           mockFile.status = Dropzone.QUEUED;
           myDropzone.emit("addedfile", mockFile);
@@ -2518,27 +2521,36 @@ var photoDropzone = new Dropzone("#zoom_form", {{
 
     def _initialize(self, values):
         """initialize field"""
-        value = values.get(self.name.lower()) or self.default
-        self.value = value
+        value = values.get(self.name.lower()) or self.default[:]  # ensure this is a copy
+        self.assign(value)
 
-    def assign(self, value):
+    def update(self,**values):
+        """update the field"""
+        self._initialize(values)
+
+    def assign(self, value={}):
         """assign a value to the field"""
         import base64
 
-        if not self.value:
-            self.value = self.default
-        if isinstance(value, list):
+        self.value = self.default[:]  # reset to a base list, ensure it is a copy
+
+        if value and isinstance(value, list) and not hasattr(value[0], 'name'):
+            # from the database
+            self.value = value
+        elif value and isinstance(value, list):
+            # multiple uploads from a form
             value = [[val.name, [val.filename, base64.b64encode(val.value).decode('ascii')]] for val in value]
             self.value.extend(value)
-        elif hasattr(value, 'file'):
-            self.value.append([[value.name, [value.filename, base64.b64encode(value.value).decode('ascii')]]])
+        elif value and hasattr(value, 'file'):
+            # single upload from a form
+            self.value.append([value.name, [value.filename, base64.b64encode(value.value).decode('ascii')]])
 
     def display_value(self):
         """web based display view of the field"""
         images = []
         for name, image in self.value:
             filename, image = image
-            images.append("""<img class="img-rounded img-responsive" data-field={} alt="{}" src="{}"
+            images.append("""<img class="img-rounded img-responsive" data-field="{}" alt="{}" src="{}"
         onerror="this.onerror=null;this.src='{}';">""".format(name, filename, self.datauri(image), self.no_image_url))
         return "".join(images)
 
