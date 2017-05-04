@@ -152,12 +152,12 @@ class Database(object):
     def translate(self, command, *args):
         """translate sql dialects
 
-        The Python db API standard does not attempt unify parameter passing
+        The Python db API standard does not attempt to unify parameter passing
         styles for SQL arguments.  This translate routine attempts to do that
         for each database type.  For databases that use the preferred pyformat
         paramstyle nothing needs to be done.  Databases requiring other
-        paramstyles should override this method to provide translate the
-        command the the required style.
+        paramstyles should override this method to translate the command
+        to the required style.
         """
         def issequenceform(obj):
             """test for a sequence type that is not a string"""
@@ -167,12 +167,15 @@ class Database(object):
 
         if self.paramstyle == 'qmark':
             if len(args) == 1 and hasattr(args[0], 'items') and args[0]:
+                # a dict-like thing
                 placeholders = {key: ':%s' % key for key in args[0]}
                 cmd = command % placeholders, args[0]
             elif len(args) >= 1 and issequenceform(args[0]):
+                # a list of tuple-like things
                 placeholders = ['?'] * len(args[0])
                 cmd = command % tuple(placeholders), args
             else:
+                # just one tuple-like thing
                 placeholders = ['?'] * len(args)
                 cmd = command % tuple(placeholders), args
             return cmd
@@ -293,20 +296,17 @@ class Sqlite3Database(Database):
         """create the extra test tables"""
         self("""
             create table if not exists person (
-                id int unsigned not null auto_increment,
+                id integer not null primary key autoincrement,
                 name      varchar(100),
                 age       smallint,
                 kids      smallint,
-                birthdate date,
-                PRIMARY KEY (id)
-                )
+                birthdate date                )
         """)
         self("""
             create table if not exists account (
-                account_id int unsigned not null auto_increment,
+                account_id integer not null primary key autoincrement,
                 name varchar(100),
-                added date,
-                PRIMARY KEY (account_id)
+                added date
                 )
         """)
         self.create_site_tables()
@@ -502,6 +502,13 @@ def setup_test(engine='mysql'):
             db='zoomtest',
             user='testuser',
             passwd='password'
+        )
+        db.delete_test_tables()
+        db.create_test_tables()
+    elif engine == 'memory':
+        db = database(
+            'sqlite3',
+            database=':memory:'
         )
         db.delete_test_tables()
         db.create_test_tables()
