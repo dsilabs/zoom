@@ -2320,3 +2320,261 @@ class RangeSliderField(IntegerField):
         value1, value2 = self.value
         value = self.value and ('{:,} to {:,}{}'.format(value1, value2, units)) or ''
         return websafe(value)
+
+
+class DataURIAttachmentsField(Field):
+    """An Attachments field
+
+        this field stores the data within the database
+        this field uses dropzone.js heavily
+        the results are shown via a Data URI
+
+    >>> icon = DataURIAttachmentsField('Icon')
+    >>> icon.requires_multipart_form()
+    True
+    >>> icon.assign(None)
+    >>> assert icon.value == icon.default
+    >>> class PsuedoFile(object):
+    ...     @property
+    ...     def name(self):
+    ...         return 'field_name'
+    ...     @property
+    ...     def filename(self):
+    ...         return 'filename.png'
+    ...     @property
+    ...     def value(self):
+    ...         return b''
+    >>> icon.assign([PsuedoFile(), PsuedoFile()])
+    >>> assert isinstance(icon.value, list)
+    >>> icon.value
+    [['field_name', ['filename.png', '']], ['field_name', ['filename.png', '']]]
+     """
+    default = []  # (filename, base64 data)
+    classed = 'dropzone nojs'
+    no_image_url = 'https://placehold.it/350x150'
+    maximum_files = 5
+    script = """<script type="text/javascript" src="/static/zoom/dropzone/dropzone.min.js"></script>"""
+    css = """<link href="/static/zoom/dropzone/dropzone.min.css" rel="stylesheet" type="text/css" />"""
+
+    @property
+    def capitalize(self):
+        """return the field id capitalized"""
+        return self.id.capitalize()
+
+    @property
+    def configuration(self):
+        """configure the Dropzone .js assets
+
+            this field is designed to work within an existing/native form.  As such, we turn off
+            the auto processing of the queue (AJAX push) to bulk send the form all at once.
+        """
+        return """
+/* script type="text/javascript" */
+Dropzone.autoDiscover = false;
+//    Dropzone.options.zoom_Form = {{ // The camelized version of the ID of the form element
+var photoDropzone = new Dropzone("#zoom_form", {{
+      url: $('form#zoom_form').attr("action") || '/example',
+      paramName: "{self.id}",
+      autoProcessQueue: false,
+      uploadMultiple: true,
+      parallelUploads: 5,
+      maxFiles: {self.maximum_files},
+      acceptedFiles: 'image/*',
+      addRemoveLinks: true,
+      clickable: ".fileinput-button",
+      method: "post",
+      previewsContainer: "#dropzonePreview",
+
+      // The setting up of the dropzone
+      init: function() {{
+        var myDropzone = this;
+
+        // First change the button to actually tell Dropzone to process the queue.
+        this.element.querySelector("input[type=submit],button[type=submit]").addEventListener("click", function(e) {{
+          // Make sure that the form isn't actually being sent.
+          if (myDropzone.getQueuedFiles().length > 0) {{
+            e.preventDefault();
+            e.stopPropagation();
+            myDropzone.processQueue();
+          }}
+        }});
+
+        // Listen to the sendingmultiple event. In this case, it's the sendingmultiple event instead
+        // of the sending event because uploadMultiple is set to true.
+        this.on("sendingmultiple", function(files, xhr, formData) {{
+          // Gets triggered when the form is actually being sent.
+          // Hide the success button or the complete form.
+          /*
+            console.log(formData);
+            ignores = [];
+            files.forEach(function(file) {{
+                if (file.isMock) {{
+                    console.log(file);
+                    var tempFile = new File(["foo"], file.name, {{
+                      type: "text/plain",
+                    }});
+                    formData.append(file.key, tempFile);
+
+                    console.log(tempFile);
+                }}
+            }});
+            console.log(formData);
+            */
+        }});
+        this.on("successmultiple", function(files, response) {{
+          // Gets triggered when the files have successfully been sent.
+          // Redirect user or notify of success.
+          document.open();
+          document.write(response);
+          document.close();
+          // window.location.replace("/app/some/url");
+        }});
+        this.on("errormultiple", function(files, response) {{
+          // Gets triggered when there was an error sending the files.
+          // Maybe show form again, and notify user of error
+          console.log('error');
+          console.log(response);
+        }});
+        this.on("removedfile", function(file) {{
+          // Called whenever a file is removed from the list.
+          // Delete the file from the server if we want.
+          if (file.accepted && file.status === "success") {{
+            // TODO: using file.name as the key for now, expect this to change
+            console.log(file.name);
+          }}
+        }});
+
+        function dataURItoBlob(dataURI) {{
+          // this was found via Stack Overflow
+          // convert base64 to raw binary data held in a string
+          // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+          var byteString = atob(dataURI.split(',')[1]);
+
+          // separate out the mime component
+          var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+          // write the bytes of the string to an ArrayBuffer
+          var ab = new ArrayBuffer(byteString.length);
+          var ia = new Uint8Array(ab);
+          for (var i = 0; i < byteString.length; i++) {{
+              ia[i] = byteString.charCodeAt(i);
+          }}
+
+          // write the ArrayBuffer to a blob, and you're done
+          var blob = new Blob([ab], {{type: mimeString}});
+          return blob;
+        }}
+
+        function previewThumbailFromUrl(opts) {{
+          var mockFile = {{
+            isMock: true,
+            key: opts.fieldName,
+            name: opts.fileName,
+            size: opts.fileSize,
+            accepted: true,
+            status: Dropzone.QUEUED,
+            kind: 'image'
+          }};
+          var tempFile = new File([dataURItoBlob(opts.imageURL)], opts.fileName, {{
+            type: "text/plain",
+          }});
+          mockFile = tempFile;
+          mockFile.status = Dropzone.QUEUED;
+          myDropzone.emit("addedfile", mockFile);
+          myDropzone.files.push(mockFile);
+          myDropzone.createThumbnailFromUrl(mockFile, opts.imageURL, function() {{
+            myDropzone.emit("complete", mockFile);
+            myDropzone.options.maxFiles = myDropzone.options.maxFiles - 1;
+          }});
+        }}
+
+        // load the server side thumbnails
+        {self.mockFile}
+
+      }}
+
+    }}
+    );
+/* /script */""".format(self=self)
+
+    @property
+    def mockFile(self):
+        """return the saved file - this is a .js call and injected into the .js"""
+        if self.value:
+            thumbnails = []
+            for name, image in self.value:
+                filename, b64string = image
+                if b64string:
+                    opts = dict(
+                        fieldName=name,
+                        fileName=filename,
+                        fileSize=((len(b64string) * 3) / 4 - b64string.count('=', -2)),
+                        imageURL=self.datauri(b64string),
+                    )
+                    thumbnails.append("previewThumbailFromUrl({});".format(opts))
+            if thumbnails:
+                return '\n'.join(thumbnails)  # injected into .js file
+        return ""
+
+    def _initialize(self, values):
+        """initialize field"""
+        value = values.get(self.name.lower()) or self.default
+        self.value = value
+
+    def assign(self, value):
+        """assign a value to the field"""
+        import base64
+
+        if not self.value:
+            self.value = self.default
+        if isinstance(value, list):
+            value = [[val.name, [val.filename, base64.b64encode(val.value).decode('ascii')]] for val in value]
+            self.value.extend(value)
+        elif hasattr(value, 'file'):
+            self.value.append([[value.name, [value.filename, base64.b64encode(value.value).decode('ascii')]]])
+
+    def display_value(self):
+        """web based display view of the field"""
+        images = []
+        for name, image in self.value:
+            filename, image = image
+            images.append("""<img class="img-rounded img-responsive" data-field={} alt="{}" src="{}"
+        onerror="this.onerror=null;this.src='{}';">""".format(name, filename, self.datauri(image), self.no_image_url))
+        return "".join(images)
+
+    def datauri(self, image):
+        """return the data URI string"""
+        return "data:image/png;base64,{}".format(image)
+
+    def requires_multipart_form(self):
+        """return True if a multipart form is required for this field"""
+        return True
+
+    def widget(self):
+        """return the dropzone widget"""
+        previews = """<div class="{self.classed}"><span class="btn btn-success fileinput-button dz-clickable">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>Add files...</span>
+        </span><div id="dropzonePreview" class="dropzone-previews"></div></div>"""
+        fallback = """<div class="fallback"><input id="{}" name="{}" type="file" multiple /></div>"""
+        return compose(
+            previews.format(self=self),
+            fallback.format(self.id, self.name),
+            self.render_msg(),
+            tail=self.script,
+            js=self.configuration,
+            head=self.css,
+        )
+
+    def edit(self):
+        return layout_field(self.label, self.widget())
+
+
+class DataURIImageField(DataURIAttachmentsField):
+    """An Attachments field making use of a Data URI where we limit to a single file"""
+    maximum_files = 1
+
+
+# alias
+DataURIImagesField = DataURIAttachmentsField
+ImageField = DataURIImageField
