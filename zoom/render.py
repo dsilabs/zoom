@@ -36,6 +36,8 @@ def apply_helpers(template, obj, providers):
         def _filler(name, *args, **kwargs):
             """handle the details of filling in templates"""
 
+            # TODO: phase this block out and get caller to provide
+            #       helpers instead
             if hasattr(obj, name):
                 attr = getattr(obj, name)
                 if callable(attr):

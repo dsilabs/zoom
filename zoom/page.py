@@ -95,37 +95,45 @@ class Page(object):
 
             return errors + warnings + successes
 
-        def get(part, wrapper='{}'):
-            parts = composition.parts.parts.get(part, [])
+        def get(part, formatter='{}', joiner='\n'):
             logger = logging.getLogger(__name__)
+            logger.debug('getting %r', part)
+            parts = composition.parts.parts.get(part, [])
+            page_part = getattr(self, part, '')
+            if page_part:
+                if isinstance(page_part, (list, tuple)):
+                    parts |= page_part
+                else:
+                    parts |= [page_part]
             logger.debug('get_{}: {}'.format(part, parts))
-            return parts and '\n'.join(wrapper.format(part) for part in parts) or ''
+            return parts and joiner.join(
+                formatter.format(part) for part in parts
+            ) or ''
 
         def get_css():
             wrapper = '<style>\n{}\n</style>'
-            return get('css', wrapper) or '<!-- css missing -->'
+            content = get('css')
+            return content and wrapper.format(content) or ''
 
         def get_js():
-            parts = composition.parts.parts.get('js', [])
-            code = '\n'.join(parts)
-            if code:
-                result = """
+            wrapper = """
                 <script>
                 $(function(){{
                     {}
                 }});
                 </script>
-                """.format(code)
-                return result
-            return ''
+                """
+            joiner = ';\n    '
+            content = get('js', joiner=joiner)
+            return content and wrapper.format(content) or ''
 
         def get_libs():
-            wrapper = '<script src="{}"></script>'
-            return get('libs', wrapper)
+            formatter = '<script src="{}"></script>'
+            return get('libs', formatter)
 
         def get_styles():
-            wrapper = '<link rel="stylesheet" href="{}">'
-            return get('styles', wrapper)
+            formatter = '<link rel="stylesheet" href="{}">'
+            return get('styles', formatter)
 
         def get_head():
             return get('head')
@@ -133,17 +141,21 @@ class Page(object):
         def get_tail():
             return get('tail')
 
+        def get_content():
+            return self.content
+
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
             site_url=request.site.url,
             author=request.site.owner_name,
             css=get_css,
-            js=get_js(),
-            head=get_head(),
-            tail=get_tail(),
-            styles=get_styles(),
-            libs=get_libs(),
+            content=get_content,
+            js=get_js,
+            head=get_head,
+            tail=get_tail,
+            styles=get_styles,
+            libs=get_libs,
             alerts=get_alerts(request),
             stdout='{*stdout*}',
         )
@@ -180,7 +192,7 @@ class Page(object):
             full_page = Component(self.content)
 
         self.content = full_page.render()
-        content = zoom.render.apply_helpers(template, self, providers)
+        content = zoom.render.apply_helpers(template, None, providers)
         self.content = save_content
 
         return HTMLResponse(content)
