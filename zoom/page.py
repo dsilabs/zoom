@@ -8,6 +8,7 @@ from zoom.component import composition, Component
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
+from zoom.utils import OrderedSet
 
 import zoom.html as html
 import zoom.apps
@@ -98,7 +99,7 @@ class Page(object):
         def get(part, formatter='{}', joiner='\n'):
             logger = logging.getLogger(__name__)
             logger.debug('getting %r', part)
-            parts = composition.parts.parts.get(part, [])
+            parts = composition.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
                 if isinstance(page_part, (list, tuple)):
