@@ -2383,7 +2383,7 @@ var photoDropzone = new Dropzone("#zoom_form", {{
       addRemoveLinks: true,
       clickable: ".dz-clickable",
       method: "post",
-      previewsContainer: "#dropzonePreview",
+      previewsContainer: "#{self.id}Preview",
 
       // The setting up of the dropzone
       init: function() {{
