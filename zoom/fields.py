@@ -2334,6 +2334,7 @@ class DataURIAttachmentsField(Field):
         the results are shown via a Data URI
         multiple dropzones supported by assuming you will bind ONLY one to the form
             and the others to an element via the "selector" configuration option
+        TODO: with multiple dropzones, support submit when the master/form is empty
         This field makes some assumptions about what you want todo:
             - this field uses dropzone.js
             - the field expects you want todo a native form submission (once vs. multiple ajax calls)
@@ -2437,9 +2438,11 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
                   }}
                 }}
 
-                files = myDropzone.files;  // just grab them all as this field type assumes a native form (i.e. ignore file.status)
-                for (i = _m = 0, _ref5 = files.length - 1; 0 <= _ref5 ? _m <= _ref5 : _m >= _ref5; i = 0 <= _ref5 ? ++_m : --_m) {{
-                  formData.append(myDropzone._getParamName(i), files[i], myDropzone._renameFilename(files[i].name));
+                var files = myDropzone.files;  // just grab them all as this field type assumes a native form (i.e. ignore file.status)
+                if (files.length > 0) {{
+                    for (i = _m = 0, _ref5 = files.length - 1; 0 <= _ref5 ? _m <= _ref5 : _m >= _ref5; i = 0 <= _ref5 ? ++_m : --_m) {{
+                        formData.append(myDropzone._getParamName(i), files[i], myDropzone._renameFilename(files[i].name));
+                    }}
                 }}
 
                 console.log('sending multiple...done')
