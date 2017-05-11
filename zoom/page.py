@@ -77,22 +77,20 @@ class Page(object):
         """provide page helpers"""
 
         def get_alerts(request):
+            """get alert messages as unordered lists"""
 
-            pop = request.session.__dict__.pop
+            def pop(name, default=[]):
+                """get a type of alert as an unordred list"""
+                return list(composition.parts.parts.pop(name, default))
 
             def show(alerts, Class):
                 if alerts:
                     return html.div(html.ul(alerts), Class='alert %s' % Class)
                 return ''
 
-            success_alerts = pop('system_successes', [])
-            successes = show(success_alerts, 'success')
-
-            warning_alerts = pop('system_warnings', [])
-            warnings = show(warning_alerts, 'warning')
-
-            error_alerts = pop('system_errors', [])
-            errors = show(error_alerts, 'danger')
+            successes = show(pop('success'), 'success')
+            warnings = show(pop('warning'), 'warning')
+            errors = show(pop('error'), 'danger')
 
             return errors + warnings + successes
 

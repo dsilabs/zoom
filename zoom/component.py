@@ -232,7 +232,13 @@ def compose(*args, **kwargs):
 def handler(request, handler, *rest):
     """Component handler"""
 
-    composition.parts = Component()
+    pop = request.session.__dict__.pop
+
+    composition.parts = Component(
+        success=pop('system_successes', []),
+        warning=pop('system_warnings', []),
+        error=pop('system_errors', []),
+    )
 
     result = handler(request, *rest)
 
