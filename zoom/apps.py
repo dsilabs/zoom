@@ -155,8 +155,6 @@ class AppProxy(object):
         """generate an app menu"""
         def by_name(name):
             def selector(item):
-                logger.debug('item.name: %r', item.name)
-                logger.debug('selected: %r', name)
                 return name == item.name
             return selector
 
@@ -171,8 +169,6 @@ class AppProxy(object):
         )
         logger.debug('selected: %s', selected)
         result = as_links(menu, select=by_name(selected))
-        logger.debug('made it')
-        logger.debug(result)
         return result
 
     def menu_items(self):
