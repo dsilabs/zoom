@@ -12,7 +12,7 @@ def handler(request, handle, *rest):
     """context handler"""
     #
     # this could be implemented in a different way
-    # where each handler has the opporunity to contribute
+    # where each handler has the opportunity to contribute
     # something to the context, but for now I am doing
     # it this way to see if the pattern makes sense.  How
     # we do it is an implementation detail - which will
