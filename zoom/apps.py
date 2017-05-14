@@ -338,6 +338,8 @@ def handle(request):
         app = load_app(request.site, app_name)
         if app and app.enabled and user.can_run(app):
             logger.debug('redirecting to default app %r', app_name)
+            request.app = app
+            zoom.render.add_helpers(helpers(request))
             return app.run(request)
 
         elif app and app.enabled:
