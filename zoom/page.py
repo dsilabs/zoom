@@ -160,39 +160,23 @@ class Page(object):
     def render(self, request):
         """render page"""
 
-        def rendered(obj):
-            """call the render method if necessary"""
-            if hasattr(obj, 'render'):
-                return obj.render()
-            return obj
-
-        template = request.site.get_template(self.template)
-
-        providers = [
-            zoom.helpers.__dict__,
-            request.helpers(),
-            request.site.helpers(),
-            request.user.helpers(),
-            zoom.forms.helpers(request),
-            zoom.apps.helpers(request),
-            self.helpers(request),
-        ]
-
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
-
-        save_content = self.content
 
         if self.title or self.subtitle or self.actions or self.search:
             full_page = Component(PageHeader(page=self), self.content)
         else:
             full_page = Component(self.content)
-
         self.content = full_page.render()
-        content = zoom.render.apply_helpers(template, None, providers)
-        self.content = save_content
 
-        return HTMLResponse(content)
+        zoom.render.add_helpers(
+            zoom.forms.helpers(request),
+            self.helpers(request),
+        )
+
+        template = request.site.get_template(self.template)
+
+        return HTMLResponse(template)
 
 
 page = Page  # pylint: disable=invalid-name

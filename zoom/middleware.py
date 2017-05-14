@@ -382,6 +382,7 @@ def handle(request, handlers=None):
         zoom.user.handler,
         zoom.context.handler,
         display_errors,
+        zoom.render.handler,
         zoom.apps.handler,
         not_found,
     )

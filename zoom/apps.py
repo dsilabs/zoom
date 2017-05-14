@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 
+import zoom.render
 from zoom.response import Response, HTMLResponse, RedirectResponse
 from zoom.helpers import url_for, link_to
 from zoom.tools import load_content
@@ -319,6 +320,7 @@ def handle(request):
     if app and app.enabled and user.can_run(app):
         logger.debug('running requested app')
         request.app = app
+        zoom.render.add_helpers(helpers(request))
         return app.run(request)
 
     elif app and app.enabled:

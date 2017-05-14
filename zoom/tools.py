@@ -8,7 +8,6 @@ import logging
 from markdown import Markdown
 from zoom.response import RedirectResponse
 import zoom.helpers
-import zoom.apps
 from zoom.helpers import abs_url_for, url_for_page, url_for
 from zoom.utils import trim
 from zoom.render import apply_helpers
@@ -214,19 +213,15 @@ class Redirector(object):
     def render(self, request):
         """render redirect"""
 
-        providers = [
-            zoom.helpers.__dict__,
-            request.helpers(),
-            request.site.helpers(),
-            request.user.helpers(),
-            zoom.apps.helpers(request),
-        ]
-
         location = url_for(*self.args, **self.kwargs)
-        location = zoom.render.apply_helpers(location, self, providers)
+        location = zoom.render.render(location)
         location = abs_url_for(location)
-        location = zoom.render.apply_helpers(location, self, providers)
+        location = zoom.render.render(location)
+
+        logger = logging.getLogger(__name__)
+        logger.debug('redirecting to: %r', location)
         return RedirectResponse(location)
+
 
 
 def redirect_to(*args, **kwargs):

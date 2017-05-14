@@ -7,8 +7,9 @@
 
 import logging
 
-from zoom.fill import fill
-# from zoom.tools import markdown
+import zoom.context
+import zoom.fill
+import zoom.helpers
 
 
 def apply_helpers(template, obj, providers):
@@ -29,6 +30,7 @@ def apply_helpers(template, obj, providers):
     >>> apply_helpers('Hello {{other}}!', user, {})
     'Hello {{other}}!'
     """
+    fill = zoom.fill.fill
 
     def filler(helpers):
         """callback for filling in templates"""
@@ -79,3 +81,29 @@ def apply_helpers(template, obj, providers):
 #
 #         return result
 #     return ''
+def add_helpers(*providers):
+    for provider in providers:
+        zoom.context.context.providers.append(provider)
+
+def render(template):
+    return apply_helpers(template, None, zoom.context.context.providers)
+
+def handler(request, handle, *rest):
+    """render handler"""
+
+    logger = logging.getLogger(__name__)
+    zoom.context.context.providers = [
+        zoom.helpers.__dict__,
+        request.helpers(),
+        request.site.helpers(),
+        request.user.helpers(),
+    ]
+
+    response = handle(request, *rest)
+
+    providers = zoom.context.context.providers
+    if response.content:
+        response.content = apply_helpers(response.content, None, providers)
+
+    logger.debug('render handler called')
+    return response
