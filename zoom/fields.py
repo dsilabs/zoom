@@ -2329,6 +2329,21 @@ class DataURIAttachmentsField(Field):
         this field uses dropzone.js heavily
         the results are shown via a Data URI
 
+        this field stores the data within the database
+        this field uses dropzone.js heavily
+        the results are shown via a Data URI
+        multiple dropzones supported by assuming you will bind ONLY one to the form
+            and the others to an element via the "selector" configuration option
+        TODO: with multiple dropzones, support submit when the master/form is empty
+        This field makes some assumptions about what you want todo:
+            - this field uses dropzone.js
+            - the field expects you want todo a native form submission (once vs. multiple ajax calls)
+            - this field stores the data within the database
+            - the results are shown via a Data URI which is not always optimal
+            - it looks like dropzone.js only adds the form fields when dropzone is bound
+                to a form (i.e. binding to dropzone within a form skips this - assumes xhr)
+            -  due to assumption to mimic native form, the data makes round trips to/from server
+
     >>> icon = DataURIAttachmentsField('Icon')
     >>> icon.requires_multipart_form()
     True
@@ -2353,7 +2368,11 @@ class DataURIAttachmentsField(Field):
     classed = 'dropzone nojs'
     no_image_url = 'https://placehold.it/350x150'
     maximum_files = 5
-    script = """<script type="text/javascript" src="/static/zoom/dropzone/dropzone.min.js"></script>"""
+    selector = "#zoom_form"  # select to attach the dropzone onto
+    script = [
+        """<script type="text/javascript" src="/static/zoom/dropzone/dropzone.min.js"></script>""",
+        """<script type="text/javascript">Dropzone.autoDiscover = false;</script>""",
+    ]
     css = """<link href="/static/zoom/dropzone/dropzone.min.css" rel="stylesheet" type="text/css" />"""
 
     @property
@@ -2370,10 +2389,9 @@ class DataURIAttachmentsField(Field):
         """
         return """
 /* script type="text/javascript" */
-Dropzone.autoDiscover = false;
-//    Dropzone.options.zoom_Form = {{ // The camelized version of the ID of the form element
-var photoDropzone = new Dropzone("#zoom_form", {{
-      url: $('form#zoom_form').attr("action") || '/example',
+/* var {self.id}Dropzone = new Dropzone("{self.selector}", {{ */
+var {self.id}Dropzone = $("{self.selector}").dropzone({{
+      url: $('form#zoom_form').attr("action") || '/think/of/some/default',
       paramName: "{self.id}",
       autoProcessQueue: false,
       uploadMultiple: true,
@@ -2381,23 +2399,56 @@ var photoDropzone = new Dropzone("#zoom_form", {{
       maxFiles: {self.maximum_files},
       acceptedFiles: 'image/*',
       addRemoveLinks: true,
-      clickable: ".dz-clickable",
+      clickable: ".dropzone.{self.id} .dz-clickable",
       method: "post",
-      previewsContainer: "#dropzonePreview",
+      previewsContainer: "#{self.id}Preview",
 
       // The setting up of the dropzone
       init: function() {{
         var myDropzone = this;
 
-        // First change the button to actually tell Dropzone to process the queue.
-        this.element.querySelector("input[type=submit],button[type=submit]").addEventListener("click", function(e) {{
-          // Make sure that the form isn't actually being sent.
-          if (myDropzone.getQueuedFiles().length > 0) {{
-            e.preventDefault();
-            e.stopPropagation();
-            myDropzone.processQueue();
-          }}
-        }});
+        if (this.element.tagName === "FORM") {{
+            // First change the button to actually tell Dropzone to process the queue.
+            this.element.querySelector("input[type=submit],button[type=submit]").addEventListener("click", function(e) {{
+              // Make sure that the form isn't actually being sent.
+              if (myDropzone.getQueuedFiles().length > 0) {{
+                e.preventDefault();
+                e.stopPropagation();
+                myDropzone.processQueue();
+              }}
+            }});
+        }}
+
+        // hook into master events for not FORM bindings
+        if (this.element.tagName !== "FORM") {{
+            // support for Master-Slave setup
+            var masterDropzone = Dropzone.forElement("#zoom_form");
+            masterDropzone.on("sendingmultiple", function(master_files, xhr, formData) {{
+                // Gets triggered when the form is actually being sent.
+                // Hide the success button or the complete form.
+
+                // watch the Master Dropzone, when sending add the slave dropzones files
+                console.log('sending multiple...')
+
+                if (myDropzone.options.params) {{
+                  _ref1 = myDropzone.options.params;
+                  for (key in _ref1) {{
+                    value = _ref1[key];
+                    formData.append(key, value);
+                  }}
+                }}
+
+                var files = myDropzone.files;  // just grab them all as this field type assumes a native form (i.e. ignore file.status)
+                if (files.length > 0) {{
+                    for (i = _m = 0, _ref5 = files.length - 1; 0 <= _ref5 ? _m <= _ref5 : _m >= _ref5; i = 0 <= _ref5 ? ++_m : --_m) {{
+                        formData.append(myDropzone._getParamName(i), files[i], myDropzone._renameFilename(files[i].name));
+                    }}
+                }}
+
+                console.log('sending multiple...done')
+            }});
+
+        }}
 
         // Listen to the sendingmultiple event. In this case, it's the sendingmultiple event instead
         // of the sending event because uploadMultiple is set to true.
@@ -2564,10 +2615,10 @@ var photoDropzone = new Dropzone("#zoom_form", {{
 
     def widget(self):
         """return the dropzone widget"""
-        previews = """<div class="{self.classed}"><span class="btn btn-success fileinput-button dz-clickable">
+        previews = """<div class="{self.classed} {self.id} dz-clickable"><span class="btn btn-success fileinput-button">
             <i class="glyphicon glyphicon-plus"></i>
             <span>Add files...</span>
-        </span><div id="dropzonePreview" class="dropzone-previews"></div></div>"""
+        </span><div id="{self.id}Preview" class="dropzone-previews"></div></div>"""
         fallback = """<div class="fallback"><input id="{}" name="{}" type="file" multiple /></div>"""
         return compose(
             previews.format(self=self),
