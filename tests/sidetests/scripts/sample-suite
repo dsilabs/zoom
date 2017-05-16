@@ -10,6 +10,13 @@
 <tr><td><b>Test Suite</b></td></tr>
 <tr><td><a href="admin-login">admin-login</a></td></tr>
 <tr><td><a href="admin-views-overview">admin-views-overview</a></td></tr>
+<tr><td><a href="admin-tests-sample-content">admin-tests-sample-content</a></td></tr>
+<tr><td><a href="admin-tests-sample-fields">admin-tests-sample-fields</a></td></tr>
+<tr><td><a href="admin-tests-sample-collection">admin-tests-sample-collection</a></td></tr>
+<tr><td><a href="admin-tests-sample-alerts">admin-tests-sample-alerts</a></td></tr>
+<tr><td><a href="admin-tests-sample-parts">admin-tests-sample-parts</a></td></tr>
+<tr><td><a href="admin-tests-sample-tools">admin-tests-sample-tools</a></td></tr>
+<tr><td><a href="admin-tests-sample-missing">admin-tests-sample-missing</a></td></tr>
 <tr><td><a href="admin-logout">admin-logout</a></td></tr>
 </tbody></table>
 </body>

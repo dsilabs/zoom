@@ -23,5 +23,5 @@ class SystemTests(SeleniumTests):
     def get_driver(self):
         return webdriver.Chrome()
 
-    def test_overview(self):
-        self.run_suite('overview-suite')
+    def test_sample(self):
+        self.run_suite('sample-suite')

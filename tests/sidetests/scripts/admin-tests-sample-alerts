@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:8000/" />
+<title>admin-tests-sample-alerts</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">admin-tests-sample-alerts</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/sample/fields</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Alerts</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Success</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.alert.success &gt; ul &gt; li</td>
+	<td>that was great!</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=index</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Warning</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.alert.warning &gt; ul &gt; li</td>
+	<td>that was close!</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Error</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.alert.danger &gt; ul &gt; li</td>
+	<td>that was bad!</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Stdout</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=pre</td>
+	<td>Here is some stdout output!</td>
+</tr>
+</tbody></table>
+</body>
+</html>
