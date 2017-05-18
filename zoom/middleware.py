@@ -45,6 +45,7 @@ import zoom.apps
 import zoom.component
 from zoom.page import page
 from zoom.helpers import tag_for
+from zoom.forms import csrf_token as csrf_token_generator
 from zoom.tools import websafe
 
 SAMPLE_FORM = """
@@ -240,7 +241,7 @@ def check_csrf(request, handler, *rest):
 
         if csrf_token and csrf_token == form_token:
             del request.session.csrf_token
-
+            csrf_token_generator(request.session)  # create a new one
         else:
             if csrf_token:
                 logger.warning('csrf token invalid')
