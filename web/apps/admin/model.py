@@ -17,16 +17,21 @@ def get_index_metrics(db):
     def count(where, *args):
         return '{:,}'.format((list(db('select count(*) from ' + where, *args))[0][0]))
 
+    def avg(metric, where, *args):
+        return '{:,.1f}'.format((list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]))
+
     num_users = count('users where status="A"')
     num_groups = count('groups where type="U"')
     num_requests = count('log where status="C" and timestamp>=%s', today())
     num_errors = count('log where status="E" and timestamp>=%s', today())
+    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s', today())
 
     metrics = [
         ('Users', '/admin/users', num_users),
         ('Groups', '/admin/groups', num_groups),
         ('Requests Today', '/admin/requests', num_requests),
         ('Errors Today', '/admin/errors', num_errors),
+        ('Performance (ms)', '/admin/requests', avg_speed),
     ]
     return metrics
 
