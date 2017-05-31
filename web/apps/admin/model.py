@@ -15,7 +15,7 @@ def search_all(text):
 def get_index_metrics(db):
 
     def count(where, *args):
-        return list(db('select count(*) from ' + where, *args))[0][0]
+        return '{:,}'.format((list(db('select count(*) from ' + where, *args))[0][0]))
 
     num_users = count('users where status="A"')
     num_groups = count('groups where type="U"')
