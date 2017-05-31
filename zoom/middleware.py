@@ -382,8 +382,8 @@ def handle(request, handlers=None):
         check_csrf,
         zoom.user.handler,
         zoom.context.handler,
-        display_errors,
         zoom.render.handler,
+        display_errors,
         zoom.apps.handler,
         not_found,
     )
