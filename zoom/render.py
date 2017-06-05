@@ -102,7 +102,7 @@ def handler(request, handle, *rest):
     response = handle(request, *rest)
 
     providers = zoom.context.context.providers
-    if response.content:
+    if response.content and isinstance(response.content, str):
         response.content = apply_helpers(response.content, None, providers)
 
     logger.debug('render handler called')
