@@ -131,10 +131,13 @@ class AppProxy(object):
         self.visible = self.config.get('visible')
         self.enabled = self.config.get('enabled')
         self.in_development = self.config.get('in_development')
+        self._method = None
 
     @property
     def method(self):
-        return getattr(imp.load_source('app', self.filename), 'app')
+        if self._method == None:
+            self._method = getattr(imp.load_source('app', self.filename), 'app')
+        return self._method
 
     @property
     def title(self):
