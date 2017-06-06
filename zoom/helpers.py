@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import datetime
 
 import zoom.html as html
+from zoom.context import context as ctx
 
 
 def username():
@@ -61,35 +62,38 @@ def tag_for(name, *a, **k):
 def url_for(*a, **k):
     """creates urls
 
+    >>> ctx.site = lambda: None
+    >>> ctx.site.url = ''
+
     >>> url_for()
     ''
 
     >>> url_for('')
     ''
 
-    >>> url_for('/')
-    '<dz:site_url>'
+    # >>> url_for('/')
+    # '<dz:site_url>'
 
     >>> url_for('/', 'home')
-    '<dz:site_url>/home'
+    '/home'
 
     >>> url_for('/home')
-    '<dz:site_url>/home'
+    '/home'
 
     >>> url_for('home')
     'home'
 
     >>> url_for('/user', 1234)
-    '<dz:site_url>/user/1234'
+    '/user/1234'
 
     >>> url_for('/user', 1234, q='test one', age=15)
-    '<dz:site_url>/user/1234?age=15&q=test+one'
+    '/user/1234?age=15&q=test+one'
 
     >>> url_for('/user', q='test one', age=15)
-    '<dz:site_url>/user?age=15&q=test+one'
+    '/user?age=15&q=test+one'
 
     >>> url_for('/', q='test one', age=15)
-    '<dz:site_url>?age=15&q=test+one'
+    '?age=15&q=test+one'
 
     >>> url_for(q='test one', age=15)
     '?age=15&q=test+one'
@@ -99,7 +103,7 @@ def url_for(*a, **k):
 
     """
 
-    root = tag_for('site_url')
+    root = ctx.site.url
     a = [str(i) for i in a]
 
     if a and a[0] and a[0][0] == '/':
@@ -145,13 +149,17 @@ def url_for_page(*args, **kwargs):
 def url_for_item(*args, **kwargs):
     """returns a url for an item on the curren page
 
+    >>> ctx.request = lambda: None
+    >>> ctx.request.route = ['myapp', 'mypage']
+
     >>> url_for_item()
-    '<dz:site_url>/<dz:app_name>/<dz:page_name>'
+    '/myapp/mypage'
 
     >>> url_for_item(100)
-    '<dz:site_url>/<dz:app_name>/<dz:page_name>/100'
+    '/myapp/mypage/100'
     """
-    return url_for('/<dz:app_name>/<dz:page_name>', *args, **kwargs)
+    route = ['/'] + ctx.request.route[:2] + list(args)
+    return url_for(*route, **kwargs)
 
 
 def abs_url_for(*a, **k):
@@ -223,6 +231,9 @@ def abs_url_for(*a, **k):
 
 def link_to(label, *args, **kwargs):
     """produce a link
+
+    >>> ctx.site = lambda: None
+    >>> ctx.site.url = ''
 
     >>> link_to('Company', 'http://company.com')
     '<a href="http://company.com">Company</a>'

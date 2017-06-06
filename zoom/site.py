@@ -7,6 +7,7 @@ import os
 
 import zoom.config
 import zoom.helpers
+from zoom.context import context
 
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
@@ -32,7 +33,7 @@ class Site(object):
             get = self.config.get
             self.url = get('site', 'url', '')
             self.title = get('site', 'name', self.name)
-            self.link = zoom.helpers.link_to(self.name, self.url)
+            self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
             self.csrf_validation = True
             self.tracking_id = get('site', 'tracking_id', '')
 
@@ -131,5 +132,5 @@ class Site(object):
 
 def handler(request, handler, *rest):
     """install site object"""
-    request.site = Site(request)
+    request.site = context.site = Site(request)
     return handler(request, *rest)

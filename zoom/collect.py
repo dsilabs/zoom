@@ -5,6 +5,7 @@
 import logging
 
 from zoom.browse import browse
+from zoom.context import context
 from zoom.components import success, error
 from zoom.fields import ButtonField
 from zoom.forms import form_for, delete_form
@@ -193,8 +194,6 @@ class CollectionView(View):
                 title=c.item_title,
                 actions=actions
             )
-        else:
-            raise PageMissingException
 
     def edit(self, key, **data):
         c = self.collection
@@ -411,6 +410,11 @@ class Collection(object):
                 rtrim(rtrim(fields.__name__, '_fields'), '_form')
             )
 
+        def calc_url():
+            return '/'.join(
+                    [context.site.abs_url] + context.request.route[:2],
+                )
+
         get = kwargs.pop
 
         self.fields = callable(fields) and fields() or fields
@@ -423,7 +427,7 @@ class Collection(object):
         self.labels = get('labels', None) or self.calc_labels()
         self.model = get('model', CollectionModel)
         self.store = get('store', None)
-        self.url = get('url', None)
+        self.url = get('url', calc_url())
         self.controller = get('controller', self.controller)
         self.link = link_to(self.name, self.url)
 
@@ -464,20 +468,6 @@ class Collection(object):
         self.request = request
         self.route = route
 
-        # If we're not provided with a URL for the collection
-        # we assume it is the most common case, which is where the
-        # app is the first part of the URL and the collection
-        # name is the second part of the URL.  Together they
-        # make up the URL for the collection.
-        if self.url is None:
-            self.url = '/'.join(
-                [request.site.abs_url] + request.route[:2],
-            )
-            logger.debug('Collection URL: %r', self.url)
-
-        # If we're not provided with a place to store the data
-        # we assume that the collection will be stored in an
-        # entity store.
         self.store = self.store or (
             EntityStore(
                 request.site.db,

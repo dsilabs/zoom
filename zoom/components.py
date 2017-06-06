@@ -13,6 +13,10 @@ from zoom.component import compose
 def as_actions(items):
     """returns actions
 
+    >>> from zoom.context import context as ctx
+    >>> ctx.site = lambda: None
+    >>> ctx.site.url = ''
+
     >>> as_actions(['New'])
     '<div class="actions"><ul><li><a class="action" href="<dz:request_path>/new" id="new-action">New</a></li></ul></div>'
 
