@@ -40,20 +40,18 @@ a:hover.navbar-brand
 .system-menu
   font-size: 12px
   display: inline
-  ul
-    text-align: left
-    display: inline
-    padding: 0
-  li
-    display: inline
-  a
-    padding: 0 7px
-    height: $main-nav-height
-    line-height: $main-nav-height
-    color: #ddd
-    text-decoration: none
-  a:hover
-    color: white
+  > ul
+    margin: 0
+    > li
+      list-style-type: none
+      > a
+        padding: 0 10px
+        height: $main-nav-height
+        line-height: $main-nav-height
+        color: #ddd
+        text-decoration: none
+      > a:hover
+        color: white
 
 /* main menu */
 .main-menu
@@ -72,7 +70,7 @@ a:hover.navbar-brand
     line-height: $main-nav-height
     color: #ddd
     text-decoration: none
-    padding: 0 10px
+    padding: 16px 10px
   a:hover
     color: white
     background: #444
@@ -129,8 +127,6 @@ a:hover.navbar-brand
 
 .navbar-zoom .navbar-inner .nav li a
   color: #fff
-  padding-top: 16px
-  padding-bottom: 16px
   text-shadow: none
   background: none
   -webkit-box-shadow: none
