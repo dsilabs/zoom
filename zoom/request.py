@@ -15,6 +15,7 @@ from timeit import default_timer as timer
 
 import zoom.utils
 import zoom.cookies
+from zoom.context import context
 
 
 def get_web_vars(env):
@@ -281,3 +282,9 @@ class Request(object):
 
     def __str__(self):
         return zoom.utils.pretty(self)
+
+
+def handler(request, handle, *rest):
+    """request handler"""
+    context.request = request
+    return handle(request, *rest)

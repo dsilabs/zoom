@@ -273,9 +273,9 @@ class Users(RecordStore):
       name ................: 'Guest User'
       first_name ..........: 'Guest'
       last_name ...........: 'User'
-      url .................: '<dz:site_url>/admin/users/guest'
+      url .................: '/admin/users/guest'
       apps ................: ['content', 'forgot', 'login', 'passreset', 'signup']
-      link ................: '<a href="<dz:site_url>/admin/users/guest">guest</a>'
+      link ................: '<a href="/admin/users/guest">guest</a>'
       email ...............: 'guest@datazoomer.com'
       phone ...............: ''
       groups ..............: ['everyone', 'guests']

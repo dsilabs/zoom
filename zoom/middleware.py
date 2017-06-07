@@ -43,6 +43,7 @@ import zoom.templates
 import zoom.user
 import zoom.apps
 import zoom.component
+import zoom.request
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.forms import csrf_token as csrf_token_generator
@@ -364,6 +365,7 @@ def handle(request, handlers=None):
     """handle a request"""
     default_handlers = (
         trap_errors,
+        zoom.request.handler,
         serve_redirects,
         serve_favicon,
         serve_static,
@@ -381,7 +383,6 @@ def handle(request, handlers=None):
         zoom.component.handler,
         check_csrf,
         zoom.user.handler,
-        zoom.context.handler,
         zoom.render.handler,
         display_errors,
         zoom.apps.handler,

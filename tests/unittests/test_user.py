@@ -53,7 +53,7 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='user')
         self.assertEqual(user._id, 2)
         logging.debug('user id is %r', user._id)
-        self.assertEqual(user.link, '<a href="<dz:site_url>/admin/users/user">user</a>')
+        self.assertEqual(user.link, '<a href="mysite.com/app/admin/users/user">user</a>')
 
     def test_user_activate(self):
         user = self.users.first(username='user')

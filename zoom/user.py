@@ -5,6 +5,7 @@
 import logging
 
 from zoom.users import Users
+from zoom.context import context
 
 
 def get_current_username(request):
@@ -28,7 +29,7 @@ def handler(request, handler, *rest):
         users = Users(request.site.db)
         user = users.first(username=username)
         if user:
-            request.user = user
+            context.user = request.user = user
             user.initialize(request)
             logger.debug('user loaded: %s (%r)', user.full_name, user.username)
     return handler(request, *rest)
