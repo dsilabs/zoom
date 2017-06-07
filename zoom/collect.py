@@ -442,14 +442,14 @@ class Collection(object):
         """Calculate labels based on fields"""
         lookup = {f.name: f.label for f in self.fields.as_dict().values()}
         lookup.update(dict(
-            link=self.item_title,
+            link=self.fields.as_list()[0].label,
         ))
         labels = [lookup.get(name, name.capitalize()) for name in self.columns]
         return labels
 
     def calc_columns(self):
         """Calculate columns based on fields"""
-        return ['link'] + [f.name for f in self.fields.as_dict().values()]
+        return ['link'] + [f.name for f in self.fields.as_list()[1:]]
 
     def handle(self, route, request):
         """handle a request"""
