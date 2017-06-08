@@ -43,6 +43,15 @@ class Site(object):
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
             self.admin_email = get('site', 'admin_email', 'admin@testco.com')
 
+            self.smtp_host = get('mail', 'smtp_host', '')
+            self.smtp_port = get('mail', 'smtp_port', '')
+            self.smtp_user = get('mail', 'smtp_user', '')
+            self.smtp_passwd = get('mail', 'smtp_passwd', '')
+            self.mail_logo = get('mail', 'logo', '')
+            self.mail_from_addr = get('mail', 'from_addr', '')
+            self.mail_from_name = get('mail', 'from_name', self.title + ' Support')
+            self.mail_delivery = get('mail', 'delivery', '')
+
             self.guest = get('users', 'default', 'guest')
             self.administrators_group = get(
                 'users', 'administrator_group', 'administrators'

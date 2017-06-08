@@ -485,6 +485,12 @@ class OrderedSet(collections.MutableSet):
         return set(self) == set(other)
 
 
+class Bunch(object):
+    """a handy bunch of variables"""
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 class Storage(dict):
     """
     A Storage object is like a dictionary except `obj.foo` can be used
