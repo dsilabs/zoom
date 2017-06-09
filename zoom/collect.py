@@ -411,9 +411,8 @@ class Collection(object):
             )
 
         def calc_url():
-            return '/'.join(
-                    [context.site.abs_url] + context.request.route[:2],
-                )
+            """calculate default collection URL"""
+            return '/' + '/'.join(context.request.route[:2])
 
         get = kwargs.pop
 
