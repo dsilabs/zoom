@@ -11,30 +11,19 @@ def app(request):
 
 Run it:
 ```shell
-zoom server
+$ zoom server
 ```
 
 View at: http://localhost
 
 
-## Installation
-
-clone zoom
-```shell
-git clone git@github.com:dsilabs/zoom.git
-```
-
-add zoom command to your path
-
-Ubuntu example:
-```
-ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
-```
-
 ----
 
 ## Table of Contents
 * [Introduction](#introduction)
+* [Getting Started with Zoom](#getting-started-with-zoom)
+  * [Installing Zoom](#installing-zoom)
+* [Contributing](#contributing)
 
 ## Introduction
 This guide provides a 60,000 foot view of Zoom, it's purpose and philosopy.
@@ -70,6 +59,69 @@ It attempts to do this by adhering to the following key prinicples:
 
 ### When would you use it?
 Zoom is ideally suited to web developers that just want to get something up and running quickly without committing a lot of code to things they may want to change later. This is it's sweet spot. Because of this it is great for prototyping and rapid iterations of applications under active development.
+
+
+## Getting started with Zoom
+The best way to get started with Zoom is to try it.  By following along with
+this guide step by step you'll create a Zoom app called blog, a simple weblog.
+Before you can start building the app, you need to make sure that you have Zoom
+installed.
+
+
+### Installing Zoom
+Open up a terminal window and follow along with the following steps.  The
+dollar sign $ in the following examples is the command prompt.
+
+Zoom is currently available only on gitub.  The simplest way to get Zoom is to
+clone it from it's home on github.  To do this you'll need git intsalled on
+your system.
+
+All set?  Okay, here we go!
+
+1. clone zoom
+```shell
+git clone git@github.com:dsilabs/zoom.git
+```
+
+1. add zoom command to your path  
+Ubuntu example:  
+```
+ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
+```
+
+1. configure zoom database  
+Zoom requires a database to be run.  If you don't already have MySQL or
+MariaDB installed follow the instructions for your operating system.  Once
+that is installed create the database using the command:
+```
+$ echo create database zoom | mysql -u <username> -p
+$ mysql -u <username> zoom < /path-to-libs/zoom/utils/zoom/sql/setup_mysql.sql
+```
+Next, edit the site.ini file for the localhost site using your editor like
+so:
+```
+$ vi /path-to-libs/zoom/web/sites/localhost/site.ini
+```
+Find the database section of the config file and set the values for the
+database configuration to correspond to your database configuration.
+
+1. Run zoom  
+If you are currently in the zoom/web directory then you don't need to tell
+zoom where to find your zoom instance.
+```
+$ zoom server /path-to-libs/zoom/web
+```
+
+### Creating the Blog App
+Zoom comes with a command line tool that can do number of useful things for
+you.  One of the things it can do is create a basic starting appplication
+which runs and has the basic building blocks of a well formed Zoom app.
+
+<!-- To use the tool, open a terminal window, navigate to the directory where you
+want to work on the app and type:
+```
+$ zoom new blog
+``` -->
 
 
 ## Contributing
