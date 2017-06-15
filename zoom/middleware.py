@@ -222,8 +222,10 @@ def serve_favicon(request, handler, *rest):
 def serve_html(request, handler, *rest):
     """Direct a request for an HTML page to the content app"""
     if request.path.endswith('.html'):
-        request.path = '/content' + request.path[:-5]
+        logger = logging.getLogger(__name__)
+        request.path = '/content' + request.path[:-5] + '/show'
         request.route = request.path.split('/')[1:]
+        logger.debug('redirecting content request (%r, %r)', request.path, request.route)
         return handler(request, *rest)
     else:
         return handler(request, *rest)
