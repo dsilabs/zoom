@@ -224,6 +224,15 @@ class User(Record):
         return [g for g in self.get_groups() if not g.startswith('a_')]
 
     @property
+    def groups_ids(self):
+        groups = self.groups
+        if groups:
+            # if we have groups then we have a store so avoid another check here
+            cmd = 'select id from groups where name in (%s)'% (', '.join(['%s'] * len(groups)))
+            return [i[0] for i in self.get('__store').db(cmd, *groups)]  # list of group id's
+        return []
+
+    @property
     def apps(self):
         return [g[2:] for g in self.get_groups() if g.startswith('a_')]
 
@@ -288,6 +297,7 @@ class Users(RecordStore):
       full_name ...........: 'Guest User'
       is_active ...........: True
       created_by ..........: 1
+      groups_ids ..........: [4, 3]
       updated_by ..........: 1
       default_app .........: '/home'
       is_developer ........: False

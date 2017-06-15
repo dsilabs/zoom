@@ -38,6 +38,7 @@ class TestUser(unittest.TestCase):
         ])
         user = self.users.first(username='user')
         self.assertEqual(user.groups, ['everyone', 'users'])
+        self.assertEqual(sorted(user.groups_ids), [2, 4])
 
     def test_user_is_member(self):
         user = self.users.first(username='admin')
