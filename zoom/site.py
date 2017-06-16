@@ -98,9 +98,10 @@ class Site(object):
     @property
     def apps_paths(self):
         isdir = os.path.isdir
-        apps_paths = self.config.get('apps', 'path').split(';')
-        return apps_paths
-        return filter(isdir, apps_paths)
+        abspath = os.path.abspath
+        join = os.path.join
+        apps_paths = [abspath(join(self.path, p)) for p in self.config.get('apps', 'path').split(';')]
+        return list(filter(isdir, apps_paths))
 
     def get_template(self, name=None):
         template = name or 'default'
