@@ -143,6 +143,10 @@ class AppProxy(object):
     def title(self):
         return self.config.get('title', self.name) or self.name.capitalize()
 
+    @property
+    def description(self):
+        return self.config.get('description') or 'The {} app.'.format(self.title)
+
     def run(self, request):
         """run the app"""
         save_dir = os.getcwd()
