@@ -1,5 +1,5 @@
 """
-    {name}
+    basic app
 """
 
 from zoom.apps import App
