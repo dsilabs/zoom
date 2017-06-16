@@ -261,6 +261,7 @@ def get_apps(request):
     """get list of apps installed on this site"""
     logger = logging.getLogger(__name__)
     result = []
+    names = []
 
     apps_paths = request.site.apps_paths
 
@@ -273,9 +274,11 @@ def get_apps(request):
         )
         logger.debug('app path: %s', path)
         for app in os.listdir(path):
-            filename = os.path.join(path, app, 'app.py')
-            if os.path.exists(filename):
-                result.append(AppProxy(app, filename, request.site))
+            if app not in names:
+                filename = os.path.join(path, app, 'app.py')
+                if os.path.exists(filename):
+                    result.append(AppProxy(app, filename, request.site))
+                    names.append(app)
 
     logger.debug('%s apps found', len(result))
     return result
@@ -326,12 +329,16 @@ def handle(request):
         zoom.render.add_helpers(helpers(request))
         return app.run(request)
 
-    elif app and app.enabled:
+    elif app and app.enabled and user.is_guest:
         logger.debug('redirecting to login')
         return RedirectResponse('/login')
 
+    elif app and app.enabled:
+        logger.warning('unable to run app %s (%r), redirecting to default', app_name, app.path)
+        return RedirectResponse('/')
+
     elif app:
-        logger.debug('app disabled, redirecting to default')
+        logger.warning('app %s (%r) disabled, redirecting to default', app_name, app.path)
         return RedirectResponse('/')
 
     else:
