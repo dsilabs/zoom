@@ -8,8 +8,8 @@ addons:
     - database
 
 python:
-  - "3.4"
-  - "3.5"
+  - '3.4'
+  - '3.5'
 
 install:
   - pip install coveralls
@@ -24,9 +24,7 @@ script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom/* ./tests/unittests/*
 
 after_success:
-    - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then
-          coveralls;
-      fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then coveralls; fi
 
 notifications:
   email:
@@ -35,6 +33,6 @@ notifications:
     on_success: never
     on_failure: always
   slack:
-    secure: GFwIeZTnDI2oni2oQfUvYf3q66gYjs8JE4CGQcpge8sDLPGlZ2fCDuMijIG2IrW3rNqd8RtXf8ERjfpibpyn/7vXQe1rgJ9nMVdGhDPycrc03RC9Alp5+kbmusa/6kSxtvmj6h+LsADUULjVpHc4MBqyPpT6+URQ1N0T89x9S7TCGFVceR3eudyphxcyazpVqQB7F7fyJnS7zwbySoatRUA8U7mQ1jKnIfO9bYov+HvF5lfzeN+sNk/w9kicGv3/SoXLrUS2ODCF/XmIVUHLWE9L34oKex26OruSWII5H7/1n2WnRczce+DxHfzj/udIXRApmFzLYqz9Rza+Q5AVQcCK3kjFgMhEnqOpDBszsyaP8lokJhie18bgus5tMCkUd6GY00OsXYumbjNfM7FuJACPpLtI+CKrVuw6OSc5rDQkYQuqBXk6pAA5UBnk8por/FBp2UY0RNDQlsOSGU/U4xyPjYYmm/rHtw9yB3WICMH7rWNgz/2Nj4+egJdV+fDz/Fc9XuDI4tLAlMo9TgACzVKprToTBZoORL6f1PC9jCYJlVpapnAnOY34Mo3cYiG30nmfYheEifQMj1jjmKpuMD1nPsUIaHF1oDAxFsQkZlTTBIfW4zILK5W+flwMN9D6LhOBHrn9fVL4kxMTr/Hi+HR/hOF2tdbAuAI9H2nyJE4=
+    secure: PntV1OHhuzM9Dl5/G41oeNvngqnSYD19j4Tm0bXOMg4bNklCB3A/E3vHiwpN4pgn8jNoAmlixEgMO/aDTBxCi0kRsCYdaGRN6omQ7YJbqZazbQC7klxQhKkmtI86S02vfKixtg/X1qtFL7hVJ5ob37UThSQqfGI7A6LPXJlZueVcNwuFDh8OYuS6w1txmDcZQ2nRLliRlspgd7w1hq8m81attXgyZG9MSCPTCBULTNQVGHTtj3u/smsqxcYi+4XSgKwPg3xLxGX5ZuZk0to2nljbUIiTjS5uuTIU03/8SNbltrDM5+NVMxVICMNbUR9RpQo30vvoMbubA5bEqXQe6znbv1K74v9+U4WY7WpOWaJLdwUVwfmbzvWSkfIff/Mis+1Hau+Yz+VdKx1AEalO5JndRgaXobJWIzeKHY8TkpRwAbcMbz61lxJ4boauQwZkLOq9hn1XkunZ/m7GlFCaTW3vSrQfm9rems2fE3EwA9bdgkgAFWRgCzYbTc3fErL9jXXVhXNUDT0rsftwuCC4I2hGo+no27CCNCLIqcj1k0kfN34EeJ9R2UbQOf1O1eGgARFS5gRbp9ozpEz2YZ6N2Qu2cp65Z7IgRZWEPB7AWHwZekh7h0ThRoy639dn7t+1fy0eRiZuOaQD0SKT5WgZl0XpfxfzXqFWYkAKE0EeJSw=
     on_success: always
     on_failure: always
