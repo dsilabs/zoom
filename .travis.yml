@@ -1,0 +1,33 @@
+language: python
+sudo: false
+dist: trusty
+
+addons:
+  mariadb: '10.1'
+  hosts:
+    - database
+
+python:
+  - "3.4"
+  - "3.5"
+
+install:
+  - pip install coveralls
+  - pip install -r requirements.txt
+
+before_script:
+  - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest;'
+  - mysql -uroot -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
+  - mysql -uroot -e "GRANT ALL ON zoomtest.* TO 'testuser'@'localhost';"
+  - mysql -uroot zoomtest < tools/zoom/sql/setup_mysql.sql
+script:
+  - nosetests --with-coverage --with-doctest -v ./zoom/* ./tests/unittests/*
+
+after_success:
+    - if [[ $ENV == python=3.5* ]]; then
+          coveralls;
+      fi
+
+notifications:
+  email:
+    - support@dynamic-solutions.com
