@@ -143,4 +143,5 @@ class Site(object):
 def handler(request, handler, *rest):
     """install site object"""
     request.site = context.site = Site(request)
+    request.profiler.add('site initialized')
     return handler(request, *rest)

@@ -489,7 +489,10 @@ def handler(request, handler, *rest):
         logger = logging.getLogger(__name__)
         logger.warning('no database specified for %s', site.name)
 
-    return handler(request, *rest)
+    request.profiler.add('database initialized')
+    result = handler(request, *rest)
+    request.profiler.add('database finished')
+    return result
 
 
 def setup_test(engine='mysql'):

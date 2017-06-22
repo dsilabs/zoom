@@ -32,4 +32,6 @@ def handler(request, handler, *rest):
             context.user = request.user = user
             user.initialize(request)
             logger.debug('user loaded: %s (%r)', user.full_name, user.username)
+            request.profiler.add('user initialized')
+
     return handler(request, *rest)

@@ -73,6 +73,6 @@ def handler(request, handler, *rest):
     try:
         result = handler(request, *rest)
     finally:
-        add_entry(request, 'C', 'complete')
+        request.profiler.time('log request', add_entry, request, 'C', 'complete')
         remove_log_handler(log_handler)
     return result

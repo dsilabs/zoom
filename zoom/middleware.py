@@ -44,6 +44,7 @@ import zoom.user
 import zoom.apps
 import zoom.component
 import zoom.request
+import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.forms import csrf_token as csrf_token_generator
@@ -272,7 +273,7 @@ def capture_stdout(request, handler, *rest):
         printed_output = sys.stdout.getvalue()
         sys.stdout.close()
         sys.stdout = real_stdout
-        if isinstance(result.content, str) and '{*stdout*}' in result.content:
+        if 'result' in locals() and isinstance(result.content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
                 '{*stdout*}', html.pre(websafe(printed_output)))
     logger = logging.getLogger(__name__)
@@ -365,6 +366,7 @@ def handle(request, handlers=None):
     """handle a request"""
     default_handlers = (
         trap_errors,
+        zoom.profiler.handler,
         zoom.request.handler,
         serve_redirects,
         serve_favicon,
