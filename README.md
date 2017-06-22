@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/dsilabs/zoom.svg?branch=master)](https://travis-ci.org/dsilabs/zoom)
+
+[![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
+
 # zoom
 
 Zoom is a simple web application framework for building dynamic web sites quickly and easily.
