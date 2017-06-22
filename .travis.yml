@@ -21,10 +21,10 @@ before_script:
   - mysql -uroot -e "GRANT ALL ON zoomtest.* TO 'testuser'@'localhost';"
   - mysql -uroot zoomtest < tools/zoom/sql/setup_mysql.sql
 script:
-  - nosetests --with-coverage --with-doctest -v ./zoom/* ./tests/unittests/*
+  - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom/* ./tests/unittests/*
 
 after_success:
-    - if [[ $ENV == python=3.5* ]]; then
+    - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then
           coveralls;
       fi
 
