@@ -59,6 +59,20 @@ class Response(object):
         )
 
 
+class BinaryResponse(Response):
+    """Generic binary response
+
+    use max_age=0 to avoid caching
+    """
+
+    def __init__(self, content, max_age=86400):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'application/octet-stream'
+        if max_age:
+            self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+            self.headers['ETag'] = md5(content).hexdigest()[:9]
+
+
 class TTFResponse(Response):
     """True Type Font response"""
 
