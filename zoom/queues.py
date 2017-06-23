@@ -124,6 +124,23 @@ class Topic(object):
                     )
                 )
 
+    def clear(self):
+        """clear the topic
+
+        >>> messages = setup_test()
+        >>> t = messages.get('test_topic')
+        >>> t.send('hey!', 'you!')
+        [1, 2]
+        >>> len(t)
+        2
+        >>> t.clear()
+        >>> len(t)
+        0
+        """
+        if self.name:
+            self.messages.delete(topic=self.name)
+        else:
+            self.messages.zap()
 
     def send(self, *messages):
         """send list of messages
