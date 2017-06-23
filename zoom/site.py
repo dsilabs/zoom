@@ -70,7 +70,8 @@ class Site(object):
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
 
-            self.logging = get('log', 'logging', True)
+            self.logging = get('monitoring', 'logging', True) != '0'
+            self.profiling = get('monitoring', 'profiling', True) != '0'
 
             logger = logging.getLogger(__name__)
             logger.debug('site path: %r', site_path)
