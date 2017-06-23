@@ -148,6 +148,8 @@ def serve_response(*path):
         ico=ICOResponse,
         css=CSSResponse,
         js=JavascriptResponse,
+        ttf=TTFResponse,
+        woff=WOFFResponse,
     )
     filename = os.path.realpath(os.path.join(*path))
     logger = logging.getLogger(__name__)

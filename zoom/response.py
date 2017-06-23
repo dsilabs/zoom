@@ -59,6 +59,26 @@ class Response(object):
         )
 
 
+class TTFResponse(Response):
+    """True Type Font response"""
+
+    def __init__(self, content, max_age=86400):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'application/font-sfnt'
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
+
+
+class WOFFResponse(Response):
+    """Web Open Font Format response"""
+
+    def __init__(self, content, max_age=86400):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'application/font-woff'
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
+
+
 class PNGResponse(Response):
     """PNG image response"""
 
