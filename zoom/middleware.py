@@ -39,6 +39,7 @@ import zoom.cookies
 import zoom.html as html
 import zoom.logging
 import zoom.models
+import zoom.queues
 import zoom.session
 import zoom.site
 import zoom.templates
@@ -383,6 +384,7 @@ def handle(request, handlers=None):
         zoom.site.handler,
         serve_themes,
         zoom.database.handler,
+        zoom.queues.handler,
         zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,
