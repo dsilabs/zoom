@@ -5,6 +5,7 @@
 from decimal import Decimal
 import resource
 import timeit
+import logging
 
 from zoom.utils import ItemList
 from zoom.page import page
@@ -59,11 +60,15 @@ class SystemTimer(object):
 
 def handler(request, handler, *rest):
     def send(message):
+        logger = logging.getLogger(__name__)
         if hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling:
             topic = 'system.debug.%s' % request.user._id
             queue = request.site.queues.topic(topic)
             queue.clear()
             queue.send(message)
+            logger.debug('sent profile message to %s', topic)
+        else:
+            logger.debug('profiler data ignored')
 
     request.profiler = SystemTimer(request.start_time)
     try:
