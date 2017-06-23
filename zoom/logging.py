@@ -16,19 +16,20 @@ cmd = """
 
 
 def add_entry(request, status, entry):
-    db = request.site.db
-    db(cmd,
-        'admin', #TODO: get actual app
-        request.path,
-        status,
-        hasattr(request, 'user') and request.user._id or None,
-        request.ip_address,
-        request.remote_user,
-        request.host,
-        now(),
-        int(float(request.get_elapsed()) * 1000),
-        entry,
-    )
+    if request.site.logging:
+        db = request.site.db
+        db(cmd,
+            'admin', #TODO: get actual app
+            request.path,
+            status,
+            hasattr(request, 'user') and request.user._id or None,
+            request.ip_address,
+            request.remote_user,
+            request.host,
+            now(),
+            int(float(request.get_elapsed()) * 1000),
+            entry,
+        )
 
 
 def log_activity(message, *args, **kwargs):
@@ -73,6 +74,6 @@ def handler(request, handler, *rest):
     try:
         result = handler(request, *rest)
     finally:
-        add_entry(request, 'C', 'complete')
+        request.profiler.time('log request', add_entry, request, 'C', 'complete')
         remove_log_handler(log_handler)
     return result

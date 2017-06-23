@@ -173,5 +173,5 @@ def handler(request, handler, *rest):
     session = request.session = Session(request)
     request.session_token = session._token
     response = handler(request, *rest)
-    request.session_timeout = request.session.save(request.site.db)
+    request.session_timeout = request.profiler.time('save session', request.session.save, request.site.db)
     return response

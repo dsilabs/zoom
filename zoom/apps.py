@@ -320,6 +320,14 @@ def get_default_app_name(site, user):
 def handle(request):
     """handle a request"""
 
+    def run_app(app):
+        request.app = app
+        zoom.render.add_helpers(helpers(request))
+        request.profiler.add('app ready')
+        result = app.run(request)
+        request.profiler.add('app returned')
+        return result
+
     logger = logging.getLogger(__name__)
     logger.debug('apps.handle')
 
@@ -329,9 +337,7 @@ def handle(request):
 
     if app and app.enabled and user.can_run(app):
         logger.debug('running requested app')
-        request.app = app
-        zoom.render.add_helpers(helpers(request))
-        return app.run(request)
+        return run_app(app)
 
     elif app and app.enabled and user.is_guest:
         logger.debug('redirecting to login')
@@ -351,10 +357,7 @@ def handle(request):
         app_name = get_default_app_name(request.site, request.user)
         app = load_app(request.site, app_name)
         if app and app.enabled and user.can_run(app):
-            logger.debug('redirecting to default app %r', app_name)
-            request.app = app
-            zoom.render.add_helpers(helpers(request))
-            return app.run(request)
+            return run_app(app)
 
         elif app and app.enabled:
             logger.debug('user %r cannot run %r', user.username, app_name)
