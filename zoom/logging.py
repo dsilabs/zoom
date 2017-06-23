@@ -16,19 +16,20 @@ cmd = """
 
 
 def add_entry(request, status, entry):
-    db = request.site.db
-    db(cmd,
-        'admin', #TODO: get actual app
-        request.path,
-        status,
-        hasattr(request, 'user') and request.user._id or None,
-        request.ip_address,
-        request.remote_user,
-        request.host,
-        now(),
-        int(float(request.get_elapsed()) * 1000),
-        entry,
-    )
+    if request.site.logging:
+        db = request.site.db
+        db(cmd,
+            'admin', #TODO: get actual app
+            request.path,
+            status,
+            hasattr(request, 'user') and request.user._id or None,
+            request.ip_address,
+            request.remote_user,
+            request.host,
+            now(),
+            int(float(request.get_elapsed()) * 1000),
+            entry,
+        )
 
 
 def log_activity(message, *args, **kwargs):
