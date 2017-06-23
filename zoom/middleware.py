@@ -31,6 +31,8 @@ from zoom.response import (
     ICOResponse,
     TextResponse,
     RedirectResponse,
+    TTFResponse,
+    WOFFResponse,
 )
 import zoom.context
 import zoom.cookies
