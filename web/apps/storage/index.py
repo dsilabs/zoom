@@ -9,6 +9,7 @@ from zoom.utils import Record
 from zoom.store import EntityStore
 from zoom.records import RecordStore
 from zoom.browse import browse
+from zoom.queues import Queues
 from zoom.tools import load_content
 
 
@@ -22,10 +23,27 @@ class IndexView(View):
     def index(self,**k):
         index_query = "select distinct kind from entities"
         db = self.model.site.db
-        entities = '<br>'.join([link_to(kind, 'storage', kind, 'browse') for kind, in db(index_query)])
-        return Page('<H1>Storage</H1><H3>Entities</H3><br>%s' % entities)
+        queues = Queues(db)
 
-    def browse(self, name):
+        entities = (
+            '<H3>Entities</H3>' + '<br>'.join([link_to(kind, 'storage', 'entity', kind)
+            for kind, in db(index_query)])
+        )
+
+        tables = (
+            '<H3>Tables</H3>' + '<br>'.join([link_to(kind, 'storage', 'table', kind)
+            for kind, in db('show tables')])
+        )
+
+        queues = (
+            '<H3>Queues</H3>' + '<br>'.join([link_to(kind, 'storage', 'queue', kind)
+            for kind in Queues(db).topics()])
+        )
+
+        content = entities + tables + queues
+        return Page(content, title='Storage')
+
+    def entity(self, name):
         items = EntityStore(self.model.site.db, MyModel, kind=name)
         if len(items) == 1:
             footer_name = 'record'
@@ -33,6 +51,26 @@ class IndexView(View):
             footer_name = 'records'
         footer = len(items) and '%s %s' % (len(items), footer_name) or ''
         return page(browse(items, footer=footer), title='Entity: '+name)
+
+    def table(self, name):
+        items = RecordStore(self.model.site.db, MyModel, name=name)
+        if len(items) == 1:
+            footer_name = 'record'
+        else:
+            footer_name = 'records'
+        footer = len(items) and '%s %s' % (len(items), footer_name) or ''
+        return page(browse(items[:50], footer=footer), title='Record: '+name)
+
+    def queue(self, name):
+        items = self.model.site.queues.topic(name, -1)
+        items = [(n, repr(x)) for n, x in enumerate(items)]
+
+        if len(items) == 1:
+            footer_name = 'message'
+        else:
+            footer_name = 'messages'
+        footer = len(items) and '%s %s' % (len(items), footer_name) or ''
+        return page(browse(items, labels=('Position', 'Message'), footer=footer), title='Topic: '+name)
 
     def about(self):
         return page(load_content('about.md'))
