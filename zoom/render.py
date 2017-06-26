@@ -106,4 +106,6 @@ def handler(request, handle, *rest):
         response.content = apply_helpers(response.content, None, providers)
 
     logger.debug('render handler called')
+    request.profiler.add('response rendered')
+
     return response

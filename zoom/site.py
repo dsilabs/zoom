@@ -70,6 +70,9 @@ class Site(object):
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
 
+            self.logging = get('monitoring', 'logging', True) != '0'
+            self.profiling = get('monitoring', 'profiling', True) != '0'
+
             logger = logging.getLogger(__name__)
             logger.debug('site path: %r', site_path)
             logger.debug('theme path: %r', self.theme_path)
@@ -98,9 +101,10 @@ class Site(object):
     @property
     def apps_paths(self):
         isdir = os.path.isdir
-        apps_paths = self.config.get('apps', 'path').split(';')
-        return apps_paths
-        return filter(isdir, apps_paths)
+        abspath = os.path.abspath
+        join = os.path.join
+        apps_paths = [abspath(join(self.path, p)) for p in self.config.get('apps', 'path').split(';')]
+        return list(filter(isdir, apps_paths))
 
     def get_template(self, name=None):
         template = name or 'default'
@@ -142,4 +146,5 @@ class Site(object):
 def handler(request, handler, *rest):
     """install site object"""
     request.site = context.site = Site(request)
+    request.profiler.add('site initialized')
     return handler(request, *rest)

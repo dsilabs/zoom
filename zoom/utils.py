@@ -325,7 +325,8 @@ class ItemList(list):
 
         sorted_names = sorted_column_names(labels)
 
-        columns = sorted(columns, key=lambda a: sorted_names.index(labels[a]))
+        if not self.labels:
+            columns = sorted(columns, key=lambda a: sorted_names.index(labels[a]))
         dashes = ['-' * data_widths[col] for col in columns]
         sorted_labels = [formatted_labels[col] for col in columns]
 

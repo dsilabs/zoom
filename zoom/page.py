@@ -19,15 +19,20 @@ import zoom.render
 class ClearSearch(DynamicView):
     pass
 
+    # @property
+    # def clear_url(self):
+    #     return '/clearurl'
+
 
 class SearchBox(DynamicView):
 
     request_path = '<dz:request_path>'
+    clear_url = '<dz:request_path>/clear'
 
     @property
     def clear(self):
         if self.value:
-            return ''.join(ClearSearch().render().parts['html'])
+            return ''.join(ClearSearch(clear_url=self.clear_url).render().parts['html'])
         else:
             return ''
 
@@ -52,7 +57,10 @@ class PageHeader(DynamicView):
         if self.page.search is None:
             return ''
         else:
-            search_box = SearchBox(value=self.page.search)
+            if self.page.clear is None:
+                search_box = SearchBox(value=self.page.search)
+            else:
+                search_box = SearchBox(value=self.page.search, clear_url=self.page.clear)
             return ''.join(search_box.render().parts['html'])
 
 
@@ -69,6 +77,7 @@ class Page(object):
         self.description = ''
         self.actions = []
         self.search = None
+        self.clear = None
         self.__dict__.update(kwargs)
         self.args = args
         self.kwargs = kwargs

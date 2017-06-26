@@ -693,9 +693,9 @@ class RecordStore(object):
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 
-    def __getitem__(self, index):
+    def __getitem__(self, key):
         """
-        get item at index
+        return records or slices of records by position
 
             >>> db = setup_test()
             >>> class Person(Record): pass
@@ -704,21 +704,61 @@ class RecordStore(object):
             >>> id = people.put(Person(name='Sam', age=25))
             >>> id = people.put(Person(name='Sally', age=55))
             >>> id = people.put(Person(name='Bob', age=25))
-            >>> people[1]
-            <Person {'name': 'Sally', 'age': 55}>
+
             >>> people[0]
             <Person {'name': 'Sam', 'age': 25}>
-            >>> people[2]
+
+            >>> people[1]
+            <Person {'name': 'Sally', 'age': 55}>
+
+            >>> people[-1]
             <Person {'name': 'Bob', 'age': 25}>
+
+            >>> people[0:2]
+            [<Person {'name': 'Sam', 'age': 25}>, <Person {'name': 'Sally', 'age': 55}>]
+
+            >>> people[::2]
+            [<Person {'name': 'Sam', 'age': 25}>, <Person {'name': 'Bob', 'age': 25}>]
+
+            >>> people[::-2]
+            [<Person {'name': 'Bob', 'age': 25}>, <Person {'name': 'Sam', 'age': 25}>]
+
+            >>> people[1:-1]
+            [<Person {'name': 'Sally', 'age': 55}>]
+
             >>> try:
             ...     people[3]
-            ... except IndexError:
-            ...     print('out of range')
-            out of range
+            ... except IndexError as e:
+            ...     print(e)
+            Index (3) out of range
 
+            >>> db.close()
 
         """
-        return self.all()[index]
+        n = len(self)
+        if isinstance(key, slice):
+            # get the start, stop, and step from the slice
+            start, stop, step = key.indices(n)
+            return [self[ii] for ii in range(start, stop, step)]
+        elif isinstance(key, int):
+            if key < 0:
+                key += n
+            elif key >= n:
+                raise IndexError('Index ({}) out of range'.format(key))
+            cmd = ' '.join([
+                'select distinct',
+                self.key,
+                'from',
+                self.kind,
+                'limit %s,1'
+                ]) % (key)
+            rs = self.db(cmd)
+            if rs:
+                return self.get(list(rs)[0][0])
+            else:
+                return 'no records'
+        else:
+            raise TypeError('Invalid argument type')
 
     def __str__(self):
         """

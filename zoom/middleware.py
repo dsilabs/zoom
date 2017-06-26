@@ -31,12 +31,16 @@ from zoom.response import (
     ICOResponse,
     TextResponse,
     RedirectResponse,
+    TTFResponse,
+    WOFFResponse,
+    BinaryResponse,
 )
 import zoom.context
 import zoom.cookies
 import zoom.html as html
 import zoom.logging
 import zoom.models
+import zoom.queues
 import zoom.session
 import zoom.site
 import zoom.templates
@@ -44,6 +48,7 @@ import zoom.user
 import zoom.apps
 import zoom.component
 import zoom.request
+import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.forms import csrf_token as csrf_token_generator
@@ -148,6 +153,9 @@ def serve_response(*path):
         ico=ICOResponse,
         css=CSSResponse,
         js=JavascriptResponse,
+        ttf=TTFResponse,
+        woff=WOFFResponse,
+        map=BinaryResponse,
     )
     filename = os.path.realpath(os.path.join(*path))
     logger = logging.getLogger(__name__)
@@ -274,7 +282,7 @@ def capture_stdout(request, handler, *rest):
         printed_output = sys.stdout.getvalue()
         sys.stdout.close()
         sys.stdout = real_stdout
-        if isinstance(result.content, str) and '{*stdout*}' in result.content:
+        if 'result' in locals() and isinstance(result.content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
                 '{*stdout*}', html.pre(websafe(printed_output)))
     logger = logging.getLogger(__name__)
@@ -367,6 +375,7 @@ def handle(request, handlers=None):
     """handle a request"""
     default_handlers = (
         trap_errors,
+        zoom.profiler.handler,
         zoom.request.handler,
         serve_redirects,
         serve_favicon,
@@ -379,6 +388,7 @@ def handle(request, handlers=None):
         zoom.site.handler,
         serve_themes,
         zoom.database.handler,
+        zoom.queues.handler,
         zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,

@@ -17,6 +17,33 @@ from zoom.utils import pretty
 from views import PanelView, index_metrics_view, IndexPageLayoutView
 
 
+def log_data(db, status, n, limit, q):
+    statuses = ','.join("'{}'".format(s) for s in status)
+    offset = int(n) * int(limit)
+    log_data = db("""
+        select
+            id,
+            status,
+            user_id,
+            address,
+            app,
+            path,
+            timestamp,
+            elapsed
+        from log
+        where status in ({statuses})
+        order by timestamp desc
+        limit {limit}
+        offset {offset}""".format(**locals()))
+    data = [
+        [link_to(str(item[0]), '/admin/show_error/' + str(item[0]))] + list(item[1:])
+        for item in log_data
+        if q in repr(item)
+    ]
+    labels = 'id', 'status', 'user', 'address', 'app', 'path', 'timestamp', 'elapsed'
+    return browse(data, labels=labels)
+
+
 class MyView(View):
 
     def index(self, q=''):
@@ -59,15 +86,17 @@ class MyView(View):
             limit 100""")
         return page(browse(log_data), title='Requests')
 
-    def activity(self):
+    def performance(self, n=0, limit=50, q=''):
         db = self.model.site.db
-        log_data = db("""
-            select *
-            from log
-            where status in ('A')
-            order by timestamp desc, id desc
-            limit 100""")
-        return page(browse(log_data), title='Activity')
+        return page(log_data(db, ['P'], n, limit, q), title='Performance', search=q, clear='/admin/performance')
+
+    def activity(self, n=0, limit=50, q=''):
+        db = self.model.site.db
+        return page(log_data(db, ['A'], n, limit, q), title='Activity', search=q, clear='/admin/activity')
+
+    def errors(self, n=0, limit=50, q=''):
+        db = self.model.site.db
+        return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
 
     def show_error(self, key):
         db = self.model.site.db
@@ -77,30 +106,6 @@ class MyView(View):
             '\n', '<br>'
         )
         return page(content, title='Log Entry')
-
-    def errors(self, n=0, limit=50):
-        offset = int(n) * int(limit)
-        db = self.model.site.db
-        log_data = db("""
-            select
-                id,
-                user_id,
-                address,
-                app,
-                path,
-                timestamp,
-                elapsed
-            from log
-            where status='E'
-            order by timestamp desc
-            limit {limit}
-            offset {offset}""".format(**locals()))
-        labels = 'id', 'user', 'address', 'app', 'path', 'timestamp', 'elapsed'
-        data = [
-            [link_to(str(item[0]), '/admin/show_error/' + str(item[0]))] + list(item[1:])
-            for item in log_data
-        ]
-        return page(browse(data, labels=labels), title='Errors')
 
     def configuration(self):
         return page(load_content('configuration.md').format(request=self.model))

@@ -14,10 +14,12 @@ import sys
 from argparse import ArgumentParser
 
 from database import database
+from new import new
 
 __all__ = [
     'server',
     'database',
+    'new',
 ]
 
 

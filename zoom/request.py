@@ -11,11 +11,17 @@ import sys
 import cgi
 import json
 import logging
+import uuid
 from timeit import default_timer as timer
 
 import zoom.utils
 import zoom.cookies
 from zoom.context import context
+
+
+def make_request_id():
+    """make a unique request id"""
+    return uuid.uuid4().hex
 
 
 def get_web_vars(env):
@@ -184,6 +190,7 @@ class Request(object):
         self.session_token = None
         self.session_timeout = None
         self.subject_token = None
+        self.request_id = make_request_id()
         self.server = None
         self.route = []
         self._body = None

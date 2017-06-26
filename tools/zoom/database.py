@@ -4,6 +4,7 @@
 
 from argparse import ArgumentParser
 import logging
+import warnings
 
 from zoom.database import (
     database as connect,
@@ -11,7 +12,7 @@ from zoom.database import (
 
 
 def database():
-    """run an instance using Python's builtin HTTP server"""
+    """manage the database"""
 
     parser = ArgumentParser(
         description='manage the database',
@@ -33,8 +34,8 @@ def database():
     parser.add_argument("-f", "--force", action='store_true',
                         help='force database creation (drop existing)')
 
-    parser.add_argument('command', nargs=1, default=None)
-    parser.add_argument('args', nargs='*', default=None)
+    parser.add_argument('command', nargs=1, default=None, help='create, drop')
+    parser.add_argument('args', nargs='*', default=None, help='database_name')
     args = parser.parse_args()
 
     # positionals = []
@@ -65,7 +66,7 @@ def database():
             # if args.args:
             #     parameters['db'] = args.args[0]
 
-        logger.error('connecting to %s %s', engine, parameters)
+        # logger.error('connecting to %s %s', engine, parameters)
 
         command = args.command[0]
         if command == 'show':
@@ -76,24 +77,38 @@ def database():
                 print(db.get_tables())
 
         elif command == 'create':
-            database_name = args.args[0]
-            if engine == 'mysql':
-                logging.error('creating site database %r' % database_name)
-                db = connect(engine, **parameters)
-                if args.force:
-                    db('drop database if exists {}'.format(database_name))
-                db('create database {}'.format(database_name))
-                db = db.use(database_name)
-                db.create_site_tables(db)
-                logging.debug('finished creating site tables')
-            elif engine == 'sqlite3':
-                logging.info('creating site database %r' % database_name)
-                db = connect(engine, **parameters)
-                db.create_site_tables()
-                logging.debug(db.get_tables())
-                logging.debug('finished creating site tables')
+
+            if not args.args:
+                logging.error('database name missing')
+
             else:
-                logging.error('create not implemented for %s engine' % engine)
+                database_name = args.args[0]
+                if engine == 'mysql':
+                    logging.debug('creating site database %r' % database_name)
+                    try:
+                        db = connect(engine, **parameters)
+                        print('creating database', database_name)
+                        if args.force:
+                            warnings.filterwarnings("ignore")
+                            db('drop database if exists {}'.format(database_name))
+                        db('create database {}'.format(database_name))
+                    except Exception as e:
+                        print('Error: ', e)
+                    else:
+                        db = connect(engine, database=database_name, **parameters)
+                        db.create_site_tables()
+                        logging.debug('finished creating site tables')
+                        # print('done')
+
+                elif engine == 'sqlite3':
+                    logging.info('creating site database %r' % database_name)
+                    db = connect(engine, **parameters)
+                    db.create_site_tables()
+                    logging.debug(db.get_tables())
+                    logging.debug('finished creating site tables')
+
+                else:
+                    logging.error('create not implemented for %s engine' % engine)
 
         elif command == 'list':
             db = connect(engine, **parameters)
