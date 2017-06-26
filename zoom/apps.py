@@ -299,7 +299,6 @@ def load_app(site, name):
         )
         filename = os.path.join(app_path, 'app.py')
         if os.path.exists(filename):
-            logger.debug('located app %s', app_path)
             return AppProxy(name, filename, site)
 
 

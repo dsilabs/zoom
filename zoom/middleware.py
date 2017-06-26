@@ -231,9 +231,10 @@ def serve_html(request, handler, *rest):
     """Direct a request for an HTML page to the content app"""
     if request.path.endswith('.html'):
         logger = logging.getLogger(__name__)
-        request.path = '/content' + request.path[:-5] + '/show'
+        # request.path = '/content' + request.path[:-5] + '/show'
+        request.path = '/content' + request.path
         request.route = request.path.split('/')[1:]
-        logger.debug('redirecting content request (%r, %r)', request.path, request.route)
+        logger.debug('calling content app (%r, %r)', request.path, request.route)
         return handler(request, *rest)
     else:
         return handler(request, *rest)
