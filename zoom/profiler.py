@@ -8,7 +8,7 @@ import timeit
 import logging
 
 from zoom.utils import ItemList
-from zoom.page import page
+from zoom.response import HTMLResponse
 
 
 class SystemTimer(object):
@@ -60,7 +60,6 @@ class SystemTimer(object):
 
 def handler(request, handler, *rest):
     def send(message):
-        logger = logging.getLogger(__name__)
         if hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling:
             topic = 'system.debug.%s' % request.user._id
             queue = request.site.queues.topic(topic)
@@ -70,6 +69,7 @@ def handler(request, handler, *rest):
         else:
             logger.debug('profiler data ignored')
 
+    logger = logging.getLogger(__name__)
     request.profiler = SystemTimer(request.start_time)
     try:
         result = handler(request, *rest)
@@ -81,8 +81,10 @@ def handler(request, handler, *rest):
             profiler=request.profiler.record,
             profiler_path=request.path,
         )
-        if isinstance(result, page):
+        if isinstance(result, HTMLResponse):
             send(message)
+        else:
+            logger.debug('ignoring profile of response type %s', type(result))
 
         del request.profiler
     return result
