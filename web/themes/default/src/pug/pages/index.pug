@@ -2,12 +2,16 @@ extends ../parts/base
 block body
   body
     .wrapper
-        .container
-          .jumbotron
-            h1 Hello World!
-            p This is a template for a simple marketing or informational website. It includes a large callout called a jumbotron and three supporting pieces of content. Use it as a starting point to create something more unique.
-            p
-              a.btn.btn-default.btn-lg(role="default") Learn More
-        .push
+      .container
+        .jumbotron
+          h1 Hello World!
+          p This is a template for a simple marketing or informational website. It includes a large callout called a jumbotron and three supporting pieces of content. Use it as a starting point to create something more unique.
+          p
+            a.btn.btn-default.btn-lg(role="default") Learn More
+        .content
+          <dz:stdout>
+          <dz:alerts>
+          <dz:content>
+      .push
     .container
       include ../parts/footer

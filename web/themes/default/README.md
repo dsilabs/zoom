@@ -14,6 +14,6 @@ window 1:
   pug -w --pretty src/pug/pages --out .
 
 window 2:
-   sass  --style compressed --sourcemap=none --watch src/sass:css
+  sass  --style compressed --sourcemap=none --watch src/sass:css
 
 Adust parameters as you see fit.
