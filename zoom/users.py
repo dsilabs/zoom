@@ -152,6 +152,14 @@ class User(Record):
         """user as link"""
         return link_to(self.username, self.url)
 
+    def set_password(self, password):
+        """set the user password"""
+        hashed = hash_password(password)
+        logger = logging.getLogger(__name__)
+        logger.debug('set password for %s to %r', self.username, hashed)
+        self['password'] = hashed
+        self.save()
+
     def authenticate(self, password):
         """authenticate user credentials"""
         if self.is_active:
