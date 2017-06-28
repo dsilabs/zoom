@@ -7,7 +7,7 @@ import datetime
 import logging
 
 from zoom.database import setup_test
-from zoom.users import User, Users
+from zoom.users import User, Users, hash_password
 from zoom.exceptions import UnauthorizedException
 
 class TestUser(unittest.TestCase):
@@ -104,3 +104,18 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='admin')
         user.authorize('read', obj)
         user.authorize('edit', obj)
+
+    def test_set_password(self):
+        class MyObject(object):
+            def allows(self, user, action):
+                return action == 'read' or user.username == 'admin'
+        obj = MyObject()
+
+        user = self.users.first(username='user')
+        old_password = user.password
+        new_password = 'helloworld'
+        user.set_password(new_password)
+
+        user2 = self.users.first(username='user')
+        self.assertNotEqual(user2.password, old_password)
+        self.assertEqual(user2.authenticate(new_password), True)
