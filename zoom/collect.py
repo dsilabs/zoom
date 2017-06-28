@@ -428,6 +428,7 @@ class Collection(object):
         self.store = get('store', None)
         self.url = get('url', calc_url())
         self.controller = get('controller', self.controller)
+        self.view = get('view', self.view)
         self.link = link_to(self.name, self.url)
 
         if 'policy' in kwargs:
