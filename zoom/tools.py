@@ -303,9 +303,9 @@ def markdown(content):
     return converter.convert(unisafe(trim(content)))
 
 
-def load(pathname):
+def load(pathname, encoding='utf-8'):
     """Load a file into memory"""
-    with open(pathname) as reader:
+    with open(pathname, encoding=encoding) as reader:
         return reader.read()
     return ''
 
