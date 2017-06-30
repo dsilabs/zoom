@@ -22,7 +22,7 @@ class LoginForm(DynamicView):
 
     @property
     def forgot_password(self):
-        if self.user.is_member('a_forgot'):
+        if 'forgot' in self.user.apps:
             return load_content('views/forgot_password.html')
         return ''
 
