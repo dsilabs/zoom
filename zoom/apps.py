@@ -15,6 +15,7 @@ from zoom.response import Response, HTMLResponse, RedirectResponse
 from zoom.helpers import url_for, link_to
 from zoom.tools import load_content
 from zoom.components import as_links
+from zoom.utils import id_for
 import zoom.html as html
 
 
@@ -432,6 +433,7 @@ def helpers(request):
         app_menu_items=request.app.menu_items,
         app_menu=request.app.menu,
         app_name=request.app.name,
+        app_class=id_for(request.app.name.strip()),
         system_menu_items=system_menu_items(request),
         system_menu=system_menu(request),
         main_menu_items=main_menu_items(request),
