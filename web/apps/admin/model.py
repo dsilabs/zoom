@@ -24,7 +24,7 @@ def get_index_metrics(db):
     num_groups = count('groups where type="U"')
     num_requests = count('log where status="C" and timestamp>=%s', today())
     num_errors = count('log where status="E" and timestamp>=%s', today())
-    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s', today())
+    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s and path<>"/login"', today())
 
     metrics = [
         ('Users', '/admin/users', num_users),
