@@ -4,7 +4,6 @@
     common models
 """
 
-from zoom.alerts import success
 from zoom.utils import DefaultRecord, id_for
 from zoom.helpers import link_to, url_for_item, url_for
 from zoom.utils import Record, id_for

@@ -4,6 +4,7 @@
 
 import logging
 
+from zoom.context import context
 from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
@@ -273,6 +274,11 @@ class User(Record):
             user_last_name=self.last_name,
         )
 
+    def add_group(self, group):
+        group = context.site.groups.locate(group)
+        if group:
+            group.add_user(self)
+
 
 class Users(RecordStore):
     """Zoom Users
@@ -321,3 +327,9 @@ class Users(RecordStore):
             name='users',
             key='id'
             )
+
+    def before_insert(self, user):
+        user.update(status='A')
+
+    def after_insert(self, user):
+        user.add_group('users')
