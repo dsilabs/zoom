@@ -4,6 +4,7 @@
     common models
 """
 
+from zoom.alerts import success
 from zoom.utils import DefaultRecord, id_for
 from zoom.helpers import link_to, url_for_item, url_for
 from zoom.utils import Record, id_for
@@ -65,6 +66,22 @@ def get_users(db, group):
     return my_users
 
 
+class Member(Record):
+    pass
+
+
+class Members(RecordStore):
+
+    def __init__(self, db, entity=Member):
+        RecordStore.__init__(
+            self,
+            db,
+            entity,
+            name='members',
+            key='id'
+            )
+
+
 class Group(Record):
 
     @property
@@ -97,6 +114,13 @@ class Group(Record):
     def users(self):
         return self.get_users()
 
+    def add_user(self, user):
+        store = self.get('__store')
+        members = Members(store.db)
+        membership = members.first(group_id=self._id, user_id=user._id)
+        if not membership:
+            members.put(Member(group_id=self._id, user_id=user._id))
+
 
 class Groups(RecordStore):
 
@@ -108,6 +132,15 @@ class Groups(RecordStore):
             name='groups',
             key='id'
             )
+
+    def locate(self, locator):
+        """locate a group whether it is referred to by reference, id or name"""
+        return (
+            isinstance(locator, Group) and locator or
+            type(locator) == int and self.get(locator) or
+            type(locator) == str and self.first(name=locator)
+        )
+
 
 def get_user_groups(site):
     return list(
