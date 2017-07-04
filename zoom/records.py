@@ -10,6 +10,7 @@ import decimal
 import zoom.exceptions
 from zoom.utils import Record, RecordList, kind
 from zoom.database import setup_test
+from zoom.store import Store
 
 
 def get_result_iterator(rows, storage):
@@ -44,7 +45,7 @@ class Result(object):
         return str(RecordList(self))
 
 
-class RecordStore(object):
+class RecordStore(Store):
     """stores records
 
         >>> db = setup_test()
@@ -217,6 +218,12 @@ class RecordStore(object):
             <Person {'name': 'James', 'age': 15}>
         """
 
+        updating = self.id_name in record
+        if updating:
+            self.before_update(record)
+        else:
+            self.before_insert(record)
+
         table_attributes = self.get_attributes()
         keys = [
             k for k in record.keys() if k != '_id' and k in table_attributes
@@ -243,7 +250,7 @@ class RecordStore(object):
                 msg = 'unsupported type <type %s>' % atype
                 raise zoom.exceptions.TypeException(msg)
 
-        if self.id_name in record:
+        if updating:
             _id = record[self.id_name]
             set_clause = ', '.join('%s=%s' % (i, '%s') for i in keys)
             cmd = 'update %s set %s where %s=%d' % (
@@ -259,9 +266,15 @@ class RecordStore(object):
             cmd = 'insert into %s (%s) values (%s)' % (
                 self.kind, names, placeholders)
             _id = self.db(cmd, *values)
+            record[self.id_name] = _id
 
-        record[self.id_name] = _id
         record['__store'] = self
+
+        if updating:
+            self.after_update(record)
+        else:
+            self.after_insert(record)
+
         return _id
 
     def get(self, keys):
@@ -352,10 +365,12 @@ class RecordStore(object):
 
     def _delete(self, ids):
         if ids:
+            self.before_delete(ids)
             spots = ','.join('%s' for _ in ids)
             cmd = 'delete from {} where {} in ({})'.format(
                 self.kind, self.key, spots)
             self.db(cmd, *ids)
+            self.after_delete(ids)
             return ids
 
     def delete(self, *args, **kwargs):

@@ -84,7 +84,28 @@ def entify(rs, storage):
     return EntityList(entities.values())
 
 
-class EntityStore(object):
+class Store(object):
+
+    def before_update(self, record):
+        pass
+
+    def after_update(self, record):
+        pass
+
+    def before_insert(self, record):
+        pass
+
+    def after_insert(self, record):
+        pass
+
+    def before_delete(self, ids):
+        pass
+
+    def after_delete(self, ids):
+        pass
+
+
+class EntityStore(Store):
     """stores entities
 
         >>> db = setup_test()
@@ -259,6 +280,12 @@ class EntityStore(object):
 
         db = self.db
 
+        updating = '_id' in entity
+        if updating:
+            self.before_update(entity)
+        else:
+            self.before_insert(entity)
+
         keys = [k for k in list(entity.keys()) if k not in ('_id', '__store')]
         values = [entity[k] for k in keys]
         datatypes = [get_type_str(v) for v in values]
@@ -274,7 +301,7 @@ class EntityStore(object):
                 msg = 'unsupported type <type %s> in value %r'
                 raise zoom.exceptions.TypeException(msg % (atype, keys[n]))
 
-        if '_id' in entity:
+        if updating:
             id = entity['_id']
             db('delete from attributes where row_id=%s', id)
         else:
@@ -293,6 +320,11 @@ class EntityStore(object):
             ') values (%s,%s,%s,%s,%s)'
             )
         db.execute_many(cmd, param_list)
+
+        if updating:
+            self.after_update(entity)
+        else:
+            self.after_insert(entity)
 
         return id
 
@@ -391,11 +423,13 @@ class EntityStore(object):
 
     def _delete(self, ids):
         if ids:
+            self.before_delete(ids)
             spots = ','.join('%s' for _ in ids)
             cmd = 'delete from attributes where row_id in ({})'.format(spots)
             self.db(cmd, *ids)
             cmd = 'delete from entities where id in ({})'.format(spots)
             self.db(cmd, *ids)
+            self.after_delete(ids)
             return ids
 
     def delete(self, *args, **kwargs):
