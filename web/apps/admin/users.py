@@ -53,7 +53,7 @@ def user_fields(request):
         ])
 
     security_fields = f.Section('Security', [
-        UserGroupsField('Groups', options=request.site.user_groups)
+        UserGroupsField('Groups', default=['2'], options=request.site.user_groups)
     ])
 
     return f.Fields(personal_fields, account_fields, security_fields)
