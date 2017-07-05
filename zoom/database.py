@@ -141,6 +141,7 @@ class Database(object):
         self.__keywords = keywords
         self.debug = False
         self.log = []
+        self.stats = []
         self.rowcount = None
         self.lastrowid = None
 
@@ -199,11 +200,13 @@ class Database(object):
             self.rowcount = cursor.rowcount
         finally:
             if self.debug:
+                elapsed = timeit.default_timer() - start
                 self.log.append('  SQL ({:5.1f} ms): {!r} - {!r}'.format(
-                    (timeit.default_timer() - start) * 1000,
+                    elapsed * 1000,
                     command,
                     args,
                 ))
+                self.stats.append((elapsed, repr(command), repr(args)))
 
         if cursor.description:
             return Result(cursor)
@@ -236,6 +239,11 @@ class Database(object):
             return '  Database Queries\n --------------------\n{}\n'.format(
                 '\n'.join(self.log))
         return ''
+
+    def get_stats(self):
+        result = self.stats
+        self.stats.clear
+        return result
 
     def get_tables(self):
         """get a list of database tables"""
@@ -481,6 +489,7 @@ def handler(request, handler, *rest):
     site = request.site
     if site.config.get('database', 'dbname', False):
         site.db = connect_database(site.config)
+        site.db.debug = True
 
         if site.db.get_tables() == []:
             raise EmptyDatabaseException('Database is empty')

@@ -11,6 +11,10 @@ from zoom.utils import ItemList
 from zoom.response import HTMLResponse
 
 
+def round(value):
+    return Decimal(value).quantize(Decimal('1.000'))
+
+
 class SystemTimer(object):
     """time system events"""
 
@@ -26,8 +30,6 @@ class SystemTimer(object):
             rusage_denom = 1024.
             mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / rusage_denom
             return mem
-        def round(value):
-            return Decimal(value).quantize(Decimal('1.000'))
         current_time = timeit.default_timer()
         entry = (
             comment,
@@ -78,8 +80,15 @@ def handler(request, handler, *rest):
 
         # TODO: move this to a debug layer that sends other things to the debugger
         message = dict(
-            profiler=request.profiler.record,
             profiler_path=request.path,
+            system_profile=request.profiler.record,
+            database_profile=[
+                (
+                    round(time * 1000),
+                    statement,
+                    values,
+                ) for time, statement, values in request.site.db.get_stats()
+            ],
         )
         if isinstance(result, HTMLResponse):
             send(message)
