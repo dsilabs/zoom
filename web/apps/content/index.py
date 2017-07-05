@@ -2,34 +2,30 @@
     content.index
 """
 
+from datetime import datetime
 import logging
 import os
 
 from zoom.mvc import View
 from zoom.page import page
 from zoom.browse import browse
-from zoom.tools import load_content, home
 
-from datetime import datetime
+from pages import load_page
 
-
-def load(name):
-    if os.path.exists(name + '.md'):
-        return load_content(name + '.md')
-    logger = logging.getLogger(__name__)
-    logger.debug('file not found %r', name + '.md')
 
 class MyView(View):
 
     def index(self):
         return page('Metrics and activity log and statistics will go here.', title='Overview')
 
-    def show(self, key=None):
+    def show(self, path=None):
         template = 'default'
-        if key == None:
-            key = 'index'
+        if path == None or path == 'content/index.html':
+            path = ''
             template = 'index'
-        content = load(key)
+        else:
+            path = '/'.join(path.split('/')[1:])
+        content = load_page(path)
         if content:
             return page(content, template=template)
 
