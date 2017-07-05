@@ -121,6 +121,7 @@ class Field(object):
     validators = []
     style = ''
     wrap = ' nowrap'
+    browse = True
 
     def __init__(self, label='', *validators, **keywords):
         self.label = label

@@ -73,25 +73,40 @@ def browse(data, **kwargs):
 
     columns = list(columns)
     labels = list(labels)
+    invisible = []
 
     if fields:
+        invisible_labels = []
         lookup = fields.as_dict()
+
         for n, col in enumerate(columns):
+
             if col in lookup:
-                better_label = lookup[col].label
+                field = lookup[col]
+                better_label = field.label
+                visible = field.visible and field.browse
             else:
                 better_label = None
+                visible = True
+
             if better_label:
                 if n > len(labels):
                     labels.append(better_label)
                 else:
                     labels[n] = better_label
 
+            if not visible:
+                invisible.append(col)
+                invisible_labels.append(n)
+
+        for n in reversed(invisible_labels):
+            del labels[n]
+
         alist = []
         for item in items:
             fields.initialize(item)
             flookup = fields.display_value()
-            row = [flookup.get(col, getcol(item, col)) for col in columns]
+            row = [flookup.get(col, getcol(item, col)) for col in columns if col not in invisible]
             alist.append(row)
     else:
         alist = [[getcol(item, col) for col in columns] for item in items]
