@@ -1,17 +1,23 @@
-Welcome to <dz:site_name>
-====
-
-Zoom is an open-source web platform that's designed for developers and is optimized for their productivity. It lets you make beautiful scalable applications that your customers will love.
-
-
 <style>
 .two_col {{
    width: 45%;
    float: left;
    margin: 10px;
 }}
+
 </style>
 
+<div class="jumbotron">
+<h1>Zoom</h1>
+<p>Build fast dynamic web apps with less effort, less code and more fun.</p>
+<p><a class="btn btn-success btn-lg" role="default" href="https://www.dynamic-solutions.com/zoom.html">Get started with Zoom</a></p>
+</div>
+
+
+Welcome to <dz:site_name>
+====
+
+Zoom is an open-source web platform that's designed for developers and is optimized for their productivity. It lets you make beautiful scalable applications that your customers will love.
 
 
 <div class=two_col>
