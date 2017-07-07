@@ -7,8 +7,8 @@
 def tag(element, *args, **kwargs):
     """generates an HTML tag
 
-    >>> tag('div', 'some content')
-    '<div>some content</div>'
+    >>> tag('div', 'some content', classed='content-card')
+    '<div class="content-card">some content</div>'
 
     >>> tag('a', href='http://www.google.com')
     '<a href="http://www.google.com"></a>'
@@ -30,12 +30,16 @@ def tag(element, *args, **kwargs):
     else:
         content = ''
 
+    keywords = dict(kwargs)
+    if 'classed' in keywords:
+        keywords['class'] = keywords.pop('classed')
+
     parts = \
         [name] + \
         [str(param).lower() for param in params if param] + \
         [
             '{}="{}"'.format(k.lower(), v)
-            for k, v in sorted(kwargs.items())
+            for k, v in sorted(keywords.items())
         ]
 
     if name in empty:
