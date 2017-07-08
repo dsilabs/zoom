@@ -23,8 +23,7 @@ DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
 DEFAULT_MAIN_APPS = ['home', 'admin', 'apps', 'info']
 DEFAULT_SETTINGS = dict(
     title='',
-    icon='blank_doc',
-    version=0.0,
+    icon='cube',
     enabled=True,
     visible=True,
     theme='',
@@ -129,9 +128,14 @@ class AppProxy(object):
         self.config = self.get_config(DEFAULT_SETTINGS)
         self.link = link_to(self.title, self.url)
 
-        self.visible = self.config.get('visible')
-        self.enabled = self.config.get('enabled')
-        self.in_development = self.config.get('in_development')
+        get = self.config.get
+        self.visible = get('visible')
+        self.enabled = get('enabled')
+        self.author = get('author')
+        self.version = get('version')
+        self.icon = get('icon')
+        self.in_development = get('in_development')
+
         self._method = None
 
     @property
