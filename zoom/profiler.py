@@ -6,6 +6,7 @@ from decimal import Decimal
 import resource
 import timeit
 import logging
+import cProfile, pstats
 
 from zoom.utils import ItemList
 from zoom.response import HTMLResponse
@@ -73,23 +74,33 @@ def handler(request, handler, *rest):
 
     logger = logging.getLogger(__name__)
     request.profiler = SystemTimer(request.start_time)
+
+    code_profiler = cProfile.Profile()
+    code_profiler.enable()
+
     try:
+
         result = handler(request, *rest)
+
     finally:
+        code_profiler.disable()
         request.profiler.add('finished')
 
         # TODO: move this to a debug layer that sends other things to the debugger
         message = dict(
             profiler_path=request.path,
             system_profile=request.profiler.record,
-            database_profile=[
-                (
+            # database_profile=['test'],
+            database_profile=['no database'],
+        )
+        if hasattr(request, 'site'):
+            if hasattr(request.site, 'db'):
+                message['database_profile'] = [(
                     round(time * 1000),
                     statement,
                     values,
-                ) for time, statement, values in request.site.db.get_stats()
-            ],
-        )
+                ) for time, statement, values in request.site.db.get_stats()]
+
         if isinstance(result, HTMLResponse):
             send(message)
         else:
