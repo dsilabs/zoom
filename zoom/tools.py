@@ -109,11 +109,11 @@ def how_long(time1, time2):
 
     def as_datetime(anytime):
         """Convert value to datetime"""
-        if type(anytime) == datetime.datetime:
+        if isinstance(anytime, datetime.datetime):
             return anytime
-        elif type(anytime) == datetime.date:
+        elif isinstance(anytime, datetime.date):
             return datetime.datetime(anytime.year, anytime.month, anytime.day)
-        elif anytime == None:
+        elif anytime is None:
             return None
         else:
             return datetime.datetime.fromtimestamp(anytime)
