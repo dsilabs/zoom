@@ -74,5 +74,9 @@ def server(instance='.'):
             print('\rstopped')
 
     except PermissionError:
-        print('Permission Error: is port {} in use?\n'
+        print('PermissionError: is port {} in use?\n'
+              'use -p <port> to choose a different port'.format(args.port))
+
+    except OSError:
+        print('OSError: is port {} in use?\n'
               'use -p <port> to choose a different port'.format(args.port))
