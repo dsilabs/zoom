@@ -11,6 +11,7 @@ import os
 import sys
 
 import zoom.render
+from zoom.component import Component
 from zoom.response import Response, HTMLResponse, RedirectResponse
 from zoom.helpers import url_for, link_to
 from zoom.tools import load_content
@@ -250,6 +251,9 @@ def respond(content, request):
     if content:
         if isinstance(content, Response):
             result = content
+
+        elif isinstance(content, Component):
+            result = HTMLResponse(content.render())
 
         elif hasattr(content, 'render') and content.render:
             result = content.render(request)
