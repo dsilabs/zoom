@@ -1,20 +1,16 @@
 
-.feed-section1 .baselist {
+.index-layout .baselist {
   overflow-y: auto;
   max-height: 600px;
+  margin-top: 10px;
 }
 
-.baselist table, .baselist td, .baselist th {
-  border: none;
+.index-layout .baselist .title {
+  font-size: 0.9em;
 }
 
-.baselist th {
-  background: #d0d0d0;
-  color: white;
+.index-layout .baselist tr,
+.index-layout .baselist th {
+  font-size: 0.8em;
   line-height: 20px;
-  font-size: 0.8em;
-}
-
-.baselist td {
-  font-size: 0.8em;
 }
