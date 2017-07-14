@@ -3,10 +3,12 @@
 """
 
 from decimal import Decimal
+import io
 import resource
 import timeit
 import logging
-import cProfile, pstats
+import cProfile
+import sys
 
 from zoom.utils import ItemList
 from zoom.response import HTMLResponse
@@ -61,6 +63,17 @@ class SystemTimer(object):
         return 'Milestone', 'Time', 'Total', 'Max RSS'
 
 
+def get_profile_data(profiler):
+    save_stdout = sys.stdout
+    try:
+        sys.stdout = io.StringIO()
+        profiler.print_stats()
+        result = sys.stdout.getvalue()
+    finally:
+        sys.stdout = save_stdout
+    return result
+
+
 def handler(request, handler, *rest):
     def send(message):
         if hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling:
@@ -84,14 +97,16 @@ def handler(request, handler, *rest):
 
     finally:
         code_profiler.disable()
+        code_profile = get_profile_data(code_profiler)
+
         request.profiler.add('finished')
 
         # TODO: move this to a debug layer that sends other things to the debugger
         message = dict(
             profiler_path=request.path,
             system_profile=request.profiler.record,
-            # database_profile=['test'],
             database_profile=['no database'],
+            code_profile=code_profile,
         )
         if hasattr(request, 'site'):
             if hasattr(request.site, 'db'):
