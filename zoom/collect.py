@@ -131,8 +131,8 @@ class CollectionView(View):
 
         content = browse(
             [c.model(i) for i in items],
-            labels=c.labels,
-            columns=c.columns,
+            labels=c.get_labels(),
+            columns=c.get_columns(),
             fields=c.fields,
             footer=footer
         )
@@ -422,8 +422,8 @@ class Collection(object):
         self.title = self.name.capitalize()
         self.item_title = self.item_name.capitalize()
         self.filter = get('filter', None)
-        self.columns = get('columns', None) or self.calc_columns()
-        self.labels = get('labels', None) or self.calc_labels()
+        self.columns = get('columns', None)
+        self.labels = get('labels', None)
         self.model = get('model', CollectionModel)
         self.store = get('store', None)
         self.url = get('url', calc_url())
@@ -438,18 +438,22 @@ class Collection(object):
         """Returns the sort key"""
         return item.name.lower()
 
-    def calc_labels(self):
-        """Calculate labels based on fields"""
+    def get_columns(self):
+        """Return the collection columns."""
+        if self.columns:
+            return self.columns
+        return ['link'] + [f.name for f in self.fields.as_list()[1:]]
+
+    def get_labels(self):
+        """Return the collection labels."""
+        if self.labels:
+            return self.labels
         lookup = {f.name: f.label for f in self.fields.as_dict().values()}
         lookup.update(dict(
             link=self.fields.as_list()[0].label,
         ))
-        labels = [lookup.get(name, name.capitalize()) for name in self.columns]
+        labels = [lookup.get(name, name.capitalize()) for name in self.get_columns()]
         return labels
-
-    def calc_columns(self):
-        """Calculate columns based on fields"""
-        return ['link'] + [f.name for f in self.fields.as_list()[1:]]
 
     def handle(self, route, request):
         """handle a request"""
