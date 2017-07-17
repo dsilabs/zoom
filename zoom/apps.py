@@ -111,7 +111,7 @@ class AppProxy(object):
 
     Contains the various extra supporting parts of an app besides
     the actual functionality.  Apps themselves are simply callables
-    that accept a requset and return a response.  They can be implemented
+    that accept a request and return a response.  They can be implemented
     as simple functions or as something more substantial such as
     a subclass of the App class above.  That's entirely up to the
     app developer.  The AppProxy takes care of the other parts that
@@ -159,7 +159,8 @@ class AppProxy(object):
         try:
             os.chdir(self.path)
             request.app = self
-            response = self.method(request)
+            app_callable = self.method
+            response = app_callable(request)
             result = respond(response, request)
         finally:
             os.chdir(save_dir)
