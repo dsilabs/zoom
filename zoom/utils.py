@@ -6,11 +6,14 @@
 
 import collections
 import configparser
+import decimal
+import datetime
+import hmac
+import hashlib
 import logging
 import os
 import string
-import decimal
-import datetime
+import uuid
 import zoom.jsonz as json
 
 chars = ''.join(map(chr, range(256)))
@@ -804,3 +807,13 @@ def search(items, text):
     for item in items:
         if matches(item, search_terms):
             yield item
+
+
+def generate_key():
+    """make a new key
+
+    >>> len(generate_key())
+    40
+    """
+    new_uuid = uuid.uuid4().bytes
+    return hmac.new(new_uuid, digestmod=hashlib.sha1).hexdigest()
