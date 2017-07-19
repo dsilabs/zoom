@@ -398,6 +398,13 @@ class Collection(object):
     allows = shared_collection_policy('managers')
     verbose = True
 
+    @property
+    def fields(self):
+        """a fields callable may have data intensive operations, delay execution until it is needed"""
+        if callable(self.__fields):
+            self.__fields = self.__fields()
+        return self.__fields
+
     def __init__(self, fields, **kwargs):
 
         def name_from(fields):
@@ -417,7 +424,7 @@ class Collection(object):
 
         get = kwargs.pop
 
-        self.fields = callable(fields) and fields() or fields
+        self.__fields = fields
         self.item_name = get('item_name', None) or name_from(fields)
         self.name = get('name', self.item_name + 's')
         self.title = self.name.capitalize()
