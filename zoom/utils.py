@@ -356,6 +356,11 @@ def parents(path):
 
 
 def locate_config(filename='zoom.conf', start='.'):
+    """locate a config file
+
+    First look in the current directory or above and then look
+    in the user root directory and above.
+    """
     for path in parents(start):
         pathname = os.path.join(path, filename)
         if os.path.exists(pathname):
@@ -367,6 +372,7 @@ def locate_config(filename='zoom.conf', start='.'):
 
 
 class Config(object):
+    """A Config with a handy get method."""
 
     def __init__(self, filename):
         self.config = configparser.ConfigParser()
@@ -375,12 +381,23 @@ class Config(object):
         self.config.read(filename)
 
     def get(self, section, option, default=None):
+        """get a config file value supplying an optional defalt value"""
         try:
             return self.config.get(section, option)
         except (configparser.NoOptionError, configparser.NoSectionError):
             if default is not None:
                 return default
             raise
+
+
+def get_config(filename):
+    """load a config file into a Config object
+
+    >>> get_config('doesnt_exist.conf')
+    """
+    pathname = locate_config(filename)
+    if pathname:
+        return Config(pathname)
 
 
 class OrderedSet(collections.MutableSet):
