@@ -44,13 +44,14 @@ def shared_collection_policy(group):
 def locate(collection, key):
     """locate a record"""
     def scan(store, key):
+        """brute force scan"""
         for rec in store:
             if rec.key == key:
                 return rec
     return (
         key.isdigit() and
         collection.store.get(key) or
-        collection.store.first(**{collection.store.key: key}) or
+        collection.store.first(key=key) or
         scan(collection.store, key)
     )
 
