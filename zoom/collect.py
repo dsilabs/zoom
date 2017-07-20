@@ -51,7 +51,7 @@ def locate(collection, key):
     return (
         key.isdigit() and
         collection.store.get(key) or
-        collection.store.first(key=key) or
+        collection.store.first(**{collection.store.key: key}) or
         scan(collection.store, key)
     )
 
