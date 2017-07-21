@@ -96,6 +96,9 @@ class User(Record):
         self.is_admin = False
         self.is_developer = False
         self.is_authenticated = False
+        self.__groups = None
+        self.__user_groups = None
+        self.__apps = None
 
     def allows(self, user, action):
         return action != 'delete' or self.username != 'admin'
@@ -223,14 +226,16 @@ class User(Record):
         >>> user.get_groups()[:2]
         ['administrators', 'a_admin']
         """
-        store = self.get('__store')
-        if store:
-            return get_groups(store.db, self)
-        return []
+        if self.__groups is None:
+            store = self.get('__store')
+            self.__groups = store and get_groups(store.db, self) or []
+        return self.__groups
 
     @property
     def groups(self):
-        return [g for g in self.get_groups() if not g.startswith('a_')]
+        if self.__user_groups is None:
+            self.__user_groups = [g for g in self.get_groups() if not g.startswith('a_')]
+        return self.__user_groups
 
     @property
     def groups_ids(self):
@@ -243,7 +248,9 @@ class User(Record):
 
     @property
     def apps(self):
-        return [g[2:] for g in self.get_groups() if g.startswith('a_')]
+        if self.__apps is None:
+            self.__apps = [g[2:] for g in self.get_groups() if g.startswith('a_')]
+        return self.__apps
 
     def can_run(self, app):
         """test if user can run an app"""
