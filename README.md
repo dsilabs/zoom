@@ -93,13 +93,17 @@ Ubuntu example:
 ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
 ```
 
+1. install dependancies
+```
+pip3 install -r requirements.txt
+```
+
 1. configure zoom database  
 Zoom requires a database to be run.  If you don't already have MySQL or
 MariaDB installed follow the instructions for your operating system.  Once
 that is installed create the database using the command:
 ```
-$ echo create database zoom | mysql -u <username> -p
-$ mysql -u <username> zoom < /path-to-libs/zoom/utils/zoom/sql/setup_mysql.sql
+$ zoom database create <db_name> -u <username> -p <password> -e mysql
 ```
 Next, edit the site.ini file for the localhost site using your editor like
 so:
