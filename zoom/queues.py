@@ -116,13 +116,13 @@ class Topic(object):
     def put(self, message):
         """put a message in the topic"""
         return self.messages.put(
-                Message(
-                    topic = self.name,
-                    timestamp = now(),
-                    node = platform.node(),
-                    body = json.dumps(message),
-                    )
-                )
+            Message(
+                topic=self.name,
+                timestamp=now(),
+                node=platform.node(),
+                body=json.dumps(message),
+            )
+        )
 
     def clear(self):
         """clear the topic
@@ -559,6 +559,41 @@ class Topic(object):
                 more_to_do = False
             time.sleep(0)
         return n
+
+
+    def perform(self, task, *args, **kwargs):
+        """consume a single message and perform task with it
+
+            >>> messages = setup_test()
+            >>> t = messages.get('test_topic')
+            >>> def echo(m):
+            ...     print('got', repr(m))
+            >>> t.put('hey!')
+            1
+            >>> t.put('you!')
+            2
+            >>> t.perform(echo)
+            got 'hey!'
+            True
+            >>> t.perform(echo)
+            got 'you!'
+            True
+            >>> t.perform(echo)
+            False
+        """
+        try:
+            row, topic, message = self._pop()
+            if message is None:
+                result = task(*args, **kwargs)
+            else:
+                result = task(message, *args, **kwargs)
+            response_topic = response_topic_name(topic, row)
+            response_queue = Topic(response_topic, None, self.db)
+            response_queue.put(result)
+        except EmptyException:
+            return False
+        else:
+            return True
 
 
 class Queues(object):
