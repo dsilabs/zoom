@@ -108,16 +108,16 @@ $ zoom database create <db_name> -u <username> -p <password> -e mysql
 Next, edit the site.ini file for the localhost site using your editor like
 so:
 ```
-$ vi /path-to-libs/zoom/web/sites/localhost/site.ini
+$ vi web/sites/default/site.ini
 ```
 Find the database section of the config file and set the values for the
 database configuration to correspond to your database configuration.
 
 1. Run zoom  
-If you are currently in the zoom/web directory then you don't need to tell
+If you are currently in the zoom directory then you don't need to tell
 zoom where to find your zoom instance.
 ```
-$ zoom server /path-to-libs/zoom/web
+$ zoom server
 ```
 
 ### Creating the Blog App
