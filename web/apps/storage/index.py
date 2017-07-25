@@ -53,13 +53,21 @@ class IndexView(View):
         return page(browse(items, footer=footer), title='Entity: '+name)
 
     def table(self, name):
-        items = RecordStore(self.model.site.db, MyModel, name=name)
+        db = self.model.site.db
+        items = RecordStore(db, MyModel, name=name)
         if len(items) == 1:
             footer_name = 'record'
         else:
             footer_name = 'records'
         footer = len(items) and '%s %s' % (len(items), footer_name) or ''
-        return page(browse(items[:50], footer=footer), title='Record: '+name)
+
+        # If there is an id column we will use it to select the first N items,
+        # otherwise we'll just select the whole thing and then take what we
+        # want from the list.
+        columns = db.get_column_names(name)
+        data = 'id' in columns and items[:50] or list(items)[:50]
+
+        return page(browse(data, footer=footer), title='Record: '+name)
 
     def queue(self, name):
         items = self.model.site.queues.topic(name, -1)
