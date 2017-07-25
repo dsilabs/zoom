@@ -83,7 +83,7 @@ class DatabaseTests(object):
     def test_db_insert_update_record(self):
         # pylint: disable=protected-access
         insert_test = """
-            insert into dzdb_test_table 
+            insert into dzdb_test_table
             (id, name, dtadd, amount, notes)
             values (%s, %s, %s, %s, %s)
         """
@@ -160,7 +160,7 @@ class DatabaseTests(object):
         q = db('select * from dzdb_test_table')
         names = [f[0] for f in q.cursor.description]
         self.assertEqual(names, ['ID', 'AMOUNT', 'DTADD', 'NOTES'])
-    
+
     def test_date_type(self):
         db = self.db
         db('create table dzdb_test_table (ID CHAR(10), AMOUNT NUMERIC(10,2), DTADD date, NOTES TEXT)')
@@ -239,4 +239,13 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         self.db('drop table if exists dzdb_test_table')
         self.db.debug = True
 
-
+    def test_get_column_names(self):
+        db = self.db
+        db('create table dzdb_test_table (ID CHAR(10), AMOUNT NUMERIC(10,2), DTADD date, NOTES TEXT)')
+        cmd = 'insert into dzdb_test_table values ("1234", 50, %s, "Hello there")'
+        db(cmd, date(2005, 1, 14))
+        column_names = db.get_column_names('dzdb_test_table')
+        self.assertEqual(
+            column_names,
+            ('id', 'amount', 'dtadd', 'notes')
+        )

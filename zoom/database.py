@@ -390,6 +390,12 @@ class MySQLDatabase(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+    def get_column_names(self, table):
+        """return column names for a table"""
+        rows = self('describe %s' % table)
+        return tuple(rec[0].lower() for rec in rows)
+
+
 
 class MySQLdbDatabase(Database):
     """MySQLdb Database"""
