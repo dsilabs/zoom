@@ -6,7 +6,6 @@
 
 import datetime
 import decimal
-import logging
 
 import zoom.utils
 import zoom.exceptions
@@ -307,8 +306,6 @@ class EntityStore(Store):
         else:
             db('insert into entities (kind) values (%s)', self.kind)
             id = entity['_id'] = db.lastrowid
-            logger = logging.getLogger(__name__)
-            logger.debug('inserted %r - %r', id, entity)
             entity['__store'] = self
 
         n = len(keys)
