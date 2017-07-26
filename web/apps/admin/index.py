@@ -97,10 +97,10 @@ def error_panel(db):
             path,
             timestamp
         from log
-        where status in ("E") and timestamp>={today}
+        where status in ("E") and timestamp>=%s
         order by timestamp desc
         limit 10
-        """.format(today=today()))
+        """, today())
 
     users = context.site.users
     rows = []
