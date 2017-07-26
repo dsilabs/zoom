@@ -2101,6 +2101,17 @@ class MultiselectField(TextField):
     >>> f.evaluate()
     {'type': ['uno', 'dos']}
 
+    >>> f = MultiselectField('Type',value=['One'],options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One'
+    >>> f.evaluate()
+    {'type': ['uno']}
+
+    >>> f = MultiselectField('Type', options=[('One','uno'),('Two','dos')])
+    >>> f.initialize({'type': 'One'})
+    >>> f.evaluate()
+    {'type': ['uno']}
+
     >>> f = MultiselectField('Type',value=['uno','dos'],options=[('One','uno'),('Two','dos')])
     >>> f.display_value()
     'One; Two'
