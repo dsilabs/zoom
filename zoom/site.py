@@ -5,10 +5,18 @@
 import logging
 import os
 
+import zoom.apps
 import zoom.config
-import zoom.helpers
 from zoom.context import context
+import zoom.helpers
+from zoom.helpers import link_to
 
+
+isdir = os.path.isdir
+abspath = os.path.abspath
+join = os.path.join
+exists = os.path.exists
+listdir = os.listdir
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
@@ -21,6 +29,7 @@ class Site(object):
         self.request = request
         instance = request.instance
         self.name = name = request.domain
+        self.__apps = None
 
         # TODO: consider getting site to do this calculation instead of reqeust
         site_path = request.site_path
@@ -65,10 +74,16 @@ class Site(object):
                 get('sessions', 'secure_cookies', True)
             )
 
-            theme_dir = get('theme', 'path', os.path.join(instance, 'themes'))
+            theme_dir = get('theme', 'path', join(instance, 'themes'))
             self.themes_path = theme_dir
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
+
+            apps_paths = [
+                abspath(join(self.path, p))
+                for p in str(get('apps', 'path')).split(';')
+            ]
+            self.apps_paths = list(filter(isdir, apps_paths))
 
             self.logging = get('monitoring', 'logging', True) != '0'
             self.profiling = get('monitoring', 'profiling', True) != '0'
@@ -99,12 +114,27 @@ class Site(object):
         )
 
     @property
-    def apps_paths(self):
-        isdir = os.path.isdir
-        abspath = os.path.abspath
-        join = os.path.join
-        apps_paths = [abspath(join(self.path, p)) for p in self.config.get('apps', 'path').split(';')]
-        return list(filter(isdir, apps_paths))
+    def apps(self):
+        """Return list of apps installed on this site"""
+        if self.__apps is None:
+            result = []
+            names = []
+
+            for app_path in self.apps_paths:
+                path = abspath(
+                    join(
+                        self.path,
+                        app_path,
+                    )
+                )
+                for app in listdir(path):
+                    if app not in names:
+                        filename = join(path, app, 'app.py')
+                        if exists(filename):
+                            result.append(zoom.apps.AppProxy(app, filename, self))
+                            names.append(app)
+            self.__apps = result
+        return self.__apps
 
     def get_template(self, name=None):
         template = name or 'default'
