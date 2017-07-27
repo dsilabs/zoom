@@ -75,8 +75,14 @@ class UserCollectionController(CollectionController):
 
     def before_update(self, record):
         record['status'] = 'A'
-        record['updated'] = now()
-        record['updated_by'] = self.collection.user._id
+
+    def after_update(self, record):
+        update_user_groups(record)
+
+    def before_insert(self, record):
+        record['status'] = 'A'
+
+    def after_insert(self, record):
         update_user_groups(record)
 
     def save_password_button(self, key, *args, **data):

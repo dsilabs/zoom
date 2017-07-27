@@ -279,8 +279,6 @@ def update_user_groups(record):
     db = context.site.db
     record_id = record['_id']
 
-    # logger.debug(str(db('select group_id, user_id from members')))
-
     existing_groups = set(
         group_id for group_id, in
         db('select group_id from members where user_id=%s', record_id)
