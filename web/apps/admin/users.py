@@ -15,26 +15,6 @@ import zoom.fields as f
 from fields import UserGroupsField
 from model import update_user_groups
 
-#
-# def not_registered(request):
-#     db = request.site.db
-#     user_id = len(request.route) > 2 and request.route[2] or None
-#     def email_unknown_test(email):
-#         print(user_id)
-#         cmd = 'select * from users where id<>%s and email=%s'
-#         return not bool(db(cmd, user_id, email))
-#     return v.Validator('already registered', email_unknown_test)
-#
-#
-# def username_available(request):
-#     db = request.site.db
-#     user_id = len(request.route) > 2 and request.route[2] or None
-#     def username_available_test(username):
-#         cmd = 'select * from users where id<>%s and username=%s'
-#         return not bool(db(cmd, user_id, username))
-#     return v.Validator('taken', username_available_test)
-#
-
 def user_fields(request):
     # username_available = Validator('taken', valid_username(db))
     # not_registered = Validator('already registered', email_unknown_test)
