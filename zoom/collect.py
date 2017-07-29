@@ -107,6 +107,18 @@ class CollectionView(View):
             v = repr(fields.display_value()).lower()
             return terms and not any(t.lower() not in v for t in terms)
 
+        def get_recent(number):
+            cmd = """
+                select row_id, max(value) as newest
+                from attributes
+                where kind = %s and attribute in ("created", "updated")
+                group by row_id
+                order by newest desc
+                limit %s
+            """
+            ids = [id for id,_ in c.store.db(cmd, c.store.kind, number)]
+            return c.store.get(ids)
+
         c = self.collection
         user = c.user
         fields = c.fields
@@ -116,7 +128,22 @@ class CollectionView(View):
 
         actions = user.can('create', c) and ['New'] or []
 
-        authorized = (i for i in c.store if user.can('read', i))
+        logger = logging.getLogger(__name__)
+        if q:
+            title = 'Selected ' + c.title
+            records = c.store
+        else:
+            many_records = bool(len(c.store) > 50)
+            logger.debug('many records: %r', many_records)
+            if many_records and not kwargs.get('all'):
+                title = 'Most Recently Updated ' + c.title
+                records = get_recent(15)
+                actions.append(('Show All', 'clients?all=1'))
+            else:
+                title = c.title
+                records = c.store
+
+        authorized = (i for i in records if user.can('read', i))
         matching = (i for i in authorized if not q or matches(i, q))
         filtered = c.filter and filter(c.filter, matching) or matching
         items = sorted(filtered, key=c.order)
@@ -141,7 +168,7 @@ class CollectionView(View):
             footer=footer
         )
 
-        return page(content, title=c.title, actions=actions, search=q)
+        return page(content, title=title, actions=actions, search=q)
 
     def clear(self):
         """Clear the search"""
