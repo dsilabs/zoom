@@ -114,7 +114,8 @@ def handler(request, handler, *rest):
                     round(time * 1000),
                     statement,
                     values,
-                ) for time, statement, values in request.site.db.get_stats()]
+                    source,
+                ) for time, statement, values, source in request.site.db.get_stats()]
 
         result = locals().get('result', None)
 

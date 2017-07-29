@@ -7,10 +7,12 @@
 """
 
 import collections
+import inspect
 import logging
 import os
 import timeit
 import warnings
+import traceback
 
 warnings.filterwarnings("ignore", "Unknown table.*")
 
@@ -190,6 +192,22 @@ class Database(object):
 
     def _execute(self, cursor, method, command, *args):
         """execute the SQL command"""
+
+        def format_stack(stack):
+            app_start = None
+            n = m = 0
+            for n, item in enumerate(stack):
+                if item[3] == 'run_app':
+                    break
+            for m, item in enumerate(stack):
+                if not item[1].endswith('database.py'):
+                    break
+            return '<pre><small>{}</small></pre>'.format(
+                '<br>'.join('{3} : line {2} in {1}'.format(
+                    *rec
+                ) for rec in stack[m:n])
+            )
+
         start = timeit.default_timer()
         command, params = self.translate(command, *args)
         try:
@@ -206,7 +224,8 @@ class Database(object):
                     command,
                     args,
                 ))
-                self.stats.append((elapsed, repr(command), repr(args)))
+                source = format_stack(inspect.stack())
+                self.stats.append((elapsed, repr(command), repr(args), source))
 
         if cursor.description:
             return Result(cursor)
