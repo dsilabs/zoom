@@ -116,6 +116,8 @@ def handler(request, handler, *rest):
                     values,
                 ) for time, statement, values in request.site.db.get_stats()]
 
+        result = locals().get('result', None)
+
         if isinstance(result, HTMLResponse):
             send(message)
         else:
