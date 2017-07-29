@@ -495,7 +495,7 @@ def handler(request, handler, *rest):
     site = request.site
     if site.config.get('database', 'dbname', False):
         site.db = connect_database(site.config)
-        site.db.debug = True
+        site.db.debug = site.monitor_system_database
 
         if site.db.get_tables() == []:
             raise EmptyDatabaseException('Database is empty')

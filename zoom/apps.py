@@ -142,6 +142,7 @@ class AppProxy(object):
     @property
     def method(self):
         if self._method == None:
+            self.request.profiler.add('app loaded')
             self._method = getattr(imp.load_source('app', self.filename), 'app')
         return self._method
 
@@ -158,6 +159,7 @@ class AppProxy(object):
         save_dir = os.getcwd()
         try:
             os.chdir(self.path)
+            self.request = request
             request.app = self
             app_callable = self.method
             response = app_callable(request)
@@ -332,16 +334,19 @@ def handle(request):
     def run_app(app):
         request.app = app
         zoom.render.add_helpers(helpers(request))
-        request.profiler.add('app ready')
+        request.site.db.debug = request.site.monitor_app_database
+        request.profiler.add('system ready')
         result = app.run(request)
-        request.profiler.add('app returned')
+        request.profiler.add('app finished')
+        request.site.db.debug = False #request.site.monitor_system_database
         return result
 
     logger = logging.getLogger(__name__)
-    logger.debug('apps.handle')
+    logger.debug('apps_paths: %r', request.site.apps_paths)
 
     user = request.user
     app_name = request.route and request.route[0] or None
+    logger.debug('app_name is: %r', app_name)
     app = app_name and load_app(request.site, app_name)
 
     if app and app.enabled and user.can_run(app):
@@ -353,11 +358,16 @@ def handle(request):
         return RedirectResponse('/login')
 
     elif app and app.enabled:
-        logger.warning('unable to run app %s (%r), redirecting to default', app_name, app.path)
+        msg = (
+            'insufficient privileges to run app %s (%r), '
+            'redirecting to default'
+        )
+        logger.warning(msg, app_name, app.path)
         return RedirectResponse('/')
 
     elif app:
-        logger.warning('app %s (%r) disabled, redirecting to default', app_name, app.path)
+        msg = 'app %s (%r) disabled, redirecting to default'
+        logger.warning(msg, app_name, app.path)
         return RedirectResponse('/')
 
     else:
@@ -456,5 +466,6 @@ def handler(request, handler, *rest):
     logger = logging.getLogger(__name__)
     logger.debug('apps_handler')
     if '.' not in sys.path:
+        logger.debug('adding "." to path')
         sys.path.insert(0, '.')
     return handle(request) or handler(request, *rest)
