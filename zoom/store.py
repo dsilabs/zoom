@@ -209,7 +209,6 @@ class EntityStore(Store):
         self.db = db
         self.klass = type(klass) == str and dict or klass
         self.kind = kind or type(klass) == str and klass or zoom.utils.kind(klass())
-        self.key = 'id'
         self.id_name = '_id'
 
     def put(self, entity):

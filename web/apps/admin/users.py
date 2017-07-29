@@ -19,7 +19,7 @@ def user_fields(request):
     # username_available = Validator('taken', valid_username(db))
     # not_registered = Validator('already registered', email_unknown_test)
 
-    personal_fields = f.Section('Personal',[
+    personal_fields = f.Section('Personal', [
         f.TextField('First Name', v.required, v.valid_name),
         f.TextField('Last Name', v.required, v.valid_name),
         # f.TextField('Email', v.required, v.valid_email, not_registered(request)),
@@ -27,13 +27,17 @@ def user_fields(request):
         f.PhoneField('Phone', v.valid_phone, hint='optional'),
         ])
 
-    account_fields = f.Section('Account',[
+    account_fields = f.Section('Account', [
         # f.TextField('Username', v.required, v.valid_username, username_available(request)),
         f.TextField('Username', v.required, v.valid_username),
         ])
 
     security_fields = f.Section('Security', [
-        UserGroupsField('Groups', default=['2'], options=request.site.user_groups)
+        UserGroupsField(
+            'Groups',
+            default=['2'],
+            options=request.site.user_groups
+        )
     ])
 
     return f.Fields(personal_fields, account_fields, security_fields)
@@ -121,5 +125,6 @@ def main(route, request):
         store=users,
         item_name='user',
         columns=columns,
-        url='/admin/users'
+        url='/admin/users',
+        key_name='id'
     )(route, request)

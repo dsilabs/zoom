@@ -54,7 +54,7 @@ def locate(collection, key):
     return (
         key.isdigit() and
         collection.store.get(key) or
-        collection.store.first(**{collection.store.key: key}) or
+        collection.store.first(**{collection.key_name: key}) or
         scan(collection.store, key)
     )
 
@@ -468,6 +468,7 @@ class Collection(object):
         self.controller = get('controller', self.controller)
         self.view = get('view', self.view)
         self.link = link_to(self.name, self.url)
+        self.key_name = get('key_name', 'key')
 
         if 'policy' in kwargs:
             self.allows = get('policy')
