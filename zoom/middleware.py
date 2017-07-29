@@ -45,7 +45,6 @@ import zoom.session
 import zoom.site
 import zoom.templates
 import zoom.user
-import zoom.apps
 import zoom.component
 import zoom.request
 import zoom.profiler
