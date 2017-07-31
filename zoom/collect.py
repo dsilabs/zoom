@@ -147,18 +147,34 @@ class CollectionView(View):
         matching = (i for i in authorized if not q or matches(i, q))
         filtered = c.filter and filter(c.filter, matching) or matching
         items = sorted(filtered, key=c.order)
+        num_items = len(items)
+
+        if num_items != 1:
+            footer_name = c.title.lower()
+        else:
+            footer_name = c.item_name.lower()
 
         if q:
             msg = '%s searched %s with %r (%d found)' % (
-                user.link, c.link, q, len(items)
+                user.link, c.link, q, num_items
             )
             log_activity(msg)
-
-        if len(items) != 1:
-            footer_name = c.title
+            footer = '{:,} {} found in search of {:,} {}'.format(
+                num_items,
+                footer_name,
+                len(c.store),
+                c.title.lower(),
+            )
         else:
-            footer_name = c.item_name
-        footer = '%s %s' % (len(items), footer_name.lower())
+            if many_records:
+                footer = '{:,} {} shown of {:,} {}'.format(
+                    num_items,
+                    footer_name,
+                    len(c.store),
+                    c.title.lower(),
+                )
+            else:
+                footer = '%s %s' % (len(items), footer_name.lower())
 
         content = browse(
             [c.model(i) for i in items],
@@ -182,7 +198,7 @@ class CollectionView(View):
         return page(form, title='New '+c.item_title)
 
     def show(self, key):
-        """show a record"""
+        """Show a record"""
         def action_for(record, name):
             return name, '/'.join([record.url, id_for(name)])
 
@@ -227,6 +243,7 @@ class CollectionView(View):
             )
 
     def edit(self, key, **data):
+        """Display an edit form for a record"""
         c = self.collection
         user = c.user
 
@@ -254,6 +271,7 @@ class CollectionView(View):
             return page('%s missing' % key)
 
     def delete(self, key, confirm='yes'):
+        """Show a delete form for a collection record"""
         if confirm == 'yes':
             record = locate(self.collection, key)
             if record:

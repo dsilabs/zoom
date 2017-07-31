@@ -109,7 +109,7 @@
 <tr>
 	<td>assertText</td>
 	<td>css=div.footer</td>
-	<td>1 contact</td>
+	<td>1 contact found in search of 2 contacts</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -164,7 +164,7 @@
 <tr>
 	<td>assertText</td>
 	<td>css=div.footer</td>
-	<td>1 contact</td>
+	<td>1 contact found in search of 2 contacts</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
@@ -249,7 +249,7 @@
 <tr>
 	<td>assertText</td>
 	<td>css=div.footer</td>
-	<td>1 contact</td>
+	<td>1 contact found in search of 3 contacts</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
