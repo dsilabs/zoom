@@ -102,8 +102,6 @@ class Page(object):
             return errors + warnings + successes
 
         def get(part, formatter='{}', joiner='\n'):
-            logger = logging.getLogger(__name__)
-            logger.debug('getting %r', part)
             parts = composition.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
@@ -111,7 +109,6 @@ class Page(object):
                     parts |= page_part
                 else:
                     parts |= [page_part]
-            logger.debug('get_{}: {}'.format(part, parts))
             return parts and joiner.join(
                 formatter.format(part) for part in parts
             ) or ''
