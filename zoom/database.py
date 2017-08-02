@@ -414,6 +414,24 @@ class MySQLDatabase(Database):
         rows = self('describe %s' % table)
         return tuple(rec[0].lower() for rec in rows)
 
+    @property
+    def connect_string(self):
+        """Return a string representation of the connection parameters"""
+        def obfuscate(text):
+            return text[:1] + '*' * (len(text)-2) + text[-1:]
+
+        return 'mysql://{}:{}@{}/{}'.format(
+            self.user.decode('utf8'),
+            obfuscate(self.password),
+            str(self.host),
+            self.db.decode('utf8'),
+        )
+
+    def __str__(self):
+        return '<{} {!r}>'.format(
+            self.__class__.__name__,
+            self.connect_string,
+        )
 
 
 class MySQLdbDatabase(Database):
@@ -461,7 +479,7 @@ def connect_database(config):
     engine = get('database', 'engine', 'sqlite3')
 
     if engine == 'mysql':
-        host = get('database', 'dbhost', 'database')
+        host = get('database', 'dbhost', 'localhost')
         name = get('database', 'dbname', 'zoomdev')
         user = get('database', 'dbuser', 'testuser')
         password = get('database', 'dbpass', 'password')
