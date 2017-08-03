@@ -2,19 +2,30 @@
     zoom database command
 """
 
-from argparse import ArgumentParser
+import argparse
+import configparser
 import logging
+import os
+import sys
 import warnings
 
+import zoom
 from zoom.database import (
     database as connect,
 )
+
+header_template = \
+""";
+; Zoom config for {}
+;
+
+"""
 
 
 def database():
     """manage the database"""
 
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description='manage the database',
         usage='zoom database [options] <command> ...'
         )
@@ -109,6 +120,108 @@ def database():
 
                 else:
                     logging.error('create not implemented for %s engine' % engine)
+
+        elif command == 'setup':
+
+            engine = args.engine or 'mysql'
+            if engine != 'mysql':
+                print('setup currently only works with mysql (not {!r})'.format(engine))
+                sys.exit(-1)
+
+            if not args.args:
+                site_name = 'localhost'
+            else:
+                site_name = args.args[0]
+
+            database_name = 'zoom_' + site_name.replace('.', '_')
+            database_user = 'zoomuser'
+
+            filename = os.path.join('web', 'sites', site_name, 'site.ini')
+            if not os.path.isfile(filename):
+                print('unable to find site directory: {}'.format(filename))
+                sys.exit(-1)
+
+            # data_filename = os.path.join('web', 'sites', site_name, 'database.ini')
+
+            config = zoom.utils.get_config(filename)
+            get = config.get
+
+            # get database settings if there are any
+            engine = get('database', 'engine', 'mysql')
+            host = get('database', 'host', '')
+            name = get('database', 'name', '')
+            user = get('database', 'user', '')
+            password = get('database', 'password', '')
+            port = get('database', 'port', '')
+
+            # if we need them and there are none, attempt to create them
+            if engine == 'mysql' and not (
+                host or name or user or password or port
+            ):
+
+                host = 'localhost'
+                name = database_name
+                user = database_user
+                password = 'zoompass'
+                port = 3306
+
+                new_config = configparser.RawConfigParser()
+                # new_config.read(filename)
+
+                with open(filename, 'a') as configfile:
+
+                    # configfile.write(header_template.format(site_name))
+
+                    if 'database' not in new_config.sections():
+                        new_config.add_section('database')
+                    keys = [
+                        'engine', 'name', 'host', 'port', 'user', 'password'
+                    ]
+                    for key in keys:
+                        new_config.set('database', key, locals()[key])
+
+                    # old_keys = [
+                    #     'dbname', 'dbhost', 'dbport',
+                    #     'dbuser', 'dbpass'
+                    # ]
+                    # for key in old_keys:
+                    #     if new_config.has_option('database', key):
+                    #         new_config.remove_option('database', key)
+
+                    new_config.write(configfile)
+
+            # connect as root to create new database and user account
+            config = zoom.utils.get_config(filename)
+            config.config.set('database', 'user', args.user or 'root')
+            config.config.set('database', 'password', args.password or 'root')
+            if config.config.has_option('database', 'name'):
+                config.config.remove_option('database', 'name')
+            db = zoom.database.connect_database(config)
+            if database_name in db.get_databases():
+                if args.force:
+                    db('drop database {}'.format(database_name))
+                else:
+                    print('database {!r} exists'.format(database_name))
+                    sys.exit(-1)
+            db('create database {}'.format(database_name))
+            try:
+                logger.debug(
+                    'creating user %r identified by %r',
+                    database_user,
+                    password[:4] + '***'
+                )
+                db('create user %s identified by %s', database_user, password)
+            except zoom.database.DatabaseException:
+                logger.debug('unable to create user')
+            db('grant all on %s.* to %s' % (database_name, database_user))
+
+            # connect as site user to create the tables
+            config = zoom.utils.get_config(filename)
+            # if config.config.has_option('database', 'name'):
+            #     config.config.remove_option('database', 'name')
+            #     config.config.set('database', 'name', database_name)
+            db = zoom.database.connect_database(config)
+            db.create_site_tables()
 
         elif command == 'list':
             db = connect(engine, **parameters)

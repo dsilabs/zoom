@@ -6,7 +6,6 @@
 --
 -- Table structure for table `log`
 --
-DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
@@ -32,7 +31,6 @@ CREATE TABLE `log` (
 --
 -- Table structure for table `auditlog`
 --
-DROP TABLE IF EXISTS `audit_log`;
 CREATE TABLE `audit_log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
@@ -51,7 +49,6 @@ CREATE TABLE `audit_log` (
 --
 -- Table structure for table `entities`
 --
-drop table if exists `entities`;
 create table if not exists `entities` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
@@ -63,7 +60,6 @@ create table if not exists `entities` (
 --
 -- Table structure for table `attributes`
 --
-drop table if exists `attributes`;
 create table if not exists `attributes` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
@@ -81,7 +77,6 @@ create table if not exists `attributes` (
 --
 -- Table structure for table `groups`
 --
-DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `type` char(1) default NULL,
@@ -96,7 +91,6 @@ CREATE TABLE `groups` (
 --
 -- Table structure for table `members`
 --
-DROP TABLE IF EXISTS `members`;
 CREATE TABLE `members` (
   `user_id` int unsigned NOT NULL,
   `group_id` int unsigned NOT NULL,
@@ -109,7 +103,6 @@ CREATE TABLE `members` (
 --
 -- Table structure for table `sessions`
 --
-DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` varchar(32) NOT NULL,
   `expiry` int unsigned NOT NULL,
@@ -122,7 +115,6 @@ CREATE TABLE `sessions` (
 --
 -- Table structure for table `subgroups`
 --
-DROP TABLE IF EXISTS `subgroups`;
 CREATE TABLE `subgroups` (
   `group_id` int unsigned NOT NULL,
   `subgroup_id` int unsigned NOT NULL,
@@ -135,7 +127,6 @@ CREATE TABLE `subgroups` (
 --
 -- Table structure for table `users`
 --
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `username` char(50) NOT NULL,
