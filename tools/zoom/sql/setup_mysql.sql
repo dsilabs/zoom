@@ -23,6 +23,7 @@ CREATE TABLE `log` (
   KEY `log_path` (`path`),
   KEY `log_user_id` (`user_id`),
   KEY `log_address` (`address`),
+  KEY `log_server` (`server`),
   KEY `log_status` (`status`),
   KEY `log_timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

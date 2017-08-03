@@ -149,6 +149,7 @@ CREATE INDEX "idx_log_log_app" ON "log" (`app`);
 CREATE INDEX "idx_log_log_path" ON "log" (`path`);
 CREATE INDEX "idx_log_log_user_id" ON "log" (`user_id`);
 CREATE INDEX "idx_log_log_address" ON "log" (`address`);
+CREATE INDEX "idx_log_log_server" ON "log" (`server`);
 CREATE INDEX "idx_log_log_status" ON "log" (`status`);
 CREATE INDEX "idx_log_log_timestamp" ON "log" (`timestamp`);
 CREATE INDEX "idx_attributes_row_id_key" ON "attributes" (`row_id`);
