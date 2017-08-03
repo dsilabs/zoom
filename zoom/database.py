@@ -363,6 +363,11 @@ class MySQLDatabase(Database):
         cmd = 'show tables'
         return [a[0] for a in self(cmd)]
 
+    def get_databases(self):
+        """return database names"""
+        cmd = 'show databases'
+        return [a[0] for a in self(cmd)]
+
     def create_site_tables(self):
         """create the tables for a site in a mysql server"""
         def split(statements):
@@ -380,7 +385,6 @@ class MySQLDatabase(Database):
             self(statement)
 
         logger.debug('created tables from %s', filename)
-
 
     def create_test_tables(self):
         """create the extra test tables"""
@@ -474,40 +478,59 @@ def database(engine, *args, **kwargs):
 
 def connect_database(config):
     """establish a database connection"""
-    get = config.get
 
-    engine = get('database', 'engine', 'sqlite3')
+    def get(name, default=None):
+        """Get database parameters
+
+        The standard way to name the parameters is without the db
+        prefix however we still support the old names to allow a
+        smooth transition from the old naming conventions.
+        """
+        value = config.get(
+            'database',
+            name,
+            config.get(
+                'database',
+                name == 'password' and 'dbpass' or 'db' + name,
+                default
+            )
+        )
+        return value
+
+    engine = get('engine', 'sqlite3')
 
     if engine == 'mysql':
-        host = get('database', 'dbhost', 'localhost')
-        name = get('database', 'dbname', 'zoomdev')
-        user = get('database', 'dbuser', 'testuser')
-        password = get('database', 'dbpass', 'password')
+        host = get('host', 'localhost')
+        name = get('name')
+        user = get('user', 'testuser')
+        password = get('password', 'password')
         parameters = dict(
             engine=engine,
             host=host,
-            db=name,
             user=user,
         )
         if password:
             parameters['passwd'] = password
+        if name:
+            parameters['db'] = name
 
     elif engine == 'mysqldb':
-        host = get('database', 'dbhost', 'database')
-        name = get('database', 'dbname', 'zoomdev')
-        user = get('database', 'dbuser', 'testuser')
-        password = get('database', 'dbpass', 'password')
+        host = get('host', 'database')
+        name = get('name')
+        user = get('user', 'testuser')
+        password = get('password', 'password')
         parameters = dict(
             engine=engine,
             host=host,
-            db=name,
             user=user,
         )
         if password:
             parameters['passwd'] = password
+        if name:
+            parameters['db'] = name
 
     elif engine == 'sqlite3':
-        name = get('database', 'name', 'zoomdev')
+        name = get('name', 'zoomdev')
         parameters = dict(
             engine=engine,
             database=name,
@@ -517,12 +540,15 @@ def connect_database(config):
         raise Exception('unknown database engine: {!r}'.format(engine))
 
     connection = database(**parameters)
+
+    logger = logging.getLogger(__name__)
+    if 'passwd' in parameters:
+        parameters['passwd'] = '*hidden*'
+    if 'password' in parameters:
+        parameters['password'] = '*hidden*'
+
     if connection:
-        logger = logging.getLogger(__name__)
-        if 'passwd' in parameters:
-            parameters['passwd'] = '*hidden*'
         logger.debug('database connected: %r', parameters)
-        logger.debug(repr(connection.get_tables()))
 
     return connection
 
@@ -530,7 +556,12 @@ def connect_database(config):
 def handler(request, handler, *rest):
     """Connect a database to the site if specified"""
     site = request.site
-    if site.config.get('database', 'dbname', False):
+    database_name = site.config.get(
+        'database', 'name', site.config.get(
+            'database', 'dbname', None # legacy
+        )
+    )
+    if database_name:
         site.db = connect_database(site.config)
         site.db.debug = site.monitor_system_database
 
@@ -553,13 +584,15 @@ def setup_test(engine='mysql'):
     if engine == 'mysql':
         db = database(
             'mysql',
-            host='database',
-            db='zoomtest',
+            host='localhost',
             user='testuser',
             passwd='password'
         )
-        db.delete_test_tables()
+        db('drop database if exists zoomtest')
+        db('create database zoomtest')
+        db('use zoomtest')
         db.create_test_tables()
+
     elif engine == 'memory':
         db = database(
             'sqlite3',
