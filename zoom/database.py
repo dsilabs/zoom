@@ -488,15 +488,14 @@ def connect_database(config):
         prefix however we still support the old names to allow a
         smooth transition from the old naming conventions.
         """
-        value = config.get(
-            'database',
-            name,
-            config.get(
-                'database',
-                name == 'password' and 'dbpass' or 'db' + name,
-                default
-            )
-        )
+        if config.has_option('database', name):
+            value = config.get('database', name)
+        elif config.has_option('database', 'db' + name):
+            value = config.get('database', 'db' + name)
+        elif name == 'password' and config.has_option('database', 'dbpass'):
+            value = config.get('database', 'dbpass')
+        else:
+            value = default
         return value
 
     engine = get('engine', 'sqlite3')
@@ -517,7 +516,7 @@ def connect_database(config):
             parameters['db'] = name
 
     elif engine == 'mysqldb':
-        host = get('host', 'database')
+        host = get('host', 'localhost')
         name = get('name')
         user = get('user', 'testuser')
         password = get('password', 'password')
@@ -532,7 +531,7 @@ def connect_database(config):
             parameters['db'] = name
 
     elif engine == 'sqlite3':
-        name = get('name', 'zoomdev')
+        name = get('name', 'zoomdata')
         parameters = dict(
             engine=engine,
             database=name,
