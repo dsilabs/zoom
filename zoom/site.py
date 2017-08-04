@@ -26,6 +26,8 @@ class Site(object):
 
     def __init__(self, request):
 
+        logger = logging.getLogger(__name__)
+
         self.request = request
         instance = request.instance
         self.name = name = request.domain
@@ -90,12 +92,12 @@ class Site(object):
             self.monitor_app_database = get('monitoring', 'app_database', True) != '0'
             self.monitor_system_database = get('monitoring', 'system_database', False) != '0'
 
-            logger = logging.getLogger(__name__)
             logger.debug('site path: %r', site_path)
             logger.debug('theme path: %r', self.theme_path)
 
         else:
-            raise Exception('site {!r} does not exist'.format(site_path))
+            logger.error('Site directory missing: %r', site_path)
+            raise zoom.exceptions.SiteMissingException('site {!r} does not exist'.format(site_path))
 
     @property
     def tracker(self):

@@ -33,3 +33,7 @@ class TypeException(Exception):
 class DatabaseMissingException(Exception):
     """Database not found"""
     pass
+
+class SiteMissingException(Exception):
+    """Site directory not found"""
+    pass
