@@ -14,6 +14,8 @@ import timeit
 import warnings
 import traceback
 
+import zoom
+
 warnings.filterwarnings("ignore", "Unknown table.*")
 
 ARRAY_SIZE = 1000
@@ -570,7 +572,8 @@ def handler(request, handler, *rest):
 
     else:
         logger = logging.getLogger(__name__)
-        logger.warning('no database specified for %s', site.name)
+        logger.error('no database specified for %s', site.name)
+        raise zoom.exceptions.DatabaseMissingException('Database Missing')
 
     request.profiler.add('database initialized')
     result = handler(request, *rest)

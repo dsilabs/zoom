@@ -29,3 +29,7 @@ class ValidException(Exception):
 class TypeException(Exception):
     """unsupported type"""
     pass
+
+class DatabaseMissingException(Exception):
+    """Database not found"""
+    pass
