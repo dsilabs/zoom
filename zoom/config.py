@@ -54,6 +54,12 @@ class Config(object):
 
         return str(result)
 
+    def has_option(self, section, option):
+        return (
+            self.config.has_option(section, option)
+            or self.default_config.has_option(section, option)
+        )
+
     def __str__(self):
         return '<Config: %s>' % repr([
             self.default_config_pathname,
