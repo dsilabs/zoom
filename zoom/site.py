@@ -110,11 +110,9 @@ class Site(object):
     @property
     def abs_url(self):
         request = self.request
-        port = (request.port not in ['80', '443']) and ':' + request.port or ''
-        return '{}://{}{}'.format(
+        return '{}://{}'.format(
             request.protocol,
-            request.server,
-            port,
+            request.host,
         )
 
     @property
