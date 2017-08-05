@@ -9,6 +9,7 @@
     Zoom Web Framework
 """
 
+import zoom.alerts
 import zoom.database
 import zoom.records
 import zoom.store
