@@ -8,6 +8,15 @@ import zoom
 
 
 default_packages = {
+    'c3': {
+        'libs': [
+            'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.js'
+            ],
+        'styles': [
+            'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.css',
+        ]
+    }
 }
 
 
@@ -28,7 +37,7 @@ def requires(*package_names):
         if package:
             parts += zoom.Component(**package)
         else:
-            missing = set(package_names) - registered_packages
+            missing = set(package_names) - set(registered_packages)
             raise Exception('Missing required packages: {}'.format(missing))
 
     zoom.component.composition.parts += parts
