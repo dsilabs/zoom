@@ -11,6 +11,7 @@ import sys
 import cgi
 import json
 import logging
+import platform
 import uuid
 from timeit import default_timer as timer
 
@@ -285,6 +286,7 @@ class Request(object):
             elapsed=self.get_elapsed,
             request_path=self.path,
             parent_path=self.parent_path,
+            node=platform.node(),
         )
 
     def __str__(self):
