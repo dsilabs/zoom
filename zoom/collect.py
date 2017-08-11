@@ -480,13 +480,16 @@ class Collection(object):
         self.filter = get('filter', None)
         self.columns = get('columns', None)
         self.labels = get('labels', None)
-        self.model = get('model', CollectionModel)
+        self.model = get('model', None)
         self.store = get('store', None)
         self.url = get('url', calc_url())
         self.controller = get('controller', self.controller)
         self.view = get('view', self.view)
         self.link = link_to(self.name, self.url)
         self.key_name = get('key_name', 'key')
+        self.user = None
+        self.request = None
+        self.route = None
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -515,27 +518,26 @@ class Collection(object):
     def handle(self, route, request):
         """handle a request"""
 
-        def get_model(url):
-            class CustomCollectionModel(CollectionModel):
-                url = property(lambda self: '/'.join([url, self.key]))
-            return CustomCollectionModel
-
-        logger = logging.getLogger(__name__)
-        logger.debug('Collection handler called')
-
-        # store some handy references in case the View
-        # or Controller need them.
         self.user = request.user
         self.request = request
         self.route = route
 
-        self.store = self.store or (
-            EntityStore(
-                request.site.db,
-                self.model or get_model(self.url),
-                self.item_name + '_collection',
-            )
-        )
+        logger = logging.getLogger(__name__)
+        logger.debug('Collection handler called')
+
+        if self.store is None:
+            if self.model is None:
+                self.model = CollectionModel
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                    self.item_name + '_collection'
+                )
+            else:
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                )
 
         return (
             self.controller(self)(*route, **request.data) or
