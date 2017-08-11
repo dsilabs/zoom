@@ -639,7 +639,8 @@ class Record(Storage):
         logger = logging.getLogger(__name__)
         id = self['__store'].put(self)
         key = self['__store'].id_name
-        logger.debug('saved record %s(%s=%r) to %r',
+        logger.debug(
+            'saved record %s(%s=%r) to %r',
             self.__class__.__name__,
             key,
             self[key],
