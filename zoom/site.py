@@ -141,8 +141,13 @@ class Site(object):
     def get_template(self, name=None):
         template = name or 'default'
         filename = os.path.join(self.theme_path, template + '.html')
-        with open(filename) as reader:
-            return reader.read()
+        if os.path.isfile(filename):
+            with open(filename) as reader:
+                return reader.read()
+        else:
+            logger = logging.getLogger(__name__)
+            logger.warning('template %s missing', filename)
+            return self.get_template('default')
 
     def get_owner_link(self):
         """Returns a link for the site owner."""
