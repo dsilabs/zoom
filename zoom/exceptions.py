@@ -37,7 +37,3 @@ class DatabaseMissingException(Exception):
 class SiteMissingException(Exception):
     """Site directory not found"""
     pass
-
-class ConfigFileMissingException(Exception):
-    """Site config not found"""
-    pass
