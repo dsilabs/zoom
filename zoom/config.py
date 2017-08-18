@@ -56,7 +56,7 @@ class Config(object):
 
     def has_option(self, section, option):
         return (
-            self.config.has_option(section, option)
+            self.config and self.config.has_option(section, option)
             or self.default_config.has_option(section, option)
         )
 
