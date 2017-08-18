@@ -4,7 +4,6 @@
 
 from decimal import Decimal
 import io
-import resource
 import timeit
 import logging
 import cProfile
@@ -29,17 +28,12 @@ class SystemTimer(object):
 
     def add(self, comment):
         """add a measure to the system timer log"""
-        def memory_usage_resource():
-            rusage_denom = 1024.
-            mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / rusage_denom
-            return mem
         current_time = timeit.default_timer()
         entry = (
             comment,
             # '.' * (40 - len(comment)),
             round((current_time - self.previous_time) * 1000),
             round((current_time - self.start_time) * 1000),
-            round(memory_usage_resource()),
         )
         self.record.append(entry)
         self.previous_time = current_time
@@ -60,7 +54,7 @@ class SystemTimer(object):
 
     @property
     def labels(self):
-        return 'Milestone', 'Time', 'Total', 'Max RSS'
+        return 'Milestone', 'Time', 'Total'
 
 
 def get_profile_data(profiler):
