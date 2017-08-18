@@ -41,6 +41,12 @@ class Site(object):
             self.path = site_path
             self.config = zoom.config.Config(site_path, 'site.ini')
 
+            if not os.path.exists(os.path.join(site_path, 'site.ini')):
+                raise zoom.exceptions.ConfigFileMissingException(
+                    '%r missing' %
+                    os.path.join(site_path, 'site.ini')
+                )
+
             get = self.config.get
             self.url = get('site', 'url', '')
             self.title = get('site', 'name', self.name)
