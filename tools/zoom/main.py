@@ -53,7 +53,7 @@ def list_commands():
                 if parameter.kind == parameter.POSITIONAL_OR_KEYWORD:
                     text.append('[{}]'.format(parameter.name))
             result.append([name, doc, ' '.join(text)])
-    print('\nZoom Framework CLI\n\n{}\n'.format(result))
+    print('\nZoom CLI\n\n{}\n'.format(result))
 
 
 def main():
