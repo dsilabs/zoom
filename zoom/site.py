@@ -83,12 +83,10 @@ class Site(object):
             self.theme_path = os.path.join(theme_dir, self.theme)
 
             basic_apps = abspath(join(dirname(__file__), '..', 'web', 'apps'))
-            apps_paths = {
+            apps_paths = [basic_apps] + list({
                 abspath(join(self.path, p))
                 for p in str(get('apps', 'path')).split(';')
-            } | {
-                basic_apps
-            }
+            })
             self.apps_paths = list(filter(isdir, apps_paths))
 
             self.logging = get('monitoring', 'logging', True) != '0'
