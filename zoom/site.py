@@ -17,6 +17,7 @@ abspath = os.path.abspath
 join = os.path.join
 exists = os.path.exists
 listdir = os.listdir
+dirname = os.path.dirname
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
@@ -81,10 +82,13 @@ class Site(object):
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
 
-            apps_paths = [
+            basic_apps = abspath(join(dirname(__file__), '..', 'web', 'apps'))
+            apps_paths = {
                 abspath(join(self.path, p))
                 for p in str(get('apps', 'path')).split(';')
-            ]
+            } | {
+                basic_apps
+            }
             self.apps_paths = list(filter(isdir, apps_paths))
 
             self.logging = get('monitoring', 'logging', True) != '0'
