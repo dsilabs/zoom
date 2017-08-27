@@ -2,21 +2,51 @@
     basic index
 """
 
-from zoom.mvc import View, Controller
-from zoom.page import page
-from zoom.context import context
+import zoom
 
-class MyView(View):
+import model
+
+class MyView(zoom.mvc.View):
 
     def index(self):
-        return page('New user registration process.  Coming soon.', title='Register')
+        """Show registration page"""
+
+        fields = self.model
+
+        agreements = """
+        By registering, I agree to the {{site_name}} <a
+        href="/terms.html">Terms of Use</a> and <a href="/privacy.html">Privacy
+        Policy</a>.
+        """
+
+        template = zoom.tools.load('registration.html')
+
+        content = zoom.render.render(template).format(
+            fill=dict(
+                messages='',
+                agreements=agreements,
+                fields=fields.edit(),
+            ),
+        )
+
+        return zoom.page(content, title='Register')
 
 
     def about(self):
+        app = zoom.system.request.app
         content = '{app.description}'
-        return page(
-            content.format(app=context.request.app),
-            title='About {app.title}'.format(app=context.request.app)
+        return zoom.page(
+            content.format(app=app),
+            title='About {app.title}'.format(app=app)
         )
 
-view = MyView()
+class MyController(zoom.mvc.Controller):
+
+    def register_now_button(self, **data):
+        fields = self.model
+        return zoom.page(zoom.tools.load_content('step2.txt'))
+
+
+fields = model.get_fields()
+view = MyView(fields)
+controller = MyController(fields)

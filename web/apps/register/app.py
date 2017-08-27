@@ -2,7 +2,6 @@
     basic app
 """
 
-from zoom.apps import App
+import zoom
 
-app = App()
-app.menu = 'Overview', 'About'
+app = zoom.App()

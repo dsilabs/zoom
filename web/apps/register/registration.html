@@ -1,0 +1,26 @@
+  <div class="row" style="margin-top:4em">
+      <div class="col-sm-6 col-sm-offset-3">
+          <div class="panel panel-default">
+              <div class="panel-heading">
+                  <h3 class="panel-title">Welcome to {{site_name}}!</h3>
+              </div>
+              <div id="login-panel" class="panel-body">
+                  <dz:alerts>
+                  <dz:form>
+                      {fill[messages]}
+                      {fill[fields]}
+                      <br />
+                      <p>
+                      {fill[agreements]}
+                      </p>
+                      <input class="btn btn-lg btn-success btn-block"
+                      type="submit" name="register_now_button"
+                      id="register_now_button" value="Register Now">
+                      <p>
+                      <a href="/login">Already a {{site_name}} member?</a>
+                      </p>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
