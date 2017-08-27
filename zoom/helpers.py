@@ -5,6 +5,7 @@
 from urllib.parse import quote_plus
 import datetime
 
+import zoom
 import zoom.html as html
 from zoom.context import context as ctx
 
@@ -290,3 +291,7 @@ def date():
 def year():
     """Returns the current year in text form."""
     return datetime.date.today().strftime('%Y')
+
+def include(filename):
+    """Return the included file"""
+    return zoom.tools.load_template(filename)
