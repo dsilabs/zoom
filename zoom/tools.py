@@ -4,6 +4,7 @@
 
 import datetime
 import logging
+import os
 
 from markdown import Markdown
 from zoom.response import RedirectResponse
@@ -313,13 +314,85 @@ def load(pathname, encoding='utf-8'):
 def load_content(pathname, *args, **kwargs):
     """Load a content file and use it to format parameters
     """
+    isfile = os.path.isfile
+
+    if not isfile(pathname):
+        for extension in ['html', 'md', 'txt']:
+            if isfile(pathname + '.' + extension):
+                pathname = pathname + '.' + extension
+        # pathname = (
+        #     isfile(pathname + '.html')
+        # )
+
     template = load(pathname)
     if template:
-        # content = template.format(*args, **kwargs)
         content = apply_helpers(template, None, [kwargs]).format(*args, **kwargs)
-        if pathname.endswith('.md'):
-            result = markdown(content)
-        else:
+        if pathname.endswith('.html'):
             result = content
+        else:
+            result = markdown(content)
         return result
     return ''
+
+
+def load_template(name, default=None):
+    """
+    Load a template from the theme folder.
+
+    Templates usually have .html file extensions and this module
+    will assume that's what is desired unless otherwise specified.
+    """
+
+    def find_template(name):
+        for path in site.templates_paths:
+            if os.path.exists(path) and (name in os.listdir(path)):
+                return os.path.join(path, name)
+        name_lower = name.lower()
+        for path in site.templates_paths:
+            if os.path.exists(path):
+                for filename in os.listdir(path):
+                    if filename.lower() == name_lower:
+                        return os.path.join(path, filename)
+
+    def load_template_file(name, default):
+        pathname = find_template(name)
+        if pathname:
+            if os.path.exists(pathname):
+
+                if site.theme_comments == 'path':
+                    source = pathname
+                elif site.theme_comments == 'name':
+                    source = name[:-5]
+                else:
+                    source = None
+
+                t = load(pathname)
+                # print(t)
+                # t = 'got it'
+
+                if source and pathname[-5:].lower() == '.html':
+                    result = (
+                        '\n'
+                        '<!-- source: %s -->\n'
+                        '%s\n'
+                        '<!-- end source: %s -->\n' % (source, t, source)
+                    )
+                else:
+                    result = t
+                return result
+
+        return default or ''
+
+    site = zoom.system.request.site
+
+    if not '.' in name:
+        name = name + '.html'
+
+    if '/' in name or '\\' in name:
+        raise Exception(
+            'Unable to use specified template path.  '
+            'Templates are located in theme folders.'
+        )
+
+    # return 'got stuff'
+    return site.templates.setdefault(name, load_template_file(name, default))

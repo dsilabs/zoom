@@ -21,6 +21,17 @@ dirname = os.path.dirname
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
+
+def existing(path, subdir=None):
+    """Returns existing directories only"""
+    pathname = (
+        path and subdir and os.path.join(os.path.abspath(path), subdir) or
+        path and os.path.abspath(path)
+        )
+    if pathname and os.path.exists(pathname):
+        return pathname
+
+
 class Site(object):
     """a Zoom site"""
     # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -81,6 +92,23 @@ class Site(object):
             self.themes_path = theme_dir
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
+            self.default_theme_path = existing(theme_dir, 'default')
+            self.theme_comments = get('theme', 'comments', 'name')
+            self.default_template = (
+                get('theme', 'template', 'default')
+            )
+
+            # theme templates
+            self.template_path = existing(self.theme_path, 'templates')
+            self.default_template_path = existing(
+                self.default_theme_path, 'templates')
+            self.templates_paths = filter(bool, [
+                self.template_path,
+                self.default_template_path,
+                self.theme_path,
+                self.default_theme_path,
+                ])
+            self.templates = {}
 
             self.apps_paths = [
                 abspath(join(self.path, p))
