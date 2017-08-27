@@ -14,6 +14,7 @@ import zoom.database
 import zoom.records
 import zoom.store
 
+from .apps import App
 from .browse import browse
 from .component import Component
 from .context import context as system
