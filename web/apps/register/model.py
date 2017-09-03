@@ -55,3 +55,6 @@ def get_fields():
             ),
         ]),
     ])
+
+def submit_registration(fields):
+    return True

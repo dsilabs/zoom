@@ -8,7 +8,7 @@ import model
 
 class MyView(zoom.mvc.View):
 
-    def index(self):
+    def index(self, *args, **kwargs):
         """Show registration page"""
 
         fields = self.model
@@ -44,7 +44,19 @@ class MyController(zoom.mvc.Controller):
 
     def register_now_button(self, **data):
         fields = self.model
-        return zoom.page(zoom.tools.load_content('step2.txt'))
+        if fields.validate(data):
+            values = fields.evaluate()
+            if values['password'] == values['confirm']:
+                if model.submit_registration(values):
+                    template = zoom.tools.load('step2.html')
+                    content = zoom.render.render(template).format(
+                        fill=dict(
+                            messages='',
+                        ),
+                    )
+                    return zoom.page(content)
+            else:
+                zoom.alerts.error('Passwords do not match')
 
 
 fields = model.get_fields()
