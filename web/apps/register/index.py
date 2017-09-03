@@ -40,6 +40,7 @@ class MyView(zoom.mvc.View):
             title='About {app.title}'.format(app=app)
         )
 
+
 class MyController(zoom.mvc.Controller):
 
     def register_now_button(self, **data):
@@ -57,6 +58,14 @@ class MyController(zoom.mvc.Controller):
                     return zoom.page(content)
             else:
                 zoom.alerts.error('Passwords do not match')
+
+    def confirm(self, token):
+        """Registration confirmation"""
+        return zoom.page('got it')
+        # result = confirm_registration(token)
+        # if user.is_admin:
+        #     return home()
+        # return result
 
 
 fields = model.get_fields()
