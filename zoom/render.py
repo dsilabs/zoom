@@ -68,25 +68,16 @@ def apply_helpers(template, obj, providers):
     return fill(template, filler(helpers))
 
 
-# def render(pathname, *a, **k):
-#     """render a view"""
-#     with open(pathname) as reader:
-#         template = reader.read()
-#         content = apply_helpers(template, None, [k]).format(*a, **k)
-#
-#         if pathname.endswith('.md'):
-#             result = markdown(content)
-#         else:
-#             result = content
-#
-#         return result
-#     return ''
 def add_helpers(*providers):
     for provider in providers:
         zoom.context.context.providers.append(provider)
 
-def render(template):
-    return apply_helpers(template, None, zoom.context.context.providers)
+def render(template, *providers, **helpers):
+    return apply_helpers(
+        template,
+        None,
+        zoom.context.context.providers + list(providers) + [helpers]
+    )
 
 def handler(request, handle, *rest):
     """render handler"""
