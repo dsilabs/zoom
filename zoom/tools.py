@@ -320,9 +320,7 @@ def load_content(pathname, *args, **kwargs):
         for extension in ['html', 'md', 'txt']:
             if isfile(pathname + '.' + extension):
                 pathname = pathname + '.' + extension
-        # pathname = (
-        #     isfile(pathname + '.html')
-        # )
+                break
 
     template = load(pathname)
     if template:
