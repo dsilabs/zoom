@@ -16,9 +16,6 @@ from .common import WebdriverTestCase
 class RegisterTests(WebdriverTestCase):
     """Register App Tests"""
 
-    headless = False
-    database = 'zoom_test'
-
     def setUp(self):
         WebdriverTestCase.setUp(self)
         self.delete_user('joe3')
