@@ -15,6 +15,14 @@ import zoom.validators as v
 REGISTRATION_TIMEOUT = 3600 # one hour
 
 
+def load(filename, **kwargs):
+    values = dict(
+        site_name=zoom.system.site.title,
+    )
+    values.update(kwargs)
+    return zoom.tools.load_content(filename, **values)
+
+
 class Registration(zoom.utils.Record):
     """Registration Record"""
 
@@ -154,7 +162,6 @@ def submit_registration(data):
                     body=body,
                 )
             )
-            print(body)
 
             logger.info(
                 'registration sent to %s with token %s',
@@ -172,3 +179,75 @@ def submit_registration(data):
     get_registrations().put(rec)
 
     return True
+
+
+def email_registered(email):
+    return bool(zoom.system.site.users.find(email=email))
+
+
+def username_available(username):
+    return not bool(zoom.system.site.users.find(username=username))
+
+
+def register_user(data):
+
+    columns = (
+        'username', 'password',
+        'first_name', 'last_name', 'email', 'phone'
+    )
+
+    data = {k: v for k, v in data.items() if k in columns}
+
+    user = zoom.users.User(**data)
+    user.created_by = user.updated_by = zoom.system.request.user._id
+
+    users = zoom.system.site.users
+    new_id = users.put(user)
+
+    logger = logging.getLogger(__name__)
+    logger.debug(
+        'new user %r registration complete',
+        new_id,
+    )
+    return new_id
+
+
+def confirm_registration(token):
+    registration = get_registrations().first(token=token)
+    if registration:
+        if registration.expiry < time.time():
+            # happens if the user waits too long to validate
+            content = load('expired.md')
+            fills = dict(register_link=zoom.helpers.url_for('/register'))
+            result = zoom.page(content, fills)
+
+        elif email_registered(registration.email):
+            # can happen if someone registers using the same email address
+            # between the time that we issue the token and when the user gets
+            # around to confirming.
+            result = zoom.page(load('already_registered.md'))
+
+        elif not username_available(registration.username):
+            # can happen if someone registers using the same username
+            # between the time that we issue the token and when the user gets
+            # around to confirming.
+            result = zoom.page(
+                load('name_taken.md', username=registration.username)
+            )
+
+        else:
+            # good to go
+            register_user(registration)
+            delete_registration(token)
+            result = zoom.page(load('register_complete.md'))
+
+        if zoom.system.request.user.is_admin:
+            msg = 'registration activated for {}'.format(registration.username)
+            zoom.alerts.success(msg)
+
+        return result
+
+
+def delete_registration(token):
+    """Delete a registration record"""
+    get_registrations().delete(token=token)

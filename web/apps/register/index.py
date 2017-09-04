@@ -4,9 +4,12 @@
 
 import zoom
 
+
 import model
 
+
 class MyView(zoom.mvc.View):
+    """Index View"""
 
     def index(self, *args, **kwargs):
         """Show registration page"""
@@ -31,6 +34,19 @@ class MyView(zoom.mvc.View):
 
         return zoom.page(content, title='Register')
 
+    @zoom.authorize('administrators')
+    def list(self):
+        if zoom.system.request.user.is_admin:
+            labels = (
+                'First Name',
+                'Last Name',
+                'Username',
+                'Token',
+                'Expires',
+                'Action',
+            )
+            content = zoom.browse(model.get_registrations(), labels=labels)
+            return zoom.page(content, title='Registrations')
 
     def about(self):
         app = zoom.system.request.app
@@ -61,11 +77,16 @@ class MyController(zoom.mvc.Controller):
 
     def confirm(self, token):
         """Registration confirmation"""
-        return zoom.page('got it')
-        # result = confirm_registration(token)
-        # if user.is_admin:
-        #     return home()
-        # return result
+        result = model.confirm_registration(token)
+        if zoom.system.request.user.is_admin:
+            return zoom.home('list')
+        return result
+
+
+    @zoom.authorize('administrators')
+    def delete(self, token):
+        model.delete_registration(token)
+        return zoom.home()
 
 
 fields = model.get_fields()
