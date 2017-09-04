@@ -351,3 +351,17 @@ class Users(RecordStore):
         """Things to do right after inserting a new user"""
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
+
+
+def authorize(*roles):
+    user = zoom.system.request.user
+    def wrapper(func):
+        def authorize_and_call(*args, **kwargs):
+            if user.is_administrator:
+                return func(*args, **kwargs)
+            for role in roles:
+                if role in user.groups:
+                    return func(*args, **kwargs)
+            raise zoom.exceptions.UnauthorizedException('Unauthorized')
+        return authorize_and_call
+    return wrapper

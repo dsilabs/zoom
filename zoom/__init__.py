@@ -13,6 +13,7 @@ import zoom.alerts
 import zoom.database
 import zoom.records
 import zoom.store
+import zoom.users
 
 from .apps import App
 from .browse import browse
@@ -23,3 +24,4 @@ from .mvc import View, Controller
 from .page import page, Page
 from .packages import requires
 from .tools import home, redirect_to
+from .users import authorize
