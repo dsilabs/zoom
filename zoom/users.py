@@ -4,6 +4,7 @@
 
 import logging
 
+import zoom
 from zoom.context import context
 from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
@@ -286,6 +287,10 @@ class User(Record):
         if group:
             group.add_user(self)
 
+    def remove_groups(self):
+        assert self._id
+        zoom.system.site.db('delete from members where user_id=%s', self._id)
+
 
 class Users(RecordStore):
     """Zoom Users
@@ -337,6 +342,12 @@ class Users(RecordStore):
 
     def before_insert(self, user):
         user.update(status='A')
+        user.created = user.updated = zoom.tools.now()
+
+    def before_update(self, user):
+        user.updated = zoom.tools.now()
 
     def after_insert(self, user):
+        """Things to do right after inserting a new user"""
+        user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
