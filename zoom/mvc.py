@@ -9,6 +9,7 @@ import logging
 from inspect import getargspec, getfile
 from os.path import abspath, split, join, isfile
 
+import zoom
 from zoom.component import component
 from zoom.utils import kind
 
@@ -258,17 +259,6 @@ class Controller(Dispatcher):
 
 
 
-# def authorize(*roles):
-#     def wrapper(func):
-#         def authorize_and_call(*args, **kwargs):
-#             if user.is_administrator:
-#                 return func(*args, **kwargs)
-#             for role in roles:
-#                 if role in user.groups:
-#                     return func(*args, **kwargs)
-#             raise UnauthorizedException('Unauthorized')
-#         return authorize_and_call
-#     return wrapper
 #
 #
 # def can(action):
