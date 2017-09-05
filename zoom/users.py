@@ -105,6 +105,7 @@ class User(Record):
         return action != 'delete' or self.username != 'admin'
 
     def initialize(self, request):
+        """Initialize user based on a request"""
         logger = logging.getLogger(__name__)
         logger.debug('initializing user %r', self.username)
 
@@ -206,12 +207,21 @@ class User(Record):
 
     @property
     def default_app(self):
+        """returns the default app for the user"""
         return '/home'
 
     def deactivate(self):
+        """Deactivate the user
+
+        Note: does not save.
+        """
         self.status = 'I'
 
     def activate(self):
+        """Activate the user
+
+        Note: does not save.
+        """
         self.status = 'A'
 
     def get_groups(self):
@@ -234,12 +244,14 @@ class User(Record):
 
     @property
     def groups(self):
+        """Returns the groups the user belongs to"""
         if self.__user_groups is None:
             self.__user_groups = [g for g in self.get_groups() if not g.startswith('a_')]
         return self.__user_groups
 
     @property
     def groups_ids(self):
+        """Returns the IDs for the groups the user belongs to"""
         groups = self.groups
         if groups:
             # if we have groups then we have a store so avoid another check here
@@ -249,6 +261,7 @@ class User(Record):
 
     @property
     def apps(self):
+        """Returns the names of the apps the user can access"""
         if self.__apps is None:
             self.__apps = [g[2:] for g in self.get_groups() if g.startswith('a_')]
         return self.__apps
@@ -283,11 +296,13 @@ class User(Record):
         )
 
     def add_group(self, group):
+        """Make user a member of the group"""
         group = context.site.groups.locate(group)
         if group:
             group.add_user(self)
 
     def remove_groups(self):
+        """Remove user membership in the group"""
         assert self._id
         zoom.system.site.db('delete from members where user_id=%s', self._id)
 
@@ -341,10 +356,12 @@ class Users(RecordStore):
             )
 
     def before_insert(self, user):
+        """Things to do just before inserting a new User record"""
         user.update(status='A')
         user.created = user.updated = zoom.tools.now()
 
     def before_update(self, user):
+        """Things to do just before updating a User record"""
         user.updated = zoom.tools.now()
 
     def after_insert(self, user):
@@ -354,9 +371,16 @@ class Users(RecordStore):
 
 
 def authorize(*roles):
+    """Decorator that authorizes (or not) the current user
+
+    Raises an exception if the current user does not have at least
+    one of the listed roles.
+    """
     user = zoom.system.request.user
     def wrapper(func):
+        """wraps the protected function"""
         def authorize_and_call(*args, **kwargs):
+            """checks authorization and calls function if authorized"""
             if user.is_administrator:
                 return func(*args, **kwargs)
             for role in roles:
