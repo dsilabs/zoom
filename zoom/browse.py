@@ -140,7 +140,7 @@ def browse(data, **kwargs):
             except Exception:
                 value = repr(item)
             wrapping = len(value) < 80 and ' nowrap' or ''
-            cell_tpl = '<td {}>%s</td>'.format(wrapping)
+            cell_tpl = '<td{}>%s</td>'.format(wrapping)
             t.append(cell_tpl % value)
 
         t.append('</tr>')
