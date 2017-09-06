@@ -7,7 +7,6 @@ import datetime
 
 import zoom
 import zoom.html as html
-from zoom.context import context as ctx
 
 
 def username():
@@ -63,8 +62,8 @@ def tag_for(name, *a, **k):
 def url_for(*a, **k):
     """creates urls
 
-    >>> ctx.site = lambda: None
-    >>> ctx.site.url = ''
+    >>> zoom.system.site = lambda: None
+    >>> zoom.system.site.url = ''
 
     >>> url_for()
     ''
@@ -104,7 +103,7 @@ def url_for(*a, **k):
 
     """
 
-    root = ctx.site.url
+    root = zoom.system.site.url
     a = [str(i) for i in a]
 
     if a and a[0] and a[0][0] == '/':
@@ -150,8 +149,8 @@ def url_for_page(*args, **kwargs):
 def url_for_item(*args, **kwargs):
     """returns a url for an item on the curren page
 
-    >>> ctx.request = lambda: None
-    >>> ctx.request.route = ['myapp', 'mypage']
+    >>> zoom.system.request = lambda: None
+    >>> zoom.system.request.route = ['myapp', 'mypage']
 
     >>> url_for_item()
     '/myapp/mypage'
@@ -159,7 +158,7 @@ def url_for_item(*args, **kwargs):
     >>> url_for_item(100)
     '/myapp/mypage/100'
     """
-    route = ['/'] + ctx.request.route[:2] + list(args)
+    route = ['/'] + zoom.system.request.route[:2] + list(args)
     return url_for(*route, **kwargs)
 
 
@@ -233,8 +232,8 @@ def abs_url_for(*a, **k):
 def link_to(label, *args, **kwargs):
     """produce a link
 
-    >>> ctx.site = lambda: None
-    >>> ctx.site.url = ''
+    >>> zoom.system.site = lambda: None
+    >>> zoom.system.site.url = ''
 
     >>> link_to('Company', 'http://company.com')
     '<a href="http://company.com">Company</a>'
