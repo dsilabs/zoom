@@ -214,6 +214,7 @@ def register_user(data):
 
 def confirm_registration(token):
     registration = get_registrations().first(token=token)
+    delete_registration(token)
     if registration:
         if registration.expiry < time.time():
             # happens if the user waits too long to validate
@@ -238,7 +239,6 @@ def confirm_registration(token):
         else:
             # good to go
             register_user(registration)
-            delete_registration(token)
             result = zoom.page(load('register_complete.md'))
 
         if zoom.system.request.user.is_admin:
