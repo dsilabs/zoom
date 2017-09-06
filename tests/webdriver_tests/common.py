@@ -121,6 +121,8 @@ class WebdriverTestPrimitives(unittest.TestCase):
             logger.debug('found %r: %r', target, direct)
             return direct
 
+        test_name = unittest.TestCase.id()
+        driver.save_screenshot('%s-error_screen.png' % test_name)
         raise Exception('Don\'t know how to find %s' % target)
 
     def type(self, target, text):
@@ -167,6 +169,14 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
     def contains(self, text):
         return text in self.driver.page_source
+
+    def assertContains(self, text):
+        if not self.contains(text):
+            test_name = unittest.TestCase.id(self)
+            self.driver.save_screenshot('%s-error_screen.png' % test_name)
+            raise Exception('page does not contain {!r})'.format(
+                text
+            ))
 
     @property
     def page_source(self):

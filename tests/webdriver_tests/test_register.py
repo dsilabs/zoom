@@ -55,7 +55,7 @@ class RegisterTests(WebdriverTestCase):
         assert 'Step 2' in self.page_source
 
         self.get('/register/1234/confirm')
-        assert 'Registration Complete!' in self.page_source
+        self.assertContains('Registration Complete!')
 
     def test_user_already_registered(self):
         self.get('/register')
