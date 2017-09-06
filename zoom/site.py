@@ -113,6 +113,7 @@ class Site(object):
             self.apps_paths = [
                 abspath(join(self.path, p))
                 for p in str(get('apps', 'path')).split(';')
+                if exists(abspath(join(self.path, p)))
             ]
             basic_apps = abspath(join(dirname(__file__), '..', 'web', 'apps'))
             if basic_apps not in self.apps_paths:
