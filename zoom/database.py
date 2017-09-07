@@ -12,7 +12,6 @@ import logging
 import os
 import timeit
 import warnings
-import traceback
 
 import zoom
 
@@ -196,7 +195,6 @@ class Database(object):
         """execute the SQL command"""
 
         def format_stack(stack):
-            app_start = None
             n = m = 0
             for n, item in enumerate(stack):
                 if item[3] == 'run_app':
