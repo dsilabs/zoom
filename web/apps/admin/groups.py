@@ -73,13 +73,13 @@ class GroupCollectionController(CollectionController):
 
     def before_insert(self, record):
         record['type'] = 'U'
+
+    def after_insert(self, record):
         model.update_group_relationships(record)
-        # raise Exception('stopped')
 
     def before_update(self, record):
         record['type'] = 'U'
         model.update_group_relationships(record)
-        # raise Exception('stopped')
 
 
 def main(route, request):
@@ -100,4 +100,5 @@ def main(route, request):
         url='/admin/groups',
         filter=user_group,
         columns=columns,
+        key_name='id',
     )(route, request)
