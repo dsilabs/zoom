@@ -359,9 +359,9 @@ class RecordStore(Store):
             ['name', 'age', 'kids', 'birthdate']
 
         """
-        cmd = 'describe %s' % self.kind
+        cmd = 'select * from %s where 1=2' % self.kind
         rows = self.db(cmd)
-        return [rec[0] for rec in rows if rec[0] != 'id']
+        return [rec[0] for rec in rows.cursor.description if rec[0] != 'id']
 
     def _delete(self, ids):
         if ids:
