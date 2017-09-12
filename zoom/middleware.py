@@ -266,7 +266,7 @@ def check_csrf(request, handler, *rest):
 def not_found(request):
     """return a 404 page for site"""
     logger = logging.getLogger(__name__)
-    logger.debug('responding with 404 for {!r}'.format(request.path))
+    logger.debug('responding with 404 for %r', request.path)
     response = page(zoom.templates.page_not_found).render(request)
     response.status = '404 Not Found'
     return response
@@ -383,9 +383,9 @@ def handle(request, handlers=None):
         serve_images,
         serve_html,
         reset_modules,
-        zoom.cookies.handler,
         capture_stdout,
         zoom.site.handler,
+        zoom.cookies.handler,
         serve_themes,
         zoom.database.handler,
         zoom.queues.handler,
