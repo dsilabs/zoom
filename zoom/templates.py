@@ -20,3 +20,13 @@ page_not_found = """
         Please contact the administrator or try again.<p>
     </div>
     """
+
+site_not_found = """
+    <body>
+    <div class="jumbotron">
+        <h1>Site Not Found</h1>
+        <p>{request.domain} does not exist.
+        Please contact the system administrator or try again.<p>
+    </div>
+    </body>
+    """
