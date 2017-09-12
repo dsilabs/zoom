@@ -9,7 +9,7 @@ import zoom.apps
 import zoom.config
 from zoom.context import context
 import zoom.helpers
-from zoom.helpers import link_to
+from zoom.helpers import link_to, mail_to
 
 
 isdir = os.path.isdir
@@ -187,7 +187,7 @@ class Site(object):
             return link_to(self.owner_name, self.owner_url)
         if self.owner_email:
             return mail_to(self.owner_name, self.owner_email)
-        return name
+        return self.owner_name
 
     def helpers(self):
         """provide helpers"""
@@ -198,6 +198,7 @@ class Site(object):
             owner_name=self.owner_name,
             owner_url=self.owner_url,
             owner_email=self.owner_email,
+            owner_link=self.get_owner_link(),
             admin_email=self.admin_email,
             theme=self.theme,
             theme_uri='/themes/' + self.theme,
