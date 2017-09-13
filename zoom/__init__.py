@@ -12,6 +12,7 @@
 import zoom.alerts
 import zoom.database
 import zoom.records
+import zoom.services
 import zoom.store
 import zoom.users
 
