@@ -201,9 +201,13 @@ def ensure_listy(obj):
 
     >>> ensure_listy(['already listy'])
     ['already listy']
-    """
-    return is_listy(obj) and obj or [obj]
 
+    >>> ensure_listy([])
+    []
+    """
+    if is_listy(obj):
+        return obj
+    return [obj]
 
 
 class Redirector(object):
