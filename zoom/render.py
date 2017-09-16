@@ -64,7 +64,10 @@ def apply_helpers(template, obj, providers):
 
     helpers = {}
     for provider in providers:
-        helpers.update(provider)
+        if callable(provider):
+            helpers.update(provider())
+        else:
+            helpers.update(provider)
     return fill(template, filler(helpers))
 
 
