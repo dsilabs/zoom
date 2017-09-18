@@ -381,13 +381,19 @@ class Config(object):
         self.config.read(filename)
 
     def get(self, section, option, default=None):
-        """get a config file value supplying an optional defalt value"""
+        """Get a config file value supplying an optional defalt value."""
         try:
             return self.config.get(section, option)
         except (configparser.NoOptionError, configparser.NoSectionError):
             if default is not None:
                 return default
             raise
+
+    def has_option(self, section, option):
+        """Return True if config file option exists."""
+        return (
+            self.config and self.config.has_option(section, option)
+        )
 
 
 def get_config(filename):
