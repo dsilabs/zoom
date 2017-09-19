@@ -28,7 +28,7 @@ def add_entry(request, status, entry):
             request.remote_user,
             request.host,
             now(),
-            int(float(request.get_elapsed()) * 1000),
+            int(request.elapsed * 1000),
             entry,
         )
 
