@@ -11,11 +11,11 @@
 
 import zoom.alerts
 import zoom.database
+import zoom.queues
 import zoom.records
 import zoom.services
 import zoom.store
 import zoom.users
-import zoom.queues
 
 from .apps import App
 from .browse import browse
