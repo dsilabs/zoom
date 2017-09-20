@@ -133,6 +133,7 @@ class Site(object):
 
     @property
     def tracker(self):
+        """Returns a Google analytics tracker code snippet"""
         if self.tracking_id:
             path = os.path.join(os.path.dirname(__file__), 'views', 'google_tracker.html')
             with open(path) as reader:
@@ -141,6 +142,7 @@ class Site(object):
 
     @property
     def abs_url(self):
+        """Calculate an absolute URL for this site"""
         request = self.request
         return '{}://{}'.format(
             request.protocol,
@@ -165,12 +167,15 @@ class Site(object):
                     if app not in names:
                         filename = join(path, app, 'app.py')
                         if exists(filename):
-                            result.append(zoom.apps.AppProxy(app, filename, self))
+                            result.append(
+                                zoom.apps.AppProxy(app, filename, self)
+                            )
                             names.append(app)
             self.__apps = result
         return self.__apps
 
     def get_template(self, name=None):
+        """Get site page template"""
         template = name or 'default'
         filename = os.path.join(self.theme_path, template + '.html')
         if os.path.isfile(filename):
@@ -207,18 +212,18 @@ class Site(object):
         )
 
     def __repr__(self):
-        from zoom.utils import pretty
         return '<Site {!r} {!r}>'.format(self.abs_url, self.path)
 
     def __str__(self):
         return zoom.utils.pretty(self)
 
-def handler(request, handler, *rest):
+
+def handler(request, next_handler, *rest):
     """install site object"""
     try:
         request.site = context.site = Site(request)
         request.profiler.add('site initialized')
-        return handler(request, *rest)
+        return next_handler(request, *rest)
     except zoom.exceptions.SiteMissingException:
         logger = logging.getLogger(__name__)
         logger.debug('responding with 404 for %r', request.path)
