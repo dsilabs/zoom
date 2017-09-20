@@ -52,7 +52,7 @@ class RegisterTests(WebdriverTestCase):
             )
         )
         self.click('register_now_button')
-        assert 'Step 2' in self.page_source
+        self.assertContains('Step 2')
 
         self.get('/register/1234/confirm')
         self.assertContains('Registration Complete!')
@@ -70,7 +70,7 @@ class RegisterTests(WebdriverTestCase):
             )
         )
         self.click('register_now_button')
-        assert 'Step 2' in self.page_source
+        self.assertContains('Step 2')
 
         self.get('/register/1234/confirm')
         assert 'Registration Complete!' in self.page_source
@@ -87,7 +87,7 @@ class RegisterTests(WebdriverTestCase):
             )
         )
         self.click('register_now_button')
-        assert 'Step 2' in self.page_source
+        self.assertContains('Step 2')
 
         self.get('/register/1234/confirm')
-        assert 'Registration Already Completed' in self.page_source
+        self.assertContains('Registration Already Completed')
