@@ -253,7 +253,7 @@ class User(Record):
     def groups_ids(self):
         """Returns the IDs for the groups the user belongs to"""
         groups = self.groups
-        if groups:
+        if groups is None:
             # if we have groups then we have a store so avoid another check here
             cmd = 'select id from groups where name in (%s)'% (', '.join(['%s'] * len(groups)))
             return [i[0] for i in self.get('__store').db(cmd, *groups)]  # list of group id's
