@@ -119,3 +119,15 @@ class TestUser(unittest.TestCase):
         user2 = self.users.first(username='user')
         self.assertNotEqual(user2.password, old_password)
         self.assertEqual(user2.authenticate(new_password), True)
+
+    def test_user_store(self):
+        user = self.users.first(username='guest')
+        self.assertListEqual(
+            user.get_groups()[-4:],
+            ['a_passreset', 'a_signup', 'everyone', 'guests']
+        )
+
+        # setup to trigger accessing the store
+        user = self.users.first(username='user')
+        del user['__store']
+        self.assertRaises(KeyError, user.get_groups)

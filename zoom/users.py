@@ -239,7 +239,7 @@ class User(Record):
         """
         if self.__groups is None:
             store = self.get('__store')
-            self.__groups = store and get_groups(store.db, self) or []
+            self.__groups = get_groups(store.db, self)
         return self.__groups
 
     @property
