@@ -1008,7 +1008,7 @@ class Buttons(Field):
         return ""
 
     def edit(self):
-        return layout_field('&nbsp;', self.widget())
+        return self.widget()
 
     def widget(self):
         buttons = [
@@ -1032,6 +1032,25 @@ class Buttons(Field):
 
     def __repr__(self):
         return ''
+
+
+class ButtonsField(Buttons):
+    """Buttons field.
+
+    >>> ButtonsField('Save').show()
+    ''
+
+    >>> print(ButtonsField(['Save','Publish']).edit())
+    <div class="field">
+      <div class="field_label">&nbsp;</div>
+      <div class="field_edit"><input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<input class="button" type="submit" id="publish_button" name="publish_button" value="Publish" /></div>
+    </div>
+    <BLANKLINE>
+
+    """
+
+    def edit(self):
+        return layout_field('&nbsp;', self.widget())
 
 
 class ButtonField(Button):
