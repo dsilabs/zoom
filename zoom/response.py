@@ -24,10 +24,10 @@ from zoom.jsonz import dumps
 class Response(object):
     """web response"""
 
-    def __init__(self, content=b'', status='200 OK'):
+    def __init__(self, content=b'', status='200 OK', headers=None):
         self.content = content
         self.status = status
-        self.headers = OrderedDict()
+        self.headers = OrderedDict(headers or {})
 
     def render_doc(self):
         """Renders the payload"""
