@@ -133,6 +133,8 @@ class Database(object):
     """
 
     paramstyle = 'pyformat'
+    stats = []  # make this a class attribute to catch across instances
+    debug = False  # make this a class attribute to catch across instances
 
     def __init__(self, factory, *args, **keywords):
         """Initialize with factory method to generate DB connection
@@ -142,9 +144,7 @@ class Database(object):
         self.__factory = factory
         self.__args = args
         self.__keywords = keywords
-        self.debug = False
         self.log = []
-        self.stats = []
         self.rowcount = None
         self.lastrowid = None
 
@@ -225,7 +225,7 @@ class Database(object):
                     args,
                 ))
                 source = format_stack(inspect.stack())
-                self.stats.append((elapsed, repr(command), repr(args), source))
+                type(self).stats.append((elapsed, repr(command), repr(args), source))
 
         if cursor.description:
             return Result(cursor)
@@ -259,9 +259,14 @@ class Database(object):
                 '\n'.join(self.log))
         return ''
 
-    def get_stats(self):
-        result = self.stats
-        self.stats.clear
+    @classmethod
+    def get_stats(cls):
+        """Return the stats to the caller, clearing the list of what is returned
+
+            We use a classmethod to support inheritance (over staticmethod)
+        """
+        result = list(cls.stats)  # get a copy of the list
+        del cls.stats[:len(result)]  # clear the list, but more may have been added
         return result
 
     def get_tables(self):
@@ -343,6 +348,7 @@ class Sqlite3Database(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+
 class MySQLDatabase(Database):
     """MySQL Database"""
 
@@ -422,7 +428,7 @@ class MySQLDatabase(Database):
     def connect_string(self):
         """Return a string representation of the connection parameters"""
         def obfuscate(text):
-            return text[:1] + '*' * (len(text)-2) + text[-1:]
+            return text[:1] + '*' * (len(text) - 2) + text[-1:]
 
         return 'mysql://{}:{}@{}/{}'.format(
             self.user.decode('utf8'),
@@ -557,12 +563,12 @@ def handler(request, handler, *rest):
     site = request.site
     database_name = site.config.get(
         'database', 'name', site.config.get(
-            'database', 'dbname', None # legacy
+            'database', 'dbname', None  # legacy
         )
     )
     if database_name:
         site.db = connect_database(site.config)
-        site.db.debug = site.monitor_system_database
+        Database.debug = site.monitor_system_database
 
         if site.db.get_tables() == []:
             raise EmptyDatabaseException('Database is empty')

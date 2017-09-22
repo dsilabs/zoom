@@ -12,6 +12,7 @@ import sys
 
 import zoom
 from zoom.components import as_links
+from zoom.database import Database
 import zoom.html as html
 
 
@@ -308,11 +309,13 @@ def handle(request):
         """Run an app"""
         request.app = app
         zoom.render.add_helpers(helpers(request))
-        request.site.db.debug = request.site.monitor_app_database
+        # change Database class attribute to catch non system instances
+        #  and ojbects inheriting from Database
+        Database.debug = request.site.monitor_app_database
         request.profiler.add('system ready')
         result = app.run(request)
         request.profiler.add('app finished')
-        request.site.db.debug = False #request.site.monitor_system_database
+        Database.debug = False
         return result
 
     logger = logging.getLogger(__name__)
