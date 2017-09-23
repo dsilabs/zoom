@@ -246,7 +246,7 @@ class FileResponse(Response):
         if content:
             self.content = content
         else:
-            self.content = file(filename, 'rb').read()
+            self.content = open(filename, 'rb').read()
         import os
         _, fileonly = os.path.split(filename)
         self.headers['Content-type'] = 'application/octet-stream'
