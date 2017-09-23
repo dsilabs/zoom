@@ -22,6 +22,7 @@ from .browse import browse
 from .component import Component
 from .context import context as system
 from .forms import form, Form
+from .helpers import link_to
 from .mvc import View, Controller
 from .page import page, Page
 from .packages import requires
