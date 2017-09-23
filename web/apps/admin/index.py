@@ -31,7 +31,7 @@ def log_data(db, status, n, limit, q):
             elapsed
         from log
         where status in ({statuses})
-        order by timestamp desc
+        order by id desc
         limit {limit}
         offset {offset}
         """.format(
@@ -68,7 +68,7 @@ def activity_panel(db):
         log.elapsed
     from log, users
         where log.user_id = users.id
-    order by timestamp desc
+    order by log.id desc
     limit 15
     """)
 
@@ -98,7 +98,7 @@ def error_panel(db):
             timestamp
         from log
         where status in ("E") and timestamp>=%s
-        order by timestamp desc
+        order by id desc
         limit 10
         """, today())
 
@@ -126,7 +126,7 @@ def users_panel(db):
     from log, users
         where log.user_id = users.id and users.status="A"
     group by users.username
-    order by timestamp desc
+    order by log.id desc
     limit 10
     """)
 
@@ -206,7 +206,7 @@ class MyView(View):
             select
                 id, app, path, status, address, elapsed, message
             from log
-            order by timestamp desc limit 50
+            order by id desc limit 50
             """
         )
         return browse(data)
@@ -217,7 +217,7 @@ class MyView(View):
         data = db("""
             select *
             from audit_log
-            order by timestamp desc
+            order by id desc
             limit 100""")
         return page(browse(data), title='Activity')
 
@@ -227,7 +227,7 @@ class MyView(View):
             select *
             from log
             where status in ('C', 'I')
-            order by timestamp desc
+            order by id desc
             limit 100""")
         return page(browse(data), title='Requests')
 
