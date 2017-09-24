@@ -68,7 +68,7 @@ def activity_panel(db):
         log.elapsed
     from log, users
         where log.user_id = users.id
-    order by log.id desc
+    order by timestamp desc
     limit 15
     """)
 
@@ -126,7 +126,7 @@ def users_panel(db):
     from log, users
         where log.user_id = users.id and users.status="A"
     group by users.username
-    order by log.id desc
+    order by timestamp desc
     limit 10
     """)
 
