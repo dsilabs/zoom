@@ -10,6 +10,7 @@ addons:
 python:
   - '3.4'
   - '3.5'
+  - '3.6'
 
 install:
   - pip install coveralls
@@ -24,7 +25,7 @@ script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom/* ./tests/unittests/*
 
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then coveralls; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then coveralls; fi
 
 notifications:
   email:
