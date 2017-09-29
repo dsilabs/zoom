@@ -231,7 +231,7 @@ class Database(object):
             return Result(cursor)
         else:
             self.lastrowid = getattr(cursor, 'lastrowid', None)
-            return self.lastrowid
+            return self.lastrowid or None
 
     def execute(self, command, *args):
         """execute a SQL command with optional parameters"""
