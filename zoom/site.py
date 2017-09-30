@@ -110,6 +110,10 @@ class Site(object):
                 ])
             self.templates = {}
 
+            self.packages = zoom.packages.load(
+                join(site_path, 'packages.json'),
+            )
+
             self.apps_paths = [
                 abspath(join(self.path, p))
                 for p in str(get('apps', 'path')).split(';')

@@ -4,6 +4,9 @@
     Provide a simple shorthand way to include external components in projects.
 """
 
+import json
+import os
+
 import zoom
 
 
@@ -20,9 +23,26 @@ default_packages = {
 }
 
 
+def load(pathname):
+    """Load a packages file into a dict"""
+    isfile = os.path.isfile
+    if isfile(pathname):
+        with open(pathname, 'r', encoding='utf-8') as data:
+            return json.load(data)
+    return {}
+
+
 def get_registered_packages():
     """Returns the list of packages known to the site"""
-    return default_packages
+    registered = {}
+    packages_list = [
+        default_packages,
+        zoom.system.site.packages,
+        # app_packages,
+    ]
+    for packages in packages_list:
+        registered.update(packages)
+    return registered
 
 
 def requires(*package_names):

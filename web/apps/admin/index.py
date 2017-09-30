@@ -66,8 +66,7 @@ def activity_panel(db):
         log.path,
         log.timestamp,
         log.elapsed
-    from log, users
-        where log.user_id = users.id
+    from log left join users on log.user_id = users.id
     order by timestamp desc
     limit 15
     """)
