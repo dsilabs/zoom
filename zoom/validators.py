@@ -12,7 +12,22 @@ USERNAME_RE = r'^[a-zA-Z0-9.@\\]+$'
 
 
 class Validator(object):
-    """A content validator."""
+    """A content validator.
+
+    >>> is_true = Validator('not true', bool)
+    >>> is_true.valid(1)
+    True
+
+    >>> is_true.valid([])
+    False
+
+    >>> is_true.msg
+    'not true'
+
+    >>> is_true.clean({})
+    {}
+
+    """
 
     def __init__(self, msg, test):
         self.msg = msg
