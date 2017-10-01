@@ -25,15 +25,22 @@ default_packages = {
 
 def load(pathname):
     """Load a packages file into a dict"""
-    isfile = os.path.isfile
-    if isfile(pathname):
+    if os.path.isfile(pathname):
         with open(pathname, 'r', encoding='utf-8') as data:
             return json.load(data)
     return {}
 
 
 def get_registered_packages():
-    """Returns the list of packages known to the site"""
+    """Returns the list of packages known to the site
+
+    >>> request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.site.Site(request)
+
+    >>> packages = get_registered_packages()
+    >>> 'c3' in packages
+    True
+    """
     registered = {}
     packages_list = [
         default_packages,
@@ -46,7 +53,23 @@ def get_registered_packages():
 
 
 def requires(*package_names):
-    """Inform framework of the packages required for rendering"""
+    """Inform framework of the packages required for rendering
+
+    >>> request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.site.Site(request)
+
+    >>> requires('c3')
+    >>> libs = zoom.component.composition.parts.parts['libs']
+    >>> list(libs)[0]
+    'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'
+
+    >>> try:
+    ...     requires('d4')
+    ... except Exception as e:
+    ...     'Missing required' in str(e) and 'raised!'
+    'raised!'
+
+    """
 
     parts = zoom.Component()
 
