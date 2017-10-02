@@ -12,6 +12,18 @@ from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
 
 
+def get_current_username(request):
+    """get current user username"""
+    site = request.site
+    return (
+        site.config.get('users', 'override', '') or
+        getattr(request.session, 'username', None) or
+        request.env.get('REMOTE_USER', None) or
+        site.guest or
+        None
+    )
+
+
 def get_groups(db, user):
     """get groups for a user
 
@@ -115,7 +127,7 @@ class User(Record):
 
         self.is_authenticated = (
             self.username != site.guest and
-            self.username == request.session.username
+            self.username == get_current_username(request)
         )
         logger.debug(
             'user %r is_authenticated: %r',
