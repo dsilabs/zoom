@@ -44,7 +44,7 @@ import zoom.queues
 import zoom.session
 import zoom.site
 import zoom.templates
-import zoom.user
+import zoom.users
 import zoom.component
 import zoom.request
 import zoom.profiler
@@ -394,7 +394,7 @@ def handle(request, handlers=None):
         zoom.session.handler,
         zoom.component.handler,
         check_csrf,
-        zoom.user.handler,
+        zoom.users.handler,
         zoom.render.handler,
         display_errors,
         zoom.apps.handler,
