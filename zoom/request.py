@@ -97,13 +97,24 @@ def get_library_instance():
 
 
 def get_instance(directory):
-    """figures out what instance to run"""
+    """Figures out which instance to run
+
+    This function will first check to see if the instance directory passed
+    contains a sites directory, the miniumum bar to be considered an instance
+    directory.  If so, it returns it's absolute path.
+
+    If not, it will attempt to locate a Zoom configuration file which
+    specifies the instance path.
+
+    If none of the above methods succeed it raises an exception.
+    """
 
     logger = logging.getLogger(__name__)
 
     if directory and os.path.isdir(os.path.join(directory, 'sites')):
         # user wants to run a specific instance overriding the config files
         instance = os.path.abspath(directory)
+        logger.debug('instance: %s', instance)
         return instance
 
     config_file = (
@@ -123,32 +134,6 @@ def get_instance(directory):
         instance = get_library_instance()
 
     return instance
-
-
-def get_site_path(request, location):
-    """get the site path
-
-    Find the site which the system is to run for any given
-    domain name / instance combination.
-    """
-    logger = logging.getLogger(__name__)
-    exists = os.path.exists
-    join = os.path.join
-    split = os.path.split
-    isdir = os.path.isdir
-
-    if location:
-        if exists(location):
-            if isdir(location):
-                if exists(join(location, 'site.ini')):
-                    logger.debug('using site.ini file: %s', location)
-                    return location
-            elif exists(location) and split(location)[-1] == 'site.ini':
-                logger.debug('using site: %s', join(location))
-                return split(location)[0]
-
-    result = os.path.join(request.instance, 'sites', request.server)
-    return result
 
 
 def calc_domain(host):
@@ -185,17 +170,27 @@ class Request(object):
 
     >>> url = 'http://localhost/test?name=joe&age=40'
     >>> request = build(url)
-    >>> request.body  == sys.stdin
+    >>> request.body_consumed
+    False
+    >>> request.data == {'age': '40', 'name': 'joe'}
+    True
+    >>> request.path == '/test'
+    True
+    >>> request.route == ['test']
+    True
+    >>> request.helpers()['host']
+    'localhost'
+    >>> request.method
+    'GET'
+    >>> request.port
+    '80'
+
+    >>> request = build(url)
+    >>> request.body == sys.stdin
     True
     >>> request.body_consumed
     True
     >>> request.data == {}
-    True
-
-    >>> request = build(url)
-    >>> request.body_consumed
-    False
-    >>> request.data == {'age': '40', 'name': 'joe'}
     True
     """
 
@@ -207,13 +202,11 @@ class Request(object):
         get = env.get
 
         self.start_time = start_time or timer()
-        self.ip_address = None
         self.session_token = None
         self.session_timeout = None
         self.subject_token = None
         self.request_id = make_request_id()
         self.server = None
-        self.route = []
         self._body = None
         self.body_consumed = False
         self.method = get('REQUEST_METHOD')
@@ -233,10 +226,8 @@ class Request(object):
         self.port = get('SERVER_PORT')
         self.script = get('SCRIPT_FILENAME')
         self.agent = get('HTTP_USER_AGENT')
-        self.method = get('REQUEST_METHOD')
         self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
         self.referrer = get('HTTP_REFERER')
-        self.env = env
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]
@@ -255,7 +246,7 @@ class Request(object):
         self.instance = get_instance(instance)
         logger.debug('request.instance: %s', self.instance)
 
-        self.site_path = get_site_path(self, instance)
+        self.site_path = os.path.join(self.instance, 'sites', self.server)
         logger.debug('request.site_path: %s', self.site_path)
 
         logger.debug('request.home: %s', self.home)
@@ -334,6 +325,7 @@ def build(url, data=None):
             QUERY_STRING=parsed.query,
             SERVER_NAME=parsed.hostname,
             SERVER_PORT=parsed.port or '80',
+            HTTP_HOST=parsed.hostname,
         ),
     )
     if data:
