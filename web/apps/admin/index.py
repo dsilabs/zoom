@@ -75,7 +75,7 @@ def activity_panel(db):
     for rec in data:
         row = [
             link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
-            link_to(rec[1], '/admin/users/' + rec[1]),
+            link_to(rec[1], '/admin/users/{}'.format(rec[1])),
             rec[2],
             rec[3],
             how_long_ago(rec[4]),
