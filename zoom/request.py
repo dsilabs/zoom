@@ -13,6 +13,7 @@ import json
 import logging
 import platform
 import uuid
+import urllib
 from timeit import default_timer as timer
 
 import zoom.utils
@@ -50,22 +51,25 @@ def get_web_vars(env):
 
     items = {}
     for key in cgi_fields.keys():
-        fn = items.__setitem__
+
+        save = items.__setitem__
+
         if isinstance(cgi_fields[key], list):
             value = (key, [item.value for item in cgi_fields[key]])
         elif cgi_fields[key].filename:
             value = (key, cgi_fields[key])
         else:
             value = (key, cgi_fields[key].value)
+
         if '[' in key and key.endswith(']'):
             # some libs append an index myfield[0], we choose to put them
             # in a list
             param = key[:key.find('[')]
             items.setdefault(param, [])
-            fn = items[param].append
+            save = items[param].append
             value = value[1:]
 
-        fn(*value)
+        save(*value)
 
     return items
 
@@ -177,9 +181,25 @@ def strim(url):
 
 
 class Request(object):
-    """A web request"""
+    """A web request
 
-    # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    >>> url = 'http://localhost/test?name=joe&age=40'
+    >>> request = build(url)
+    >>> request.body  == sys.stdin
+    True
+    >>> request.body_consumed
+    True
+    >>> request.data == {}
+    True
+
+    >>> request = build(url)
+    >>> request.body_consumed
+    False
+    >>> request.data == {'age': '40', 'name': 'joe'}
+    True
+    """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, env=None, instance=None, start_time=None):
 
@@ -230,15 +250,15 @@ class Request(object):
         logger = logging.getLogger(__name__)
 
         self.location = strim(instance)
-        logger.debug('request.location: {}'.format(self.location))
+        logger.debug('request.location: %s', self.location)
 
         self.instance = get_instance(instance)
-        logger.debug('request.instance: {}'.format(self.instance))
+        logger.debug('request.instance: %s', self.instance)
 
         self.site_path = get_site_path(self, instance)
-        logger.debug('request.site_path: {}'.format(self.site_path))
+        logger.debug('request.site_path: %s', self.site_path)
 
-        logger.debug('request.home: {}'.format(self.home))
+        logger.debug('request.home: %s', self.home)
 
     @property
     def body(self):
@@ -270,15 +290,18 @@ class Request(object):
 
     @property
     def elapsed(self):
+        """Elapsed time"""
         return timer() - self.start_time
 
     @property
     def parent_path(self):
+        """Path of resource parent"""
         return '/' + '/'.join(self.route[:-1])
 
     def helpers(self):
         """provide helpers"""
         def get_elapsed():
+            """Return formatted elapsed time"""
             return '{:1.3f}'.format(self.elapsed)
 
         return dict(
@@ -295,6 +318,28 @@ class Request(object):
 
     def __str__(self):
         return zoom.utils.pretty(self)
+
+
+def build(url, data=None):
+    """Build a request object
+    """
+    parsed = urllib.parse.urlparse(url)
+    logger = logging.getLogger(__name__)
+    logger.debug(parsed)
+    request = Request(
+        dict(
+            REQUEST_METHOD=data and 'POST' or 'GET',
+            SCRIPT_NAME='index.wsgi',
+            PATH_INFO=parsed.path,
+            QUERY_STRING=parsed.query,
+            SERVER_NAME=parsed.hostname,
+            SERVER_PORT=parsed.port or '80',
+        ),
+    )
+    if data:
+        request.body_consumed = True
+        request.data = data
+    return request
 
 
 def handler(request, handle, *rest):
