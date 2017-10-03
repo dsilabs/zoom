@@ -133,6 +133,8 @@ def id_for(*args):
         '1234'
         >>> id_for('this %$&#@^is##-$&*!it')
         'this-is-it'
+        >>> id_for('test-this')
+        'test-this'
 
     """
     def id_(text):
