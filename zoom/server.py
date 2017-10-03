@@ -87,3 +87,12 @@ def application(environ, start_response):
     """
     os.chdir(environ.get('DOCUMENT_ROOT'))
     return WSGIApplication(instance='..')(environ, start_response)
+
+
+def debug(environ, start_response):
+    """Configuration Debugging App"""
+    request = Request(environ)
+    response = middleware.handle(request, middleware.DEBUGGING_HANDLERS)
+    status, headers, body = response.as_wsgi()
+    start_response(status, headers)
+    return [body]

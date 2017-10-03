@@ -53,33 +53,23 @@ from zoom.helpers import tag_for
 from zoom.forms import csrf_token as csrf_token_generator
 from zoom.tools import websafe
 
-SAMPLE_FORM = """
-<form action="" id="dz_form" name="dz_form" method="POST"
-    enctype="multipart/form-data">
-    first name: <input name="first_name" value="" type="text">
-    last name: <input name="last_name" value="" type="text">
-    picture: <input name="photo" value="" type="file">
-    <input style="" name="send_button" value="send" class="button"
-    type="submit" id="send_button">
-</form>
-"""
-
 
 def debug(request):
-    """fake app for development purposes"""
+    """Debugging page
 
-    def format_section(title, content):
-        """format a section for debugging output"""
-        return '<pre>\n====== %s ======\n%s\n</pre>' % (title, repr(content))
+    >>> type(debug(zoom.request.build('http://localhost/')))
+    <class 'zoom.response.HTMLResponse'>
+    """
 
-    def formatr(title, content):
+    def section(title, content):
         """format a section for debugging output in raw form"""
-        return '<pre>\n====== %s ======\n%s</pre>' % (title, content)
+        return '<h2>%s</h2>%s' % (title, content)
+
+    pretty = zoom.utils.pretty
 
     content = []
 
     try:
-        status = '200 OK'
 
         if request.module == 'wsgi':
             title = 'Hello from WSGI!'
@@ -87,52 +77,37 @@ def debug(request):
             title = 'Hello from CGI!'
 
         content.extend([
-            '<br>\n',
-            '<img src="/themes/default/images/banner_logo.png" />\n',
-            '<hr>\n',
-            # '<pre>{printed_output}</pre>\n',
-            '<img src="/static/zoom/images/checkmark.png" />\n',
-            '<br>\n',
+            '<img src="/static/zoom/images/checkmark.png" />ZOOM Debug',
+            '<hr>',
+            '<h1>',
             title,
+            '</h1>',
         ])
 
-        # content.append(formatr('printed output', '{printed_output}'))
-
-        content.append(formatr('test form', SAMPLE_FORM))
-        content.append(formatr('request', request))
-        content.append(
-            formatr(
+        content.extend(
+            section('request', '<pre>%s</pre>' % request) +
+            section(
                 'paths',
-                json.dumps(
+                '<pre>%s</pre>' % pretty(
                     dict(
                         path=[sys.path],
                         directory=os.path.abspath('.'),
                         pathname=__file__,
-                    ), indent=2
+                    )
                 )
-            )
+            ) +
+            section('request.env', '<pre>%s</pre>' % pretty(request.env)) +
+            section('os.env', '<pre>%s</pre>' % pretty(os.environ))
         )
-        content.append(
-            formatr(
-                'environment',
-                json.dumps(list(os.environ.items()), indent=2)
-            )
-        )
-
-        # print('testing printed output')
-
-        data = request.data
-        if 'photo' in data and data['photo'].filename:
-            content.append(format_section('filename', data['photo'].filename))
-            content.append(format_section('filedata', data['photo'].value))
 
     except Exception:
         content = ['<pre>{}</pre>'.format(traceback.format_exc())]
 
-    return HTMLResponse(''.join(content), status=status)
+    return HTMLResponse(''.join(content))
 
 
 def serve_redirects(request, handler, *rest):
+    """Serves redirects"""
     result = handler(request, *rest)
     if isinstance(result, RedirectResponse):
         tag = tag_for('abs_site_url')
@@ -407,7 +382,6 @@ DEBUGGING_HANDLERS = (
     trap_errors,
     serve_favicon,
     serve_static,
-    serve_themes,
     serve_images,
     debug,
 )
