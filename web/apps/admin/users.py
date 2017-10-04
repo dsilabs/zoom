@@ -2,13 +2,13 @@
     system users
 """
 
-from zoom.components import success, error
+import zoom
+from zoom.components import success
 from zoom.collect import Collection, CollectionView, CollectionController
 from zoom.context import context
 from zoom.forms import Form
-from zoom.page import page
 from zoom.users import User, Users
-from zoom.tools import now, home
+from zoom.tools import home
 import zoom.validators as v
 import zoom.fields as f
 
@@ -54,17 +54,20 @@ def get_reset_password_form(key):
 class UserCollectionView(CollectionView):
 
     def show(self, key):
-        page = CollectionView.show(self, key)
-        page.actions.insert(0, 'Reset Password')
-        user = context.site.users.first(username=key)
-        if user.is_active:
-            page.actions.insert(0, 'Deactivate')
-        else:
-            page.actions.insert(0, 'Activate')
-        return page
+        """Show user"""
+        user = context.site.users.locate(key)
+        if user:
+            page = CollectionView.show(self, key)
+            page.actions.insert(0, 'Reset Password')
+            if user.is_active:
+                page.actions.insert(0, 'Deactivate')
+            else:
+                page.actions.insert(0, 'Activate')
+            return page
 
     def reset_password(self, key, **kwargs):
-        user = context.site.users.first(username=key)
+        """Show resset password form"""
+        user = context.site.users.locate(key)
         if user:
             msg = 'Reset password for %s (%s)<br><br>' % (user.full_name, user.username)
             form = get_reset_password_form(key)
@@ -72,7 +75,7 @@ class UserCollectionView(CollectionView):
             content = msg + form.edit()
         else:
             content = 'Error locating user %r' % key
-        return page(content, title='Reset Password')
+        return zoom.page(content, title='Reset Password')
 
 
 class UserCollectionController(CollectionController):
@@ -116,7 +119,8 @@ def main(route, request):
     db = request.site.db
     users = Users(db)
     fields = user_fields(request)
-    columns = 'link', 'username', 'phone', 'email', 'status', 'updated', 'updated_by'
+    columns = 'link', 'phone', 'email', 'status', 'updated', 'updated_by'
+    labels = 'Username', 'phone', 'email', 'status', 'updated', 'updated_by'
     return Collection(
         fields,
         model=User,
@@ -125,6 +129,7 @@ def main(route, request):
         store=users,
         item_name='user',
         columns=columns,
+        labels=labels,
         url='/admin/users',
         key_name='id'
     )(route, request)

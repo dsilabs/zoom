@@ -10,6 +10,7 @@ from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
+from zoom.utils import id_for
 
 
 def get_current_username(request):
@@ -59,17 +60,26 @@ def get_groups(db, user):
     >>> 'administrators' in groups
     True
     """
-    # logger = logging.getLogger(__name__)
-    # logger.debug(user)
+    logger = logging.getLogger(__name__)
 
     def get_memberships(group, memberships, depth=0):
         """get group memberships"""
-        result = [group]
+        # result = [group]
+        result = {group}
         if depth < 10:
             for grp, sgrp in memberships:
-                if group == sgrp and grp not in result:
-                    result += get_memberships(grp, memberships, depth+1)
+                if group == sgrp and grp not in result and grp in all_groups:
+                    verb = all_groups[grp].startswith('a_') and 'can' or 'are'
+                    logger.debug(
+                        '%s %s %s',
+                        all_groups[sgrp],
+                        verb,
+                        all_groups[grp],
+                    )
+                    result |= get_memberships(grp, memberships, depth+1)
         return result
+
+    all_groups = dict(db('select id, name from groups'))
 
     my_groups = [
         rec[0]
@@ -77,32 +87,38 @@ def get_groups(db, user):
             'SELECT group_id FROM members WHERE user_id=%s',
             user._id
         )
+        if rec[0] in all_groups
     ]
 
     subgroups = list(db(
         'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
     ))
 
-    memberships = []
+    # memberships = []
+    groups = set()
     for group in my_groups:
-        memberships += get_memberships(group, subgroups)
+        # memberships += get_memberships(group, subgroups)
+        groups |= get_memberships(group, subgroups)
 
-    groups = my_groups + memberships
+    # groups = my_groups + memberships
 
-    named_groups = []
-    for rec in db('SELECT id, name FROM groups'):
-        groupid = rec[0]
-        name = rec[1].strip()
-        if groupid in groups:
-            named_groups += [name]
+    named_groups = sorted(all_groups[g] for g in set(groups))
 
+    logger.debug('%s has groups %s', user.username, named_groups)
     return named_groups
 
 
 class User(Record):
     """Zoom User"""
 
-    key = property(lambda a: a.username)
+    # key = property(lambda a: id_for(a.username))
+    @property
+    def key(self):
+        if '\\' in self.username:
+            username = self.username.replace('\\','-')
+        else:
+            username = self.username
+        return id_for(username)
 
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)
@@ -113,6 +129,7 @@ class User(Record):
         self.__user_groups = None
         self.__user_group_ids = None
         self.__apps = None
+        self.request = None
 
     def allows(self, user, action):
         return action != 'delete' or self.username != 'admin'
@@ -154,7 +171,7 @@ class User(Record):
     @property
     def full_name(self):
         """user full name"""
-        return ' '.join(filter(bool, [self.first_name, self.last_name]))
+        return ' '.join(filter(bool, [self.first_name, self.last_name])) or 'New User'
 
     @property
     def name(self):
@@ -248,7 +265,7 @@ class User(Record):
 
         >>> user = users.first(username='admin')
         >>> user.get_groups()[:2]
-        ['administrators', 'a_admin']
+        ['a_admin', 'a_apps']
         """
         if self.__groups is None:
             store = self.get('__store')
@@ -310,9 +327,14 @@ class User(Record):
 
     def add_group(self, group):
         """Make user a member of the group"""
+        logger = logging.getLogger(__name__)
         group = context.site.groups.locate(group)
         if group:
             group.add_user(self)
+            logger.debug('added %s to group %s', self.username, group.name)
+        else:
+            logger.warning('unable to add %s to group %s',
+                self.username, group.name)
 
     def remove_groups(self):
         """Remove user membership in the group"""
@@ -344,6 +366,7 @@ class Users(RecordStore):
       groups ..............: ['everyone', 'guests']
       status ..............: 'A'
       created .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
+      request .............: None
       updated .............: datetime.datetime(2017, 3, 30, 17, 23, 43)
       is_admin ............: False
       password ............: ''
@@ -382,6 +405,16 @@ class Users(RecordStore):
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
 
+    def locate(self, key):
+        users = context.site.users
+        user = users.first(username=key)
+        if user:
+            return user
+        alternate_key = key.replace('-', '\\')
+        user = users.first(username=alternate_key)
+        if user:
+            return user
+
 
 def authorize(*roles):
     """Decorator that authorizes (or not) the current user
@@ -404,18 +437,47 @@ def authorize(*roles):
     return wrapper
 
 
-def handler(request, handler, *rest):
-    """handle user"""
+def set_current_user(request):
+    """Set current user
+
+    Set the current user based on the current username.
+    """
     logger = logging.getLogger(__name__)
 
     username = get_current_username(request)
-    if username:
-        users = Users(request.site.db)
-        user = users.first(username=username)
-        if user:
-            context.user = request.user = user
-            user.initialize(request)
-            logger.debug('user loaded: %s (%r)', user.full_name, user.username)
-            request.profiler.add('user initialized')
+    if not username:
+        raise Exception('No user information available')
 
-    return handler(request, *rest)
+    users = Users(request.site.db)
+    user = users.first(username=username, status='A')
+    if not user:
+        logger.debug('no active user record for %s', username)
+
+        user = users.first(username=username)
+        if not user:
+            # We have identified a valid user but we don't have them
+            # in our database.  This happens when authentication is handled
+            # by another layer before us.  What we need to do in this case
+            # is register a new user record so we can keep track of them like
+            # any other user but we will likely never be asked to authenticate
+            # this user.
+            logger.debug('adding new user record for %s', username)
+            user = User(username=username)
+            users.put(user)
+            user = users.first(username=username, status='A')
+            msg = 'new user record added for unregistered user %r'
+            logger.info(msg, username)
+
+    if user:
+        user.initialize(request)
+        zoom.system.user = request.user = user
+        logger.debug('user loaded: %s (%r)', user.full_name, user.username)
+        request.profiler.add('user initialized')
+    else:
+        raise Exception('Unable to initialize user')
+
+
+def handler(request, next_handler, *rest):
+    """handle user"""
+    set_current_user(request)
+    return next_handler(request, *rest)
