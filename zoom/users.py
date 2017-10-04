@@ -405,6 +405,10 @@ class Users(RecordStore):
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
 
+    def before_delete(self, user):
+        """Things to do right before deleting a user"""
+        user.remove_groups()
+
     def locate(self, key):
         users = context.site.users
         user = users.first(username=key)
