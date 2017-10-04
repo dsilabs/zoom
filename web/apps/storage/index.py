@@ -52,7 +52,7 @@ class IndexView(View):
         footer = len(items) and '%s %s' % (len(items), footer_name) or ''
         return page(browse(items, footer=footer), title='Entity: '+name)
 
-    def table(self, name):
+    def table(self, name, limit='50'):
         db = self.model.site.db
         items = RecordStore(db, MyModel, name=name)
         if len(items) == 1:
@@ -65,7 +65,8 @@ class IndexView(View):
         # otherwise we'll just select the whole thing and then take what we
         # want from the list.
         columns = db.get_column_names(name)
-        data = 'id' in columns and items[:50] or list(items)[:50]
+        limit = int(limit)
+        data = 'id' in columns and items[:limit] or list(items)[:limit]
 
         return page(browse(data, footer=footer), title='Record: '+name)
 
