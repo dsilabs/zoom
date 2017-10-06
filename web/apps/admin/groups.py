@@ -39,13 +39,18 @@ class SelectionField(f.ChosenMultiselectField):
         return ', '.join(self._scan(self.value, lambda a: a[0]))
 
 
-
 def group_fields(request):
+
+    user_groups = model.get_user_group_options(request.site)
 
     fields = f.Fields([
         f.TextField('Name', v.required, v.valid_name),
         f.MemoField('Description'),
-        f.PulldownField('Administrators', default='administrators', options=request.site.user_groups),
+        f.PulldownField(
+            'Administrators',
+            default='administrators',
+            options=user_groups
+        ),
     ])
 
     db = request.site.db

@@ -10,6 +10,13 @@ from zoom.users import Users
 from zoom.models import Groups
 
 
+def get_user_group_options(site):
+    return list(
+        (name, str(id)) for name, id in
+        site.db('select name, id from groups where type="U" order by name')
+    )
+
+
 def get_subgroups(db, groups):
     """get subgroups for a list of groups
     """

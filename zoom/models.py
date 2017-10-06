@@ -195,20 +195,7 @@ class Groups(RecordStore):
         )
 
 
-def get_user_groups(site):
-    return list(
-        (name, str(id)) for name, id in
-        site.db('select name, id from groups where type="U" order by name')
-    )
-
-def get_user_options(site):
-    return list(
-        (user.link, str(user._id)) for user in Users(site.db)
-    )
-
 def handler(request, handler, *rest):
     request.site.groups = Groups(request.site.db)
     request.site.users = Users(request.site.db)
-    request.site.user_groups = get_user_groups(request.site)
-    request.site.user_options = get_user_options(request.site)
     return handler(request, *rest)

@@ -13,7 +13,7 @@ import zoom.validators as v
 import zoom.fields as f
 
 from fields import UserGroupsField
-from model import update_user_groups
+import model
 
 def user_fields(request):
     # username_available = Validator('taken', valid_username(db))
@@ -36,7 +36,7 @@ def user_fields(request):
         UserGroupsField(
             'Groups',
             default=['2'],
-            options=request.site.user_groups
+            options=model.get_user_group_options(request.site)
         )
     ])
 
@@ -84,13 +84,13 @@ class UserCollectionController(CollectionController):
         record['status'] = 'A'
 
     def after_update(self, record):
-        update_user_groups(record)
+        model.update_user_groups(record)
 
     def before_insert(self, record):
         record['status'] = 'A'
 
     def after_insert(self, record):
-        update_user_groups(record)
+        model.update_user_groups(record)
 
     def save_password_button(self, key, *args, **data):
         form = get_reset_password_form(key)
