@@ -19,7 +19,7 @@ def get_current_username(request):
     return (
         site.config.get('users', 'override', '') or
         getattr(request.session, 'username', None) or
-        request.env.get('REMOTE_USER', None) or
+        request.remote_user or
         site.guest or
         None
     )
@@ -151,7 +151,6 @@ class User(Record):
             self.username, self.is_authenticated
         )
 
-        self.is_admin = self.is_member(site.administrators_group)
         self.is_admin = self.is_member(site.administrators_group)
         self.is_developer = self.is_member(site.developers_group)
 
@@ -459,7 +458,7 @@ def set_current_user(request):
 
         user = users.first(username=username)
         if not user:
-            # We have identified a valid user but we don't have them
+            # We have an authenticated user but we don't have them
             # in our database.  This happens when authentication is handled
             # by another layer before us.  What we need to do in this case
             # is register a new user record so we can keep track of them like
