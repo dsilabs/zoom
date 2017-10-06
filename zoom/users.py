@@ -144,7 +144,7 @@ class User(Record):
 
         self.is_authenticated = (
             self.username != site.guest and
-            self.username == get_current_username(request)
+            self.id == request.user.id
         )
         logger.debug(
             'user %r is_authenticated: %r',
@@ -472,8 +472,8 @@ def set_current_user(request):
             logger.info(msg, username)
 
     if user:
-        user.initialize(request)
         zoom.system.user = request.user = user
+        user.initialize(request)
         logger.debug('user loaded: %s (%r)', user.full_name, user.username)
         request.profiler.add('user initialized')
     else:
