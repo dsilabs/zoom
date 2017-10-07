@@ -2,6 +2,8 @@
     users index
 """
 
+import datetime
+
 # from zoom.audit import audit
 from zoom.component import component
 from zoom.context import context
@@ -123,11 +125,12 @@ def users_panel(db):
         max(log.timestamp) as timestamp,
         count(*) as requests
     from log, users
-        where log.user_id = users.id and users.status="A"
+        where log.user_id = users.id
+        and timestamp >= %s
     group by users.username
     order by timestamp desc
     limit 10
-    """)
+    """, today() - datetime.timedelta(days=30))
 
     rows = []
     for rec in data:
