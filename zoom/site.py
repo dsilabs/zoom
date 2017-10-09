@@ -2,8 +2,10 @@
     zoom.site
 """
 
+import datetime
 import logging
 import os
+import platform
 
 import zoom.apps
 import zoom.config
@@ -231,7 +233,11 @@ def handler(request, next_handler, *rest):
     except zoom.exceptions.SiteMissingException:
         logger = logging.getLogger(__name__)
         logger.debug('responding with 404 for %r', request.path)
-        content = zoom.templates.site_not_found.format(request=request)
+        content = zoom.templates.site_not_found.format(
+            request=request,
+            node=platform.node(),
+            date=datetime.datetime.now(),
+        )
         response = zoom.response.HTMLResponse(content)
         response.status = '404 Not Found'
         return response
