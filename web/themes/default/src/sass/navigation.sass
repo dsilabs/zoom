@@ -4,6 +4,7 @@ $sub-nav-height: 40px
 
 $nav-color1: #f68a28
 $nav-color2: #f36c00
+$nav-color3: #f67d0f
 
 
 /* navbars */
@@ -108,13 +109,14 @@ a:hover.navbar-brand
     line-height: $sub-nav-height
     color: #888
     text-decoration: none
-    padding: 0 10px
+    padding: 13px 10px
     font-weight: bold
   a:hover
     color: black
     text-decoration: none
-  a#current
-    background: #cacaca
+    background: #fff
+  a#current, a.active
+    background: #e8e8e8
 
 @media (max-width: 979px)
   .app-menu
@@ -154,14 +156,13 @@ a:hover.navbar-brand
   opacity: .9
   font-weight: 600
   font-size: 14px
+  &:hover
+    background: $nav-color3
+    opacity: 1
+  &.active
+    background: $nav-color1
+    opacity: 1
 
-.navbar-zoom .navbar-inner .nav li a:hover
-  background: #f67d0f
-  -webkit-box-shadow: none
-  -moz-box-shadow: none
-  box-shadow: none
-  color: #fff
-  opacity: 1
 
 .nav
   // left: 50%

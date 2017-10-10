@@ -412,11 +412,21 @@ def get_main_apps(request):
 
 def main_menu_items(request):
     """Returns the main menu."""
+
+    def style(app):
+        return app.name == current_app_name and 'class="active" ' or ''
+
     default_app_name = get_default_app_name(request.site, request.user)
+    current_app_name = request.route and request.route[0] or default_app_name
+
     return html.li([
         app.name == default_app_name
-        and '<a href="<dz:site_url>/">{}</a>'.format(app.title)
-        or app.link
+        and '<a {}href="<dz:site_url>/">{}</a>'.format(
+            style(app), app.title
+        )
+        or '<a {}href="<dz:site_url>{}">{}</a>'.format(
+            style(app), app.url, app.title
+        )
         for app in get_main_apps(request) if app.visible
     ])
 
