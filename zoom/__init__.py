@@ -10,6 +10,7 @@
 """
 
 import zoom.alerts
+import zoom.collect
 import zoom.database
 import zoom.queues
 import zoom.records
