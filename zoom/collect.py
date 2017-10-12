@@ -174,7 +174,7 @@ class CollectionView(View):
                     c.title.lower(),
                 )
             else:
-                footer = '%s %s' % (len(items), footer_name.lower())
+                footer = '%s %s' % (len(items), footer_name)
 
         content = browse(
             [c.model(i) for i in items],
