@@ -3,6 +3,7 @@
 """
 
 import logging
+import string
 
 import zoom
 from zoom.context import context
@@ -10,8 +11,44 @@ from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
-from zoom.utils import id_for
 
+
+chars = ''.join(map(chr, range(256)))
+keep_these = string.ascii_letters + string.digits + '.- '
+delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
+allowed = str.maketrans(keep_these, keep_these, delete_these)
+
+
+def id_for(*args):
+    """
+    Calculates a valid HTML tag id given an arbitrary string.
+
+        >>> id_for('Test 123')
+        'test-123'
+        >>> id_for('New Record')
+        'new-record'
+        >>> id_for('New "special" Record')
+        'new-special-record'
+        >>> id_for("hi", "test")
+        'hi~test'
+        >>> id_for("hi test")
+        'hi-test'
+        >>> id_for("hi-test")
+        'hi-test'
+        >>> id_for(1234)
+        '1234'
+        >>> id_for('this %$&#@^is##-$&*!it')
+        'this-is-it'
+        >>> id_for('test-this')
+        'test-this'
+        >>> id_for('test.this')
+        'test.this'
+
+    """
+    def id_(text):
+        return str(text).strip().translate(allowed).lower().replace(' ', '-')
+
+    return '~'.join([id_(arg) for arg in args])
 
 def get_current_username(request):
     """get current user username"""
