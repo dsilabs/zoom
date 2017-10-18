@@ -321,8 +321,13 @@ class User(Record):
         if self.__user_group_ids is None:
             # if we have groups then we have a store so avoid another check here
             groups = self.groups
-            cmd = 'select id from groups where name in (%s)' % (', '.join(['%s'] * len(groups)))
-            self.__user_group_ids = [i[0] for i in self.get('__store').db(cmd, *groups)]  # list of group id's
+            if len(groups):
+                db = self.get('__store').db
+                slots = ', '.join(['%s'] * len(groups))
+                cmd = 'select id from groups where name in (%s)' % slots
+                self.__user_group_ids = [i[0] for i in db(cmd, *groups)]
+            else:
+                self.__user_group_ids = []
         return self.__user_group_ids
 
     @property
