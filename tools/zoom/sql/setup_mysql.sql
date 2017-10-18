@@ -138,13 +138,15 @@ CREATE TABLE `users` (
   `phone` char(30) default NULL,
   `created` datetime default NULL,
   `updated` datetime default NULL,
+  `last_seen` datetime default NULL,
   `created_by` int unsigned default NULL,
   `updated_by` int unsigned default NULL,
   `status` char(1) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`username`),
   KEY `username` (`username`),
-  KEY `email` (`email`)
+  KEY `email` (`email`),
+  KEY `last_seen` (`last_seen`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -234,9 +236,9 @@ UNLOCK TABLES;
 --
 LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES
-    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),1,1,'A'),
-    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),1,1,'A'),
-    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),1,1,'A');
+    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),NULL,1,1,'A'),
+    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),NULL,1,1,'A'),
+    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),NULL,1,1,'A');
 UNLOCK TABLES;
 
 --
