@@ -78,6 +78,7 @@ CREATE TABLE `users` (
 ,  `phone` char(30) default NULL
 ,  `created` datetime default NULL
 ,  `updated` datetime default NULL
+,  `last_seen` datetime default NULL
 ,  `created_by` integer  default NULL
 ,  `updated_by` integer  default NULL
 ,  `status` char(1) default NULL
@@ -136,9 +137,9 @@ INSERT INTO `subgroups` VALUES
     (26,5),
     (14,4);
 INSERT INTO `users` VALUES
-    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,'A'),
-    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,'I'),
-    (3,'guest','','Guest','User','guest@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,'A');
+    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'A'),
+    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'I'),
+    (3,'guest','','Guest','User','guest@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'A');
 INSERT INTO `members` VALUES
     (1,1),
     (2,2),

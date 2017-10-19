@@ -238,6 +238,14 @@ class User(Record):
             match, phash = validate_password(password, self.password)
             return match
 
+    def update_last_seen(self):
+        """Record the latest activity time for the user
+
+            avoid the record store put so as not to update the updated timestamp
+        """
+        self.last_seen = zoom.tools.now()
+        self.get('__store').db('update users set last_seen=%s where id=%s', self.last_seen, self._id)
+
     def is_member(self, group):
         """determine if user is a member of a group"""
         return group in self.groups
@@ -516,6 +524,7 @@ def set_current_user(request):
     if user:
         zoom.system.user = request.user = user
         user.initialize(request)
+        user.update_last_seen()  # avoid updating the 'updated' timestamp
         logger.debug('user loaded: %s (%r)', user.full_name, user.username)
         request.profiler.add('user initialized')
     else:

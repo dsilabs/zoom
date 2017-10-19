@@ -1,8 +1,7 @@
 """
     test the user module
 """
-
-import os, unittest
+import unittest
 import datetime
 import logging
 
@@ -131,3 +130,18 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='user')
         del user['__store']
         self.assertRaises(KeyError, user.get_groups)
+
+    def test_last_seen(self):
+        guest = self.users.first(username='guest')
+        self.assertIsNone(guest.last_seen)
+        admin = self.users.first(username='admin')
+        self.assertIsNone(admin.last_seen)
+
+        # trigger the last seen attribute being set
+        admin.update_last_seen()
+
+        guest = self.users.first(username='guest')
+        self.assertIsNone(guest.last_seen)
+        admin = self.users.first(username='admin')
+        self.assertIsNotNone(admin.last_seen)
+        self.assertIsInstance(admin.last_seen, datetime.datetime)
