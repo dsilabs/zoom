@@ -1,12 +1,19 @@
 """
     test_mail
 """
-
+import datetime
 import unittest
+from unittest import mock
 
 from zoom.request import Request
 from zoom.site import Site
 import zoom.mail as mail
+
+
+def mocked_time():
+    """return a mocked time"""
+    return datetime.datetime(2017, 10, 27, 22, 54, 56, 566179)
+
 
 class TestMail(unittest.TestCase):
 
@@ -56,7 +63,8 @@ class TestMail(unittest.TestCase):
             ('ZOOM Support', 'alerts@testco.com')
         )
 
-    def test_post(self):
+    @mock.patch('zoom.mail.now', side_effect=mocked_time)
+    def test_post(self, _):
         site = Site(Request({}))
         site.name = 'Testco'
         data = []
@@ -76,6 +84,7 @@ class TestMail(unittest.TestCase):
                 {
                     'attachments': "[]",
                     'body': 'The Body',
+                    'created': mocked_time(),
                     'style': 'plain',
                     'status': 'waiting',
                     'subject': 'The Subject',
@@ -91,15 +100,15 @@ class TestMail(unittest.TestCase):
             'joe@smith.com'
         )
         self.assertEqual(
-            mail.display_email_address([('Joe','joe@smith.com')]),
+            mail.display_email_address([('Joe', 'joe@smith.com')]),
             'Joe <joe@smith.com>'
         )
         self.assertEqual(
-            mail.display_email_address([('Joe','joe@smith.com'),'sally@smith.com']),
+            mail.display_email_address([('Joe', 'joe@smith.com'), 'sally@smith.com']),
             'Joe <joe@smith.com>;sally@smith.com'
         )
         self.assertEqual(
-            mail.display_email_address([('joe@smith.com'),'sally@smith.com']),
+            mail.display_email_address([('joe@smith.com'), 'sally@smith.com']),
             'joe@smith.com;sally@smith.com'
         )
 
