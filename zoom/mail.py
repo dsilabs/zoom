@@ -19,7 +19,7 @@ from email.utils import formataddr
 
 from zoom.context import context
 from zoom.store import EntityStore
-from zoom.tools import ensure_listy
+from zoom.tools import ensure_listy, now
 from zoom.utils import Record
 
 
@@ -350,6 +350,7 @@ def post(put, sender, recipients, subject,
         attachments=dumps([a.as_tuple() for a in attachments or []]),
         style=style,
         status='waiting',
+        created=now(),
     )
     put(mail)
 
