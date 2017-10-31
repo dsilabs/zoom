@@ -465,6 +465,7 @@ def database(engine, *args, **kwargs):
     # pylint: disable=invalid-name
 
     if engine == 'sqlite3':
+        kwargs.setdefault('isolation_level', None)  # autocommit
         db = Sqlite3Database(*args, **kwargs)
         return db
 
