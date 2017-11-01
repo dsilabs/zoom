@@ -3,7 +3,7 @@ sudo: false
 dist: trusty
 
 addons:
-  mariadb: '10.1'
+  mariadb: '10.2'
   hosts:
     - database
 
