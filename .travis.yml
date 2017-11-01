@@ -17,12 +17,18 @@ matrix:
     - python: '3.6'
       addons:
         mariadb: '5.5'
+      hosts:
+        - database
     - python: '3.6'
       addons:
         mariadb: '10.0'
+      hosts:
+        - database
     - python: '3.6'
       addons:
         mariadb: '10.1'
+      hosts:
+        - database
 
 install:
   - pip install coveralls
