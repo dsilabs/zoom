@@ -113,12 +113,8 @@ def create_database(args, name, parameters):
         db('use %s' % database_name)
 
     elif args.engine == 'sqlite3':
-        engine_params = parameters.copy()
-        engine_params['name'] = os.path.join(
-            'web',
-            'sites',
-        )
-        db = connect(**parameters)
+        database_name = parameters.get('database')
+        db = zoom.database.database(args.engine, database_name)
 
     else:
         print('create not yet supported for %r engine' % args.engine)
