@@ -214,7 +214,13 @@ class JSONResponse(TextResponse):
             ensure_ascii=False,
             **kwargs
     ):
-        content = dumps(content, indent, sort_keys, ensure_ascii, **kwargs)
+        content = dumps(
+            content,
+            indent=indent,
+            sort_keys=sort_keys,
+            ensure_ascii=ensure_ascii,
+            **kwargs
+        )
         TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'application/json;charset=utf-8'
 
