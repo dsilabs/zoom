@@ -26,6 +26,8 @@ def loads(text):
                 return datetime.strptime(obj['value'], '%Y-%m-%d').date()
             elif t == 'decimal':
                 return Decimal(str(obj['value']))
+            elif t == 'bytes':
+                return obj['value'].encode("utf-8")
         return obj
 
     return json.loads(text, object_hook=dhandler)
@@ -55,6 +57,8 @@ def dumps(data, *a, **k):
             return dict(__type__='date', value=obj.isoformat())
         elif isinstance(obj, Decimal):
             return dict(__type__='decimal', value=str(obj))
+        elif isinstance(obj, (bytes, bytearray)):
+            return dict(__type__='bytes', value=obj.decode("utf-8"))
         else:
             msg = 'Object of type %s with value %s is not JSON serializable.'
             raise TypeError(msg % (type(obj), repr(obj)))
