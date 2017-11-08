@@ -3,7 +3,7 @@ sudo: false
 dist: trusty
 
 addons:
-  mariadb: '10.1'
+  mariadb: '10.2'
   hosts:
     - database
 
@@ -11,6 +11,24 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
+
+matrix:
+  include:
+    - python: '3.6'
+      addons:
+        mariadb: '5.5'
+        hosts:
+        - database
+    - python: '3.6'
+      addons:
+        mariadb: '10.0'
+        hosts:
+        - database
+    - python: '3.6'
+      addons:
+        mariadb: '10.1'
+        hosts:
+        - database
 
 install:
   - pip install coveralls
@@ -25,7 +43,7 @@ script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom/* ./tests/unittests/*
 
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then coveralls; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
 
 notifications:
   email:
