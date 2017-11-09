@@ -42,6 +42,12 @@ class TestConvert(unittest.TestCase):
         d2 = loads(dj)
         self.assertEqual(d, d2)
 
+    def test_bytes(self):
+        d = [b'123', Decimal(22.32)]
+        dj = dumps(d)
+        d2 = loads(dj)
+        self.assertEqual(d, d2)
+
     def test_obj(self):
         """test object literal decode - pass/fallthrough of object_hook of loads"""
         d = [Decimal('22.32'), dict(status='this is a test')]
