@@ -28,9 +28,9 @@ def get_args():
     parser.add_argument("-P", "--port", type=int, default=3306,
                         help='database service port')
     parser.add_argument("-u", "--user", type=str, default='zoomuser',
-                        help='database username')
+                        help='database username', nargs='?')
     parser.add_argument("-p", "--password", type=str, default='zoompass',
-                        help='database password')
+                        help='database password', nargs='?')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
     parser.add_argument("-f", "--force", action='store_true',

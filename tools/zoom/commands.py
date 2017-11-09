@@ -25,12 +25,12 @@ __all__ = [
 ]
 
 def setup(name=None):
-    """set up a new Zoom work area"""
+    """set up a new Zoom instance"""
 
     join = os.path.join
 
     parser = ArgumentParser(
-        description='set up a new work area',
+        description='set up a new Zoom instance',
         usage='zoom setup [options] directory'
         )
 
@@ -38,7 +38,7 @@ def setup(name=None):
     args = parser.parse_args()
 
     if os.path.exists(args.directory[0]):
-        print('error: directory exists')
+        print('warning: directory exists')
         sys.exit(-1)
 
     # locate the bundled work area
