@@ -235,6 +235,12 @@ def check_csrf(request, handler, *rest):
                 logger.warning('csrf token missing')
             return RedirectResponse('/')
 
+    zoom.render.add_helpers(
+        dict(
+            csrf_token=csrf_token_generator(request.session),
+        )
+    )
+
     return handler(request, *rest)
 
 

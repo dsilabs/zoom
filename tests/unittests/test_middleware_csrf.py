@@ -4,6 +4,7 @@
 import logging
 import unittest
 
+import zoom
 from zoom.database import setup_test
 from zoom.request import Request
 from zoom.site import Site
@@ -12,6 +13,7 @@ from zoom.middleware import check_csrf
 
 
 logger = logging.getLogger(__name__)
+
 
 def noop(request, **rest):
     """do nothing handler"""
@@ -33,6 +35,7 @@ class TestCSRFMiddleware(unittest.TestCase):
         from zoom.forms import csrf_token
         csrf_token(request.session)  # bind a token
         self.request = request
+        zoom.system.providers = []
 
     def tearDown(self):
         self.request.session.destroy()

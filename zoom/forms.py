@@ -34,7 +34,7 @@ def form_for(*args, **kwargs):
             content.append(type(arg) == str and arg or arg.edit())
             if hasattr(arg, 'requires_multipart_form') and arg.requires_multipart_form():
                 enctype = "multipart/form-data"
-    
+
     t = []
     for key, value in params.items():
         t.append(
@@ -151,5 +151,4 @@ def helpers(request):
     """form helpers"""
     return dict(
         form=form,
-        csrf_token=csrf_token(request.session)
     )
