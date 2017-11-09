@@ -1,9 +1,6 @@
 """
     zoom.forms
 """
-
-import uuid
-
 from zoom.helpers import tag_for, url_for
 from zoom.fields import Fields, MarkdownText, Hidden, Button
 import zoom.html as html
@@ -34,7 +31,7 @@ def form_for(*args, **kwargs):
             content.append(type(arg) == str and arg or arg.edit())
             if hasattr(arg, 'requires_multipart_form') and arg.requires_multipart_form():
                 enctype = "multipart/form-data"
-    
+
     t = []
     for key, value in params.items():
         t.append(
@@ -70,13 +67,6 @@ def multipart_form_for(content, **keywords):
 def multipart_form(content, **kwargs):
     """Returns a multipart form tag."""
     return multipart_form_for(content, **kwargs).replace('</form>', '')
-
-
-def csrf_token(session):
-    """generate a csrf token"""
-    if not hasattr(session, 'csrf_token'):
-        session.csrf_token = uuid.uuid4().hex
-    return session.csrf_token
 
 
 class Form(Fields):
@@ -151,5 +141,4 @@ def helpers(request):
     """form helpers"""
     return dict(
         form=form,
-        csrf_token=csrf_token(request.session)
     )

@@ -20,6 +20,7 @@ import sys
 import traceback
 import json
 import logging
+import uuid
 
 import zoom.apps
 from zoom.response import (
@@ -50,7 +51,6 @@ import zoom.request
 import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
-from zoom.forms import csrf_token as csrf_token_generator
 from zoom.tools import websafe
 
 
@@ -214,7 +214,30 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
-def check_csrf(request, handler, *rest):
+def generate_csrf_token(session):
+    """generate a new csrf token"""
+    if hasattr(session, 'csrf_token'):
+        del session.csrf_token
+    session.csrf_token = uuid.uuid4().hex
+    return session.csrf_token
+
+
+def get_csrf_token(session):
+    """get the csrf token, generating a new one if one does not exist"""
+    return session.csrf_token
+
+
+def csrf_token_helper(session):
+    """helper for a token"""
+    def helper():
+        """call the helper"""
+        if not hasattr(session, 'csrf_token'):
+            generate_csrf_token(session)
+        return get_csrf_token(session)
+    return helper
+
+
+def check_csrf(request, handle, *rest):
     """Check csrf token"""
 
     if request.method == 'POST' and request.site.csrf_validation:
@@ -226,8 +249,7 @@ def check_csrf(request, handler, *rest):
         logger.debug('csrf session %s form %s', csrf_token, form_token)
 
         if csrf_token and csrf_token == form_token:
-            del request.session.csrf_token
-            csrf_token_generator(request.session)  # create a new one
+            generate_csrf_token(request.session)  # create a new one
         else:
             if csrf_token:
                 logger.warning('csrf token invalid')
@@ -235,7 +257,13 @@ def check_csrf(request, handler, *rest):
                 logger.warning('csrf token missing')
             return RedirectResponse('/')
 
-    return handler(request, *rest)
+    result = handle(request, *rest)
+
+    providers = [dict(csrf_token=csrf_token_helper(request.session), )]
+    if result and result.content and isinstance(result.content, str):
+        result.content = zoom.render.apply_helpers(result.content, None, providers)
+
+    return result
 
 
 def not_found(request):
