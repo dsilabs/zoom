@@ -337,11 +337,8 @@ def image_mime_type_valid(data):
     """check data against the more commonly browser supported mime types
     """
     accept = ['gif', 'jpeg', 'png', 'xbm', 'bmp']
-    if (
-            isinstance(data, cgi.FieldStorage) and
-            data.file and imghdr.what('a', data.file.read()) in accept
-    ):
-        return True
+    if isinstance(data, cgi.FieldStorage) and data.file:
+        return imghdr.what('a', data.file.read()) in accept
     if (
             not data or isinstance(data, (str, bytes)) and
             imghdr.what('a', data) in accept
