@@ -4,11 +4,12 @@
 import logging
 import unittest
 
+import zoom
 from zoom.database import setup_test
 from zoom.request import Request
 from zoom.site import Site
 from zoom.session import Session
-from zoom.middleware import check_csrf
+from zoom.middleware import check_csrf, reset_csrf_token
 
 
 logger = logging.getLogger(__name__)
@@ -26,12 +27,12 @@ class TestCSRFMiddleware(unittest.TestCase):
             'REQUEST_URI': '/test/route',
             'REQUEST_METHOD': 'POST',
         }
+        zoom.system.providers = []
         request = Request(self.env)
         request.site = Site(request)
         request.site.db = setup_test()
         request.session = Session(request)
-        from zoom.forms import csrf_token
-        csrf_token(request.session)  # bind a token
+        reset_csrf_token(request.session)  # bind a token
         self.request = request
 
     def tearDown(self):

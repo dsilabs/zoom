@@ -16,6 +16,7 @@ import uuid
 import urllib
 from timeit import default_timer as timer
 
+import zoom
 import zoom.utils
 import zoom.cookies
 from zoom.context import context
@@ -337,4 +338,5 @@ def build(url, data=None):
 def handler(request, handle, *rest):
     """request handler"""
     context.request = request
+    zoom.system.providers = []
     return handle(request, *rest)

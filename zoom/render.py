@@ -100,7 +100,7 @@ def handler(request, handle, *rest):
         request.helpers(),
         request.site.helpers(),
         request.user.helpers(),
-    ]
+    ] + zoom.system.providers
 
     response = handle(request, *rest)
 

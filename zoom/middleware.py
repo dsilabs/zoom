@@ -18,8 +18,8 @@ import io
 import os
 import sys
 import traceback
-import json
 import logging
+import uuid
 
 import zoom.apps
 from zoom.response import (
@@ -50,7 +50,6 @@ import zoom.request
 import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
-from zoom.forms import csrf_token as csrf_token_generator
 from zoom.tools import websafe
 
 
@@ -214,6 +213,13 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
+def reset_csrf_token(session):
+    """generate a csrf token"""
+    if not hasattr(session, 'csrf_token'):
+        session.csrf_token = uuid.uuid4().hex
+    return session.csrf_token
+
+
 def check_csrf(request, handler, *rest):
     """Check csrf token"""
 
@@ -227,13 +233,15 @@ def check_csrf(request, handler, *rest):
 
         if csrf_token and csrf_token == form_token:
             del request.session.csrf_token
-            csrf_token_generator(request.session)  # create a new one
         else:
             if csrf_token:
                 logger.warning('csrf token invalid')
             else:
                 logger.warning('csrf token missing')
             return RedirectResponse('/')
+
+    new_token = reset_csrf_token(request.session)
+    zoom.render.add_helpers(dict(csrf_token=new_token))
 
     return handler(request, *rest)
 
