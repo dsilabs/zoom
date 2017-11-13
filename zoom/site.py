@@ -16,6 +16,7 @@ from zoom.helpers import link_to, mail_to
 
 isdir = os.path.isdir
 abspath = os.path.abspath
+realpath = os.path.realpath
 join = os.path.join
 exists = os.path.exists
 listdir = os.listdir
@@ -121,7 +122,7 @@ class Site(object):
                 for p in str(get('apps', 'path')).split(';')
                 if exists(abspath(join(self.path, p)))
             ]
-            basic_apps = abspath(join(dirname(__file__), '..', 'web', 'apps'))
+            basic_apps = realpath(join(dirname(__file__), '..', 'web', 'apps'))
             if basic_apps not in self.apps_paths:
                 self.apps_paths.insert(0, basic_apps)
 
