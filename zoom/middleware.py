@@ -336,14 +336,24 @@ def reset_modules(request, handler, *rest):
     # pylint: disable=global-variable-undefined, invalid-name
     # We know init_modules is undefined.  We are using it this
     # way intentionally.
+
+    def keeper(module):
+        """modules that we will not delete"""
+        sigs = ['pymysql', 'pstats']
+        return any(filter(module.startswith, sigs))
+
+    logger = logging.getLogger(__name__)
+    removed = []
+
     global init_modules
     if 'init_modules' in globals():
         current_modules = list(sys.modules)
         removable = [x for x in current_modules if x not in init_modules]
         for module in removable:
-            del sys.modules[module]
-        logger = logging.getLogger(__name__)
-        logger.debug('reset_modules removed: %r', removable)
+            if not keeper(module):
+                del sys.modules[module]
+                removed.append(module)
+        logger.debug('reset_modules removed: %r', removed)
     else:
         init_modules = list(sys.modules)
     return handler(request, *rest)
