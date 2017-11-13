@@ -86,7 +86,7 @@ def activity_panel(db):
         ]
         rows.append(row)
 
-    labels = 'id', 'user', 'path', 'address', 'when', 'timestamp', 'elapsed'
+    labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
     return browse(rows, labels=labels, title='Activity')
 
 
