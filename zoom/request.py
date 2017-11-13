@@ -331,7 +331,7 @@ def build(url, data=None):
     )
     if data:
         request.body_consumed = True
-        request.data = data
+        request.data_values = data
     return request
 
 
