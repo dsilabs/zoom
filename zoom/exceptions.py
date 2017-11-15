@@ -37,3 +37,7 @@ class DatabaseMissingException(Exception):
 class SiteMissingException(Exception):
     """Site directory not found"""
     pass
+
+class ThemeTemplateMissingException(Exception):
+    """Theme template missing"""
+    pass

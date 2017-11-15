@@ -190,7 +190,18 @@ class Site(object):
                 return reader.read()
         else:
             logger = logging.getLogger(__name__)
-            logger.warning('template %s missing', filename)
+            if name == 'default':
+                logger.error(
+                    'default template %s missing',
+                    filename,
+                )
+                raise zoom.exceptions.ThemeTemplateMissingException(
+                    'Default Site Template Missing'
+                )
+            logger.warning(
+                'template %s missing',
+                filename,
+            )
             return self.get_template('default')
 
     def get_owner_link(self):
