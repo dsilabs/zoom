@@ -181,29 +181,6 @@ class Site(object):
             self.__apps = result
         return self.__apps
 
-    def get_template(self, name=None):
-        """Get site page template"""
-        template = name or 'default'
-        filename = os.path.join(self.theme_path, template + '.html')
-        if os.path.isfile(filename):
-            with open(filename) as reader:
-                return reader.read()
-        else:
-            logger = logging.getLogger(__name__)
-            if name == 'default':
-                logger.error(
-                    'default template %s missing',
-                    filename,
-                )
-                raise zoom.exceptions.ThemeTemplateMissingException(
-                    'Default Site Template Missing'
-                )
-            logger.warning(
-                'template %s missing',
-                filename,
-            )
-            return self.get_template('default')
-
     def get_owner_link(self):
         """Returns a link for the site owner."""
         if self.owner_url:
@@ -223,8 +200,6 @@ class Site(object):
             owner_email=self.owner_email,
             owner_link=self.get_owner_link(),
             admin_email=self.admin_email,
-            theme=self.theme,
-            theme_uri='/themes/' + self.theme,
             request_path=self.request.path,
             tracker=self.tracker,
         )

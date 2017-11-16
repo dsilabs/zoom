@@ -398,3 +398,28 @@ def load_template(name, default=None):
 
     # return 'got stuff'
     return site.templates.setdefault(name, load_template_file(name, default))
+
+def get_template(template_name='default', theme='default'):
+    """Get site page template"""
+
+    path = zoom.system.site.themes_path
+
+    filename = os.path.join(path, theme, template_name + '.html')
+    if os.path.isfile(filename):
+        with open(filename) as reader:
+            return reader.read()
+    else:
+        logger = logging.getLogger(__name__)
+        if template_name == 'default':
+            logger.error(
+                'default template %s missing',
+                filename,
+            )
+            raise zoom.exceptions.ThemeTemplateMissingException(
+                'Default Site Template Missing'
+            )
+        logger.warning(
+            'template %s missing',
+            filename,
+        )
+        return get_template('default')
