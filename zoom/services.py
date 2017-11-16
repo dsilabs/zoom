@@ -4,6 +4,7 @@
     background services
 """
 
+import logging
 import os
 import shlex
 import subprocess
@@ -19,8 +20,10 @@ def run(command, returncode=False, location=None):
         'testing\\n'
 
     """
+    logger = logging.getLogger(__name__)
     save_dir = os.getcwd()
     try:
+        logger.debug('running shell command: %r', command)
         if location:
             os.chdir(location)
 
