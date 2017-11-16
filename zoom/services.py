@@ -34,7 +34,7 @@ def run(command, returncode=False, location=None):
                 stderr=subprocess.PIPE
             )
             stdout, stderr = process.communicate()
-            return process.returncode, str(stdout), str(stderr)
+            return process.returncode, stdout.decode('utf8'), stderr.decode('utf8')
         else:
             return subprocess.Popen(
                 shlex.split(command),
