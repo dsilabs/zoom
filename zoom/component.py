@@ -20,6 +20,7 @@
 
 import logging
 import threading
+import sys
 
 from zoom.utils import OrderedSet, pp
 
@@ -238,6 +239,7 @@ def handler(request, handler, *rest):
         success=pop('system_successes', []),
         warning=pop('system_warnings', []),
         error=pop('system_errors', []),
+        stdout=pop('system_stdout', '')
     )
 
     result = handler(request, *rest)
@@ -263,6 +265,14 @@ def handler(request, handler, *rest):
         if not hasattr(request.session, 'system_errors'):
             request.session.system_errors = []
         request.session.system_errors = list(error_alerts)
+
+    stdout = sys.stdout.getvalue()
+    if stdout:
+        renderable = (
+            isinstance(result.content, str) and '{*stdout*}' in result.content
+        )
+        if not renderable:
+            request.session.system_stdout = stdout
 
     return result
 

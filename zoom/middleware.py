@@ -267,7 +267,7 @@ def capture_stdout(request, handler, *rest):
         sys.stdout = real_stdout
         if 'result' in locals() and isinstance(result.content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
-                '{*stdout*}', html.pre(websafe(printed_output)))
+                '{*stdout*}', websafe(printed_output))
     logger = logging.getLogger(__name__)
     logger.debug('captured stdout')
     return result

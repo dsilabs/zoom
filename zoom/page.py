@@ -2,7 +2,9 @@
     zoom.page
 """
 
+import io
 import logging
+import sys
 
 from zoom.component import composition, Component
 from zoom.components import as_actions
@@ -15,6 +17,7 @@ import zoom.apps
 import zoom.forms
 import zoom.helpers
 import zoom.render
+import zoom.tools
 
 class ClearSearch(DynamicView):
     pass
@@ -147,6 +150,19 @@ class Page(object):
         def get_content():
             return self.content
 
+        def get_stdout():
+            stdout = sys.stdout.getvalue()
+            if stdout:
+                sys.stdout.close()
+                sys.stdout = io.StringIO()
+            value = ''.join(
+                list(composition.parts.parts.get('stdout', [])) +
+                [stdout]
+            )
+            if value:
+                return html.pre(zoom.tools.websafe(value) + '{*stdout*}')
+            return '{*stdout*}'
+
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
@@ -160,7 +176,7 @@ class Page(object):
             styles=get_styles,
             libs=get_libs,
             alerts=get_alerts(request),
-            stdout='{*stdout*}',
+            stdout=get_stdout,
             theme=self.theme,
             theme_uri=self.theme_uri,
         )
