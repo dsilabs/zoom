@@ -284,9 +284,8 @@ def htmlquote(text):
     return text
 
 
-def markdown(content):
-    """Transform content with markdown
-    """
+def get_markdown_converter():
+    """Return a configured markdown converter"""
     def make_page_name(text):
         result = []
         for c in text.lower():
@@ -305,7 +304,16 @@ def markdown(content):
     extras = ['tables', 'def_list', 'wikilinks', 'toc']
     configs = {'wikilinks': [('build_url', url_builder)]}
     converter = Markdown(extensions=extras, extension_configs=configs)
-    return converter.convert(unisafe(trim(content)))
+    return converter
+
+
+markdown_converter = get_markdown_converter()  # TODO: decorator instead?
+
+
+def markdown(content):
+    """Transform content with markdown
+    """
+    return markdown_converter.convert(unisafe(trim(content)))
 
 
 def load(pathname, encoding='utf-8'):
