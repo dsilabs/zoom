@@ -193,11 +193,6 @@ class AppProxy(object):
         result = as_links(menu, select=by_name(selected))
         return result
 
-    def menu_items(self):
-        """get app menu items"""
-        menu = getattr(self.method, 'menu')
-        return menu
-
     def get_config(self, default=None):
         """get the app config"""
 
@@ -440,7 +435,6 @@ def helpers(request):
     """return a dict of app helpers"""
     return dict(
         app_url=request.app.url,
-        app_menu_items=request.app.menu_items,
         app_menu=request.app.menu,
         app_name=request.app.name,
         app_class=zoom.utils.id_for(request.app.name.strip()),
