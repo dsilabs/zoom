@@ -105,12 +105,12 @@ class Site(object):
             self.template_path = existing(self.theme_path, 'templates')
             self.default_template_path = existing(
                 self.default_theme_path, 'templates')
-            self.templates_paths = filter(bool, [
+            self.templates_paths = list(filter(bool, [
                 self.template_path,
                 self.default_template_path,
                 self.theme_path,
                 self.default_theme_path,
-                ])
+                ]))
             self.templates = {}
 
             self.packages = zoom.packages.load(
