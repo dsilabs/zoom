@@ -101,18 +101,10 @@ def get_groups(db, user):
 
     def get_memberships(group, memberships, depth=0):
         """get group memberships"""
-        # result = [group]
         result = {group}
         if depth < 10:
             for grp, sgrp in memberships:
                 if group == sgrp and grp not in result and grp in all_groups:
-                    verb = all_groups[grp].startswith('a_') and 'can' or 'are'
-                    logger.debug(
-                        '%s %s %s',
-                        all_groups[sgrp],
-                        verb,
-                        all_groups[grp],
-                    )
                     result |= get_memberships(grp, memberships, depth+1)
         return result
 
