@@ -100,13 +100,6 @@ class CollectionView(View):
     def index(self, q='', *args, **kwargs):
         """collection landing page"""
 
-        def matches(item, search_text):
-            """match a search by field values"""
-            terms = search_text and search_text.split()
-            fields.update(item)
-            v = repr(fields.display_value()).lower()
-            return terms and not any(t.lower() not in v for t in terms)
-
         def get_recent(number):
             cmd = """
                 select row_id, max(value) as newest
@@ -131,7 +124,7 @@ class CollectionView(View):
         logger = logging.getLogger(__name__)
         if q:
             title = 'Selected ' + c.title
-            records = c.store
+            records = c.search_engine.search(q)
         else:
             many_records = bool(len(c.store) > 50)
             logger.debug('many records: %r', many_records)
@@ -144,8 +137,7 @@ class CollectionView(View):
                 records = c.store
 
         authorized = (i for i in records if user.can('read', i))
-        matching = (i for i in authorized if not q or matches(i, q))
-        filtered = c.filter and filter(c.filter, matching) or matching
+        filtered = c.filter and filter(c.filter, authorized) or authorized
         items = sorted(filtered, key=c.order)
         num_items = len(items)
 
@@ -411,6 +403,7 @@ class CollectionController(Controller):
                     c.link,
                     record.name
                 )
+
                 logger = logging.getLogger(__name__)
                 logger.info(msg)
                 log_activity(msg)
@@ -433,6 +426,32 @@ class CollectionController(Controller):
 
     def after_delete(self, record):
         pass
+
+
+class BasicSearch(object):
+    """Provides basic search capability"""
+
+    def __init__(self, collection):
+        self.collection = collection
+
+    def search(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            fields.update(item)
+            v = ';'.join(
+                map(str, filter(bool, fields.display_value().values()))
+            ).lower()
+            return terms and not any(t not in v for t in terms)
+
+        fields = self.collection.fields
+        terms = text and [t.lower() for t in text.split()]
+
+        return [
+            record for record in self.collection.store
+            if matches(record, terms)
+        ]
 
 
 class Collection(object):
@@ -490,6 +509,7 @@ class Collection(object):
         self.user = None
         self.request = None
         self.route = None
+        self.search_engine = None
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -538,6 +558,8 @@ class Collection(object):
                     request.site.db,
                     self.model,
                 )
+
+        self.search_engine = BasicSearch(self)
 
         return (
             self.controller(self)(*route, **request.data) or
