@@ -6,7 +6,7 @@ import logging
 
 from zoom.browse import browse
 from zoom.context import context
-from zoom.components import success, error
+from zoom.alerts import success, error, warning
 from zoom.fields import ButtonField
 from zoom.forms import form_for, delete_form
 from zoom.helpers import link_to
@@ -17,6 +17,7 @@ from zoom.utils import name_for, id_for
 from zoom.page import page
 from zoom.tools import redirect_to, now
 from zoom.logging import log_activity
+from zoom.users import authorize
 
 
 def shared_collection_policy(group):
@@ -109,7 +110,7 @@ class CollectionView(View):
                 order by newest desc
                 limit %s
             """
-            ids = [id for id,_ in c.store.db(cmd, c.store.kind, number)]
+            ids = [id for id, _ in c.store.db(cmd, c.store.kind, number)]
             return c.store.get(ids)
 
         c = self.collection
@@ -124,7 +125,7 @@ class CollectionView(View):
         logger = logging.getLogger(__name__)
         if q:
             title = 'Selected ' + c.title
-            records = c.search_engine.search(q)
+            records = c.search_engine(c).search(q)
         else:
             many_records = bool(len(c.store) > 50)
             logger.debug('many records: %r', many_records)
@@ -320,6 +321,11 @@ class CollectionController(Controller):
 
                 collection.store.put(record)
 
+                collection.search_engine(collection).add(
+                    record._id,
+                    collection.fields.as_searchable(),
+                )
+
                 self.after_insert(record)
 
                 msg = '%s added %s %s' % (
@@ -361,6 +367,11 @@ class CollectionController(Controller):
 
                     collection.store.put(record)
 
+                    collection.search_engine(collection).update(
+                        record._id,
+                        collection.fields.as_searchable(),
+                    )
+
                     self.after_update(record)
 
                     msg = '%s updated %s %s' % (
@@ -396,6 +407,10 @@ class CollectionController(Controller):
 
                 c.store.delete(record)
 
+                c.search_engine(c).delete(
+                    record._id,
+                )
+
                 self.after_delete(record)
 
                 msg = '%s deleted %s %s' % (
@@ -427,12 +442,23 @@ class CollectionController(Controller):
     def after_delete(self, record):
         pass
 
+    @authorize('administrators')
+    def reindex(self):
+        self.collection.search_engine(self.collection).reindex()
+        success('reindexing completed')
+        return page('complete!', title='Reindex')
+
 
 class BasicSearch(object):
     """Provides basic search capability"""
 
     def __init__(self, collection):
         self.collection = collection
+        logger = logging.getLogger(__name__)
+        logger.debug(
+            'starting BasicSearch for %s collection',
+            self.collection.name
+        )
 
     def search(self, text):
         """Return records that match search text"""
@@ -450,6 +476,157 @@ class BasicSearch(object):
 
         return [
             record for record in self.collection.store
+            if matches(record, terms)
+        ]
+
+    def add(self, key, values):
+        """Add record values to index"""
+        pass
+
+    def update(self, key, values):
+        """Update indexed record values"""
+        pass
+
+    def delete(self, key):
+        """Delete indexed record values"""
+        pass
+
+    def reindex(self):
+        warning('BasicSearch does not use indexing')
+
+
+def as_tokens(values):
+    """Return values as a set of tokens"""
+    tokens = set([
+        t for v in values
+        for t in v.lower().split()
+    ])
+    return tokens
+
+
+class IndexedCollectionSearch(object):
+    """Provides token index for fast lookups
+
+    We only provide enough room for tokens up to length 20 only because
+    we have to draw the line somewhere.  This may result in some records
+    not being found if the search would have mached on characters beyond
+    the position 20.
+    """
+
+    max_token_len = 20
+
+    def __init__(self, collection):
+        logger = logging.getLogger(__name__)
+        self.collection = collection
+        self.db = collection.store.db
+        self.kind = self.collection.store.kind
+        logger.debug(
+            'starting IndexedCollectionSearch for %s collection',
+            self.collection.name
+        )
+
+        self.db("""
+        create table if not exists tokens (
+            kind varchar(100),
+            row_id int unsigned not null,
+            token char({})
+        )
+        """.format(self.max_token_len))
+
+    def reindex(self):
+        """Rebuild the collection index
+
+        This method indexes a few records at a time, in batches.  It
+        can be very slow so should be done only by admins or as part
+        of a maintenance cycle in the background.   Once the table is
+        indexed this routine should not be needed.  It's mainly provided
+        to index an already existing table or to replace a damaged
+        index.
+        """
+
+        collection = self.collection
+        fields = collection.fields
+
+        logger = logging.getLogger(__name__)
+        count = 0
+        tick = 100
+        total = len(collection.store)
+
+        block = []
+        cmd = 'insert into tokens values ({!r}, %s, %s)'.format(
+            self.kind
+        )
+
+        msg = 'indexed %s of %s records (%0.4s%%)'
+
+        self.zap()
+        for record in collection.store:
+
+            if not count % tick:
+                if block:
+                    self.db.execute_many(cmd, block)
+                    block.clear()
+                    logger.debug(msg, count, total, 100.0*count/total)
+            count += 1
+
+            fields.initialize(collection.model(record))
+            values = as_tokens(fields.as_searchable())
+            block.extend(zip([record._id] * len(values), values))
+
+        if block:
+            self.db.execute_many(cmd, block)
+            block.clear()
+        logger.debug(msg, count, total, 100.0*count/total)
+
+    def add(self, key, values):
+        """Add record values to index"""
+        tokens = as_tokens(values)
+        cmd = 'insert into tokens values ({!r}, {!r}, %s)'.format(
+            self.kind, key
+        )
+        self.db.execute_many(cmd, tokens)
+
+    def delete(self, key):
+        """Delete indexed record values"""
+        self.db(
+            'delete from tokens where kind=%s and row_id=%s',
+            self.kind,
+            key
+        )
+
+    def update(self, key, values):
+        """Update indexed record values"""
+        self.delete(key)
+        self.add(key, values)
+
+    def zap(self):
+        """Delete values for all records"""
+        self.db('delete from tokens where kind=%s', self.kind)
+
+    def search(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            fields.update(item)
+            v = ';'.join(
+                map(str, fields.as_searchable())
+            ).lower()
+            return terms and not any(t not in v for t in terms)
+
+        fields = self.collection.fields
+        terms = text and [t.lower() for t in text.split()]
+
+        # could potentially do better than this by doing multiple queries but
+        # this seems worth a try to see how it performs.
+        longest_term = sorted(terms, key=len)[-1]
+        target = '%{}%'.format(longest_term)
+        cmd = 'select row_id from tokens where kind=%s and token like %s'
+
+        q1 = [record_id for record_id, in self.db(cmd, self.kind, target)]
+
+        return [
+            record for record in self.collection.store.get(q1)
             if matches(record, terms)
         ]
 
@@ -509,7 +686,7 @@ class Collection(object):
         self.user = None
         self.request = None
         self.route = None
-        self.search_engine = None
+        self.search_engine = get('search_engine', BasicSearch)
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -558,8 +735,6 @@ class Collection(object):
                     request.site.db,
                     self.model,
                 )
-
-        self.search_engine = BasicSearch(self)
 
         return (
             self.controller(self)(*route, **request.data) or
