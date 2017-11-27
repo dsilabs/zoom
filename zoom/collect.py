@@ -441,7 +441,7 @@ class BasicSearch(object):
             """match a search by field values"""
             fields.update(item)
             v = ';'.join(
-                map(str, filter(bool, fields.display_value().values()))
+                map(str, fields.as_searchable())
             ).lower()
             return terms and not any(t not in v for t in terms)
 
