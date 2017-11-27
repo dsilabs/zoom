@@ -74,7 +74,6 @@ def as_links(items, select=None, filter=None):
             # only the label was provided
             name = n and id_for(item) or ''
             url = tag_for('app_url') + (n and '/' + name or '')
-            logger.debug('menu item url: %r', url)
             return Link(name=name or 'index', label=item, url=url)
 
         elif len(item) == 2:
