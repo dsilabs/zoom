@@ -261,6 +261,35 @@ class Field(object):
         """
         return self.visible and websafe(self.value) or self.default or ''
 
+    def as_searchable(self):
+        """Return searchable parts of field
+
+        >>> name_field = Field('Name', default='default test')
+        >>> name_field.as_searchable()
+        {'default test'}
+
+        >>> name_field = Field('Name', value='test')
+        >>> name_field.as_searchable()
+        {'test'}
+
+        >>> name_field = Field('Name', value='こんにちは')
+        >>> name_field.as_searchable()
+        {'\u3053\u3093\u306b\u3061\u306f'}
+
+        >>> name_field.visible = False
+        >>> name_field.as_searchable()
+        set()
+
+        >>> EmailField('Email', value='test@testco.com').as_searchable()
+        {'test@testco.com'}
+        """
+        return (
+            self.visible and
+            set([self.value or self.default],) or
+            set()
+        )
+
+
     def render_hint(self):
         """Render hint.
 
@@ -802,6 +831,39 @@ class Fields(object):
                 result = dict(result, **field.display_value())
         return result
 
+    def as_searchable(self):
+        """Return fields as a set of searchable items
+
+        >>> from zoom.utils import pp
+        >>> fields = Fields(
+        ...     TextField('Name', value='Amy'),
+        ...     PhoneField('Phone', value='2234567890'),
+        ...     DateField('Birthdate', value=datetime.date(1980,1,1)),
+        ...     MultiselectField(
+        ...         'Type',
+        ...         value=['One','dos'],
+        ...         options=[('One','uno'),('Two','dos')]
+        ...     )
+        ... )
+
+        >>> pp(sorted(map(str, fields.as_searchable())))
+        [
+          "1980-01-01 01-01-1980 Tuesday January 1 1980",
+          "2234567890",
+          "Amy",
+          "One",
+          "Two"
+        ]
+
+        """
+        result = set()
+        for field in self.fields:
+            if hasattr(field, 'name'):
+                result |= field.as_searchable()
+            else:
+                result |= field.as_searchable()
+        return result
+
     def as_list(self):
         """
             >>> fields = Fields(TextField('Name', value='Amy'), PhoneField('Phone', value='2234567890'))
@@ -986,6 +1048,9 @@ class Button(Field):
     def __repr__(self):
         return ''
 
+    def as_searchable(self):
+        return {}
+
 
 class Buttons(Field):
     """Buttons
@@ -1028,6 +1093,9 @@ class Buttons(Field):
         return '&nbsp;'.join(buttons)
 
     def evaluate(self):
+        return {}
+
+    def as_searchable(self):
         return {}
 
     def __repr__(self):
@@ -1636,6 +1704,27 @@ class DateField(Field):
             return {self.name: value or self.default}
         return {self.name: self.default}
 
+    def as_searchable(self):
+        """Return searchable parts of field
+
+        >>> from datetime import date, datetime
+        >>> f = DateField("Start Date")
+
+        >>> f.assign(date(2015,1,31))
+        >>> f.display_value()
+        'Jan 31, 2015'
+        >>> f.as_searchable()
+        {'2015-01-31 01-31-2015 Saturday January 31 2015'}
+
+        """
+        fmt = '{:%Y-%m-%d %m-%d-%Y %A %B %-d %Y}'
+        return (
+            self.visible and
+            set([
+                fmt.format(self.evaluate()[self.name]),
+            ])
+        )
+
 
 class BirthdateField(DateField):
     size = maxlength = 12
@@ -2166,6 +2255,8 @@ class MultiselectField(TextField):
     'One; Two'
     >>> f.evaluate()
     {'type': ['uno', 'dos']}
+    >>> sorted(f.as_searchable())
+    ['One', 'Two']
 
     >>> f = MultiselectField('Type',value=['One'],options=[('One','uno'),('Two','dos')])
     >>> f.display_value()
@@ -2230,6 +2321,9 @@ class MultiselectField(TextField):
 
     def display_value(self):
         return '; '.join(self._scan(self.value, lambda a: a[0]))
+
+    def as_searchable(self):
+        return set(self._scan(self.value, lambda a: a[0]))
 
     def assign(self, new_value):
         self.value = self._scan(new_value, lambda a: a[1])
@@ -2709,6 +2803,9 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
 
     def edit(self):
         return layout_field(self.label, self.widget())
+
+    def as_searchable(self):
+        return {}
 
 
 class DataURIImageField(DataURIAttachmentsField):
