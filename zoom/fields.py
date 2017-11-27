@@ -1717,13 +1717,14 @@ class DateField(Field):
         {'2015-01-31 01-31-2015 Saturday January 31 2015'}
 
         """
+        def get_formatted_value():
+            value = self.evaluate()[self.name]
+            if value:
+                return set([fmt.format(value)])
+            return set()
+
         fmt = '{:%Y-%m-%d %m-%d-%Y %A %B %-d %Y}'
-        return (
-            self.visible and
-            set([
-                fmt.format(self.evaluate()[self.name]),
-            ])
-        )
+        return self.visible and get_formatted_value()
 
 
 class BirthdateField(DateField):
