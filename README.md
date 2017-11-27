@@ -76,8 +76,8 @@ installed.
 Open up a terminal window and follow along with the following steps.  The
 dollar sign $ in the following examples is the command prompt.
 
-Zoom is currently available only on gitub.  The simplest way to get Zoom is to
-clone it from it's home on github.  To do this you'll need git intsalled on
+Zoom is currently available only on GitHub.  The best way to get Zoom is to
+clone it from here.  To do this you'll need git installed on
 your system.
 
 All set?  Okay, here we go!
