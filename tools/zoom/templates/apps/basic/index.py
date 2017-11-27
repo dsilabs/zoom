@@ -2,21 +2,24 @@
     basic index
 """
 
-from zoom.mvc import View, Controller
-from zoom.page import page
-from zoom.context import context
+import zoom
 
-class MyView(View):
+class MyView(zoom.View):
+    """Index View"""
+
 
     def index(self):
-        return page('Content goes here', title='Overview')
+        """Index page"""
+        return zoom.page('Content goes here', title='Overview')
 
 
     def about(self):
+        """About page"""
         content = '{app.description}'
-        return page(
-            content.format(app=context.request.app),
-            title='About {app.title}'.format(app=context.request.app)
+        return zoom.page(
+            content.format(app=zoom.system.request.app),
+            title='About {app.title}'.format(app=zoom.system.request.app)
         )
+
 
 view = MyView()

@@ -7,10 +7,13 @@
 """
 
 import collections
+import inspect
 import logging
 import os
 import timeit
 import warnings
+
+import zoom
 
 warnings.filterwarnings("ignore", "Unknown table.*")
 
@@ -130,6 +133,8 @@ class Database(object):
     """
 
     paramstyle = 'pyformat'
+    stats = []  # make this a class attribute to catch across instances
+    debug = False  # make this a class attribute to catch across instances
 
     def __init__(self, factory, *args, **keywords):
         """Initialize with factory method to generate DB connection
@@ -139,9 +144,7 @@ class Database(object):
         self.__factory = factory
         self.__args = args
         self.__keywords = keywords
-        self.debug = False
         self.log = []
-        self.stats = []
         self.rowcount = None
         self.lastrowid = None
 
@@ -190,6 +193,21 @@ class Database(object):
 
     def _execute(self, cursor, method, command, *args):
         """execute the SQL command"""
+
+        def format_stack(stack):
+            n = m = 0
+            for n, item in enumerate(stack):
+                if item[3] == 'run_app':
+                    break
+            for m, item in enumerate(stack):
+                if not item[1].endswith('database.py'):
+                    break
+            return '<pre><small>{}</small></pre>'.format(
+                '<br>'.join('{3} : line {2} in {1}'.format(
+                    *rec
+                ) for rec in stack[m:n])
+            )
+
         start = timeit.default_timer()
         command, params = self.translate(command, *args)
         try:
@@ -206,13 +224,14 @@ class Database(object):
                     command,
                     args,
                 ))
-                self.stats.append((elapsed, repr(command), repr(args)))
+                source = format_stack(inspect.stack())
+                type(self).stats.append((elapsed, repr(command), repr(args), source))
 
         if cursor.description:
             return Result(cursor)
         else:
             self.lastrowid = getattr(cursor, 'lastrowid', None)
-            return self.lastrowid
+            return self.lastrowid or None
 
     def execute(self, command, *args):
         """execute a SQL command with optional parameters"""
@@ -240,9 +259,14 @@ class Database(object):
                 '\n'.join(self.log))
         return ''
 
-    def get_stats(self):
-        result = self.stats
-        self.stats.clear
+    @classmethod
+    def get_stats(cls):
+        """Return the stats to the caller, clearing the list of what is returned
+
+            We use a classmethod to support inheritance (over staticmethod)
+        """
+        result = list(cls.stats)  # get a copy of the list
+        del cls.stats[:len(result)]  # clear the list, but more may have been added
         return result
 
     def get_tables(self):
@@ -324,6 +348,7 @@ class Sqlite3Database(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+
 class MySQLDatabase(Database):
     """MySQL Database"""
 
@@ -344,6 +369,11 @@ class MySQLDatabase(Database):
         cmd = 'show tables'
         return [a[0] for a in self(cmd)]
 
+    def get_databases(self):
+        """return database names"""
+        cmd = 'show databases'
+        return [a[0] for a in self(cmd)]
+
     def create_site_tables(self):
         """create the tables for a site in a mysql server"""
         def split(statements):
@@ -361,7 +391,6 @@ class MySQLDatabase(Database):
             self(statement)
 
         logger.debug('created tables from %s', filename)
-
 
     def create_test_tables(self):
         """create the extra test tables"""
@@ -390,6 +419,30 @@ class MySQLDatabase(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+    def get_column_names(self, table):
+        """return column names for a table"""
+        rows = self('describe %s' % table)
+        return tuple(rec[0].lower() for rec in rows)
+
+    @property
+    def connect_string(self):
+        """Return a string representation of the connection parameters"""
+        def obfuscate(text):
+            return text[:1] + '*' * (len(text) - 2) + text[-1:]
+
+        return 'mysql://{}:{}@{}/{}'.format(
+            self.user.decode('utf8'),
+            obfuscate(self.password),
+            str(self.host),
+            self.db.decode('utf8'),
+        )
+
+    def __str__(self):
+        return '<{} {!r}>'.format(
+            self.__class__.__name__,
+            self.connect_string,
+        )
+
 
 class MySQLdbDatabase(Database):
     """MySQLdb Database"""
@@ -412,6 +465,7 @@ def database(engine, *args, **kwargs):
     # pylint: disable=invalid-name
 
     if engine == 'sqlite3':
+        kwargs.setdefault('isolation_level', None)  # autocommit
         db = Sqlite3Database(*args, **kwargs)
         return db
 
@@ -431,40 +485,58 @@ def database(engine, *args, **kwargs):
 
 def connect_database(config):
     """establish a database connection"""
-    get = config.get
 
-    engine = get('database', 'engine', 'sqlite3')
+    def get(name, default=None):
+        """Get database parameters
+
+        The standard way to name the parameters is without the db
+        prefix however we still support the old names to allow a
+        smooth transition from the old naming conventions.
+        """
+        if config.has_option('database', name):
+            value = config.get('database', name)
+        elif config.has_option('database', 'db' + name):
+            value = config.get('database', 'db' + name)
+        elif name == 'password' and config.has_option('database', 'dbpass'):
+            value = config.get('database', 'dbpass')
+        else:
+            value = default
+        return value
+
+    engine = get('engine', 'sqlite3')
 
     if engine == 'mysql':
-        host = get('database', 'dbhost', 'database')
-        name = get('database', 'dbname', 'zoomdev')
-        user = get('database', 'dbuser', 'testuser')
-        password = get('database', 'dbpass', 'password')
+        host = get('host', 'localhost')
+        name = get('name')
+        user = get('user', 'testuser')
+        password = get('password', 'password')
         parameters = dict(
             engine=engine,
             host=host,
-            db=name,
             user=user,
         )
         if password:
             parameters['passwd'] = password
+        if name:
+            parameters['db'] = name
 
     elif engine == 'mysqldb':
-        host = get('database', 'dbhost', 'database')
-        name = get('database', 'dbname', 'zoomdev')
-        user = get('database', 'dbuser', 'testuser')
-        password = get('database', 'dbpass', 'password')
+        host = get('host', 'localhost')
+        name = get('name')
+        user = get('user', 'testuser')
+        password = get('password', 'password')
         parameters = dict(
             engine=engine,
             host=host,
-            db=name,
             user=user,
         )
         if password:
             parameters['passwd'] = password
+        if name:
+            parameters['db'] = name
 
     elif engine == 'sqlite3':
-        name = get('database', 'name', 'zoomdev')
+        name = get('name', 'zoomdata')
         parameters = dict(
             engine=engine,
             database=name,
@@ -474,12 +546,15 @@ def connect_database(config):
         raise Exception('unknown database engine: {!r}'.format(engine))
 
     connection = database(**parameters)
+
+    logger = logging.getLogger(__name__)
+    if 'passwd' in parameters:
+        parameters['passwd'] = '*hidden*'
+    if 'password' in parameters:
+        parameters['password'] = '*hidden*'
+
     if connection:
-        logger = logging.getLogger(__name__)
-        if 'passwd' in parameters:
-            parameters['passwd'] = '*hidden*'
         logger.debug('database connected: %r', parameters)
-        logger.debug(repr(connection.get_tables()))
 
     return connection
 
@@ -487,16 +562,22 @@ def connect_database(config):
 def handler(request, handler, *rest):
     """Connect a database to the site if specified"""
     site = request.site
-    if site.config.get('database', 'dbname', False):
+    database_name = site.config.get(
+        'database', 'name', site.config.get(
+            'database', 'dbname', None  # legacy
+        )
+    )
+    if database_name:
         site.db = connect_database(site.config)
-        site.db.debug = True
+        Database.debug = site.monitor_system_database
 
         if site.db.get_tables() == []:
             raise EmptyDatabaseException('Database is empty')
 
     else:
         logger = logging.getLogger(__name__)
-        logger.warning('no database specified for %s', site.name)
+        logger.error('no database specified for %s', site.name)
+        raise zoom.exceptions.DatabaseMissingException('Database Missing')
 
     request.profiler.add('database initialized')
     result = handler(request, *rest)
@@ -510,13 +591,15 @@ def setup_test(engine='mysql'):
     if engine == 'mysql':
         db = database(
             'mysql',
-            host='database',
-            db='zoomtest',
+            host='localhost',
             user='testuser',
             passwd='password'
         )
-        db.delete_test_tables()
+        db('drop database if exists zoomtest')
+        db('create database zoomtest')
+        db('use zoomtest')
         db.create_test_tables()
+
     elif engine == 'memory':
         db = database(
             'sqlite3',

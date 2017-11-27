@@ -24,7 +24,10 @@ def shared_collection_policy(group):
     """
     def policy(item, user, action):
         """Policy rules for shared collection"""
+
         def is_manager(user):
+            """Return True if user is a member of the managing group
+            """
             return user.is_member(group)
 
         actions = {
@@ -51,7 +54,7 @@ def locate(collection, key):
     return (
         key.isdigit() and
         collection.store.get(key) or
-        collection.store.first(**{collection.store.key: key}) or
+        collection.store.first(**{collection.key_name: key}) or
         scan(collection.store, key)
     )
 
@@ -97,12 +100,17 @@ class CollectionView(View):
     def index(self, q='', *args, **kwargs):
         """collection landing page"""
 
-        def matches(item, search_text):
-            """match a search by field values"""
-            terms = search_text and search_text.split()
-            fields.update(item)
-            v = repr(fields.display_value()).lower()
-            return terms and not any(t.lower() not in v for t in terms)
+        def get_recent(number):
+            cmd = """
+                select row_id, max(value) as newest
+                from attributes
+                where kind = %s and attribute in ("created", "updated")
+                group by row_id
+                order by newest desc
+                limit %s
+            """
+            ids = [id for id,_ in c.store.db(cmd, c.store.kind, number)]
+            return c.store.get(ids)
 
         c = self.collection
         user = c.user
@@ -113,22 +121,52 @@ class CollectionView(View):
 
         actions = user.can('create', c) and ['New'] or []
 
-        authorized = (i for i in c.store if user.can('read', i))
-        matching = (i for i in authorized if not q or matches(i, q))
-        filtered = c.filter and filter(c.filter, matching) or matching
+        logger = logging.getLogger(__name__)
+        if q:
+            title = 'Selected ' + c.title
+            records = c.search_engine.search(q)
+        else:
+            many_records = bool(len(c.store) > 50)
+            logger.debug('many records: %r', many_records)
+            if many_records and not kwargs.get('all'):
+                title = 'Most Recently Updated ' + c.title
+                records = get_recent(15)
+                actions.append(('Show All', 'clients?all=1'))
+            else:
+                title = c.title
+                records = c.store
+
+        authorized = (i for i in records if user.can('read', i))
+        filtered = c.filter and filter(c.filter, authorized) or authorized
         items = sorted(filtered, key=c.order)
+        num_items = len(items)
+
+        if num_items != 1:
+            footer_name = c.title.lower()
+        else:
+            footer_name = c.item_name.lower()
 
         if q:
             msg = '%s searched %s with %r (%d found)' % (
-                user.link, c.link, q, len(items)
+                user.link, c.link, q, num_items
             )
             log_activity(msg)
-
-        if len(items) != 1:
-            footer_name = c.title
+            footer = '{:,} {} found in search of {:,} {}'.format(
+                num_items,
+                footer_name,
+                len(c.store),
+                c.title.lower(),
+            )
         else:
-            footer_name = c.item_name
-        footer = '%s %s' % (len(items), footer_name.lower())
+            if many_records:
+                footer = '{:,} {} shown of {:,} {}'.format(
+                    num_items,
+                    footer_name,
+                    len(c.store),
+                    c.title.lower(),
+                )
+            else:
+                footer = '%s %s' % (len(items), footer_name)
 
         content = browse(
             [c.model(i) for i in items],
@@ -138,7 +176,7 @@ class CollectionView(View):
             footer=footer
         )
 
-        return page(content, title=c.title, actions=actions, search=q)
+        return page(content, title=title, actions=actions, search=q)
 
     def clear(self):
         """Clear the search"""
@@ -152,7 +190,7 @@ class CollectionView(View):
         return page(form, title='New '+c.item_title)
 
     def show(self, key):
-        """show a record"""
+        """Show a record"""
         def action_for(record, name):
             return name, '/'.join([record.url, id_for(name)])
 
@@ -197,6 +235,7 @@ class CollectionView(View):
             )
 
     def edit(self, key, **data):
+        """Display an edit form for a record"""
         c = self.collection
         user = c.user
 
@@ -224,6 +263,7 @@ class CollectionView(View):
             return page('%s missing' % key)
 
     def delete(self, key, confirm='yes'):
+        """Show a delete form for a collection record"""
         if confirm == 'yes':
             record = locate(self.collection, key)
             if record:
@@ -363,6 +403,7 @@ class CollectionController(Controller):
                     c.link,
                     record.name
                 )
+
                 logger = logging.getLogger(__name__)
                 logger.info(msg)
                 log_activity(msg)
@@ -385,6 +426,32 @@ class CollectionController(Controller):
 
     def after_delete(self, record):
         pass
+
+
+class BasicSearch(object):
+    """Provides basic search capability"""
+
+    def __init__(self, collection):
+        self.collection = collection
+
+    def search(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            fields.update(item)
+            v = ';'.join(
+                map(str, filter(bool, fields.display_value().values()))
+            ).lower()
+            return terms and not any(t not in v for t in terms)
+
+        fields = self.collection.fields
+        terms = text and [t.lower() for t in text.split()]
+
+        return [
+            record for record in self.collection.store
+            if matches(record, terms)
+        ]
 
 
 class Collection(object):
@@ -432,12 +499,17 @@ class Collection(object):
         self.filter = get('filter', None)
         self.columns = get('columns', None)
         self.labels = get('labels', None)
-        self.model = get('model', CollectionModel)
+        self.model = get('model', None)
         self.store = get('store', None)
         self.url = get('url', calc_url())
         self.controller = get('controller', self.controller)
         self.view = get('view', self.view)
         self.link = link_to(self.name, self.url)
+        self.key_name = get('key_name', 'key')
+        self.user = None
+        self.request = None
+        self.route = None
+        self.search_engine = None
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -466,27 +538,28 @@ class Collection(object):
     def handle(self, route, request):
         """handle a request"""
 
-        def get_model(url):
-            class CustomCollectionModel(CollectionModel):
-                url = property(lambda self: '/'.join([url, self.key]))
-            return CustomCollectionModel
-
-        logger = logging.getLogger(__name__)
-        logger.debug('Collection handler called')
-
-        # store some handy references in case the View
-        # or Controller need them.
         self.user = request.user
         self.request = request
         self.route = route
 
-        self.store = self.store or (
-            EntityStore(
-                request.site.db,
-                self.model or get_model(self.url),
-                self.item_name + '_collection',
-            )
-        )
+        logger = logging.getLogger(__name__)
+        logger.debug('Collection handler called')
+
+        if self.store is None:
+            if self.model is None:
+                self.model = CollectionModel
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                    self.item_name + '_collection'
+                )
+            else:
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                )
+
+        self.search_engine = BasicSearch(self)
 
         return (
             self.controller(self)(*route, **request.data) or

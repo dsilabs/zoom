@@ -7,7 +7,7 @@
 
 import logging
 
-import zoom.context
+import zoom
 import zoom.fill
 import zoom.helpers
 
@@ -64,44 +64,47 @@ def apply_helpers(template, obj, providers):
 
     helpers = {}
     for provider in providers:
-        helpers.update(provider)
+        if callable(provider):
+            helpers.update(provider())
+        else:
+            helpers.update(provider)
     return fill(template, filler(helpers))
 
 
-# def render(pathname, *a, **k):
-#     """render a view"""
-#     with open(pathname) as reader:
-#         template = reader.read()
-#         content = apply_helpers(template, None, [k]).format(*a, **k)
-#
-#         if pathname.endswith('.md'):
-#             result = markdown(content)
-#         else:
-#             result = content
-#
-#         return result
-#     return ''
 def add_helpers(*providers):
+    """Add helpers to the helpers registry
+    """
     for provider in providers:
-        zoom.context.context.providers.append(provider)
+        zoom.system.providers.append(provider)
 
-def render(template):
-    return apply_helpers(template, None, zoom.context.context.providers)
+
+def render(template, *providers, **helpers):
+    """Render a template
+
+    Applies providers and helpers to the template to fill in the tags
+    creating completed content.
+    """
+    return apply_helpers(
+        template,
+        None,
+        zoom.system.providers + list(providers) + [helpers]
+    )
+
 
 def handler(request, handle, *rest):
-    """render handler"""
+    """Render handler"""
 
     logger = logging.getLogger(__name__)
-    zoom.context.context.providers = [
+    zoom.system.providers = [
         zoom.helpers.__dict__,
         request.helpers(),
         request.site.helpers(),
         request.user.helpers(),
-    ]
+    ] + zoom.system.providers
 
     response = handle(request, *rest)
 
-    providers = zoom.context.context.providers
+    providers = zoom.system.providers
     if response.content and isinstance(response.content, str):
         response.content = apply_helpers(response.content, None, providers)
 

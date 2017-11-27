@@ -43,13 +43,18 @@ def browse(data, **kwargs):
         if columns:
             labels = columns
         else:
-            if (len(items) and isinstance(items[0], Record)):
-                labels = columns = [a for a in items[0].attributes() if not a.startswith('__')]
+            if len(items) and isinstance(items[0], Record):
+                labels = columns = [
+                    a for a in items[0].attributes() if not a.startswith('__')
+                ]
 
             elif (len(items) and hasattr(items[0], 'keys') and
-                    callable(getattr(items[0], 'keys'))):
+                  callable(getattr(items[0], 'keys'))):
                 # list of dicts
-                labels = columns = sorted_column_names(items[0].keys())
+                labels = columns = [
+                    a for a in sorted_column_names(items[0].keys())
+                    if not a.startswith('__')
+                ]
 
             elif len(items) and hasattr(items[0], '__dict__'):
                 # list of objects
@@ -135,7 +140,7 @@ def browse(data, **kwargs):
             except Exception:
                 value = repr(item)
             wrapping = len(value) < 80 and ' nowrap' or ''
-            cell_tpl = '<td {}>%s</td>'.format(wrapping)
+            cell_tpl = '<td{}>%s</td>'.format(wrapping)
             t.append(cell_tpl % value)
 
         t.append('</tr>')

@@ -4,6 +4,7 @@
 
 import datetime
 import logging
+import os
 
 from markdown import Markdown
 from zoom.response import RedirectResponse
@@ -200,9 +201,13 @@ def ensure_listy(obj):
 
     >>> ensure_listy(['already listy'])
     ['already listy']
-    """
-    return is_listy(obj) and obj or [obj]
 
+    >>> ensure_listy([])
+    []
+    """
+    if is_listy(obj):
+        return obj
+    return [obj]
 
 
 class Redirector(object):
@@ -279,9 +284,8 @@ def htmlquote(text):
     return text
 
 
-def markdown(content):
-    """Transform content with markdown
-    """
+def get_markdown_converter():
+    """Return a configured markdown converter"""
     def make_page_name(text):
         result = []
         for c in text.lower():
@@ -300,7 +304,16 @@ def markdown(content):
     extras = ['tables', 'def_list', 'wikilinks', 'toc']
     configs = {'wikilinks': [('build_url', url_builder)]}
     converter = Markdown(extensions=extras, extension_configs=configs)
-    return converter.convert(unisafe(trim(content)))
+    return converter
+
+
+markdown_converter = get_markdown_converter()  # TODO: decorator instead?
+
+
+def markdown(content):
+    """Transform content with markdown
+    """
+    return markdown_converter.convert(unisafe(trim(content)))
 
 
 def load(pathname, encoding='utf-8'):
@@ -313,13 +326,110 @@ def load(pathname, encoding='utf-8'):
 def load_content(pathname, *args, **kwargs):
     """Load a content file and use it to format parameters
     """
+    isfile = os.path.isfile
+
+    if not isfile(pathname):
+        for extension in ['html', 'md', 'txt']:
+            if isfile(pathname + '.' + extension):
+                pathname = pathname + '.' + extension
+                break
+
     template = load(pathname)
     if template:
-        # content = template.format(*args, **kwargs)
         content = apply_helpers(template, None, [kwargs]).format(*args, **kwargs)
-        if pathname.endswith('.md'):
-            result = markdown(content)
-        else:
+        if pathname.endswith('.html'):
             result = content
+        else:
+            result = markdown(content)
         return result
     return ''
+
+
+def load_template(name, default=None):
+    """
+    Load a template from the theme folder.
+
+    Templates usually have .html file extensions and this module
+    will assume that's what is desired unless otherwise specified.
+    """
+
+    def find_template(name):
+        for path in site.templates_paths:
+            if os.path.exists(path) and (name in os.listdir(path)):
+                return os.path.join(path, name)
+        name_lower = name.lower()
+        for path in site.templates_paths:
+            if os.path.exists(path):
+                for filename in os.listdir(path):
+                    if filename.lower() == name_lower:
+                        return os.path.join(path, filename)
+
+    def load_template_file(name, default):
+        pathname = find_template(name)
+        if pathname:
+            if os.path.exists(pathname):
+
+                if site.theme_comments == 'path':
+                    source = pathname
+                elif site.theme_comments == 'name':
+                    source = name[:-5]
+                else:
+                    source = None
+
+                t = load(pathname)
+                # print(t)
+                # t = 'got it'
+
+                if source and pathname[-5:].lower() == '.html':
+                    result = (
+                        '\n'
+                        '<!-- source: %s -->\n'
+                        '%s\n'
+                        '<!-- end source: %s -->\n' % (source, t, source)
+                    )
+                else:
+                    result = t
+                return result
+
+        logger = logging.getLogger(__name__)
+        logger.warning('template missing: %r', name)
+        return default or '<!-- missing -->'
+
+    site = zoom.system.request.site
+
+    if not '.' in name:
+        name = name + '.html'
+
+    if '/' in name or '\\' in name:
+        raise Exception(
+            'Unable to use specified template path.  '
+            'Templates are located in theme folders.'
+        )
+
+    # return 'got stuff'
+    return site.templates.setdefault(name, load_template_file(name, default))
+
+def get_template(template_name='default', theme='default'):
+    """Get site page template"""
+
+    path = zoom.system.site.themes_path
+
+    filename = os.path.join(path, theme, template_name + '.html')
+    if os.path.isfile(filename):
+        with open(filename) as reader:
+            return reader.read()
+    else:
+        logger = logging.getLogger(__name__)
+        if template_name == 'default':
+            logger.error(
+                'default template %s missing',
+                filename,
+            )
+            raise zoom.exceptions.ThemeTemplateMissingException(
+                'Default Site Template Missing'
+            )
+        logger.warning(
+            'template %s missing',
+            filename,
+        )
+        return get_template('default')

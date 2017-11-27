@@ -65,6 +65,7 @@ form1 = Form(
         hint='test hint', placeholder='Choose as you wish'),
     RangeSliderField('Price', min=0, max=1500),
     ButtonField('Okay!', hint='test hint'),
+    ButtonsField(['One', 'Two'], cancel='cancel', hint='test hint'),
     MemoField('Memo', hint='test hint'),
     MarkdownField('Markdown', hint='test hint'),
     EditField('Editor', hint='test hint'),

@@ -11,9 +11,12 @@ import sys
 import cgi
 import json
 import logging
+import platform
 import uuid
+import urllib
 from timeit import default_timer as timer
 
+import zoom
 import zoom.utils
 import zoom.cookies
 from zoom.context import context
@@ -49,22 +52,25 @@ def get_web_vars(env):
 
     items = {}
     for key in cgi_fields.keys():
-        fn = items.__setitem__
+
+        save = items.__setitem__
+
         if isinstance(cgi_fields[key], list):
             value = (key, [item.value for item in cgi_fields[key]])
         elif cgi_fields[key].filename:
             value = (key, cgi_fields[key])
         else:
             value = (key, cgi_fields[key].value)
+
         if '[' in key and key.endswith(']'):
             # some libs append an index myfield[0], we choose to put them
             # in a list
             param = key[:key.find('[')]
             items.setdefault(param, [])
-            fn = items[param].append
+            save = items[param].append
             value = value[1:]
 
-        fn(*value)
+        save(*value)
 
     return items
 
@@ -92,13 +98,24 @@ def get_library_instance():
 
 
 def get_instance(directory):
-    """figures out what instance to run"""
+    """Figures out which instance to run
+
+    This function will first check to see if the instance directory passed
+    contains a sites directory, the miniumum bar to be considered an instance
+    directory.  If so, it returns it's absolute path.
+
+    If not, it will attempt to locate a Zoom configuration file which
+    specifies the instance path.
+
+    If none of the above methods succeed it raises an exception.
+    """
 
     logger = logging.getLogger(__name__)
 
     if directory and os.path.isdir(os.path.join(directory, 'sites')):
         # user wants to run a specific instance overriding the config files
         instance = os.path.abspath(directory)
+        logger.debug('instance: %s', instance)
         return instance
 
     config_file = (
@@ -118,32 +135,6 @@ def get_instance(directory):
         instance = get_library_instance()
 
     return instance
-
-
-def get_site_path(request, location):
-    """get the site path
-
-    Find the site which the system is to run for any given
-    domain name / instance combination.
-    """
-    logger = logging.getLogger(__name__)
-    exists = os.path.exists
-    join = os.path.join
-    split = os.path.split
-    isdir = os.path.isdir
-
-    if location:
-        if exists(location):
-            if isdir(location):
-                if exists(join(location, 'site.ini')):
-                    logger.debug('using site.ini file: %s', location)
-                    return location
-            elif exists(location) and split(location)[-1] == 'site.ini':
-                logger.debug('using site: %s', join(location))
-                return split(location)[0]
-
-    result = os.path.join(request.instance, 'sites', request.server)
-    return result
 
 
 def calc_domain(host):
@@ -176,9 +167,35 @@ def strim(url):
 
 
 class Request(object):
-    """A web request"""
+    """A web request
 
-    # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    >>> url = 'http://localhost/test?name=joe&age=40'
+    >>> request = build(url)
+    >>> request.body_consumed
+    False
+    >>> request.data == {'age': '40', 'name': 'joe'}
+    True
+    >>> request.path == '/test'
+    True
+    >>> request.route == ['test']
+    True
+    >>> request.helpers()['host']
+    'localhost'
+    >>> request.method
+    'GET'
+    >>> request.port
+    '80'
+
+    >>> request = build(url)
+    >>> request.body == sys.stdin
+    True
+    >>> request.body_consumed
+    True
+    >>> request.data == {}
+    True
+    """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, env=None, instance=None, start_time=None):
 
@@ -186,13 +203,11 @@ class Request(object):
         get = env.get
 
         self.start_time = start_time or timer()
-        self.ip_address = None
         self.session_token = None
         self.session_timeout = None
         self.subject_token = None
         self.request_id = make_request_id()
         self.server = None
-        self.route = []
         self._body = None
         self.body_consumed = False
         self.method = get('REQUEST_METHOD')
@@ -212,10 +227,8 @@ class Request(object):
         self.port = get('SERVER_PORT')
         self.script = get('SCRIPT_FILENAME')
         self.agent = get('HTTP_USER_AGENT')
-        self.method = get('REQUEST_METHOD')
         self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
         self.referrer = get('HTTP_REFERER')
-        self.env = env
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]
@@ -229,15 +242,15 @@ class Request(object):
         logger = logging.getLogger(__name__)
 
         self.location = strim(instance)
-        logger.debug('request.location: {}'.format(self.location))
+        logger.debug('request.location: %s', self.location)
 
         self.instance = get_instance(instance)
-        logger.debug('request.instance: {}'.format(self.instance))
+        logger.debug('request.instance: %s', self.instance)
 
-        self.site_path = get_site_path(self, instance)
-        logger.debug('request.site_path: {}'.format(self.site_path))
+        self.site_path = os.path.join(self.instance, 'sites', self.server)
+        logger.debug('request.site_path: %s', self.site_path)
 
-        logger.debug('request.home: {}'.format(self.home))
+        logger.debug('request.home: %s', self.home)
 
     @property
     def body(self):
@@ -267,31 +280,63 @@ class Request(object):
         """access and parse the body as json"""
         return json.loads(self.body.read().decode('utf-8'))
 
-    def get_elapsed(self):
-        return '{:1.3f}'.format(timer() - self.start_time)
+    @property
+    def elapsed(self):
+        """Elapsed time"""
+        return timer() - self.start_time
 
     @property
     def parent_path(self):
+        """Path of resource parent"""
         return '/' + '/'.join(self.route[:-1])
 
     def helpers(self):
         """provide helpers"""
+        def get_elapsed():
+            """Return formatted elapsed time"""
+            return '{:1.3f}'.format(self.elapsed)
+
         return dict(
             protocol=self.protocol,
             domain=self.domain,
             host=self.host,
             remote_address=self.ip_address,
             ip_address=self.ip_address,
-            elapsed=self.get_elapsed,
+            elapsed=get_elapsed,
             request_path=self.path,
             parent_path=self.parent_path,
+            node=platform.node(),
         )
 
     def __str__(self):
         return zoom.utils.pretty(self)
 
 
+def build(url, data=None):
+    """Build a request object
+    """
+    parsed = urllib.parse.urlparse(url)
+    logger = logging.getLogger(__name__)
+    logger.debug(parsed)
+    request = Request(
+        dict(
+            REQUEST_METHOD=data and 'POST' or 'GET',
+            SCRIPT_NAME='index.wsgi',
+            PATH_INFO=parsed.path,
+            QUERY_STRING=parsed.query,
+            SERVER_NAME=parsed.hostname,
+            SERVER_PORT=parsed.port or '80',
+            HTTP_HOST=parsed.hostname,
+        ),
+    )
+    if data:
+        request.body_consumed = True
+        request.data_values = data
+    return request
+
+
 def handler(request, handle, *rest):
     """request handler"""
     context.request = request
+    zoom.system.providers = []
     return handle(request, *rest)

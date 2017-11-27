@@ -29,7 +29,7 @@ Get your sites up faster and with less guesswork with Dynamic Solutions' preconf
 <div class=two_col>
 
 <h1>Batteries Included</h1>
-Zoom is written in Python 3, which means it runs on any platform and comes with everything you need to get started.  The Zoom platform comes with support for HTML5, jQuery, web.py and MySQL out of the box.
+Zoom is written in Python 3, which means it runs on any platform and comes with everything you need to get started.  The Zoom platform comes with support for HTML5, jQuery, sqlite3 and MySQL out of the box.
 
 </div>
 <div class=two_col>

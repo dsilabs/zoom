@@ -2,6 +2,8 @@
     users index
 """
 
+import datetime
+
 # from zoom.audit import audit
 from zoom.component import component
 from zoom.context import context
@@ -31,7 +33,7 @@ def log_data(db, status, n, limit, q):
             elapsed
         from log
         where status in ({statuses})
-        order by timestamp desc
+        order by id desc
         limit {limit}
         offset {offset}
         """.format(
@@ -66,8 +68,7 @@ def activity_panel(db):
         log.path,
         log.timestamp,
         log.elapsed
-    from log, users
-        where log.user_id = users.id
+    from log left join users on log.user_id = users.id
     order by timestamp desc
     limit 15
     """)
@@ -76,7 +77,7 @@ def activity_panel(db):
     for rec in data:
         row = [
             link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
-            link_to(rec[1], '/admin/users/' + rec[1]),
+            link_to(rec[1], '/admin/users/{}'.format(rec[1])),
             rec[2],
             rec[3],
             how_long_ago(rec[4]),
@@ -85,7 +86,7 @@ def activity_panel(db):
         ]
         rows.append(row)
 
-    labels = 'id', 'user', 'path', 'address', 'when', 'timestamp', 'elapsed'
+    labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
     return browse(rows, labels=labels, title='Activity')
 
 
@@ -97,10 +98,10 @@ def error_panel(db):
             path,
             timestamp
         from log
-        where status in ("E") and timestamp>={today}
-        order by timestamp desc
+        where status in ("E") and timestamp>=%s
+        order by id desc
         limit 10
-        """.format(today=today()))
+        """, today())
 
     users = context.site.users
     rows = []
@@ -124,11 +125,12 @@ def users_panel(db):
         max(log.timestamp) as timestamp,
         count(*) as requests
     from log, users
-        where log.user_id = users.id and users.status="A"
+        where log.user_id = users.id
+        and timestamp >= %s
     group by users.username
     order by timestamp desc
     limit 10
-    """)
+    """, today() - datetime.timedelta(days=30))
 
     rows = []
     for rec in data:
@@ -206,7 +208,7 @@ class MyView(View):
             select
                 id, app, path, status, address, elapsed, message
             from log
-            order by timestamp desc limit 50
+            order by id desc limit 50
             """
         )
         return browse(data)
@@ -217,7 +219,7 @@ class MyView(View):
         data = db("""
             select *
             from audit_log
-            order by timestamp desc
+            order by id desc
             limit 100""")
         return page(browse(data), title='Activity')
 
@@ -227,7 +229,7 @@ class MyView(View):
             select *
             from log
             where status in ('C', 'I')
-            order by timestamp desc
+            order by id desc
             limit 100""")
         return page(browse(data), title='Requests')
 

@@ -24,10 +24,10 @@ from zoom.jsonz import dumps
 class Response(object):
     """web response"""
 
-    def __init__(self, content=b'', status='200 OK'):
+    def __init__(self, content=b'', status='200 OK', headers=None):
         self.content = content
         self.status = status
-        self.headers = OrderedDict()
+        self.headers = OrderedDict(headers or {})
 
     def render_doc(self):
         """Renders the payload"""
@@ -214,7 +214,13 @@ class JSONResponse(TextResponse):
             ensure_ascii=False,
             **kwargs
     ):
-        content = dumps(content, indent, sort_keys, ensure_ascii, **kwargs)
+        content = dumps(
+            content,
+            indent=indent,
+            sort_keys=sort_keys,
+            ensure_ascii=ensure_ascii,
+            **kwargs
+        )
         TextResponse.__init__(self, content)
         self.headers['Content-type'] = 'application/json;charset=utf-8'
 
@@ -246,7 +252,7 @@ class FileResponse(Response):
         if content:
             self.content = content
         else:
-            self.content = file(filename, 'rb').read()
+            self.content = open(filename, 'rb').read()
         import os
         _, fileonly = os.path.split(filename)
         self.headers['Content-type'] = 'application/octet-stream'

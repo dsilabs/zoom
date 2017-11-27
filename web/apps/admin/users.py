@@ -2,44 +2,24 @@
     system users
 """
 
-from zoom.components import success, error
+import zoom
+from zoom.components import success
 from zoom.collect import Collection, CollectionView, CollectionController
 from zoom.context import context
 from zoom.forms import Form
-from zoom.page import page
 from zoom.users import User, Users
-from zoom.tools import now, home
+from zoom.tools import home
 import zoom.validators as v
 import zoom.fields as f
 
 from fields import UserGroupsField
-from model import update_user_groups
-
-#
-# def not_registered(request):
-#     db = request.site.db
-#     user_id = len(request.route) > 2 and request.route[2] or None
-#     def email_unknown_test(email):
-#         print(user_id)
-#         cmd = 'select * from users where id<>%s and email=%s'
-#         return not bool(db(cmd, user_id, email))
-#     return v.Validator('already registered', email_unknown_test)
-#
-#
-# def username_available(request):
-#     db = request.site.db
-#     user_id = len(request.route) > 2 and request.route[2] or None
-#     def username_available_test(username):
-#         cmd = 'select * from users where id<>%s and username=%s'
-#         return not bool(db(cmd, user_id, username))
-#     return v.Validator('taken', username_available_test)
-#
+import model
 
 def user_fields(request):
     # username_available = Validator('taken', valid_username(db))
     # not_registered = Validator('already registered', email_unknown_test)
 
-    personal_fields = f.Section('Personal',[
+    personal_fields = f.Section('Personal', [
         f.TextField('First Name', v.required, v.valid_name),
         f.TextField('Last Name', v.required, v.valid_name),
         # f.TextField('Email', v.required, v.valid_email, not_registered(request)),
@@ -47,13 +27,17 @@ def user_fields(request):
         f.PhoneField('Phone', v.valid_phone, hint='optional'),
         ])
 
-    account_fields = f.Section('Account',[
+    account_fields = f.Section('Account', [
         # f.TextField('Username', v.required, v.valid_username, username_available(request)),
         f.TextField('Username', v.required, v.valid_username),
         ])
 
     security_fields = f.Section('Security', [
-        UserGroupsField('Groups', default=['2'], options=request.site.user_groups)
+        UserGroupsField(
+            'Groups',
+            default=['2'],
+            options=model.get_user_group_options(request.site)
+        )
     ])
 
     return f.Fields(personal_fields, account_fields, security_fields)
@@ -70,17 +54,20 @@ def get_reset_password_form(key):
 class UserCollectionView(CollectionView):
 
     def show(self, key):
-        page = CollectionView.show(self, key)
-        page.actions.insert(0, 'Reset Password')
-        user = context.site.users.first(username=key)
-        if user.is_active:
-            page.actions.insert(0, 'Deactivate')
-        else:
-            page.actions.insert(0, 'Activate')
-        return page
+        """Show user"""
+        user = context.site.users.locate(key)
+        if user:
+            page = CollectionView.show(self, key)
+            page.actions.insert(0, 'Reset Password')
+            if user.is_active:
+                page.actions.insert(0, 'Deactivate')
+            else:
+                page.actions.insert(0, 'Activate')
+            return page
 
     def reset_password(self, key, **kwargs):
-        user = context.site.users.first(username=key)
+        """Show resset password form"""
+        user = context.site.users.locate(key)
         if user:
             msg = 'Reset password for %s (%s)<br><br>' % (user.full_name, user.username)
             form = get_reset_password_form(key)
@@ -88,16 +75,22 @@ class UserCollectionView(CollectionView):
             content = msg + form.edit()
         else:
             content = 'Error locating user %r' % key
-        return page(content, title='Reset Password')
+        return zoom.page(content, title='Reset Password')
 
 
 class UserCollectionController(CollectionController):
 
     def before_update(self, record):
         record['status'] = 'A'
-        record['updated'] = now()
-        record['updated_by'] = self.collection.user._id
-        update_user_groups(record)
+
+    def after_update(self, record):
+        model.update_user_groups(record)
+
+    def before_insert(self, record):
+        record['status'] = 'A'
+
+    def after_insert(self, record):
+        model.update_user_groups(record)
 
     def save_password_button(self, key, *args, **data):
         form = get_reset_password_form(key)
@@ -126,7 +119,8 @@ def main(route, request):
     db = request.site.db
     users = Users(db)
     fields = user_fields(request)
-    columns = 'link', 'username', 'phone', 'email', 'status', 'updated', 'updated_by'
+    columns = 'link', 'phone', 'email', 'status', 'updated', 'updated_by'
+    labels = 'Username', 'phone', 'email', 'status', 'updated', 'updated_by'
     return Collection(
         fields,
         model=User,
@@ -135,5 +129,7 @@ def main(route, request):
         store=users,
         item_name='user',
         columns=columns,
-        url='/admin/users'
+        labels=labels,
+        url='/admin/users',
+        key_name='id'
     )(route, request)

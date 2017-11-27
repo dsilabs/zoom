@@ -29,3 +29,15 @@ class ValidException(Exception):
 class TypeException(Exception):
     """unsupported type"""
     pass
+
+class DatabaseMissingException(Exception):
+    """Database not found"""
+    pass
+
+class SiteMissingException(Exception):
+    """Site directory not found"""
+    pass
+
+class ThemeTemplateMissingException(Exception):
+    """Theme template missing"""
+    pass

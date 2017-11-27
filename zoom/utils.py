@@ -133,6 +133,8 @@ def id_for(*args):
         '1234'
         >>> id_for('this %$&#@^is##-$&*!it')
         'this-is-it'
+        >>> id_for('test-this')
+        'test-this'
 
     """
     def id_(text):
@@ -381,13 +383,19 @@ class Config(object):
         self.config.read(filename)
 
     def get(self, section, option, default=None):
-        """get a config file value supplying an optional defalt value"""
+        """Get a config file value supplying an optional defalt value."""
         try:
             return self.config.get(section, option)
         except (configparser.NoOptionError, configparser.NoSectionError):
             if default is not None:
                 return default
             raise
+
+    def has_option(self, section, option):
+        """Return True if config file option exists."""
+        return (
+            self.config and self.config.has_option(section, option)
+        )
 
 
 def get_config(filename):
@@ -639,7 +647,8 @@ class Record(Storage):
         logger = logging.getLogger(__name__)
         id = self['__store'].put(self)
         key = self['__store'].id_name
-        logger.debug('saved record %s(%s=%r) to %r',
+        logger.debug(
+            'saved record %s(%s=%r) to %r',
             self.__class__.__name__,
             key,
             self[key],

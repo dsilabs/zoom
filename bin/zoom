@@ -1,0 +1,9 @@
+#!/usr/bin/env python3.6
+
+"""
+    Unix style CLI launcher
+"""
+
+import zoom_cli
+
+zoom_cli.main()

@@ -2,7 +2,9 @@
     zoom.page
 """
 
+import io
 import logging
+import sys
 
 from zoom.component import composition, Component
 from zoom.components import as_actions
@@ -15,6 +17,7 @@ import zoom.apps
 import zoom.forms
 import zoom.helpers
 import zoom.render
+import zoom.tools
 
 class ClearSearch(DynamicView):
     pass
@@ -102,8 +105,6 @@ class Page(object):
             return errors + warnings + successes
 
         def get(part, formatter='{}', joiner='\n'):
-            logger = logging.getLogger(__name__)
-            logger.debug('getting %r', part)
             parts = composition.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
@@ -111,10 +112,9 @@ class Page(object):
                     parts |= page_part
                 else:
                     parts |= [page_part]
-            logger.debug('get_{}: {}'.format(part, parts))
             return parts and joiner.join(
                 formatter.format(part) for part in parts
-            ) or ''
+            ) + '\n' or ''
 
         def get_css():
             wrapper = '<style>\n{}\n</style>'
@@ -150,6 +150,19 @@ class Page(object):
         def get_content():
             return self.content
 
+        def get_stdout():
+            stdout = sys.stdout.getvalue()
+            if stdout:
+                sys.stdout.close()
+                sys.stdout = io.StringIO()
+            value = ''.join(
+                list(composition.parts.parts.get('stdout', [])) +
+                [stdout]
+            )
+            if value:
+                return html.pre(zoom.tools.websafe(value) + '{*stdout*}')
+            return '{*stdout*}'
+
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
@@ -163,7 +176,9 @@ class Page(object):
             styles=get_styles,
             libs=get_libs,
             alerts=get_alerts(request),
-            stdout='{*stdout*}',
+            stdout=get_stdout,
+            theme=self.theme,
+            theme_uri=self.theme_uri,
         )
 
     def render(self, request):
@@ -178,12 +193,15 @@ class Page(object):
             full_page = Component(self.content)
         self.content = full_page.render()
 
+        self.theme = self.kwargs.get('theme', zoom.system.site.theme)
+        self.theme_uri = '/themes/' + self.theme
+
         zoom.render.add_helpers(
             zoom.forms.helpers(request),
             self.helpers(request),
         )
 
-        template = request.site.get_template(self.template)
+        template = zoom.tools.get_template(self.template, self.theme)
 
         return HTMLResponse(template)
 

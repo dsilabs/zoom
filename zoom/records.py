@@ -311,7 +311,6 @@ class RecordStore(Store):
             2 person records
 
         """
-        # pylint: disable=star-args
 
         if keys is None:
             return None
@@ -359,18 +358,25 @@ class RecordStore(Store):
             ['name', 'age', 'kids', 'birthdate']
 
         """
-        cmd = 'describe %s' % self.kind
+        cmd = 'select * from %s where 1=2' % self.kind
         rows = self.db(cmd)
-        return [rec[0] for rec in rows if rec[0] != 'id']
+        return [rec[0] for rec in rows.cursor.description if rec[0] != 'id']
 
     def _delete(self, ids):
         if ids:
-            self.before_delete(ids)
+            affected = self.get(ids)
+
+            for rec in affected:
+                self.before_delete(rec)
+
             spots = ','.join('%s' for _ in ids)
             cmd = 'delete from {} where {} in ({})'.format(
                 self.kind, self.key, spots)
             self.db(cmd, *ids)
-            self.after_delete(ids)
+
+            for rec in affected:
+                self.after_delete(rec)
+
             return ids
 
     def delete(self, *args, **kwargs):

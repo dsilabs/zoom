@@ -987,6 +987,72 @@ class Button(Field):
         return ''
 
 
+class Buttons(Field):
+    """Buttons
+
+    >>> Buttons(['Save','Publish','Delete']).show()
+    ''
+
+    >>> Buttons(['Save','Publish']).widget()
+    '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<input class="button" type="submit" id="publish_button" name="publish_button" value="Publish" />'
+
+    >>> Buttons(['Save'],cancel='/app/id').widget()
+    '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<a href="/app/id">cancel</a>'
+    """
+
+    def __init__(self, captions=['Save'], **keywords):
+        Field.__init__(self, **keywords)
+        self.captions = captions
+
+    def show(self):
+        return ""
+
+    def edit(self):
+        return self.widget()
+
+    def widget(self):
+        buttons = [
+            html.tag(
+                'input',
+                Type='submit',
+                Class='button',
+                name=name_for(caption + ' button'),
+                id=name_for(caption + ' button'),
+                value=caption
+            ) for caption in self.captions
+        ]
+        if hasattr(self, 'cancel'):
+            buttons.append(
+                html.tag('a', 'cancel', href=getattr(self, 'cancel', 'cancel'))
+            )
+        return '&nbsp;'.join(buttons)
+
+    def evaluate(self):
+        return {}
+
+    def __repr__(self):
+        return ''
+
+
+class ButtonsField(Buttons):
+    """Buttons field.
+
+    >>> ButtonsField('Save').show()
+    ''
+
+    >>> print(ButtonsField(['Save','Publish']).edit())
+    <div class="field">
+      <div class="field_label">&nbsp;</div>
+      <div class="field_edit"><input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<input class="button" type="submit" id="publish_button" name="publish_button" value="Publish" /></div>
+    </div>
+    <BLANKLINE>
+
+    """
+
+    def edit(self):
+        return layout_field('&nbsp;', self.widget())
+
+
 class ButtonField(Button):
     """Button field.
 
@@ -2100,6 +2166,17 @@ class MultiselectField(TextField):
     'One; Two'
     >>> f.evaluate()
     {'type': ['uno', 'dos']}
+
+    >>> f = MultiselectField('Type',value=['One'],options=[('One','uno'),('Two','dos')])
+    >>> f.display_value()
+    'One'
+    >>> f.evaluate()
+    {'type': ['uno']}
+
+    >>> f = MultiselectField('Type', options=[('One','uno'),('Two','dos')])
+    >>> f.initialize({'type': 'One'})
+    >>> f.evaluate()
+    {'type': ['uno']}
 
     >>> f = MultiselectField('Type',value=['uno','dos'],options=[('One','uno'),('Two','dos')])
     >>> f.display_value()

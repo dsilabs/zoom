@@ -6,7 +6,6 @@
 --
 -- Table structure for table `log`
 --
-DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
@@ -24,6 +23,7 @@ CREATE TABLE `log` (
   KEY `log_path` (`path`),
   KEY `log_user_id` (`user_id`),
   KEY `log_address` (`address`),
+  KEY `log_server` (`server`),
   KEY `log_status` (`status`),
   KEY `log_timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -32,7 +32,6 @@ CREATE TABLE `log` (
 --
 -- Table structure for table `auditlog`
 --
-DROP TABLE IF EXISTS `audit_log`;
 CREATE TABLE `audit_log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `app` varchar(30) DEFAULT NULL,
@@ -51,7 +50,6 @@ CREATE TABLE `audit_log` (
 --
 -- Table structure for table `entities`
 --
-drop table if exists `entities`;
 create table if not exists `entities` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
@@ -63,7 +61,6 @@ create table if not exists `entities` (
 --
 -- Table structure for table `attributes`
 --
-drop table if exists `attributes`;
 create table if not exists `attributes` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `kind` varchar(100) NOT NULL,
@@ -81,7 +78,6 @@ create table if not exists `attributes` (
 --
 -- Table structure for table `groups`
 --
-DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `type` char(1) default NULL,
@@ -96,7 +92,6 @@ CREATE TABLE `groups` (
 --
 -- Table structure for table `members`
 --
-DROP TABLE IF EXISTS `members`;
 CREATE TABLE `members` (
   `user_id` int unsigned NOT NULL,
   `group_id` int unsigned NOT NULL,
@@ -109,7 +104,6 @@ CREATE TABLE `members` (
 --
 -- Table structure for table `sessions`
 --
-DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `id` varchar(32) NOT NULL,
   `expiry` int unsigned NOT NULL,
@@ -122,7 +116,6 @@ CREATE TABLE `sessions` (
 --
 -- Table structure for table `subgroups`
 --
-DROP TABLE IF EXISTS `subgroups`;
 CREATE TABLE `subgroups` (
   `group_id` int unsigned NOT NULL,
   `subgroup_id` int unsigned NOT NULL,
@@ -135,7 +128,6 @@ CREATE TABLE `subgroups` (
 --
 -- Table structure for table `users`
 --
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `username` char(50) NOT NULL,
@@ -146,13 +138,15 @@ CREATE TABLE `users` (
   `phone` char(30) default NULL,
   `created` datetime default NULL,
   `updated` datetime default NULL,
+  `last_seen` datetime default NULL,
   `created_by` int unsigned default NULL,
   `updated_by` int unsigned default NULL,
   `status` char(1) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`username`),
   KEY `username` (`username`),
-  KEY `email` (`email`)
+  KEY `email` (`email`),
+  KEY `last_seen` (`last_seen`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -242,9 +236,9 @@ UNLOCK TABLES;
 --
 LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES
-    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),1,1,'A'),
-    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),1,1,'A'),
-    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),1,1,'A');
+    (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',now(),now(),NULL,1,1,'A'),
+    (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',now(),now(),NULL,1,1,'A'),
+    (3,'guest','','Guest','User','guest@datazoomer.com','',now(),now(),NULL,1,1,'A');
 UNLOCK TABLES;
 
 --

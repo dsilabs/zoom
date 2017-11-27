@@ -12,7 +12,22 @@ USERNAME_RE = r'^[a-zA-Z0-9.@\\]+$'
 
 
 class Validator(object):
-    """A content validator."""
+    """A content validator.
+
+    >>> is_true = Validator('not true', bool)
+    >>> is_true.valid(1)
+    True
+
+    >>> is_true.valid([])
+    False
+
+    >>> is_true.msg
+    'not true'
+
+    >>> is_true.clean({})
+    {}
+
+    """
 
     def __init__(self, msg, test):
         self.msg = msg
@@ -125,29 +140,27 @@ class URLValidator(RegexValidator):
 
 
 class PostalCodeValidator(RegexValidator):
-    """
-    A Postal Code Validator
+    """A Postal Code Validator
 
-        >>> validator = PostalCodeValidator()
-        >>> validator.valid('V8X 1G1')
-        True
+    >>> validator = PostalCodeValidator()
+    >>> validator.valid('V8X 1G1')
+    True
 
-        >>> validator = PostalCodeValidator()
-        >>> validator.valid('V8X1G1')
-        True
+    >>> validator = PostalCodeValidator()
+    >>> validator.valid('V8X1G1')
+    True
 
-        >>> validator = PostalCodeValidator()
-        >>> validator.valid('V8X XG1')
-        False
+    >>> validator = PostalCodeValidator()
+    >>> validator.valid('V8X XG1')
+    False
 
-        >>> validator = PostalCodeValidator()
-        >>> validator.valid('8X XG1')
-        False
+    >>> validator = PostalCodeValidator()
+    >>> validator.valid('8X XG1')
+    False
 
-        >>> validator = PostalCodeValidator()
-        >>> validator.valid('V8X 1g1')
-        True
-
+    >>> validator = PostalCodeValidator()
+    >>> validator.valid('V8X 1g1')
+    True
     """
     def __init__(self):
         e = r'^[A-Za-z][0-9][A-Za-z]\s*[0-9][A-Za-z][0-9]$'
@@ -155,27 +168,25 @@ class PostalCodeValidator(RegexValidator):
 
 
 class DateValidator(Validator):
-    """
-    Date validator
+    """Date validator
 
-        >>> v = DateValidator()
-        >>> v.valid('asdf')
-        False
-        >>> v.msg
-        'enter valid date in "Jan 31, 2016" format'
+    >>> v = DateValidator()
+    >>> v.valid('asdf')
+    False
+    >>> v.msg
+    'enter valid date in "Jan 31, 2016" format'
 
-        >>> v.valid('Jan 1, 2016')
-        True
+    >>> v.valid('Jan 1, 2016')
+    True
 
-        >>> v.valid('Jan 41, 2016')
-        False
+    >>> v.valid('Jan 41, 2016')
+    False
 
-        >>> v.valid('2016-01-14')
-        True
+    >>> v.valid('2016-01-14')
+    True
 
-        >>> v.valid('2016-01-41')
-        False
-
+    >>> v.valid('2016-01-41')
+    False
     """
     def __init__(self, date_format='%b %d, %Y'):
         strftime = datetime.datetime.strftime
@@ -207,31 +218,31 @@ class DateValidator(Validator):
 class MinimumLength(Validator):
     """A minimum length validator
 
-        >>> v = MinimumLength(2)
-        >>> v.test('')
-        False
-        >>> v.test(' ')
-        False
-        >>> v.test('  ')
-        False
-        >>> v.test('t')
-        False
-        >>> v.msg
-        'minimum length 2'
-        >>> v.test('te')
-        True
+    >>> v = MinimumLength(2)
+    >>> v.test('')
+    False
+    >>> v.test(' ')
+    False
+    >>> v.test('  ')
+    False
+    >>> v.test('t')
+    False
+    >>> v.msg
+    'minimum length 2'
+    >>> v.test('te')
+    True
 
-        >>> v = MinimumLength(2, True)
-        >>> v.test('')
-        True
-        >>> v.test(' ')
-        True
-        >>> v.test('  ')
-        True
-        >>> v.test('t')
-        False
-        >>> v.test('te')
-        True
+    >>> v = MinimumLength(2, True)
+    >>> v.test('')
+    True
+    >>> v.test(' ')
+    True
+    >>> v.test('  ')
+    True
+    >>> v.test('t')
+    False
+    >>> v.test('te')
+    True
     """
 
     def __init__(self, min_length, empty_allowed=False):
@@ -250,17 +261,17 @@ class MinimumLength(Validator):
 
 
 class MinimumValue(Validator):
-    """
-    Minimum value validator
+    """Minimum value validator
 
-        >>> v = MinimumValue(100)
-        >>> v.valid(50)
-        False
-        >>> v.valid(120)
-        True
+    >>> v = MinimumValue(100)
+    >>> v.valid(50)
+    False
+    >>> v.valid(120)
+    True
     """
     def __init__(self, min_value, empty_allowed=True):
         def test(value):
+            """Test the value"""
             return (
                 empty_allowed and value == '' or
                 not value < min_value
@@ -270,26 +281,26 @@ class MinimumValue(Validator):
 
 
 class MaximumValue(Validator):
-    """
-    Maximum value validator
+    """Maximum value validator
 
-        >>> v = MaximumValue(100)
-        >>> v.valid(50)
-        True
-        >>> v.valid(120)
-        False
+    >>> v = MaximumValue(100)
+    >>> v.valid(50)
+    True
+    >>> v.valid(120)
+    False
 
-        >>> from datetime import date
-        >>> v = MaximumValue(date(2015,1,1))
-        >>> v.valid(date(2015,1,1))
-        True
-        >>> v.valid(date(2015,1,2))
-        False
-        >>> v.msg
-        'value must be at most 2015-01-01'
+    >>> from datetime import date
+    >>> v = MaximumValue(date(2015,1,1))
+    >>> v.valid(date(2015,1,1))
+    True
+    >>> v.valid(date(2015,1,2))
+    False
+    >>> v.msg
+    'value must be at most 2015-01-01'
     """
     def __init__(self, max_value, empty_allowed=True):
         def test(value):
+            """Test the value"""
             return (
                 empty_allowed and value == '' or
                 not value > max_value
@@ -323,7 +334,8 @@ def email_valid(email):
 
 
 def image_mime_type_valid(data):
-    """check data against the more commonly browser supported mime types"""
+    """check data against the more commonly browser supported mime types
+    """
     accept = ['gif', 'jpeg', 'png', 'xbm', 'bmp']
     if (
             isinstance(data, cgi.FieldStorage) and
@@ -339,23 +351,24 @@ def image_mime_type_valid(data):
 
 
 def number_valid(value):
-    """
-        >>> number_valid(0)
-        True
-        >>> number_valid(-1)
-        True
-        >>> number_valid(1.12039123)
-        True
-        >>> number_valid('1.12039123')
-        True
-        >>> number_valid('x1.12039123')
-        False
-        >>> number_valid('t')
-        False
-        >>> number_valid('')
-        True
-        >>> number_valid(False) # not sure if this is what's we want
-        True
+    """Test for valid number
+
+    >>> number_valid(0)
+    True
+    >>> number_valid(-1)
+    True
+    >>> number_valid(1.12039123)
+    True
+    >>> number_valid('1.12039123')
+    True
+    >>> number_valid('x1.12039123')
+    False
+    >>> number_valid('t')
+    False
+    >>> number_valid('')
+    True
+    >>> number_valid(False) # not sure if this is what's we want
+    True
     """
     if value == '':
         return True

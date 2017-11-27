@@ -18,3 +18,26 @@ App
 
 Apps
 : {{request.site.apps_paths}}
+
+
+Database
+----
+
+connect
+: {{request.site.db.connect_string}}
+
+
+Mail
+----
+
+host
+: {{request.site.smtp_host}}
+
+port
+: {{request.site.smtp_port}}
+
+user
+: {{request.site.smtp_user}}
+
+password
+: {{request.site.smtp_passwd}}

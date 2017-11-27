@@ -6,18 +6,263 @@ import logging
 
 from zoom.context import context
 from zoom.tools import today
-from zoom.records import Record, RecordStore
+from zoom.users import Users
+from zoom.models import Groups
 
 
-def search_all(text):
-    users = Users()
+def get_user_group_options(site):
+    return list(
+        (name, str(id)) for name, id in
+        site.db('select name, id from groups where type="U" order by name')
+    )
+
+
+def get_subgroups(db, groups):
+    """get subgroups for a list of groups
+    """
+
+    def get_memberships(group, memberships, depth=0):
+        """get group memberships"""
+        result = set([group])
+        if depth < 10:
+            for grp, sgrp in memberships:
+                if group == sgrp and grp not in result:
+                    result |= get_memberships(grp, memberships, depth+1)
+        return result
+
+    all_subgroups = list(db(
+        'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
+    ))
+
+    memberships = set([])
+    for group in groups:
+        memberships |= get_memberships(group, all_subgroups)
+
+    return memberships
+
+
+def get_supergroups(db, groups):
+    """get supergroups for a list of groups
+    """
+
+    def get_memberships(group, memberships, depth=0):
+        """get group memberships"""
+        result = set([group])
+        if depth < 10:
+            for grp, sgrp in memberships:
+                if group == grp and sgrp not in result:
+                    result |= get_memberships(sgrp, memberships, depth+1)
+        return result
+
+    all_subgroups = list(db(
+        'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
+    ))
+
+    memberships = set([])
+    for group in groups:
+        memberships |= get_memberships(group, all_subgroups)
+
+    return memberships
+
+
+def named_groups(db, group_ids):
+    """Returns names for a list of group ids"""
+    result = []
+    for _id, name in db('SELECT id, name FROM groups'):
+        if _id in group_ids:
+            result.append(name)
+    return result
+
+
+def get_subgroup_options(db, group_id):
+    cmd = """
+    select name, id
+    from groups
+    where id <> %s and left(groups.name, 2) <> 'a_'
+    """
+    return list(
+        (name, str(id))
+        for name, id in db(cmd, group_id)
+    )
+
+
+def get_role_options(db, group_id):
+    cmd = """
+    select name, id
+    from groups
+    where id <> %s and left(groups.name, 2) <> 'a_'
+    """
+    return list(
+        (name, str(id))
+        for name, id in db(cmd, group_id)
+    )
+
+
+class AdminModel(object):
+
+    def __init__(self, db):
+        self.db = db
+        self.logger = logging.getLogger(__name__)
+        self.groups = Groups(db)
+
+    def log(self, message, *args):
+        self.logger.debug(message, *args)
+        print(message % args)
+
+    def get_user_options(self):
+        return sorted(
+            (user.link, user._id) for user in Users(self.db)
+        )
+
+    def get_subgroup_options(self, group_id):
+        return sorted(
+            (group.link, group._id)
+            for group in self.groups.find(**{'type': 'U'})
+            if group._id != group_id
+        )
+
+    def get_role_options(self, group_id):
+        return sorted(
+            (group.link, group._id)
+            for group in self.groups.find(**{'type': 'U'})
+            if group._id != group_id
+        )
+
+    def get_app_options(self, group_id):
+        app_titles = {app.name: app.title for app in context.site.apps}
+        return sorted([
+            (app_titles.get(app.name[2:], app.name[2:]), app._id)
+            for app in self.groups.find(type="A")
+            if app.name[2:] in app_titles
+        ])
+
+    def update_group_users(self, record):
+        """Post updated group users"""
+
+        record_id = int(record['_id'])
+
+        updated_users = set(int(id) for id in record['users'])
+        self.log('updated members: %r', updated_users)
+
+        cmd = 'select user_id from members where group_id=%s'
+        existing_users = set(
+            user_id for user_id, in
+            self.db(cmd, record_id)
+        )
+        self.log('existing members: %r', existing_users)
+
+        if updated_users != existing_users:
+            if existing_users - updated_users:
+                self.log('deleting members: %r', existing_users - updated_users)
+                cmd = 'delete from members where group_id=%s and user_id in %s'
+                self.db(cmd, record_id, existing_users - updated_users)
+            if updated_users - existing_users:
+                self.log('inserting members: %r', updated_users - existing_users)
+                cmd = 'insert into members (group_id, user_id) values (%s, %s)'
+                values = updated_users - existing_users
+                sequence = zip([record_id] * len(values), values)
+                self.db.execute_many(cmd, sequence)
+        else:
+            self.log('users unchanged')
+
+    def update_group_subgroups(self, record):
+        """Post updated group subgroups"""
+
+        record_id = int(record['_id'])
+
+        updated_subgroups = set(int(id) for id in record['subgroups'])
+        self.log('updated subgroups: %r', updated_subgroups)
+
+        cmd = 'select subgroup_id from subgroups where group_id=%s'
+        existing_subgroups = set(
+            subgroup_id for subgroup_id, in
+            self.db(cmd, record_id)
+        )
+        self.log('existing subgroups: %r', existing_subgroups)
+
+        if updated_subgroups != existing_subgroups:
+            if existing_subgroups - updated_subgroups:
+                self.log('deleting: %r', existing_subgroups - updated_subgroups)
+                cmd = 'delete from subgroups where group_id=%s and subgroup_id in %s'
+                self.db(cmd, record_id, existing_subgroups - updated_subgroups)
+            if updated_subgroups - existing_subgroups:
+                self.log('inserting: %r', updated_subgroups - existing_subgroups)
+                cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
+                values = updated_subgroups - existing_subgroups
+                sequence = zip([record_id] * len(values), values)
+                self.db.execute_many(cmd, sequence)
+        else:
+            self.log('subgroups unchanged')
+
+    def update_group_roles(self, record):
+        """Post updated group roles"""
+
+        record_id = int(record['_id'])
+        group = context.site.groups.get(record_id)
+        assert group
+
+        updated_roles = set(int(user) for user in record['roles'])
+        self.log('updated roles: %r', updated_roles)
+
+        existing_roles = group.roles
+        self.log('existing roles: %r', existing_roles)
+
+        if updated_roles != existing_roles:
+            if existing_roles - updated_roles:
+                self.log('deleting: %r', existing_roles - updated_roles)
+                cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
+                self.db(cmd, record_id, existing_roles - updated_roles)
+            if updated_roles - existing_roles:
+                self.log('inserting: %r', updated_roles - existing_roles)
+                cmd = 'insert into subgroups (subgroup_id, group_id) values (%s, %s)'
+                values = updated_roles - existing_roles
+                sequence = zip([record_id] * len(values), values)
+                self.db.execute_many(cmd, sequence)
+        else:
+            self.log('roles unchanged')
+
+    def update_group_apps(self, record):
+        """Post updated group apps"""
+
+        record_id = int(record['_id'])
+        group = context.site.groups.get(record_id)
+        assert group
+
+        updated_apps = set(int(user) for user in record['apps'])
+        self.log('updated apps: %r', updated_apps)
+
+        existing_apps = group.apps
+        self.log('existing apps: %r', existing_apps)
+
+        if updated_apps != existing_apps:
+            if existing_apps - updated_apps:
+                self.log('deleting: %r', existing_apps - updated_apps)
+                cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
+                self.db(cmd, record_id, existing_apps - updated_apps)
+            if updated_apps - existing_apps:
+                self.log('inserting: %r', updated_apps - existing_apps)
+                cmd = 'insert into subgroups (subgroup_id, group_id) values (%s, %s)'
+                values = updated_apps - existing_apps
+                sequence = zip([record_id] * len(values), values)
+                self.db.execute_many(cmd, sequence)
+        else:
+            self.log('apps unchanged')
+
+    def update_group_relationships(self, record):
+        self.update_group_users(record)
+        self.update_group_subgroups(record)
+        self.update_group_roles(record)
+        self.update_group_apps(record)
+
 
 def get_index_metrics(db):
 
     def count(where, *args):
+        """Return the result of a count query"""
         return '{:,}'.format((list(db('select count(*) from ' + where, *args))[0][0]))
 
     def avg(metric, where, *args):
+        """Return the result of a query that calculates an average"""
         return '{:,.1f}'.format((list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]))
 
     num_users = count('users where status="A"')
@@ -39,63 +284,37 @@ def get_index_metrics(db):
 def update_user_groups(record):
     logger = logging.getLogger(__name__)
     db = context.site.db
+    record_id = record['_id']
 
-    logger.debug(str(db('select group_id, user_id from members')))
-
-    current_members = list(
-        db('select group_id, user_id from members where user_id=%s', record['_id'])
+    existing_groups = set(
+        group_id for group_id, in
+        db('select group_id from members where user_id=%s', record_id)
     )
+    logger.debug('existing_groups: %r', existing_groups)
+    print(existing_groups)
 
-    logger.debug('current_members: {!r}'.format(current_members))
-
-    updated_members = [(
-        (int(group), int(record['_id']))
-    ) for group in record['groups']]
-    logger.debug('updated_members: {!r}'.format(updated_members))
-
-    for member in current_members:
-        if member not in updated_members:
-            group_id, user_id = member
-            logger.debug('deleting %r', member)
-            db('delete from members where group_id=%s and user_id=%s', group_id, user_id)
-
-    for member in updated_members:
-        if member not in current_members:
-            group_id, user_id = member
-            logger.debug('inserting %r', member)
-            db('insert into members (group_id, user_id) values (%s, %s)', group_id, user_id)
-
-
-def update_group_members(record):
-    logger = logging.getLogger(__name__)
-    db = context.site.db
-
-    logger.debug(str(db('select group_id, user_id from members')))
-
-    current_members = list(
-        db('select group_id, user_id from members where group_id=%s', record['_id'])
+    updated_groups = set(
+        int(group) for group in record['groups']
     )
+    logger.debug('updated_groups: %r', updated_groups)
+    print(updated_groups)
 
-    logger.debug('current_members: {!r}'.format(current_members))
+    if updated_groups != existing_groups:
+        if existing_groups - updated_groups:
+            logger.debug('deleting: %r', existing_groups - updated_groups)
+            cmd = 'delete from members where user_id=%s and group_id in %s'
+            db(cmd, record_id, existing_groups - updated_groups)
+        if updated_groups - existing_groups:
+            logger.debug('inserting: %r', updated_groups - existing_groups)
+            cmd = 'insert into members (user_id, group_id) values (%s, %s)'
+            values = updated_groups - existing_groups
+            sequence = zip([record_id] * len(values), values)
+            db.execute_many(cmd, sequence)
+    else:
+        logger.debug('members unchanged')
+        print('unchanged')
 
-    print(current_members)
-    print(record)
 
-    updated_members = [(
-        (int(record['_id']), int(user))
-    ) for user in record['users']]
-    logger.debug('updated_members: {!r}'.format(updated_members))
-
-    # raise Exception('stopped')
-
-    for member in current_members:
-        if member not in updated_members:
-            group_id, user_id = member
-            logger.debug('deleting %r', member)
-            db('delete from members where group_id=%s and user_id=%s', group_id, user_id)
-
-    for member in updated_members:
-        if member not in current_members:
-            group_id, user_id = member
-            logger.debug('inserting %r', member)
-            db('insert into members (group_id, user_id) values (%s, %s)', group_id, user_id)
+def update_group_relationships(record):
+    admin = AdminModel(context.site.db)
+    admin.update_group_relationships(record)

@@ -6,7 +6,6 @@
 
 import datetime
 import decimal
-import logging
 
 import zoom.utils
 import zoom.exceptions
@@ -98,10 +97,10 @@ class Store(object):
     def after_insert(self, record):
         pass
 
-    def before_delete(self, ids):
+    def before_delete(self, record):
         pass
 
-    def after_delete(self, ids):
+    def after_delete(self, record):
         pass
 
 
@@ -210,7 +209,6 @@ class EntityStore(Store):
         self.db = db
         self.klass = type(klass) == str and dict or klass
         self.kind = kind or type(klass) == str and klass or zoom.utils.kind(klass())
-        self.key = 'id'
         self.id_name = '_id'
 
     def put(self, entity):
@@ -307,8 +305,6 @@ class EntityStore(Store):
         else:
             db('insert into entities (kind) values (%s)', self.kind)
             id = entity['_id'] = db.lastrowid
-            logger = logging.getLogger(__name__)
-            logger.debug('inserted %r - %r', id, entity)
             entity['__store'] = self
 
         n = len(keys)
@@ -423,13 +419,20 @@ class EntityStore(Store):
 
     def _delete(self, ids):
         if ids:
-            self.before_delete(ids)
+            affected = self.get(ids)
+
+            for rec in affected:
+                self.before_delete(rec)
+
             spots = ','.join('%s' for _ in ids)
             cmd = 'delete from attributes where row_id in ({})'.format(spots)
             self.db(cmd, *ids)
             cmd = 'delete from entities where id in ({})'.format(spots)
             self.db(cmd, *ids)
-            self.after_delete(ids)
+
+            for rec in affected:
+                self.after_delete(rec)
+
             return ids
 
     def delete(self, *args, **kwargs):

@@ -50,8 +50,8 @@ class Model(DefaultRecord):
 
 
 def get_users(db, group):
-    my_users = [
-        str(user_id)
+    my_users = {
+        user_id
         for user_id, in db("""
         select distinct
             users.id
@@ -61,7 +61,7 @@ def get_users(db, group):
                 and group_id = %s
         """,
         group._id)
-    ]
+    }
     return my_users
 
 
@@ -99,18 +99,16 @@ class Group(Record):
 
     def allows(self, user, action):
         system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
-        return (
+        return [
             self.name not in system_groups or action != 'delete'
-        )
+        ]
 
     def get_users(self):
-        store = self.get('__store')
-        if store:
-            return get_users(store.db, self)
-        return []
+        return get_users(self['__store'].db, self)
 
     @property
     def users(self):
+        """Return list of users that are part of this group"""
         return self.get_users()
 
     def add_user(self, user):
@@ -119,6 +117,62 @@ class Group(Record):
         membership = members.first(group_id=self._id, user_id=user._id)
         if not membership:
             members.put(Member(group_id=self._id, user_id=user._id))
+
+    @property
+    def roles(self):
+        db = self['__store'].db
+        my_roles = {
+            group_id
+            for group_id, in db("""
+            select distinct
+                groups.id
+                from groups, subgroups
+                where
+                    groups.id = subgroups.group_id
+                    and subgroup_id = %s
+                    and groups.type = 'U'
+            """,
+            self._id)
+        }
+        return my_roles
+
+    @property
+    def apps(self):
+        """Return set of apps that group can access"""
+        db = self['__store'].db
+        my_apps = {
+            group_id
+            for group_id, in db("""
+            select distinct
+                group_id
+                from subgroups, groups
+                where
+                    groups.id = subgroups.group_id
+                    and subgroup_id = %s
+                    and groups.type = 'A'
+            """,
+            self._id)
+        }
+        return my_apps
+
+    @property
+    def subgroups(self):
+        """Return set of subgroups that are part of this group"""
+        db = self['__store'].db
+        my_apps = {
+            group_id
+            for group_id, in db("""
+            select distinct
+                subgroup_id
+                from subgroups, groups
+                where
+                    id = group_id
+                    and group_id = %s
+                    and groups.type = 'U'
+            """,
+            self._id)
+        }
+        return my_apps
 
 
 class Groups(RecordStore):
@@ -141,20 +195,7 @@ class Groups(RecordStore):
         )
 
 
-def get_user_groups(site):
-    return list(
-        (name, str(id)) for name, id in
-        site.db('select name, id from groups where type="U" order by name')
-    )
-
-def get_user_options(site):
-    return list(
-        (user.link, str(user._id)) for user in Users(site.db)
-    )
-
 def handler(request, handler, *rest):
     request.site.groups = Groups(request.site.db)
     request.site.users = Users(request.site.db)
-    request.site.user_groups = get_user_groups(request.site)
-    request.site.user_options = get_user_options(request.site)
     return handler(request, *rest)
