@@ -133,7 +133,6 @@ def get_groups(db, user):
 
     named_groups = sorted(all_groups[g] for g in set(groups))
 
-    logger.debug('%s has groups %s', user.username, named_groups)
     return named_groups
 
 
@@ -467,11 +466,11 @@ def authorize(*roles):
     Raises an exception if the current user does not have at least
     one of the listed roles.
     """
-    user = zoom.system.request.user
     def wrapper(func):
         """wraps the protected function"""
         def authorize_and_call(*args, **kwargs):
             """checks authorization and calls function if authorized"""
+            user = context.request.user
             if user.is_administrator:
                 return func(*args, **kwargs)
             for role in roles:
