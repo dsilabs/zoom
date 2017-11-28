@@ -79,10 +79,13 @@ class CollectionModel(Model):
         """Return a link"""
         return link_to(self.name, self.url)
 
+    @property
+    def url(self):
+        return self.collection_url + '/' + self.key
+
     def allows(self, user, action):
         """Item level policy"""
         return True
-
 
 CollectionRecord = CollectionModel
 # Typically these are the same thing but occassionally
@@ -115,7 +118,6 @@ class CollectionView(View):
 
         c = self.collection
         user = c.user
-        fields = c.fields
 
         if c.request.route[-1:] == ['index']:
             return redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
@@ -725,6 +727,7 @@ class Collection(object):
         if self.store is None:
             if self.model is None:
                 self.model = CollectionModel
+                self.model.collection_url = self.url
                 self.store = EntityStore(
                     request.site.db,
                     self.model,
