@@ -858,10 +858,7 @@ class Fields(object):
         """
         result = set()
         for field in self.fields:
-            if hasattr(field, 'name'):
-                result |= field.as_searchable()
-            else:
-                result |= field.as_searchable()
+            result |= field.as_searchable()
         return result
 
     def as_list(self):
@@ -1049,7 +1046,7 @@ class Button(Field):
         return ''
 
     def as_searchable(self):
-        return {}
+        return set()
 
 
 class Buttons(Field):
@@ -1096,7 +1093,7 @@ class Buttons(Field):
         return {}
 
     def as_searchable(self):
-        return {}
+        return set()
 
     def __repr__(self):
         return ''
@@ -2806,7 +2803,7 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
         return layout_field(self.label, self.widget())
 
     def as_searchable(self):
-        return {}
+        return set()
 
 
 class DataURIImageField(DataURIAttachmentsField):
