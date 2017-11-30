@@ -147,7 +147,7 @@ class CollectionView(View):
         if num_items != 1:
             footer_name = c.title.lower()
         else:
-            footer_name = c.item_name.lower()
+            footer_name = c.item_title.lower()
 
         if q:
             msg = '%s searched %s with %r (%d found)' % (
@@ -673,8 +673,8 @@ class Collection(object):
         self.__fields = fields
         self.item_name = get('item_name', None) or name_from(fields)
         self.name = get('name', self.item_name + 's')
-        self.title = self.name.capitalize()
-        self.item_title = self.item_name.capitalize()
+        self.title = self.name.title().replace('_',' ')
+        self.item_title = self.item_name.title().replace('_',' ')
         self.filter = get('filter', None)
         self.columns = get('columns', None)
         self.labels = get('labels', None)
