@@ -744,6 +744,42 @@ class Collection(object):
             self.view(self)(*route, **request.data)
         )
 
+    def process(self, *args, **data):
+        """Process method parameters
+
+        This style of calling collections is useful when you want to
+        make your collection available as an attribute of a Dispatcher.
+        """
+        route = args
+        request = context.request
+
+        self.user = request.user
+        self.request = request
+        self.route = route
+
+        logger = logging.getLogger(__name__)
+        logger.debug('Collection process called')
+
+        if self.store is None:
+            if self.model is None:
+                self.model = CollectionModel
+                self.model.collection_url = self.url
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                    self.item_name + '_collection'
+                )
+            else:
+                self.store = EntityStore(
+                    request.site.db,
+                    self.model,
+                )
+
+        return (
+            self.controller(self)(*route, **request.data) or
+            self.view(self)(*route, **request.data)
+        )
+
     def __call__(self, route, request):
         return self.handle(route, request)
 
