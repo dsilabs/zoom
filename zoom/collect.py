@@ -582,7 +582,7 @@ class IndexedCollectionSearch(object):
 
     def add(self, key, values):
         """Add record values to index"""
-        tokens = as_tokens(values)
+        tokens = [(t,) for t in as_tokens(values)]
         cmd = 'insert into tokens values ({!r}, {!r}, %s)'.format(
             self.kind, key
         )
