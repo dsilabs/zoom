@@ -294,9 +294,26 @@ def home(view=None):
 
 
 def unisafe(val):
-    """safely convert to unicode"""
+    """safely convert to unicode
+
+    >>> unisafe(None)
+    ''
+
+    >>> unisafe(b'123')
+    '123'
+
+    >>> unisafe(
+    ...     b'\\xe3\\x81\\x93\\xe3\\x82\\x93\\xe3\\x81\\xab\\xe3\\x81'
+    ...     b'\\xa1\\xe3\\x81\\xaf\\xe4\\xb8\\x96\\xe7\\x95\\x8c'
+    ... )
+    'こんにちは世界'
+
+    >>> unisafe(1)
+    '1'
+
+    """
     if val is None:
-        return u''
+        return ''
     elif isinstance(val, bytes):
         try:
             val = val.decode('utf-8')
@@ -308,19 +325,22 @@ def unisafe(val):
 
 
 def websafe(content):
-    """Return htmlquoted version of content"""
+    """Return htmlquoted version of content
+
+    >>> websafe(b'This could be <problematic>')
+    'This could be &lt;problematic&gt;'
+    """
     return htmlquote(unisafe(content))
 
 
 def htmlquote(text):
-    """
-    Encodes `text` for raw use in HTML.
+    """Encodes `text` for raw use in HTML.
 
-        >>> htmlquote(u"<'&\\">")
-        '&lt;&#39;&amp;&quot;&gt;'
+    >>> htmlquote(u"<'&\\">")
+    '&lt;&#39;&amp;&quot;&gt;'
 
-        >>> htmlquote("<'&\\">")
-        '&lt;&#39;&amp;&quot;&gt;'
+    >>> htmlquote("<'&\\">")
+    '&lt;&#39;&amp;&quot;&gt;'
     """
     replacements = (
         ('&', '&amp;'),
@@ -362,6 +382,9 @@ markdown_converter = get_markdown_converter()  # TODO: decorator instead?
 
 def markdown(content):
     """Transform content with markdown
+
+    >>> markdown('this **is** bold')
+    '<p>this <strong>is</strong> bold</p>'
     """
     return markdown_converter.convert(unisafe(trim(content)))
 
