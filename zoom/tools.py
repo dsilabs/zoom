@@ -25,7 +25,11 @@ def now():
 
 
 def today():
-    """Return the current date"""
+    """Return the current date
+
+    >>> today() == datetime.date.today()
+    True
+    """
     return datetime.date.today()
 
 
@@ -138,7 +142,23 @@ def last_month(any_date):
 def how_long(time1, time2):
     """Returns a string that describes the difference between two times.
 
+    >>> import time
     >>> now = now()
+
+    >>> how_long(now, now)
+    'a moment'
+
+    >>> how_long(now, now + one_minute / 3)
+    '20 seconds'
+
+    >>> how_long(now, now + one_hour / 3)
+    '20 minutes'
+
+    >>> how_long(now, now + one_day / 3)
+    '8 hours'
+
+    >>> how_long(now, now + one_day)
+    '1 day'
 
     >>> how_long(now, now + 2 * one_day)
     '2 days'
@@ -155,6 +175,32 @@ def how_long(time1, time2):
     >>> how_long(now, now + 20 * one_minute)
     '20 minutes'
 
+    >>> how_long(now, now + 2 * 365 * one_day)
+    'almost two years'
+
+    >>> how_long(now, now + 3.25 * 365 * one_day)
+    'over 3 years'
+
+    >>> how_long(now, now + 1.25 * 365 * one_day)
+    'over a year'
+
+    >>> how_long(today(), tomorrow(today()))
+    '1 day'
+
+    >>> how_long(today(), now + one_week)
+    '7 days'
+
+    >>> how_long(now, time.time())
+    'a moment'
+
+    >>> failed = False
+    >>> try:
+    ...    how_long(now, None)
+    ... except TypeError:
+    ...    failed = True
+    >>> failed
+    True
+
     """
     #pylint: disable=R0912
 
@@ -165,7 +211,8 @@ def how_long(time1, time2):
         elif isinstance(anytime, datetime.date):
             return datetime.datetime(anytime.year, anytime.month, anytime.day)
         elif anytime is None:
-            return None
+            msg = 'date, datetime or timestamp required (None passed)'
+            raise TypeError(msg)
         else:
             return datetime.datetime.fromtimestamp(anytime)
 
@@ -355,7 +402,14 @@ def htmlquote(text):
 
 
 def get_markdown_converter():
-    """Return a configured markdown converter"""
+    """Return a configured markdown converter
+
+    >>> markdown("a [[wikilink]] test")
+    '<p>a <a class="wikilink" href="wikilink.html">wikilink</a> test</p>'
+
+    >>> markdown("a [[wikilink.html]] test")
+    '<p>a [[wikilink.html]] test</p>'
+    """
     def make_page_name(text):
         result = []
         for c in text.lower():
