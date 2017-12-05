@@ -467,7 +467,7 @@ class BasicSearch(object):
 
         def matches(item, terms):
             """match a search by field values"""
-            fields.update(item)
+            fields.initialize(item)
             v = ';'.join(
                 map(str, fields.as_searchable())
             ).lower()
@@ -610,7 +610,7 @@ class IndexedCollectionSearch(object):
 
         def matches(item, terms):
             """match a search by field values"""
-            fields.update(item)
+            fields.initialize(item)
             v = ';'.join(
                 map(str, fields.as_searchable())
             ).lower()
