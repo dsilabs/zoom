@@ -18,7 +18,7 @@ def apply_helpers(template, obj, providers):
     >>> class User(object): pass
     >>> user = User()
     >>> user.name = 'World'
-    >>> apply_helpers('Hello <dz:name>!', user, {})
+    >>> apply_helpers('Hello {{name}}!', user, {})
     'Hello World!'
 
     >>> apply_helpers('Hello <dz:other>!', user, [{'other': 'Sam'}])
@@ -83,6 +83,19 @@ def render(template, *providers, **helpers):
 
     Applies providers and helpers to the template to fill in the tags
     creating completed content.
+
+    >>> zoom.system.providers = []
+    >>> render('test')
+    'test'
+
+    >>> name = 'Sally'
+    >>> render('Hello {{name}}!', name=name)
+    'Hello Sally!'
+
+    >>> def name(): return 'Joe'
+    >>> render('Hello {{name}}!', dict(name=name))
+    'Hello Joe!'
+
     """
     return apply_helpers(
         template,
