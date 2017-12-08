@@ -520,7 +520,7 @@ def load_template(name, default=None):
 
         logger = logging.getLogger(__name__)
         logger.warning('template missing: %r', name)
-        return default or '<!-- missing -->'
+        return default or '<!-- template missing -->'
 
     site = zoom.system.request.site
 
