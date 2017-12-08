@@ -383,7 +383,7 @@ class MySQLDatabase(Database):
 
         curdir = os.path.dirname(__file__)
         relpath = '../tools/zoom/sql/setup_mysql.sql'
-        filename = os.path.abspath(os.path.join(curdir, relpath))
+        filename = os.path.realpath(os.path.join(curdir, relpath))
         statements = split(open(filename).read())
         logger.debug('%s SQL statements', len(statements))
 
