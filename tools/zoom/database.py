@@ -105,7 +105,7 @@ def create_database(args, name, parameters):
         db = zoom.database.database(**engine_params)
         if database_name in db.get_databases():
             if args.force:
-                db('drop database %s', database_name)
+                db('drop database %s' % database_name)
             else:
                 print('database {!r} exists'.format(database_name))
                 sys.exit(-1)
