@@ -156,4 +156,4 @@ setup for sidetests (which uses webdriver, and various other libraries) you
 can skipthem by specifying only the other directories for tests.
 
     $ cd soure/libs/zoom
-    $ nosetests zoom tests/unitttests
+    $ nosetests zoom tests/unittests
