@@ -157,6 +157,11 @@ class AppProxy(object):
         return self.config.get('description') or \
             'The {} app.'.format(self.title)
 
+    @property
+    def keywords(self):
+        """Returns the app keywords"""
+        return self.config.get('keywords') or ', '.join(self.description.split())
+
     def run(self, request):
         """run the app"""
         save_dir = os.getcwd()
@@ -438,6 +443,8 @@ def helpers(request):
         app_menu=request.app.menu,
         app_name=request.app.name,
         app_class=zoom.utils.id_for(request.app.name.strip()),
+        app_description=request.app.description,
+        app_keywords=request.app.keywords,
         system_menu_items=system_menu_items(request),
         system_menu=system_menu(request),
         main_menu_items=main_menu_items(request),
