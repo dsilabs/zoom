@@ -17,7 +17,7 @@ from zoom.components import success
 from zoom.tools import home
 
 mail_form = Form([
-    f.TextField('Recipient', size=60, maxlength=60, default='herb@dynamic-solutions.com'),
+    f.TextField('Recipient', size=60, maxlength=60, default=(context.user.email or 'herb@dynamic-solutions.com')),
     f.TextField('Subject', default='a subject ' + uuid.uuid4().hex),
     f.MemoField('Message', value='this is the message body\n' + uuid.uuid4().hex),
     # f.FileField('Attachment'),
