@@ -56,6 +56,10 @@ def apply_helpers(template, obj, providers):
                     repl = helper
                 return fill(repl, _filler)
 
+            elif len(args) == 1:
+                repl = str(args[0])
+                return fill(repl, _filler)
+
             logger.debug('no help for %r', (name, args, kwargs))
 
         return _filler
