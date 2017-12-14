@@ -9,7 +9,7 @@ Zoom is a simple web application framework for building dynamic web sites quickl
 Create an app:
 ```python
 # app.py
-def app(request):
+def app(_):
     return 'Hello World!'
 ```
 
@@ -55,11 +55,12 @@ Zoom is written for application developers in a hurry.  Optimized to minimize de
 
 It attempts to do this by adhering to the following key prinicples:
 
-#### Relentless Modularity
+* Relentless Modularity
 
-#### Dynamic over Static
+* Dynamic over Static
 
-#### Reasonable defaults for everything
+* Reasonable defaults for everything
+
 
 ### When would you use it?
 Zoom is ideally suited to web developers that just want to get something up and running quickly without committing a lot of code to things they may want to change later. This is it's sweet spot. Because of this it is great for prototyping and rapid iterations of applications under active development.
@@ -87,18 +88,18 @@ All set?  Okay, here we go!
 git clone git@github.com:dsilabs/zoom.git
 ```
 
-1. add zoom command to your path  
+2. add zoom command to your path  
 Ubuntu example:  
 ```
 ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
 ```
 
-1. install dependancies
+3. install dependancies
 ```
 pip3 install -r requirements.txt
 ```
 
-1. configure zoom database  
+4. configure zoom database  
 Zoom requires a database to be run.  If you don't already have MySQL or
 MariaDB installed follow the instructions for your operating system.  Once
 that is installed create the database using the command:
@@ -113,7 +114,7 @@ $ vi web/sites/default/site.ini
 Find the database section of the config file and set the values for the
 database configuration to correspond to your database configuration.
 
-1. Run zoom  
+5. Run zoom  
 If you are currently in the zoom directory then you don't need to tell
 zoom where to find your zoom instance.
 ```
@@ -123,13 +124,17 @@ $ zoom server
 ### Creating the Blog App
 Zoom comes with a command line tool that can do number of useful things for
 you.  One of the things it can do is create a basic starting appplication
-which runs and has the basic building blocks of a well formed Zoom app.
+which runs and has the building blocks of a well formed Zoom app.
 
-<!-- To use the tool, open a terminal window, navigate to the directory where you
+To use the tool, open a terminal window, navigate to the directory where you
 want to work on the app and type:
 ```
 $ zoom new blog
-``` -->
+```
+
+Go to your Zoom instance in your browser and you should see your new Blog app.
+To start with it doesn't do anything useful so we need to add our blogging
+functionality.
 
 
 ## Contributing
@@ -137,8 +142,9 @@ To contribute your own code to Zoom you'll need to setup a development
 environment.
 
 ### Setting Up The Easy way
-The simplest way to hack on Zoom is to use one of our Vagrant boxes or Docker
-containers.
+The simplest way to hack on Zoom is to use one of our
+[Vagrant boxes](https://github.com/dsilabs/vagrant-zoom) or
+[Docker containers](https://github.com/dsilabs/docker-zoom-tiny).
 
 ### Setting Up The Hard Way
 If you can't use the prepared boxes then the best way to do that is to look
