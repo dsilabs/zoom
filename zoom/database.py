@@ -588,12 +588,14 @@ def handler(request, handler, *rest):
 def setup_test(engine='mysql'):
     """create a set of test tables"""
 
+    get = os.environ.get
+
     if engine == 'mysql':
         db = database(
             'mysql',
-            host='localhost',
-            user='testuser',
-            passwd='password'
+            host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+            user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+            passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
         )
         db('drop database if exists zoomtest')
         db('create database zoomtest')
