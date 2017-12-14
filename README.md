@@ -103,7 +103,7 @@ $ pip3 install -r requirements.txt
 Zoom requires a database to be run.  If you don't already have MySQL or
 MariaDB installed follow the instructions for your operating system.  Once
 that is installed create the database using the command:
-```
+```shell
 $ zoom database create <db_name> -u <username> -p <password> -e mysql
 ```
 Next, edit the site.ini file for the localhost site using your editor like
@@ -162,6 +162,6 @@ This will run the unittests, doctests and sidetests.  If your box is not
 setup for sidetests (which uses webdriver, and various other libraries) you
 can skipthem by specifying only the other directories for tests.
 ```shell
-$ cd soure/libs/zoom
+$ cd source/libs/zoom
 $ nosetests zoom tests/unitttests
 ```
