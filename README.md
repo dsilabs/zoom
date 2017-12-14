@@ -85,18 +85,18 @@ All set?  Okay, here we go!
 
 1. clone zoom
 ```shell
-git clone git@github.com:dsilabs/zoom.git
+$ git clone git@github.com:dsilabs/zoom.git
 ```
 
 2. add zoom command to your path  
 Ubuntu example:  
-```
-ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
+```shell
+$ ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
 ```
 
 3. install dependancies
-```
-pip3 install -r requirements.txt
+```shell
+$ pip3 install -r requirements.txt
 ```
 
 4. configure zoom database  
@@ -108,7 +108,7 @@ $ zoom database create <db_name> -u <username> -p <password> -e mysql
 ```
 Next, edit the site.ini file for the localhost site using your editor like
 so:
-```
+```shell
 $ vi web/sites/default/site.ini
 ```
 Find the database section of the config file and set the values for the
@@ -117,7 +117,7 @@ database configuration to correspond to your database configuration.
 5. Run zoom  
 If you are currently in the zoom directory then you don't need to tell
 zoom where to find your zoom instance.
-```
+```shell
 $ zoom server
 ```
 
@@ -128,7 +128,7 @@ which runs and has the building blocks of a well formed Zoom app.
 
 To use the tool, open a terminal window, navigate to the directory where you
 want to work on the app and type:
-```
+```shell
 $ zoom new blog
 ```
 
@@ -153,13 +153,15 @@ at the Dockerfile or Vagrantfile of the boxes and see how those are set up.
 ### Testing
 Once your box is setup you can run the tests by switching to the directory
 and running nosetests.  
-
-    $ cd source/libs/zoom
-    $ nosetests
+```shell
+$ cd source/libs/zoom
+$ nosetests
+```
 
 This will run the unittests, doctests and sidetests.  If your box is not
 setup for sidetests (which uses webdriver, and various other libraries) you
 can skipthem by specifying only the other directories for tests.
-
-    $ cd soure/libs/zoom
-    $ nosetests zoom tests/unitttests
+```shell
+$ cd soure/libs/zoom
+$ nosetests zoom tests/unitttests
+```
