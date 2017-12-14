@@ -585,10 +585,11 @@ def handler(request, handler, *rest):
     return result
 
 
-def setup_test(engine='mysql'):
+def setup_test(engine=None):
     """create a set of test tables"""
 
     get = os.environ.get
+    engine = engine or get('ZOOM_TEST_DATABASE_ENGINE', 'mysql')
 
     if engine == 'mysql':
         db = database(
