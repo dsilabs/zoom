@@ -151,17 +151,15 @@ If you can't use the prepared boxes then the best way to do that is to look
 at the Dockerfile or Vagrantfile of the boxes and see how those are set up.
 
 ### Testing
-Once your box is setup you can run the tests by switching to the directory
+Once your box is setup you can run the tests by switching to the zoom directory
 and running nosetests.  
 ```shell
-$ cd source/libs/zoom
 $ nosetests
 ```
 
 This will run the unittests, doctests and sidetests.  If your box is not
 setup for sidetests (which uses webdriver, and various other libraries) you
-can skipthem by specifying only the other directories for tests.
+can skip them by specifying only the other directories for tests.
 ```shell
-$ cd source/libs/zoom
 $ nosetests zoom tests/unitttests
 ```
