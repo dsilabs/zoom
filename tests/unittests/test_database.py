@@ -7,6 +7,7 @@
 
 # pylint: disable=invalid-name
 
+import os
 import unittest
 import sqlite3
 import logging
@@ -212,11 +213,13 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
 class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
 
     def setUp(self):
+        get = os.environ.get
+
         self.db = database(
             'mysql',
-            host='database',
-            user='testuser',
-            passwd='password',
+            host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+            user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+            passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
             db='zoomtest'
         )
         self.create_cmd  = """
