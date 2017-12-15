@@ -14,10 +14,12 @@
     special case in the cookie module.
 """
 
-
+import datetime
+import platform
 from hashlib import md5
 from collections import OrderedDict
 
+import zoom
 from zoom.jsonz import dumps
 
 
@@ -268,3 +270,15 @@ class PDFResponse(FileResponse):
         FileResponse.__init__(self, filename, content)
         self.headers['Content-type'] = 'application/pdf'
         del self.headers['Content-Disposition']
+
+
+class SiteNotFoundResponse(HTMLResponse):
+    """Site 404 Not Found response"""
+
+    def __init__(self, request):
+        content = zoom.templates.site_not_found.format(
+            request=request,
+            node=platform.node(),
+            date=datetime.datetime.now(),
+        )
+        HTMLResponse.__init__(self, content, status='404 Not Found')
