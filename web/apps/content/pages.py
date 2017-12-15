@@ -19,6 +19,10 @@ class PageCollection(zoom.collect.CollectionModel):
     """CollectionModel"""
 
     @property
+    def url(self):
+        return '/content/pages/' + self.key
+
+    @property
     def key(self):
         """Return a key"""
         # use numeric key because user will name pages however they like
