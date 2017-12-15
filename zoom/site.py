@@ -200,7 +200,6 @@ class Site(object):
             owner_email=self.owner_email,
             owner_link=self.get_owner_link(),
             admin_email=self.admin_email,
-            request_path=self.request.path,
             tracker=self.tracker,
         )
 
