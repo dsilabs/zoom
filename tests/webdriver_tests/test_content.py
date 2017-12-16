@@ -11,10 +11,8 @@
 from .common import WebdriverTestCase
 
 
-class SystemTests(WebdriverTestCase):
-    """MyApp system tests"""
-
-    headless = False
+class ContentTests(WebdriverTestCase):
+    """Content App"""
 
     def setUp(self):
         WebdriverTestCase.setUp(self)
