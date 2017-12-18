@@ -41,6 +41,13 @@ def filler2(text, *args, **keywords):
     if text in helpers:
         return helpers[text](*args, **keywords)
 
+def defaultfiller(text, *args, **keywords):
+    """A filler that fills a default value if provided on unknown tag"""
+    if text in helpers:
+        return filler(text, *args, **keywords)
+    elif len(args) == 1:
+        return str(args[0])
+
 class TestFill(unittest.TestCase):
     """test the fill function"""
 
@@ -100,6 +107,12 @@ class TestFill(unittest.TestCase):
             Exception,
             filler,
             ('foo <z:missing> bar', filler)
+        )
+
+    def test_missing_with_default(self):
+        self.assertEqual(
+            viewfill('foo {{missing "nothing"}} bar', defaultfiller),
+            "foo nothing bar"
         )
 
     def test_surrounded(self):

@@ -14,6 +14,9 @@ from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.remote_connection import LOGGER
+
+LOGGER.setLevel(logging.WARNING)
 
 target_cache = {}
 
@@ -121,7 +124,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             logger.debug('found %r: %r', target, direct)
             return direct
 
-        test_name = unittest.TestCase.id()
+        test_name = unittest.TestCase.id(self)
         driver.save_screenshot('%s-error_screen.png' % test_name)
         raise Exception('Don\'t know how to find %s' % target)
 

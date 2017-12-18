@@ -1,0 +1,3 @@
+pyvirtualdisplay
+selenium
+nose  

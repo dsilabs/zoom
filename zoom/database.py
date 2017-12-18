@@ -430,9 +430,9 @@ class MySQLDatabase(Database):
         def obfuscate(text):
             return text[:1] + '*' * (len(text) - 2) + text[-1:]
 
-        return 'mysql://{}:{}@{}/{}'.format(
+        return 'mysql://{}{}@{}/{}'.format(
             self.user.decode('utf8'),
-            obfuscate(self.password),
+            self.password and ':' + obfuscate(self.password) or '',
             str(self.host),
             self.db.decode('utf8'),
         )
@@ -585,15 +585,18 @@ def handler(request, handler, *rest):
     return result
 
 
-def setup_test(engine='mysql'):
+def setup_test(engine=None):
     """create a set of test tables"""
+
+    get = os.environ.get
+    engine = engine or get('ZOOM_TEST_DATABASE_ENGINE', 'mysql')
 
     if engine == 'mysql':
         db = database(
             'mysql',
-            host='localhost',
-            user='testuser',
-            passwd='password'
+            host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+            user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+            passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
         )
         db('drop database if exists zoomtest')
         db('create database zoomtest')

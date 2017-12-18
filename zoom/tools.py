@@ -560,3 +560,10 @@ def get_template(template_name='default', theme='default'):
             filename,
         )
         return get_template('default')
+
+def zoompath(*args):
+    """Returns the location of a standard Zoom asset"""
+    realpath = os.path.realpath
+    dirname = os.path.dirname
+    join = os.path.join
+    return realpath(join(realpath(dirname(zoom.__file__)), '..', *args))

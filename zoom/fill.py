@@ -42,8 +42,8 @@ def _fill(tag_start, tag_end, text, callback):
         )
         args = [
             h or i or g or ""
-            for (_, _, _, _, _, _, g, h, i) in parts
-            if h or i or g
+            for (a, _, c, _, e, _, g, h, i) in parts
+            if not (a or c or e)
         ]
 
         result = callback(name, *args, **keywords)
@@ -98,7 +98,19 @@ def fill(text, callback):
     'Hello jacques!'
     >>> fill('Hello {{name}}!', lambda a: None )
     'Hello {{name}}!'
-    >>>
+
+    >>> values = {}
+    >>> fill('Hello {{name}}!', values.get )
+    'Hello {{name}}!'
+    >>> fill('Hello {{name "World"}}!', values.get )
+    'Hello World!'
+    >>> values['name'] = 'Pat'
+    >>> fill('Hello {{name "World"}}!', values.get )
+    'Hello Pat!'
+    >>> del values['name']
+    >>> fill('Hello{{name ""}}!', values.get )
+    'Hello!'
+
     """
     return dzfill(_fill('{{', '}}', text, callback), callback)
 
