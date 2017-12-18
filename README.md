@@ -161,5 +161,5 @@ This will run the unittests, doctests and sidetests.  If your box is not
 setup for sidetests (which uses webdriver, and various other libraries) you
 can skip them by specifying only the other directories for tests.
 ```shell
-$ nosetests zoom tests/unitttests
+$ nosetests zoom tests/unittests
 ```
