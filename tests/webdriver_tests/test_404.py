@@ -7,6 +7,7 @@
     test site missing page
 """
 
+import os
 
 from .common import WebdriverTestCase
 
@@ -14,8 +15,9 @@ from .common import WebdriverTestCase
 class MissingSiteTests(WebdriverTestCase):
     """MyApp system tests"""
 
+    url = os.environ.get('ZOOM_TEST_MISSING_URL', 'http://127.0.0.1:8000')
+
     def test_site_missing(self):
-        self.url = 'http://127.0.0.1'
         self.get('/')
         self.assertContains('ZOOM')
         self.assertContains('127.0.0.1')
