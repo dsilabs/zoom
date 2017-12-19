@@ -8,6 +8,7 @@
 """
 
 import logging
+import os
 import unittest
 
 from pyvirtualdisplay import Display
@@ -185,11 +186,16 @@ class WebdriverTestPrimitives(unittest.TestCase):
     def page_source(self):
         return self.driver.page_source
 
+
 class WebdriverTestCase(WebdriverTestPrimitives):
     """Webdriver Test Base Class"""
 
-    # headless = False
-    url = 'http://localhost:8000'
+    headless = os.environ.get('ZOOM_TEST_HEADLESS', True) != 'False'
+    url = os.environ.get('ZOOM_TEST_URL', 'http://localhost:8000')
+    credentials = {
+        'admin': 'admin',
+        'user': 'user',
+    }
 
     def login(self, username, password):
         self.get('/login')
@@ -199,3 +205,22 @@ class WebdriverTestCase(WebdriverTestPrimitives):
 
     def logout(self):
         self.get('/logout')
+
+    def as_user(self, username):
+        if username in self.credentials:
+            self.logout()
+            self.login(username, self.credentials[username])
+        else:
+            raise Exception('test username {!r} unknown'.format(username))
+
+
+class AdminTestCase(WebdriverTestCase):
+    """Webdriver Test Base Classe that runs tests as admin"""
+
+    def setUp(self):
+        WebdriverTestCase.setUp(self)
+        self.as_user('admin')
+
+    def tearDown(self):
+        self.logout()
+        WebdriverTestCase.tearDown(self)
