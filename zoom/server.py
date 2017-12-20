@@ -10,7 +10,6 @@
 
 import os
 import logging
-import socket
 import sys
 from wsgiref.simple_server import make_server, WSGIRequestHandler
 from timeit import default_timer as timer
@@ -26,14 +25,21 @@ class ZoomWSGIRequestHandler(WSGIRequestHandler):
 
     def log_message(self, fmt, *args):
         def get_host():
-            return dict(self.headers._headers).get('Host', '-') #['Host']
+            return dict(getattr(self.headers, '_headers')).get('Host', '-')
         host = get_host()
-        fmt = '{host} {command} {path} ({client_address[0]})'
+        fmt = '%(host)s %(command)s %(path)s (%(client_ip)s)'
         if self.path != '/favicon.ico':
             log = self.logger.info
         else:
             log = self.logger.debug
-        log(fmt.format(host=host, **self.__dict__))
+        log(
+            fmt,
+            dict(
+                self.__dict__,
+                host=host,
+                client_ip=self.client_address[0],
+            )
+        )
 
 
 def reset_modules():
