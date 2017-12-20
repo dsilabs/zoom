@@ -443,19 +443,24 @@ class Topic(object):
                 time.sleep(delay)
         return n
 
-    def join(self, jobs):
-        """wait for responses from consumers"""
+    def join(self, jobs, delay=DEFAULT_DELAY, timeout=DEFAULT_TIMEOUT):
+        """wait for responses for consumers
+
+            NOTE: the assumption at this point is that any provided delay
+            or timeout applies to all jobs.  If jobs need varying arguments
+            then mutliple calls to join should be considered.
+        """
         return [
             Topic(
                 response_topic_name(self.name, job),
                 newest=job,
                 db=self.db,
-            ).wait() for job in jobs
+            ).wait(delay=delay, timeout=timeout) for job in jobs
         ]
 
-    def call(self, *messages):
+    def call(self, *messages, delay=DEFAULT_DELAY, timeout=DEFAULT_TIMEOUT):
         """send messages and wait for responses"""
-        return self.join(self.send(*messages))
+        return self.join(self.send(*messages), delay=delay, timeout=timeout)
 
     def handle(self, f, timeout=0, delay=DEFAULT_DELAY, one_pass=False):
         """respond to and consume messages
