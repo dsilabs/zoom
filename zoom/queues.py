@@ -21,7 +21,7 @@ __all__ = [
     'StopListening',
     'StopHandling',
     'StopProcessing',
-    ]
+]
 
 DEFAULT_DELAY = 0.1
 DEFAULT_TIMEOUT = 15
@@ -111,7 +111,6 @@ class Topic(object):
             return 0
         row_id = rec.first()[0]
         return row_id or 0
-
 
     def put(self, message):
         """put a message in the topic"""
@@ -212,12 +211,10 @@ class Topic(object):
         except EmptyException:
             return None
 
-
     def _poll(self, newest=None):
         r = self._peek(newest)
         self.newest = r[0]
         return r
-
 
     def poll(self, newest=None):
         """
@@ -302,7 +299,6 @@ class Topic(object):
         except EmptyException:
             return None
 
-
     def len(self, newest=None):
         """
         return the number of messages in the topic
@@ -334,7 +330,6 @@ class Topic(object):
             return n
         return 0
 
-
     def __len__(self):
         """
         return the number of messages in a topic as an int
@@ -351,7 +346,6 @@ class Topic(object):
         """
         return self.len()
 
-
     def __iter__(self):
         """
         iterate through a topic
@@ -367,7 +361,6 @@ class Topic(object):
             you!
         """
         return TopicIterator(self, self.newest)
-
 
     def wait(self, delay=DEFAULT_DELAY, timeout=DEFAULT_TIMEOUT):
         """
@@ -388,11 +381,10 @@ class Topic(object):
         while True:
             msg = self.pop()
             if msg:
-               return msg
+                return msg
             time.sleep(delay)
             if time.time() > deadline:
                 raise WaitException
-
 
     def listen(self, f, delay=DEFAULT_DELAY, meta=False):
         """
@@ -451,22 +443,19 @@ class Topic(object):
                 time.sleep(delay)
         return n
 
-
     def join(self, jobs):
         """wait for responses from consumers"""
         return [
-                Topic(
-                    response_topic_name(self.name, job),
-                    newest=job,
-                    db=self.db,
-                    ).wait() for job in jobs
-                ]
-
+            Topic(
+                response_topic_name(self.name, job),
+                newest=job,
+                db=self.db,
+            ).wait() for job in jobs
+        ]
 
     def call(self, *messages):
         """send messages and wait for responses"""
         return self.join(self.send(*messages))
-
 
     def handle(self, f, timeout=0, delay=DEFAULT_DELAY, one_pass=False):
         """respond to and consume messages
@@ -559,7 +548,6 @@ class Topic(object):
                 more_to_do = False
             time.sleep(0)
         return n
-
 
     def perform(self, task, *args, **kwargs):
         """consume a single message and perform task with it
