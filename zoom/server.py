@@ -9,13 +9,31 @@
 """
 
 import os
+import logging
+import socket
 import sys
-from wsgiref.simple_server import make_server
+from wsgiref.simple_server import make_server, WSGIRequestHandler
 from timeit import default_timer as timer
 
 from zoom.request import Request
 import zoom.middleware as middleware
 import zoom.utils
+
+
+class ZoomWSGIRequestHandler(WSGIRequestHandler):
+
+    logger = logging.getLogger(__name__)
+
+    def log_message(self, fmt, *args):
+        def get_host():
+            return dict(self.headers._headers).get('Host', '-') #['Host']
+        host = get_host()
+        fmt = '{host} {command} {path} ({client_address[0]})'
+        if self.path != '/favicon.ico':
+            log = self.logger.info
+        else:
+            log = self.logger.debug
+        log(fmt.format(host=host, **self.__dict__))
 
 
 def reset_modules():
@@ -61,7 +79,7 @@ def run(port=80, instance=None, handlers=None):
     """
 
     the_appliation = WSGIApplication(instance, handlers)
-    server = make_server('', int(port), the_appliation)
+    server = make_server('', int(port), the_appliation, handler_class=ZoomWSGIRequestHandler)
     try:
         message = zoom.utils.trim("""
          * running on http://localhost{} (press Ctrl+C to quit)

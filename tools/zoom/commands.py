@@ -89,9 +89,11 @@ def server(instance='.'):
         if args.instance and not os.path.exists(args.instance):
             print('{!r} is not a valid directory'.format(args.instance))
         else:
-            # instance = os.path.abspath(args.instance or instance)
             instance = args.instance
-            fmt = '%(asctime)s  %(name)-15s %(levelname)-8s %(message)s'
+            fmt = (
+                '%(asctime)s %(levelname)-8s %(name)-20s '
+                '%(lineno)-4s %(message)s'
+            )
             con_formatter = logging.Formatter(fmt)
             console_handler = logging.StreamHandler(sys.stdout)
             console_handler.setLevel(logging.WARNING)
@@ -101,17 +103,20 @@ def server(instance='.'):
             root_logger.setLevel(logging.DEBUG)
             root_logger.addHandler(console_handler)
 
-            if args.filter:
-                console_handler.addFilter(logging.Filter(name=args.filter))
-
             if args.verbose:
                 console_handler.setLevel(logging.DEBUG)
+            else:
+                console_handler.setLevel(logging.INFO)
+
+            for handler in root_logger.handlers:
+                handler.setFormatter(con_formatter)
 
             if args.noop:
                 handlers = zoom.middleware.DEBUGGING_HANDLERS
                 runweb(port=args.port, instance=instance, handlers=handlers)
             else:
                 runweb(port=args.port, instance=instance)
+
             print('\rstopped')
 
     except PermissionError:
