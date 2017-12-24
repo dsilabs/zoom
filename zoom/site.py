@@ -16,7 +16,6 @@ from zoom.helpers import link_to, mail_to
 
 
 isdir = os.path.isdir
-abspath = os.path.abspath
 realpath = os.path.realpath
 join = os.path.join
 exists = os.path.exists
@@ -29,10 +28,10 @@ DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 def existing(path, subdir=None):
     """Returns existing directories only"""
     pathname = (
-        path and subdir and os.path.join(os.path.abspath(path), subdir) or
-        path and os.path.abspath(path)
+        path and subdir and join(realpath(path), subdir) or
+        path and realpath(path)
         )
-    if pathname and os.path.exists(pathname):
+    if pathname and exists(pathname):
         return pathname
 
 
@@ -119,9 +118,9 @@ class Site(object):
             )
 
             self.apps_paths = [
-                abspath(join(self.path, p))
+                realpath(join(self.path, p))
                 for p in str(get('apps', 'path')).split(';')
-                if exists(abspath(join(self.path, p)))
+                if exists(realpath(join(self.path, p)))
             ]
             basic_apps = realpath(join(dirname(__file__), '..', 'web', 'apps'))
             if basic_apps not in self.apps_paths:
@@ -165,7 +164,7 @@ class Site(object):
             names = []
 
             for app_path in self.apps_paths:
-                path = abspath(
+                path = realpath(
                     join(
                         self.path,
                         app_path,
