@@ -28,7 +28,8 @@ class ZoomWSGIRequestHandler(WSGIRequestHandler):
             return dict(getattr(self.headers, '_headers')).get('Host', '-')
         host = get_host()
         fmt = '%(host)s %(command)s %(path)s (%(client_ip)s)'
-        if self.path != '/favicon.ico':
+        private_call = any(t.startswith('_') for t in self.path.split('/'))
+        if self.path != '/favicon.ico' and not private_call:
             log = self.logger.info
         else:
             log = self.logger.debug
