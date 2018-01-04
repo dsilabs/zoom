@@ -88,15 +88,15 @@ All set?  Okay, here we go!
 $ git clone git@github.com:dsilabs/zoom.git
 ```
 
-2. add zoom command to your path  
+2. install dependancies
+```shell
+$ pip3 install -r requirements.txt
+```
+
+3. add zoom command to your path  
 Ubuntu example:  
 ```shell
 $ ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
-```
-
-3. install dependancies
-```shell
-$ pip3 install -r requirements.txt
 ```
 
 4. configure zoom database  
