@@ -131,3 +131,33 @@ class TestStore(unittest.TestCase):
         self.assertEqual(3, len(self.people))
         self.people.zap()
         self.assertEqual(0, len(self.people))
+
+
+class TestEntify(unittest.TestCase):
+
+    def setUp(self):
+        self.db = setup_test()
+        self.db.autocommit(1)
+        self.people = EntityStore(self.db, Person)
+        self.joe_id = self.people.put(Person(name='Joe', age=50))
+        self.sam_id = self.people.put(Person(name='Sam', age=25))
+        self.people.put(Person(name='Ann', age=30))
+        self.id_name = '_id'
+
+    def tearDown(self):
+        self.people.zap()
+        self.db.close()
+
+    def test_attribute(self, value='text'):
+        joe = self.people.first(name='Joe')
+        assert joe
+        joe.entify_test_attribute = value
+        joe.save()
+        joe = self.people.first(name='Joe')
+        self.assertEqual(joe.entify_test_attribute, value)
+
+    def test_text(self):
+        self.test_attribute('text value')
+
+    def test_date(self):
+        self.test_attribute(date(2017, 12, 1))
