@@ -159,5 +159,32 @@ class TestEntify(unittest.TestCase):
     def test_text(self):
         self.test_attribute('text value')
 
+    def test_int(self):
+        self.test_attribute(10)
+
+    def test_float(self):
+        self.test_attribute(1.2)
+
+    def test_decimal(self):
+        self.test_attribute(Decimal("1.20"))
+
     def test_date(self):
         self.test_attribute(date(2017, 12, 1))
+
+    def test_datetime(self):
+        self.test_attribute(datetime(2017, 12, 1, 1, 25, 3))
+
+    def test_bool(self):
+        self.test_attribute(True)
+
+    def test_bool_false(self):
+        self.test_attribute(False)
+
+    def test_none(self):
+        self.test_attribute(None)
+
+    def test_list(self):
+        self.test_attribute([1, 2, 3, 4])
+
+    def test_tuple(self):
+        self.test_attribute((1, 2, 3, 4))
