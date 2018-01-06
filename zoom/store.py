@@ -71,8 +71,11 @@ def entify(rs, storage):
         elif datatype == 'instance':
             value = int(rec.id)
 
-        elif datatype in ['list', 'tuple']:
+        elif datatype == 'list':
             value = zoom.jsonz.loads(value)
+
+        elif datatype == 'tuple':
+            value = tuple(zoom.jsonz.loads(value))
 
         else:
             msg = 'unsupported data type: ' + repr(datatype)
