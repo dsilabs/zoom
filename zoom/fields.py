@@ -11,6 +11,7 @@ import types
 import datetime
 from decimal import Decimal
 
+import zoom
 from zoom.component import compose
 from zoom.utils import name_for
 from zoom.tools import (
@@ -2814,3 +2815,87 @@ class DataURIImageField(DataURIAttachmentsField):
 # alias
 DataURIImagesField = DataURIAttachmentsField
 ImageField = DataURIImageField
+
+
+class BasicImageField(Field):
+    """Image Field
+
+    >>> f = BasicImageField('Photo')
+    >>> f.initialize(None)
+    >>> f.value
+    >>> f.name
+    'photo'
+
+    >>> i = BasicImageField('Photo')
+    >>> i.initialize({'photo':'data blob', 't':12})
+    >>> i.value
+    '<img class="image-field-image" alt="photo" src="image?name=photo">'
+    """
+    size = maxlength = 40
+    _type = 'file'
+    css_class = 'image_field'
+    no_image_url = '/static/zoom/images/no_photo.png'
+    binary_image_data = None
+    value = None
+
+    def _initialize(self, values):
+        name = self.name.lower()
+        alt = self.name
+        if hasattr(values, name) and getattr(values, name):
+            url = values.url + '/image?name=' + name
+            alt = values.name
+        elif isinstance(values, dict) and values.get(name):
+            # we do not know the route when passed as a dict
+            # we just see the data blob
+            url = 'image?name=' + name
+        else:
+            url = self.no_image_url
+            # self.value = None
+        self.value = '<img class="image-field-image" alt="{}" src="{}">'.format(
+            alt,
+            url,
+        )
+
+    def display_value(self):
+        return self.value
+
+    def edit(self):
+
+        tag = html.tag(
+            'input',
+            name=self.name,
+            id=self.id,
+            Type=self._type,
+            Class=self.css_class,
+        )
+
+        delete_link = (
+            '<div class="image-field-delete-link">'
+            '<a href="delete-image?name=%s">delete %s</a>'
+            '</div>' % (self.name.lower(), self.label.lower())
+        )
+
+        if self.value:
+            tag += delete_link + self.display_value()
+        return layout_field(
+            self.label,
+            ''.join([tag, self.render_msg(), self.render_hint()])
+        )
+
+    def requires_multipart_form(self):
+        return True
+
+    def assign(self, value):
+        # print(f'{len(value)} bytes')
+        # self.value = None
+        try:
+            try:
+                self.binary_image_data = value.value
+            except AttributeError:
+                self.value = value
+        except AttributeError:
+            self.value = None
+
+    def evaluate(self):
+        value = self.binary_image_data
+        return {self.name: value} if value else {}
