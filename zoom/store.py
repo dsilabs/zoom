@@ -4,6 +4,7 @@
     key value store
 """
 
+import base64
 import datetime
 import decimal
 
@@ -67,6 +68,9 @@ def entify(rs, storage):
 
         elif datatype == 'NoneType':
             value = None
+
+        elif datatype == 'bytes':
+            value = base64.b64decode(value)
 
         elif datatype == 'instance':
             value = int(rec.id)
@@ -268,6 +272,8 @@ class EntityStore(Store):
                 return str(d)
             if isinstance(d, (list, tuple)):
                 return zoom.jsonz.dumps(d)
+            if isinstance(d, bytes):
+                return base64.b64encode(d)
             return d
 
         def get_type_str(v):
@@ -292,7 +298,7 @@ class EntityStore(Store):
         datatypes = [get_type_str(v) for v in values]
         values = [fixval(i) for i in values]  # same fix as above
         valid_types = [
-            'str', 'unicode', 'int', 'float', 'decimal.Decimal',
+            'str', 'bytes', 'int', 'float', 'decimal.Decimal',
             'datetime.date', 'datetime.datetime', 'bool', 'NoneType',
             'list', 'tuple'
             ]

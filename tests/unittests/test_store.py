@@ -188,3 +188,6 @@ class TestEntify(unittest.TestCase):
 
     def test_tuple(self):
         self.test_attribute((1, 2, 3, 4))
+
+    def test_bytes(self):
+        self.test_attribute(b'this is binary')
