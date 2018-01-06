@@ -4,6 +4,7 @@
 
 import logging
 
+import zoom
 from zoom.browse import browse
 from zoom.context import context
 from zoom.alerts import success, error, warning
@@ -236,6 +237,11 @@ class CollectionView(View):
                 title=c.item_title,
                 actions=actions
             )
+
+    def image(self, key, name):
+        record = locate(self.collection, key)
+        if record:
+            return zoom.response.PNGResponse(record[name])
 
     def edit(self, key, **data):
         """Display an edit form for a record"""
