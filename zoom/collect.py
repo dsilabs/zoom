@@ -241,7 +241,10 @@ class CollectionView(View):
     def image(self, key, name):
         record = locate(self.collection, key)
         if record:
-            return zoom.response.PNGResponse(record[name])
+            return zoom.response.PNGResponse(
+                record[name],
+                max_age=0,
+            )
 
     def edit(self, key, **data):
         """Display an edit form for a record"""
@@ -431,6 +434,14 @@ class CollectionController(Controller):
                 logger.info(msg)
                 log_activity(msg)
                 return redirect_to(c.url)
+
+    def delete_image(self, key, name):
+        """Delete an image field"""
+        record = locate(self.collection, key)
+        if record:
+            del record[name]
+            record.save()
+            return redirect_to(zoom.helpers.url_for(record.url, 'edit'))
 
     def before_update(self, record):
         pass
