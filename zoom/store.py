@@ -870,3 +870,8 @@ class EntityStore(Store):
 
         """
         return '<EntityStore({})>'.format(self.klass.__name__)
+
+
+def store_of(klass):
+    """Returns a store of the given entity class"""
+    return zoom.store.EntityStore(zoom.system.site.db, klass)

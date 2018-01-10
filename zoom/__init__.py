@@ -27,5 +27,6 @@ from .helpers import link_to
 from .mvc import View, Controller
 from .page import page, Page
 from .packages import requires
+from .store import store_of
 from .tools import home, redirect_to
 from .users import authorize
