@@ -239,6 +239,7 @@ class CollectionView(View):
             )
 
     def image(self, key, name):
+        """Respond with image field contents"""
         record = locate(self.collection, key)
         if record:
             return zoom.response.PNGResponse(
@@ -351,6 +352,7 @@ class CollectionController(Controller):
                 return redirect_to(collection.url)
 
     def save_button(self, key, *a, **data):
+        """Save a record"""
         collection = self.collection
         user = collection.user
 
@@ -406,6 +408,7 @@ class CollectionController(Controller):
 
 
     def delete(self, key, confirm='yes'):
+        """Delete a record"""
         c = self.collection
         c.user.authorize('delete', c)
 
@@ -444,25 +447,32 @@ class CollectionController(Controller):
             return redirect_to(zoom.helpers.url_for(record.url, 'edit'))
 
     def before_update(self, record):
+        """Things to do before updating a record"""
         pass
 
     def after_update(self, record):
+        """Things to do after updating a record"""
         pass
 
     def before_insert(self, record):
+        """Things to do before inserting a record"""
         pass
 
     def after_insert(self, record):
+        """Things to do after inserting a record"""
         pass
 
     def before_delete(self, record):
+        """Things to do before deleting a record"""
         pass
 
     def after_delete(self, record):
+        """Things to do after deleting a record"""
         pass
 
     @authorize('administrators')
     def reindex(self):
+        """Reindex the collection"""
         self.collection.search_engine(self.collection).reindex()
         success('reindexing completed')
         return page('complete!', title='Reindex')
