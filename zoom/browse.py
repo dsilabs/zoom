@@ -44,9 +44,11 @@ def browse(data, **kwargs):
             labels = columns
         else:
             if len(items) and isinstance(items[0], Record):
-                labels = columns = [
-                    a for a in items[0].attributes() if not a.startswith('__')
-                ]
+                labels = columns = sorted_column_names(set([
+                    a for item in items
+                    for a in item.attributes()
+                    if not a.startswith('__')
+                ]))
 
             elif (len(items) and hasattr(items[0], 'keys') and
                   callable(getattr(items[0], 'keys'))):
