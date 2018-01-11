@@ -103,6 +103,9 @@ def server(instance='.'):
             root_logger.setLevel(logging.DEBUG)
             root_logger.addHandler(console_handler)
 
+            if args.filter:
+                console_handler.addFilter(logging.Filter(name=args.filter))
+
             if args.verbose:
                 console_handler.setLevel(logging.DEBUG)
             else:
