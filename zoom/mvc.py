@@ -6,10 +6,9 @@
 # pylint: disable=R0903
 
 import logging
-from inspect import getargspec, getfile
+from inspect import getfile
 from os.path import abspath, split, join, isfile
 
-import zoom
 from zoom.component import component
 from zoom.utils import kind
 
@@ -19,6 +18,7 @@ MISSING_CSS = '.missing-view { color: red }'
 
 
 def as_attr(text):
+    """Replace hyphens with underscores"""
     return text.replace('-', '_').lower()
 
 
@@ -32,11 +32,11 @@ def evaluate(obj, name, route, data):
         method = callable(attr) and attr
         if method:
             return method(*route, **data)
-        else:
-            return attr
+    return attr
 
 
 def remove_buttons(data):
+    """Remove buttons from input data"""
     buttons = {}
     names = list(data.keys())
     for name in names:
@@ -62,63 +62,70 @@ class Dispatcher(object):
     >>> dispatcher('add', 1, 2)
     3
     """
+    home = None
+
     def __init__(self, model=None, **kwargs):
         self.model = model
         self.__dict__.update(kwargs)
 
     def __call__(self, *args, **kwargs):
-        method_name = len(args) and args[0] or 'index'
+        method_name = args[0] if args else 'index'
         return evaluate(self, method_name, args[1:], kwargs)
 
 
 class View(Dispatcher):
-    """View
+    """Views a model
 
-    Use to display a model.
+    Use to view a model without altering it.
     """
 
-    def __call__(self, *a, **k):
+    def __call__(self, *args, **kwargs):
 
         logger = logging.getLogger(__name__)
-        logger.debug('view called: %r %r', a, k)
+        logger.debug('view called: %r %r', args, kwargs)
 
-        buttons, inputs = remove_buttons(k)
+        _, inputs = remove_buttons(kwargs)
 
-        if len(a):
+        if args:
 
-            view_name = as_attr(a[0])
+            view_name = as_attr(args[0])
 
             if hasattr(self, view_name):
-                """Show a specific collection view"""
-                result = evaluate(self, view_name, a[1:], inputs)
+                # show a specific collection view
+                result = evaluate(self, view_name, args[1:], inputs)
 
-            elif len(a) == 1:
-                """Show the default view of an item"""
+            elif len(args) == 1:
+                # show the default view of an item
                 try:
-                    result = self.show(a[0], **inputs)
-                except TypeError as e:
+                    result = self.show(args[0], **inputs)
+                except TypeError as err:
                     error_messages = 'takes exactly', 'got an unexpected'
-                    if any(m in e.message for m in error_messages):
+                    if any(m in str(err) for m in error_messages):
                         # if unable to show object with parameters, try
                         # showing without them
-                        result = self.show(a[0])
+                        result = self.show(args[0])
                     else:
                         raise
 
-            elif len(a) > 1:
-                result = evaluate(self, a[-1:][0], ('/'.join(a[:-1]),), inputs)
+            elif len(args) > 1:
+                result = evaluate(
+                    self, args[-1:][0], ('/'.join(args[:-1]),), inputs
+                )
 
             else:
-                """No view"""
+                # no view
                 result = None
         else:
-            """Default collection view"""
+            # default collection view
             result = evaluate(self, 'index', (), inputs)
 
         if result:
             return result
 
-    def show(self, *a, **k):
+        return self.home
+
+    def show(self, *args, **kwargs):
+        """View a specific item (stub)"""
         pass
 
 
@@ -165,9 +172,11 @@ class DynamicView(View):
         self._asset_path = path + '/views'
 
     def get_assets(self, name=None):
+        """Get view assets"""
         def load(pathname):
-            with open(pathname) as f:
-                return f.read()
+            """Load a file into a string"""
+            with open(pathname) as asset_file:
+                return asset_file.read()
         start = join(self._asset_path, kind(self))
         if name:
             start += '.' + name
@@ -179,6 +188,7 @@ class DynamicView(View):
         return result
 
     def render(self, view=None):
+        """Render the view"""
         assets = self.get_assets(view)
         if assets:
             result = {}
@@ -190,6 +200,7 @@ class DynamicView(View):
                 else:
                     result[k] = v
             return component(**result)
+        return None
 
     def __getattr__(self, view):
         if view.startswith('_'):
@@ -204,7 +215,8 @@ class DynamicView(View):
             ))
         try:
             return getattr(self.model, view)
-        except AttributeError as e:
+
+        except AttributeError:
             component(css=MISSING_CSS)
             return \
                 self.render(view) or \
@@ -221,7 +233,7 @@ class DynamicView(View):
 
 
 class Controller(Dispatcher):
-    """Controller
+    """Controls a Model
 
     Use this class when an action is going to change the state
     of the model.
@@ -242,7 +254,7 @@ class Controller(Dispatcher):
             if result:
                 return result
 
-        method_name = len(args) and as_attr(args[0]) or 'index'
+        method_name = as_attr(args[0]) if args else 'index'
 
         # Collection methods
         if hasattr(self, method_name):
@@ -257,85 +269,4 @@ class Controller(Dispatcher):
         if result:
             return result
 
-
-
-#
-#
-# def can(action):
-#     """activity based authentication
-#
-#     Tests to see if user can perform some activity.
-#
-#         >>> class TheUser(object):
-#         ...
-#         ...     def __init__(self, name):
-#         ...         self.name = name
-#         ...
-#         ...     def can(self, action, thing):
-#         ...         return thing and thing.allows(self, action)
-#
-#         >>> class Thing(object):
-#         ...
-#         ...     def __init__(self, name):
-#         ...         self.name = name
-#         ...
-#         ...     def allows(self, user, action):
-#         ...         return bool(user.name == 'joe' and action == 'edit') or \\
-#         ...                bool(user.name == 'sam' and action == 'delete')
-#         ...
-#         ...     def delete(self):
-#         ...         return 'deleted!'
-#         ...
-#         ...     @can('edit')
-#         ...     def update(self, name):
-#         ...         self.name = name
-#         ...         return 'hello {}!'.format(name)
-#         ...
-#         ...     @can('delete')
-#         ...     def zap(self):
-#         ...         return 'zapped!'
-#         ...
-#
-#         >>> user.name = 'joe'
-#         >>> user.name
-#         'joe'
-#
-#         >>> user.can('edit', None)
-#         False
-#
-#         >>> thing = Thing(name='rain')
-#
-#         >>> user.can('edit', thing)
-#         True
-#
-#         >>> user.can('delete', thing)
-#         False
-#
-#         >>> try:
-#         ...    thing.zap()
-#         ... except UnauthorizedException, e:
-#         ...    'access denied'
-#         'access denied'
-#
-#         >>> user.name = 'sam'
-#         >>> try:
-#         ...    thing.update('clouds')
-#         ... except UnauthorizedException, e:
-#         ...    'sunshine prevails'
-#         'sunshine prevails'
-#
-#         >>> thing.zap()
-#         'zapped!'
-#
-#         >>> user = TheUser(name='sally')
-#         >>> user.can('edit', thing)
-#         False
-#
-#     """
-#     def wrapper(func):
-#         def authorize_and_call(self, *args, **kwargs):
-#             if self.allows(user, action):
-#                 return func(self, *args, **kwargs)
-#             raise UnauthorizedException('Unauthorized')
-#         return authorize_and_call
-#     return wrapper
+        return self.home
