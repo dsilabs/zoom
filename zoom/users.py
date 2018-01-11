@@ -159,6 +159,11 @@ class User(Record):
         self.__apps = None
         self.request = None
 
+    @property
+    def user_id(self):
+        """Return user record id"""
+        self.get('_id')
+
     def allows(self, user, action):
         return action != 'delete' or self.username != 'admin'
 
@@ -394,6 +399,7 @@ class Users(RecordStore):
     >>> user.updated = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> print(user)
     User
+      user_id .............: None
       key .................: 'guest'
       name ................: 'Guest User'
       first_name ..........: 'Guest'
