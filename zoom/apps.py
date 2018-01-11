@@ -32,6 +32,22 @@ DEFAULT_SETTINGS = dict(
 )
 
 
+def load_module(module, filename):
+    """Dynamically load a module"""
+    logger = logging.getLogger(__name__)
+    try:
+        pathname = os.path.realpath(filename)
+        if os.path.exists(pathname):
+            logger.debug('loading module {!r}'.format(pathname))
+            return imp.load_source(module, pathname)
+        else:
+            logger.warning('load_module file missing {!r}'.format(pathname))
+    except ModuleNotFoundError:
+        msg = 'ModuleNotFoundError while loading {!r} from {!r}'
+        cwd = os.getcwd()
+        logger.error(msg.format((module, filename), cwd))
+
+
 class App(object):
     """a Zoom application"""
 
@@ -81,7 +97,7 @@ class App(object):
         filename = '{}.py'.format(module)
         if isfile(filename):
             logger.debug('file %s exists', filename)
-            source = imp.load_source(module, filename)
+            source = load_module(module, os.path.realpath(filename))
             main = if_callable(getattr(source, 'main', None))
             app = if_callable(getattr(source, 'app', None))
             view = if_callable(getattr(source, 'view', None))
@@ -143,7 +159,7 @@ class AppProxy(object):
         """Returns the app callable entry point"""
         if self._method is None:
             self.request.profiler.add('app loaded')
-            self._method = getattr(imp.load_source('app', self.filename), 'app')
+            self._method = getattr(load_module('app', self.filename), 'app')
         return self._method
 
     @property
@@ -164,8 +180,10 @@ class AppProxy(object):
 
     def run(self, request):
         """run the app"""
+        logger = logging.getLogger(__name__)
         save_dir = os.getcwd()
         try:
+            logger.debug('chdir to %r', self.path)
             os.chdir(self.path)
             self.request = request
             request.app = self
@@ -173,6 +191,7 @@ class AppProxy(object):
             response = app_callable(request)
             result = respond(response, request)
         finally:
+            logger.debug('chdir back to %r', save_dir)
             os.chdir(save_dir)
         return result
 
