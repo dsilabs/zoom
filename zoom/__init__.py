@@ -12,9 +12,11 @@
 import zoom.alerts
 import zoom.collect
 import zoom.database
+import zoom.jsonz
 import zoom.queues
 import zoom.records
 import zoom.services
+import zoom.settings
 import zoom.store
 import zoom.users
 
