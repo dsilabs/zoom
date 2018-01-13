@@ -270,3 +270,31 @@ class Controller(Dispatcher):
             return result
 
         return self.home
+
+
+def dispatch(*args):
+    """Create and call dispatchers in order
+
+    Returns a function that will handle a request by trying each argument
+    in succession.  If the argument is a Dispatcher it will be created before
+    being called.  If it is a callable, it will be called as-is.  As soon
+    as one of them returns a response we exit.  If none of the returns a
+    response we return None, which generally results in a 404.
+    """
+    logger = logging.getLogger(__name__)
+    def _dispatch(route, request):
+        """Call each class in succession wrapping each with the latter"""
+        for arg in args:
+            if issubclass(arg, Dispatcher):
+                method = arg()
+            elif callable(arg):
+                method = arg
+            else:
+                msg = 'zoom.dispatch only works with Dispatchers or callables'
+                raise Exception(msg)
+            logger.debug('dispatching %r', method)
+            response = method(*route, **request.data)
+            if response:
+                return response
+        return None
+    return _dispatch

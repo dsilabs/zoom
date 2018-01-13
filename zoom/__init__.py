@@ -24,7 +24,7 @@ from .component import Component
 from .context import context as system
 from .forms import form, Form
 from .helpers import link_to
-from .mvc import View, Controller
+from .mvc import View, Controller, dispatch
 from .page import page, Page
 from .packages import requires
 from .store import store_of
