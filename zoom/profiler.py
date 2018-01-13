@@ -78,6 +78,12 @@ def handler(request, handler, *rest):
             logger.debug('sent profile message to %s', topic)
         else:
             logger.debug('profiler data ignored')
+            if not hasattr(request, 'user'):
+                logger.debug('profile user missing')
+            if not hasattr(request, 'site'):
+                logger.debug('profile site missing')
+            elif not request.site.profiling:
+                logger.debug('profiling turned off')
 
     logger = logging.getLogger(__name__)
     request.profiler = SystemTimer(request.start_time)
