@@ -1,19 +1,14 @@
 """
     zoom.audit
-
-    Requires the zoom.context middleware.
 """
 
-import logging
-
-from zoom.context import context
-from zoom.tools import now
+import zoom
 
 def audit(action, subject1, subject2, user=None):
     """audit an action"""
-    db = context.site.db
-    user_id = user and user._id or context.user._id
-    app_name = context.request.app.name
+    db = zoom.system.site.db
+    user_id = user.user_id if user else zoom.system.user.user_id
+    app_name = zoom.system.request.app.name
     cmd = """
     insert into audit_log (
         app,
@@ -22,13 +17,14 @@ def audit(action, subject1, subject2, user=None):
         subject1,
         subject2,
         timestamp
-    ) values (%s,%s,%s,%s,%s,%s)
+    ) values (%s, %s, %s, %s, %s, %s)
     """
-    db(cmd,
+    db(
+        cmd,
         app_name,
         user_id,
         action,
         subject1,
         subject2,
-        now(),
+        zoom.tools.now(),
     )
