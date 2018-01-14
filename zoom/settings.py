@@ -5,7 +5,7 @@
 """
 
 import zoom
-
+from zoom.page import page
 
 class AppSettings(zoom.store.Entity):
     """settings storage class"""
@@ -85,7 +85,7 @@ class SettingsController(zoom.mvc.Controller):
         values.update(kwargs)
         self.form.initialize(values)
         content = self.form.edit()
-        return zoom.page(content, title='Settings')
+        return page(content, title='Settings')
 
     def save_button(self, **values):
         """save settings"""
