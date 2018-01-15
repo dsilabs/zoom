@@ -588,7 +588,7 @@ def handler(request, handler, *rest):
     return result
 
 
-def setup_test(engine=None):
+def setup_test(engine=None):   # pragma: no cover
     """create a set of test tables"""
 
     get = os.environ.get

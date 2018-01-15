@@ -9,10 +9,9 @@
 
 import os
 import unittest
-import sqlite3
 import logging
 from decimal import Decimal
-from datetime import date, datetime
+from datetime import date
 
 from zoom.database import database
 
@@ -252,3 +251,8 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             column_names,
             ('id', 'amount', 'dtadd', 'notes')
         )
+
+    def test_paramstyle(self):
+        self.db.paramstyle = 'qmark'
+        new = self.db.translate('select * from test_table where amount=%(n)s', dict(n=50))
+        self.assertEqual(new, ('select * from test_table where amount=:n', {'n': 50}))
