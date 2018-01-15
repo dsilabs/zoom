@@ -7,13 +7,14 @@
 
 # pylint: disable=invalid-name
 
+import configparser
 import os
 import unittest
 import logging
 from decimal import Decimal
 from datetime import date
 
-from zoom.database import database, DatabaseException
+from zoom.database import database, connect_database, DatabaseException
 
 import warnings
 warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
@@ -260,3 +261,47 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
     def test_exception(self):
         db = self.db
         self.assertRaises(DatabaseException, db, 'select things')
+
+    def test_connect_database(self):
+        get = os.environ.get
+        config = configparser.ConfigParser()
+        config['database'] = dict(
+            host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+            user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+            password=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
+            name='zoomtest',
+            engine='mysql'
+        )
+        db = connect_database(config)
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        recordset = db('select * from dzdb_test_table')
+        for rec in recordset:
+            self.assertEqual(
+                rec,
+                ('1234', 50, "Hello there")
+            )
+        db('drop table dzdb_test_table')
+
+    def test_connect_database_legacy(self):
+        get = os.environ.get
+        config = configparser.ConfigParser()
+        config['database'] = dict(
+            dbhost=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+            dbuser=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+            dbpass=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
+            dbname='zoomtest',
+            engine='mysql'
+        )
+        db = connect_database(config)
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        recordset = db('select * from dzdb_test_table')
+        for rec in recordset:
+            self.assertEqual(
+                rec,
+                ('1234', 50, "Hello there")
+            )
+        db('drop table dzdb_test_table')

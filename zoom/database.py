@@ -528,7 +528,7 @@ def connect_database(config):
         if name:
             parameters['db'] = name
 
-    elif engine == 'mysqldb':
+    elif engine == 'mysqldb':   # pragma: no cover
         host = get('host', 'localhost')
         name = get('name')
         user = get('user', 'testuser')
