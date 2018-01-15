@@ -194,7 +194,7 @@ class Database(object):
     def _execute(self, cursor, method, command, *args):
         """execute the SQL command"""
 
-        def format_stack(stack):
+        def format_stack(stack):  # pragma:  no cover
             n = m = 0
             for n, item in enumerate(stack):
                 if item[3] == 'run_app':
@@ -252,7 +252,7 @@ class Database(object):
         keywords = dict(self.__keywords, db=name)
         return Database(self.__factory, *args, **keywords)
 
-    def report(self):
+    def report(self):   # pragma: no cover
         """produce a SQL log report"""
         if self.log:
             return '  Database Queries\n --------------------\n{}\n'.format(
