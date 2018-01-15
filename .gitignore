@@ -4,6 +4,7 @@
 testsold
 .ropeproject
 .coverage
+*.log
 .linter*
 __pycache__
 *png
