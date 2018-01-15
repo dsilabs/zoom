@@ -13,7 +13,7 @@ import logging
 from decimal import Decimal
 from datetime import date
 
-from zoom.database import database
+from zoom.database import database, DatabaseException
 
 import warnings
 warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
@@ -256,3 +256,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         self.db.paramstyle = 'qmark'
         new = self.db.translate('select * from test_table where amount=%(n)s', dict(n=50))
         self.assertEqual(new, ('select * from test_table where amount=:n', {'n': 50}))
+
+    def test_exception(self):
+        db = self.db
+        self.assertRaises(DatabaseException, db, 'select things')
