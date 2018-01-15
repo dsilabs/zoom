@@ -371,3 +371,20 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         finally:
             # in Travis this isn't needed but won't cause problems either
             db1('drop database if exists zoomtest2')
+
+    def test_get_databases(self):
+        db = self.db
+
+        databases = db.get_databases()
+        assert 'zoomtest' in databases
+
+        # in Travis this is already done
+        db('create database if not exists zoomtest2')
+        try:
+
+            assert 'zoomtest2' in db.get_databases()
+
+        finally:
+            # in Travis this isn't needed but won't cause problems either
+            db('drop database if exists zoomtest2')
+            assert 'zoomtest2' not in db.get_databases()
