@@ -250,7 +250,7 @@ class Database(object):
         """use another database on the same instance"""
         args = list(self.__args)
         keywords = dict(self.__keywords, db=name)
-        return Database(self.__factory, *args, **keywords)
+        return type(self)(*args, **keywords)
 
     def report(self):   # pragma: no cover
         """produce a SQL log report"""
@@ -564,6 +564,7 @@ def connect_database(config):
     if connection:
         logger.debug('database connected: %r', parameters)
 
+    connection.autocommit(1)
     return connection
 
 
