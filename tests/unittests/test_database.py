@@ -215,6 +215,21 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
         """
         self.db.debug = True
 
+    def test_create_site_tables(self):
+        self.db.create_site_tables()
+        assert 'users' in self.db.get_tables()
+
+    def test_create_and_delete_test_tables(self):
+        self.db.create_test_tables()
+        try:
+            assert 'account' in self.db.get_tables()
+        finally:
+            self.db.create_test_tables()
+        self.db.delete_test_tables()
+        assert 'account' not in self.db.get_tables()
+
+
+
 class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
 
     def setUp(self):
