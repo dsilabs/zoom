@@ -447,8 +447,13 @@ class MySQLDatabase(Database):
         )
 
 
-class MySQLdbDatabase(Database):
-    """MySQLdb Database"""
+class MySQLdbDatabase(Database):   # pragma: no cover
+    """MySQLdb Database
+
+    deprecated - not avaialble for Python 3.6
+
+    use MySQLDatabase instead
+    """
 
     paramstyle = 'pyformat'
 
