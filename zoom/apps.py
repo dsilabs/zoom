@@ -35,15 +35,19 @@ DEFAULT_SETTINGS = dict(
 def load_module(module, filename):
     """Dynamically load a module"""
     logger = logging.getLogger(__name__)
+
+    myhandler = \
+        ImportError if sys.version_info < (3, 6) else ModuleNotFoundError
+
     try:
         pathname = os.path.realpath(filename)
         if os.path.exists(pathname):
-            logger.debug('loading module {!r}'.format(pathname))
+            logger.debug('loading module %r', pathname)
             return imp.load_source(module, pathname)
         else:
-            logger.warning('load_module file missing {!r}'.format(pathname))
-    except ModuleNotFoundError:
-        msg = 'ModuleNotFoundError while loading {!r} from {!r}'
+            logger.warning('load_module file missing %r', pathname)
+    except myhandler:
+        msg = '%s while loading {!r} from {!r}' % myhandler.__name__
         cwd = os.getcwd()
         logger.error(msg.format((module, filename), cwd))
 
