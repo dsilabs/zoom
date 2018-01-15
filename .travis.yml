@@ -35,9 +35,11 @@ install:
   - pip install -r requirements.txt
 
 before_script:
-  - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest;'
   - mysql -uroot -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
+  - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest;'
   - mysql -uroot -e "GRANT ALL ON zoomtest.* TO 'testuser'@'localhost';"
+  - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest2;'
+  - mysql -uroot -e "GRANT ALL ON zoomtest2.* TO 'testuser'@'localhost';"
   - mysql -uroot zoomtest < tools/zoom/sql/setup_mysql.sql
 script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom ./tests/unittests

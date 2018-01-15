@@ -346,27 +346,28 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             db('drop table if exists %s' % tablename)
             db("""create table %s (ID CHAR(10), AMOUNT
                NUMERIC(10,2), NOTES TEXT)""" % tablename)
-            db("""insert into %s values
-               ("1234", 50, "Hello there")""" % tablename)
-            recordset = db('select * from %s' % tablename)
-            for rec in recordset:
-                self.assertEqual(
-                    rec,
-                    ('1234', 50, "Hello there")
-                )
 
         config = get_parameters()
+
         db1 = connect_database(config)
-        db1.autocommit(1)
         create_data(db1, 'z_test_table1')
 
+        # in Travis this is already done
         db1('create database if not exists zoomtest2')
+
+        db2 = db1.use('zoomtest2')
         try:
-            db2 = db1.use('zoomtest2')
-            db2.autocommit(1)
             create_data(db2, 'z_test_table2')
+
+            assert 'z_test_table1' in db1.get_tables()
+            assert 'z_test_table2' not in db1.get_tables()
+
+            assert 'z_test_table1' not in db2.get_tables()
+            assert 'z_test_table2' in db2.get_tables()
 
             db1('drop table z_test_table1')
             db2('drop table z_test_table2')
+
         finally:
-            db1('drop database zoomtest2')
+            # in Travis this isn't needed but won't cause problems either
+            db1('drop database if exists zoomtest2')
