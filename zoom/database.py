@@ -26,7 +26,7 @@ ERROR_TPL = """
 """
 
 
-class UnkownDatabaseException(Exception):
+class UnknownDatabaseException(Exception):
     """exception raised when the database is unknown"""
     pass
 
@@ -482,13 +482,13 @@ def database(engine, *args, **kwargs):
         db.autocommit(1)
         return db
 
-    elif engine == 'mysqldb':
+    elif engine == 'mysqldb':   # pragma: no cover
         db = MySQLdbDatabase(*args, **kwargs)
         db.autocommit(1)
         return db
 
     else:
-        raise UnkownDatabaseException
+        raise UnknownDatabaseException
 
 
 def connect_database(config):

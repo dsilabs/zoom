@@ -14,7 +14,12 @@ import logging
 from decimal import Decimal
 from datetime import date
 
-from zoom.database import database, connect_database, DatabaseException
+from zoom.database import (
+    database,
+    connect_database,
+    DatabaseException,
+    UnknownDatabaseException,
+)
 
 import warnings
 warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
@@ -305,3 +310,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
                 ('1234', 50, "Hello there")
             )
         db('drop table dzdb_test_table')
+
+    def test_connect_unknown(self):
+        self.assertRaises(UnknownDatabaseException, database, 'nodb')
