@@ -313,3 +313,45 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
 
     def test_connect_unknown(self):
         self.assertRaises(UnknownDatabaseException, database, 'nodb')
+
+    def test_use(self):
+        def get_parameters():
+            get = os.environ.get
+            config = configparser.ConfigParser()
+            config['database'] = dict(
+                host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+                user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+                password=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
+                name='zoomtest',
+                engine='mysql'
+            )
+            return config
+
+        def create_data(db, tablename):
+            db('drop table if exists %s' % tablename)
+            db("""create table %s (ID CHAR(10), AMOUNT
+               NUMERIC(10,2), NOTES TEXT)""" % tablename)
+            db("""insert into %s values
+               ("1234", 50, "Hello there")""" % tablename)
+            recordset = db('select * from %s' % tablename)
+            for rec in recordset:
+                self.assertEqual(
+                    rec,
+                    ('1234', 50, "Hello there")
+                )
+
+        config = get_parameters()
+        db1 = connect_database(config)
+        db1.autocommit(1)
+        create_data(db1, 'z_test_table1')
+
+        db1('create database if not exists zoomtest2')
+        try:
+            db2 = db1.use('zoomtest2')
+            db2.autocommit(1)
+            create_data(db2, 'z_test_table2')
+
+            db1('drop table z_test_table1')
+            db2('drop table z_test_table2')
+        finally:
+            db1('drop database zoomtest2')
