@@ -198,9 +198,6 @@ class CollectionView(View):
         def action_for(record, name):
             return name, '/'.join([record.url, id_for(name)])
 
-        def actions_for(record, *names):
-            return [action_for(record, n) for n in names]
-
         c = self.collection
         user = c.user
         record = locate(c, key)
