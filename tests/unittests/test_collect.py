@@ -3,19 +3,14 @@
 """
 
 import logging
-import os
 import sys
 import unittest
 import difflib
 from decimal import Decimal
-from datetime import date, time, datetime
 
-
+import faker
 import zoom
-# from zoom import (Entity, Fields, TextField, required,
-#                   DecimalField, url_for_page)
-from zoom.browse import browse
-from zoom.page import page
+
 from zoom.helpers import url_for_page
 from zoom.context import context
 from zoom.collect import Collection, CollectionModel
@@ -23,6 +18,8 @@ from zoom.exceptions import UnauthorizedException
 from zoom.fields import Fields, TextField, DecimalField
 from zoom.users import Users
 from zoom.validators import required
+
+fake = faker.Faker()
 
 VIEW_EMPTY_LIST = """<div class="baselist">
 
@@ -254,6 +251,35 @@ class TestCollect(unittest.TestCase):
     def test_empty(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
+
+    def test_index_many(self):
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+        self.assert_response(VIEW_SINGLE_RECORD_LIST)
+
+        for _ in range(51):
+            self.collect('new', **dict(
+                create_button='y',
+                name=fake.name(),
+                address=fake.street_address(),
+                salary=Decimal('40000'),
+            ))
+
+        content = self.collect().content
+        assert '15 people shown of 52 people' in content
+
+        content = self.collect(all='y').content
+        assert '52 people shown of 52 people' in content
+
+
 
     def test_insert(self):
         self.collection.store.zap()
