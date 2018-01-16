@@ -269,6 +269,23 @@ class TestCollect(unittest.TestCase):
         self.logger.debug(str(self.collection.store))
         self.assert_response(VIEW_SINGLE_RECORD_LIST)
 
+    def test_show(self):
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+        response = self.collect('show', 'joe').content
+        assert '123 Somewhere St' in response
+
+        response = self.collect('show', 'joe').content
+        assert '123 Nowhere St' not in response
+
     def test_delete(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
