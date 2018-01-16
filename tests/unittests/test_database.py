@@ -388,3 +388,27 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             # in Travis this isn't needed but won't cause problems either
             db('drop database if exists zoomtest2')
             assert 'zoomtest2' not in db.get_databases()
+
+    def test_create_and_delete_test_tables(self):
+        # in Travis this is already done
+        self.db('create database if not exists zoomtest2')
+
+        db = self.db.use('zoomtest2')
+        try:
+
+            assert 'zoomtest2' in db.get_databases()
+            db.create_test_tables()
+            try:
+                assert 'account' in db.get_tables()
+            finally:
+                db.delete_test_tables()
+
+            assert 'account' not in db.get_tables()
+
+        finally:
+            # in Travis this isn't needed but won't cause problems either
+            db('drop database if exists zoomtest2')
+            assert 'zoomtest2' not in db.get_databases()
+
+        stats = db.get_stats()
+        assert isinstance(stats, list)
