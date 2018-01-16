@@ -215,6 +215,7 @@ class TestCollect(unittest.TestCase):
             host='localhost',
             data={},
         )
+        zoom.component.composition.parts = zoom.component.component()
 
         # user.initialize('guest')
         # self.user.groups = ['managers']
@@ -333,6 +334,18 @@ class TestCollect(unittest.TestCase):
         content = self.collect(q='Xzzz').content
         assert '0 people found in search of 6 people' in content
 
+        self.collect('reindex')
+
+        content = self.collect(q='Zzzz').content
+        assert '1 person found in search of 6 people' in content
+
+        content = self.collect(q='Xzzz').content
+        assert '0 people found in search of 6 people' in content
+
+        self.collect('delete', 'joe-zzzzz', **{'confirm': 'no'})
+
+        content = self.collect(q='Zzzz').content
+        assert '0 people found in search of 5 people' in content
 
     def test_insert(self):
         self.collection.store.zap()
