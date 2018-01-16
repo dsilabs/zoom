@@ -1327,6 +1327,9 @@ class NumberField(TextField):
     def evaluate(self):
         return {self.name: self.value}
 
+    def as_searchable(self):
+        return set(str(self.value))
+
 
 class IntegerField(TextField):
     """Integer Field
@@ -1371,6 +1374,9 @@ class IntegerField(TextField):
         units = self.units and (' ' + self.units) or ''
         value = self.value and ('{:,}{}'.format(self.value, units)) or ''
         return websafe(value)
+
+    def as_searchable(self):
+        return set(str(self.value))
 
 
 class FloatField(NumberField):
