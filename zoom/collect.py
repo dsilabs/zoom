@@ -517,7 +517,7 @@ class BasicSearch(object):
         """Delete indexed record values"""
         pass
 
-    def reindex(self):
+    def reindex(self):   # pragma: no cover
         warning('BasicSearch does not use indexing')
 
 

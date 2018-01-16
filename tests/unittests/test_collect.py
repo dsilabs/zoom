@@ -279,8 +279,6 @@ class TestCollect(unittest.TestCase):
         content = self.collect(all='y').content
         assert '52 people shown of 52 people' in content
 
-
-
     def test_insert(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
@@ -382,6 +380,28 @@ class TestCollect(unittest.TestCase):
 
         self.collect('delete', 'sally', **{'confirm': 'no'})
         self.assert_response(VIEW_EMPTY_LIST)
+
+    def test_get_columns(self):
+        savecols = self.collection.get_columns()
+        try:
+            self.collection.columns = ['one', 'two']
+            self.assertEqual(
+                self.collection.get_columns(),
+                ['one', 'two']
+            )
+        finally:
+            self.collection.columns = savecols
+
+    def test_get_labels(self):
+        saved = self.collection.get_labels()
+        try:
+            self.collection.labels = ['One', 'Two']
+            self.assertEqual(
+                self.collection.get_labels(),
+                ['One', 'Two']
+            )
+        finally:
+            self.collection.labels = saved
 
 
     # def test_update(self):
