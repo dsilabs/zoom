@@ -253,6 +253,10 @@ class TestCollect(unittest.TestCase):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
 
+    def test_index_redirect(self):
+        response = self.collect('index')
+        self.assertEqual(type(response), zoom.tools.Redirector)
+
     def test_index_many(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
