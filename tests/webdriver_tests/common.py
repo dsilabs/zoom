@@ -30,6 +30,8 @@ class WebdriverTestPrimitives(unittest.TestCase):
     logger = logging.getLogger(__name__)
     path = '.'
 
+    driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
+
     def setUp(self):
         if self.headless:
             self.logger.info('running headless')
@@ -39,27 +41,45 @@ class WebdriverTestPrimitives(unittest.TestCase):
             self.logger.info('not running headless')
 
         self.driver = self.get_driver()
-        self.driver.set_window_size(*self.size)
-        self.driver.implicitly_wait(10)
 
     def tearDown(self):
         if self.headless:
             self.display.stop()
 
-        self.driver.quit()
+
+        if self.driver_name == 'phantomjs':
+            del self.driver
+        else:
+            self.driver.quit()
+            del self.driver
 
     def check_for_errors(self, text):
         pass
 
     def get_driver(self):
         chrome_options = Options()
-        chrome_options.add_experimental_option('prefs', {
-            'credentials_enable_service': False,
-            'profile': {
-                'password_manager_enabled': False
-            }
-        })
-        driver = webdriver.Chrome(chrome_options=chrome_options)
+
+        driver_name = self.driver_name
+
+        if driver_name == 'chrome':
+            chrome_options.add_experimental_option('prefs', {
+                'credentials_enable_service': False,
+                'profile': {
+                    'password_manager_enabled': False
+                }
+            })
+            driver = webdriver.Chrome(chrome_options=chrome_options)
+            driver.set_window_size(*self.size)
+            driver.implicitly_wait(10)
+
+        elif driver_name == 'firefox':
+            driver = webdriver.Firefox()
+            driver.set_window_size(*self.size)
+            driver.implicitly_wait(10)
+
+        elif driver_name == 'phantomjs':
+            driver = webdriver.PhantomJS()
+
         return driver
 
     def get(self, url):

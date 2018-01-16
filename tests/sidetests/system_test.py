@@ -7,6 +7,7 @@
     MyApp system tests
 """
 
+import os
 from os.path import join, dirname
 
 from selenium import webdriver
@@ -21,7 +22,12 @@ class SystemTests(SeleniumTests):
     url = 'http://localhost:8000'
 
     def get_driver(self):
-        return webdriver.Chrome()
+        driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
+        if driver_name == 'phantomjs':
+            return webdriver.PhantomJS()
+        elif driver_name == 'chrome':
+            return webdriver.Chrome()
+        return None
 
     def test_sample(self):
         self.run_suite('sample-suite')
