@@ -284,6 +284,10 @@ class TestCollect(unittest.TestCase):
         assert '123 Somewhere St' in response
         assert '123 Nowhere St' not in response
 
+    def test_new(self):
+        response = self.collect('new').content
+        assert 'Name' in response
+
     def test_edit(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
