@@ -299,6 +299,34 @@ class TestCollect(unittest.TestCase):
         assert '123 Somewhere St' in response
         assert '123 Nowhere St' not in response
 
+    def test_save(self):
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+        response = self.collect('edit', 'joe').content
+        assert '123 Somewhere St' in response
+        assert '123 Nowhere St' not in response
+
+        update_record_input = dict(
+            save_button='y',
+            name='Joe',
+            address='123 Somewhere Else St',
+            salary=Decimal('50000'),
+        )
+        response = self.collect('joe', **update_record_input)
+
+        response = self.collect('show', 'joe').content
+        assert '123 Somewhere Else St' in response
+        assert '123 Somewhere St' not in response
+        assert '123 Nowhere St' not in response
+
     def test_delete(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
