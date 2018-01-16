@@ -279,9 +279,37 @@ class TestCollect(unittest.TestCase):
         content = self.collect(all='y').content
         assert '52 people shown of 52 people' in content
 
-    def test_search_basic(self):
+    def test_basic_search(self):
         self.collection.store.zap()
         self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe Zzzzz',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+
+        for _ in range(5):
+            self.collect('new', **dict(
+                create_button='y',
+                name=fake.name(),
+                address=fake.street_address(),
+                salary=Decimal('40000'),
+            ))
+
+        content = self.collect(q='Zzzz').content
+        assert '1 person found in search of 6 people' in content
+
+        content = self.collect(q='Xzzz').content
+        assert '0 people found in search of 6 people' in content
+
+
+    def test_indexed_search(self):
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+        self.collection.search_engine = zoom.collect.IndexedCollectionSearch
 
         insert_record_input = dict(
             create_button='y',
