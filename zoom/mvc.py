@@ -283,7 +283,7 @@ def dispatch(*args):
     """
     logger = logging.getLogger(__name__)
     def _dispatch(route, request):
-        """Call each dispacher in succession"""
+        """Call each dispatcher in succession"""
         for arg in args:
             if issubclass(arg, Dispatcher):
                 method = arg()
