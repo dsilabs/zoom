@@ -44,12 +44,14 @@ def load_module(module, filename):
         if os.path.exists(pathname):
             logger.debug('loading module %r', pathname)
             return imp.load_source(module, pathname)
-        else:
-            logger.warning('load_module file missing %r', pathname)
-    except myhandler:
+        logger.warning('load_module file missing %r', pathname)
+        return None
+    except myhandler as err:
         msg = '%s while loading {!r} from {!r}' % myhandler.__name__
         cwd = os.getcwd()
         logger.error(msg.format((module, filename), cwd))
+        logger.error('%s: %s', myhandler.__name__, err)
+        raise
 
 
 class App(object):
