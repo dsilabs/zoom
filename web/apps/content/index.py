@@ -2,31 +2,37 @@
     content.index
 """
 
-from datetime import datetime
-import logging
-import os
-
+import zoom
 from zoom.mvc import View
-from zoom.page import page
-from zoom.browse import browse
 
 from pages import load_page
 
 
 class MyView(View):
+    """View"""
 
-    def index(self):
-        return page('Metrics and activity log and statistics will go here.', title='Overview')
+    @staticmethod
+    def index():
+        """app index"""
+        return zoom.page(
+            'Metrics and activity log and statistics will go here.',
+            title='Overview'
+        )
 
-    def show(self, path=None):
+    def show(self, *args, **kwargs):
+        """Show a page"""
+        path = '/'.join(args) if args else None
         template = 'default'
-        if path == None or path == 'content/index.html':
+
+        if path is None or path == 'content/index.html':
             path = ''
             template = 'index'
         else:
             path = '/'.join(path.split('/')[1:])
+
         content = load_page(path)
         if content:
-            return page(content, template=template)
+            return zoom.page(content, template=template)
+        return None
 
 view = MyView()

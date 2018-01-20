@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-    zoom.tests.webdriver_tests.test_admin
+    zoom.tests.webdriver_tests.test_content
 
-    test admin app functions
+    test content app functions
 """
 
 
@@ -42,32 +42,6 @@ class ContentTests(WebdriverTestCase):
         )
         self.assertContains('Test Page')
         self.delete_page('Test Page')
-
-    # def add_user(self, first_name, last_name, email, username):
-    #     self.get('/admin')
-    #     self.get('/admin/users')
-    #     self.get('/admin/users/new')
-    #     self.fill(
-    #         dict(
-    #             first_name=first_name,
-    #             last_name=last_name,
-    #             email=email,
-    #             username=username,
-    #         )
-    #     )
-    #     self.chosen('groups', ['managers'])
-    #     self.click('create_button')
-    #
-    # def delete_user(self, username):
-    #     self.get('/admin')
-    #     self.get('/admin/users')
-    #     self.click_link(username)
-    #     self.click('id=delete-action')
-    #     self.click('name=delete_button')
-    #
-    # def test_admin_login_logout(self):
-    #     self.login('admin', 'admin')
-    #     self.logout()
 
     def test_index(self):
         self.get('/content')

@@ -6,8 +6,8 @@ import logging
 
 import zoom.collect
 from zoom.context import context
-from zoom.fields import (Fields, TextField, DateField, RadioField, EditField, MemoField, MarkdownField)
-from zoom.validators import required, MinimumLength
+from zoom.fields import (Fields, TextField, MemoField, MarkdownField)
+from zoom.validators import required
 from zoom.helpers import link_to
 from zoom.utils import id_for
 from zoom.tools import load_content
@@ -41,15 +41,18 @@ class PageCollection(zoom.collect.CollectionModel):
 
 
 class PageStore(EntityStore):
-    def before_update(self, page):
-        page.update(path=id_for(page.title))
+    """Page EntityStore"""
+    def before_update(self, record):
+        record.update(path=id_for(record.title))
 
 
 def get_pages():
+    """Get the pages store"""
     return PageStore(context.site.db, PageCollection)
 
 
 def load_page(path):
+    """Load a page given it's path"""
 
     page = get_pages().first(path=path)
     if page:
@@ -61,6 +64,7 @@ def load_page(path):
 
     logger = logging.getLogger(__name__)
     logger.debug('file not found %r', path + '.md')
+    return None
 
 
 def page_fields():
