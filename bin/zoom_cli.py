@@ -3,15 +3,15 @@
 """
 
 import sys
-from os.path import abspath, split, join
-import finder
+from os.path import dirname, join
 
 required = ['tools/zoom', '']
-root = abspath(join(split(finder.__file__)[0], '..'))
+root = dirname(dirname(__file__))
 
 for directory in required:
     path = join(root, directory)
     if path not in sys.path:
         sys.path.insert(0, path)
 
+# pylint: disable=C0413,W0611
 from main import main
