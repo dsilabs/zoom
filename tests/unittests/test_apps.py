@@ -5,6 +5,7 @@ import unittest
 import datetime
 import logging
 import os
+import sys
 
 import zoom
 import zoom.apps
@@ -72,6 +73,10 @@ class TestApps(unittest.TestCase):
             f.close()
         try:
             load = zoom.apps.load_module
-            self.assertRaises(ModuleNotFoundError, load, 'x', target)
+            if sys.version_info < (3, 6):
+                my_exception = ImportError
+            else:
+                my_exception = ModuleNotFoundError
+            self.assertRaises(my_exception, load, 'x', target)
         finally:
             os.remove(target)
