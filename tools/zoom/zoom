@@ -1,15 +1,16 @@
 #!/usr/bin/env python3.6
 
 import sys
-from os.path import abspath, split, join
+from os.path import realpath, split, join
 import finder
 
 
-lib_path = abspath(join(split(finder.__file__)[0], '../..'))
+lib_path = realpath(join(split(finder.__file__)[0], '../..'))
 if lib_path not in sys.path:
     sys.path.insert(0, lib_path)
 
 
+# pylint: disable=C0413
 from main import main
 
 
