@@ -8,3 +8,4 @@ testsold
 .linter*
 __pycache__
 *png
+.vscode
