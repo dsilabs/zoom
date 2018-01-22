@@ -52,3 +52,26 @@ class TestApps(unittest.TestCase):
 
         response = app.run(self.request)
         self.assertEqual(response.status, '200 OK')
+
+    def test_load_module(self):
+        target = __file__
+        my = zoom.apps.load_module('my', target)
+        self.assertEqual(my.__file__, __file__)
+
+    def test_load_module_missing(self):
+        target = 'not_a_file.py'
+        load = zoom.apps.load_module
+        self.assertIsNone(load('x', target))
+
+    def test_load_module_error(self):
+        target = 'erroring_file.py'
+        f = open(target, 'w')
+        try:
+            f.write('import not_a_module')
+        finally:
+            f.close()
+        try:
+            load = zoom.apps.load_module
+            self.assertRaises(ModuleNotFoundError, load, 'x', target)
+        finally:
+            os.remove(target)
