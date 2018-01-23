@@ -4,7 +4,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Zoom is a simple web application framework for building dynamic web sites quickly and easily.
+Zoom is a dynamic Python Web framework that promotes modularity and rapid
+prototyping for building and maintaining useful web sites quickly and easily.
 
 Create an app:
 ```python
@@ -51,7 +52,7 @@ The great part about the minimalistic approach is that you're not committed to a
 
 The great thing about the full-stack frameworks is that they come with all the bells and whistles that you need to support your core app.  The challenge though is that to do this they often require the use of very specific components, you are really expected to do things their way and you have to make a lot of configuration decisions up front that require thoughtful decision.  While taking a lot of the decision making out of the hands of the developer can be a good thing, sometimes developers end up working around these frameworks as much as they work with them.
 
-Zoom is written for application developers in a hurry.  Optimized to minimize developer time, it is designed to make it very easy to get something developed, running and deployed very quickly.
+Zoom is written for application developers in a hurry.  Optimized to minimize developer time, it is designed to make it easy to get something developed, running and deployed very quickly.
 
 It attempts to do this by adhering to the following key prinicples:
 
@@ -60,6 +61,12 @@ It attempts to do this by adhering to the following key prinicples:
 * Dynamic over Static
 
 * Reasonable defaults for everything
+
+Because of the modularity it encourages parts of your app can often be re-used in other projects
+so that the more you use it, the more productive you get.
+
+As user requirements change and your app inevitably evolves, the dynamic and modular approach
+encourages you to make changes quickly and easily.
 
 
 ### When would you use it?
