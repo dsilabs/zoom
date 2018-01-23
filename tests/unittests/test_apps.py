@@ -28,6 +28,14 @@ class TestApps(unittest.TestCase):
         self.request.site = zoom.system.site
         this_dir = os.path.dirname(__file__)
         self.apps_dir = os.path.join(this_dir, '../../web/apps')
+        self.request.app = zoom.utils.Bunch(
+            name='App',
+            description='An app',
+            url='/app',
+            menu=[],
+            keywords='one,two'
+        )
+        self.request.user = zoom.users.Users(self.db).first(username='user')
 
     def tearDown(self):
         self.db.close()
@@ -80,3 +88,8 @@ class TestApps(unittest.TestCase):
             self.assertRaises(my_exception, load, 'x', target)
         finally:
             os.remove(target)
+
+    def test_helpers(self):
+        helpers = zoom.apps.helpers(self.request)
+        self.assertTrue(isinstance(helpers, dict))
+        self.assertTrue(helpers.get('app_name'), 'App')
