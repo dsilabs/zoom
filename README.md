@@ -1,4 +1,4 @@
-# zoom
+# Zoom
 
 [![Build Status](https://travis-ci.org/dsilabs/zoom.svg?branch=master)](https://travis-ci.org/dsilabs/zoom)
 [![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
@@ -139,7 +139,7 @@ want to work on the app and type:
 $ zoom new blog
 ```
 
-Go to your Zoom instance in your browser and you should see your new Blog app.
+Go to your Zoom instance in your browser and you should see your new app.
 To start with it doesn't do anything useful so we need to add our blogging
 functionality.
 
