@@ -197,3 +197,29 @@ class TestApps(unittest.TestCase):
         self.request.user.is_authenticated = True
         default_app = zoom.apps.get_default_app_name(site, user)
         self.assertEqual(default_app, 'home')
+
+    def test_app_proxy_call(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('hello', pathname, site)
+        app.request = self.request
+        print(app.method)
+        method = app.method
+        response = method(self.request)
+        self.assertEqual(type(response.render(self.request)), zoom.response.HTMLResponse)
+
+    def test_app_process(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('hello', pathname, site)
+        response = app.run(self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
+        self.assertTrue('<!DOCTYPE html>' in response.content)
+
+    def test_handle(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('hello', pathname, site)
+        response = app.run(self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
+        self.assertTrue('<!DOCTYPE html>' in response.content)
