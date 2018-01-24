@@ -205,8 +205,8 @@ class TestApps(unittest.TestCase):
         app.request = self.request
         print(app.method)
         method = app.method
-        response = method(self.request)
-        self.assertEqual(type(response.render(self.request)), zoom.response.HTMLResponse)
+        response = method(self.request).render(self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
 
     def test_app_process(self):
         site = zoom.system.site
@@ -223,3 +223,37 @@ class TestApps(unittest.TestCase):
         response = app.run(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
         self.assertTrue('<!DOCTYPE html>' in response.content)
+
+    def call(self, uri, as_username='admin', tag='content'):
+        def clear():
+            clearable = ('app', 'index')
+            for module in clearable:
+                if module in sys.modules:
+                    del sys.modules[module]
+        request = build('http://localhost/' + uri, {})
+        request.profiler = set()
+        request.site = zoom.system.site
+        request.user = zoom.users.Users(self.db).first(username=as_username)
+        clear()
+        response = zoom.apps.handle(request)
+        if isinstance(response, zoom.response.HTMLResponse):
+            return zoom.render.render('{{' + tag + '}}')
+        else:
+            return response
+
+    def test_handle_redirect_to_index(self):
+        response = self.call('home', 'guest')
+        self.assertTrue(response.headers['Location'] == '/')
+
+    def test_handle_insufficient_privileges(self):
+        response = self.call('admin', 'user')
+        self.assertTrue(response.headers['Location'] == '/')
+
+    def test_handle_unknown(self):
+        response = self.call('aaa')
+        self.assertTrue(response is None)
+
+    # def test_handle_allowed(self):
+    #     response = self.call('home')
+    #     self.assertTrue('<h1>Apps</h1>' in response)
+
