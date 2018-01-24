@@ -153,6 +153,11 @@ class TestApps(unittest.TestCase):
         app.request = self.request
         self.assertEquals(str(app), '<a href="/Hello">Hello</a>')
 
+    def test_respond_response(self):
+        content = zoom.response.JSONResponse('true')
+        response = zoom.apps.respond(content, self.request)
+        self.assertEqual(type(response), zoom.response.JSONResponse)
+
     def test_respond_str(self):
         response = zoom.apps.respond('test', self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
@@ -184,3 +189,11 @@ class TestApps(unittest.TestCase):
             self.assertTrue('.' in sys.path)
         finally:
             sys.path = path
+
+    def test_default_app_name(self):
+        site, user = self.request.site, self.request.user
+        default_app = zoom.apps.get_default_app_name(site, user)
+        self.assertEqual(default_app, 'content')
+        self.request.user.is_authenticated = True
+        default_app = zoom.apps.get_default_app_name(site, user)
+        self.assertEqual(default_app, 'home')
