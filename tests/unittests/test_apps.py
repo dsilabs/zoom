@@ -95,6 +95,20 @@ class TestApps(unittest.TestCase):
         self.assertTrue(isinstance(helpers, dict))
         self.assertTrue(helpers.get('app_name'), 'App')
 
+    def test_system_menu(self):
+        menu = zoom.apps.system_menu(self.request)
+        self.assertFalse(self.request.user.is_authenticated)
+        self.assertEqual(menu, (
+            '<div class="system-menu">'
+            '<ul><li><a href="/logout">Logout</a></li></ul>'
+            '</div>'
+            )
+        )
+        self.request.user.is_authenticated = True
+        menu = zoom.apps.system_menu(self.request)
+        self.assertTrue(self.request.user.is_authenticated)
+        self.assertTrue('<li class="dropdown">' in menu)
+
     def test_app_menu(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
@@ -154,3 +168,19 @@ class TestApps(unittest.TestCase):
     def test_respond_other(self):
         response = zoom.apps.respond(1, self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_handler(self):
+        def next(request, *rest):
+            return 'foo'
+        path = sys.path.copy()
+        try:
+            if '.' in sys.path:
+                del sys.path['.']
+
+            result = zoom.apps.handler(self.request, next)
+
+            self.assertEqual(result, 'foo')
+
+            self.assertTrue('.' in sys.path)
+        finally:
+            sys.path = path
