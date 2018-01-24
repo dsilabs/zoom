@@ -27,7 +27,8 @@ class TestApps(unittest.TestCase):
         zoom.system.site = zoom.site.Site(self.request)
         self.request.site = zoom.system.site
         this_dir = os.path.dirname(__file__)
-        self.apps_dir = os.path.join(this_dir, '../../web/apps')
+        # self.apps_dir = os.path.join(this_dir, '../../web/apps')
+        self.apps_dir = zoom.tools.zoompath('web', 'apps')
         self.request.app = zoom.utils.Bunch(
             name='App',
             description='An app',
@@ -93,3 +94,63 @@ class TestApps(unittest.TestCase):
         helpers = zoom.apps.helpers(self.request)
         self.assertTrue(isinstance(helpers, dict))
         self.assertTrue(helpers.get('app_name'), 'App')
+
+    def test_app_menu(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('Hello', pathname, site)
+        app.request = self.request
+        self.assertEquals(app.menu(), '<ul></ul>')
+
+        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        app = zoom.apps.AppProxy('Sample', pathname, site)
+        app.request = self.request
+        self.assertEquals(app.menu(), (
+            '<ul>'
+            '<li><a href="<dz:app_url>">Content</a></li>'
+            '<li><a href="<dz:app_url>/fields">Fields</a></li>'
+            '<li><a href="<dz:app_url>/collection">Collection</a></li>'
+            '<li><a href="<dz:app_url>/alerts">Alerts</a></li>'
+            '<li><a href="<dz:app_url>/parts">Parts</a></li>'
+            '<li><a href="<dz:app_url>/tools">Tools</a></li>'
+            '<li><a href="<dz:app_url>/missing">Missing</a></li>'
+            '<li><a href="<dz:app_url>/about">About</a></li>'
+            '</ul>'
+        ))
+
+    def test_app_description(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('Hello', pathname, site)
+        app.request = self.request
+        self.assertEquals(app.description, 'The Hello app.')
+
+    def test_app_keywords(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('Hello', pathname, site)
+        app.request = self.request
+        self.assertEquals(app.keywords, 'The, Hello, app.')
+
+    def test_app_str(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        app = zoom.apps.AppProxy('Hello', pathname, site)
+        app.request = self.request
+        self.assertEquals(str(app), '<a href="/Hello">Hello</a>')
+
+    def test_respond_str(self):
+        response = zoom.apps.respond('test', self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_respond_component(self):
+        response = zoom.apps.respond(zoom.Component('my html', css='my css'), self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_respond_list(self):
+        response = zoom.apps.respond(['one', 'two'], self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_respond_other(self):
+        response = zoom.apps.respond(1, self.request)
+        self.assertEqual(type(response), zoom.response.HTMLResponse)
