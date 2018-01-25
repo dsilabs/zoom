@@ -55,7 +55,16 @@ def load_module(module, filename):
 
 
 class App(object):
-    """a Zoom application"""
+    """A Zoom application
+
+    Looks for a method to satisfy the request.  If the method is
+    not specified, it falls back to 'index'.  If there is no
+    method on the app object to satisfy the method then it looks
+    for a file in the app directory by that same name.  If it
+    finds such a file it looks for the an entrypoint and if found
+    it calls the entrypoint with the parameters the entrypoint
+    expects.
+    """
 
     def __init__(self):
         self.menu = []
@@ -71,7 +80,7 @@ class App(object):
         logger = logging.getLogger(__name__)
 
         isfile = os.path.isfile
-        logger.debug('route %r', route)
+        logger.debug('app called with route %r', route)
 
         if len(route) > 1:
             module = route[1]
@@ -79,18 +88,14 @@ class App(object):
         else:
             module = 'index'
             rest = route[1:]
-        logger.debug('module is %r', module)
 
         try:
             method = getattr(self, module)
-            logger.debug('got method for %r', module)
         except AttributeError:
             method = None
 
         if method:
-            logger.debug('calling method %r', module)
             result = method(*rest, **data)
-            logger.debug(result)
             return result
 
         if len(route) > 1 and isfile('%s.py' % route[1]):
@@ -109,10 +114,7 @@ class App(object):
             view = if_callable(getattr(source, 'view', None))
             controller = if_callable(getattr(source, 'controller', None))
         else:
-            main = None
-            app = None
-            view = None
-            controller = None
+            main = app = view = None
 
         return (
             main and main(rest, self.request) or
@@ -344,7 +346,6 @@ def handle(request):
         return result
 
     logger = logging.getLogger(__name__)
-    logger.debug('apps_paths: %r', request.site.apps_paths)
 
     user = request.user
     app_name = request.route and request.route[0] or None
