@@ -41,6 +41,45 @@ class TestApps(unittest.TestCase):
     def tearDown(self):
         self.db.close()
 
+    def test_app_process_index(self):
+        save_dir = os.getcwd()
+        try:
+            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            app = zoom.App()
+            request = build('http://localhost/sample', {})
+            request.site = zoom.site.Site(self.request)
+            request.site.db = zoom.database.setup_test()
+            response = app(request)
+            self.assertEqual(type(response), zoom.Page)
+        finally:
+            os.chdir(save_dir)
+
+    def test_app_process_method(self):
+        save_dir = os.getcwd()
+        try:
+            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            app = zoom.App()
+            request = build('http://localhost/sample/about', {})
+            request.site = zoom.site.Site(self.request)
+            request.site.db = zoom.database.setup_test()
+            response = app(request)
+            self.assertEqual(type(response), zoom.Page)
+        finally:
+            os.chdir(save_dir)
+
+    def test_app_process_module(self):
+        save_dir = os.getcwd()
+        try:
+            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            app = zoom.App()
+            request = build('http://localhost/sample/parts', {})
+            request.site = zoom.site.Site(self.request)
+            request.site.db = zoom.database.setup_test()
+            response = app(request)
+            self.assertEqual(type(response), zoom.Page)
+        finally:
+            os.chdir(save_dir)
+
     def test_respond_text(self):
         response = zoom.apps.respond('test', self.request)
         self.assertEqual(response.status, '200 OK')
@@ -208,7 +247,7 @@ class TestApps(unittest.TestCase):
         response = method(self.request).render(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
 
-    def test_app_process(self):
+    def test_app_proxy_process(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
         app = zoom.apps.AppProxy('hello', pathname, site)
