@@ -57,6 +57,24 @@ class TextTests(object):
         self.compare(t, f.display_value())
 
 
+class TestField(unittest.TestCase):
+
+    def test_initialize(self):
+        f = zoom.fields.Field('Test')
+        f.initialize({'test': 'one'})
+        self.assertEqual(f.value, 'one')
+        self.assertEqual(f.display_value(), 'one')
+        f.initialize()
+        self.assertEqual(f.value, 'one')
+
+
+class TestMarkdownText(unittest.TestCase):
+
+    def test_evaluate(self):
+        f = zoom.fields.MarkdownText('Test')
+        self.assertEqual(f.evaluate(), {})
+
+
 class TestMemoField(unittest.TestCase, TextTests):
 
     def setUp(self, *a, **k):
@@ -67,6 +85,9 @@ class TestMemoField(unittest.TestCase, TextTests):
             'name="field1" rows="6" size="10">{text}</textarea>'
         )
 
+    def test_nohint(self):
+        f = zoom.fields.MemoField('Notes', value='some notes')
+        self.assertTrue('some notes' in f.edit())
 
 class TestMarkdownField(unittest.TestCase, TextTests):
 
@@ -94,7 +115,6 @@ class TestEditField(unittest.TestCase, TextTests):
             '<textarea class="{self.css_class}" height="6" '
             'id="field1" name="field1" size="10">{text}</textarea>'
         )
-
 
 class TestTextField(unittest.TestCase, TextTests):
 
@@ -175,6 +195,7 @@ class TestFields(unittest.TestCase):
                 'name': 'Joe',
                 'height': Decimal('220'),
                 'birthdate': 'Aug 20, 2017',
+                'extra_field': 2
             }
         )
         self.assertEqual(
@@ -184,4 +205,53 @@ class TestFields(unittest.TestCase):
                 'height': Decimal('220'),
                 'birthdate': datetime.date(2017, 8, 20),
             }
+        )
+        self.fields.initialize() # should have no effect
+        self.assertEqual(
+            self.fields.evaluate(),
+            {
+                'name': 'Joe',
+                'height': Decimal('220'),
+                'birthdate': datetime.date(2017, 8, 20),
+            }
+        )
+
+    def test_evaluate_update(self):
+        self.fields.initialize(
+            {
+                'name': 'Joe',
+                'height': Decimal('220'),
+                'birthdate': 'Aug 20, 2017',
+                'extra_field': 2
+            }
+        )
+        self.assertEqual(
+            self.fields.evaluate(),
+            {
+                'name': 'Joe',
+                'height': Decimal('220'),
+                'birthdate': datetime.date(2017, 8, 20),
+            }
+        )
+        self.fields.update() # should have no effect
+        self.assertEqual(
+            self.fields.evaluate(),
+            {
+                'name': 'Joe',
+                'height': Decimal('220'),
+                'birthdate': datetime.date(2017, 8, 20),
+            }
+        )
+
+    def test_as_list(self):
+        f1, f2, f3 = (
+            TextField('Name'),
+            DecimalField('Height', units='cm', default=''),
+            DateField('Birthdate'),
+        )
+        fields = Fields(f1, f2, f3)
+
+        self.assertEqual(
+            fields.as_list(),
+            [f1, f2, f3]
         )
