@@ -551,13 +551,14 @@ class IndexedCollectionSearch(object):
             self.collection.name
         )
 
-        self.db("""
-        create table if not exists tokens (
-            kind varchar(100),
-            row_id int unsigned not null,
-            token char({})
-        )
-        """.format(self.max_token_len))
+        if 'tokens' not in self.db.get_tables():
+            self.db("""
+            create table if not exists tokens (
+                kind varchar(100),
+                row_id int unsigned not null,
+                token char({})
+            )
+            """.format(self.max_token_len))
 
     def reindex(self):
         """Rebuild the collection index
