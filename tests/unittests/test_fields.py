@@ -66,6 +66,7 @@ class TestField(unittest.TestCase):
         self.assertEqual(f.display_value(), 'one')
         f.initialize()
         self.assertEqual(f.value, 'one')
+        self.assertEqual(f.widget(), 'one')
 
 
 class TestMarkdownText(unittest.TestCase):
