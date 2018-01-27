@@ -117,6 +117,11 @@ class TestEditField(unittest.TestCase, TextTests):
             'id="field1" name="field1" size="10">{text}</textarea>'
         )
 
+    def test_edit_value(self):
+        f = zoom.fields.EditField('memo')
+        f.initialize({'memo': 'test data'})
+        assert 'test data' in f.edit()
+
 class TestTextField(unittest.TestCase, TextTests):
 
     def setUp(self, *a, **k):
@@ -126,6 +131,18 @@ class TestTextField(unittest.TestCase, TextTests):
             'maxlength="40" name="field1" size="40" '
             'type="text" value="{text}" />'
         )
+
+    def test_non_text_value(self):
+        f = zoom.fields.TextField('Age')
+        f.value = 20
+        self.assertEqual(f.widget(), (
+            '<input class="text_field" id="age" '
+            'maxlength="40" name="age" size="40" '
+            'type="text" value="20" />'
+            )
+        )
+
+
 
 
 class DateTests(object):
