@@ -25,22 +25,33 @@ class IndexView(View):
         db = self.model.site.db
         queues = Queues(db)
 
+        engines = (
+            '<H3>Engines</H3>' + ', '.join(str(e[0])
+            for e in db('show engines'))
+        )
+
         entities = (
-            '<H3>Entities</H3>' + '<br>'.join([link_to(kind, 'storage', 'entity', kind)
-            for kind, in db(index_query)])
+            '<H3>Entities</H3>' + ', '.join([
+                link_to(kind, 'storage', 'entity', kind)
+                for kind, in db(index_query)
+            ])
         )
 
         tables = (
-            '<H3>Tables</H3>' + '<br>'.join([link_to(kind, 'storage', 'table', kind)
-            for kind, in db('show tables')])
+            '<H3>Tables</H3>' + ', '.join([
+                link_to(kind, 'storage', 'table', kind)
+                for kind, in db('show tables')
+            ])
         )
 
         queues = (
-            '<H3>Queues</H3>' + '<br>'.join([link_to(kind, 'storage', 'queue', kind)
-            for kind in Queues(db).topics()])
+            '<H3>Queues</H3>' + ', '.join([
+                link_to(kind, 'storage', 'queue', kind)
+                for kind in Queues(db).topics()
+            ])
         )
 
-        content = entities + tables + queues
+        content = tables + entities + queues
         return Page(content, title='Storage')
 
     def entity(self, name):
