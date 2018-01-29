@@ -142,9 +142,6 @@ class TestTextField(unittest.TestCase, TextTests):
             )
         )
 
-
-
-
 class DateTests(object):
 
     def setUp(self, field_type):
@@ -273,3 +270,37 @@ class TestFields(unittest.TestCase):
             fields.as_list(),
             [f1, f2, f3]
         )
+
+class TestFieldSet(TestFields):
+    def setUp(self):
+        self.fields = zoom.fields.Fieldset('Section 1', [
+            TextField('Name'),
+            DecimalField('Height', units='cm', default=''),
+            DateField('Birthdate'),
+        ])
+
+    def test_hint(self):
+        self.assertEqual(self.fields.render_hint(), '')
+        self.fields.hint = 'here is a hint'
+        self.assertEqual(
+            self.fields.render_hint(),
+            '<span class="hint">here is a hint</span>'
+            )
+
+    def test_show(self):
+        print(self.fields.show())
+        assert '<fieldset>' not in self.fields.show()
+
+        self.fields.initialize(
+            {
+                'name': 'Joe',
+                'height': Decimal('220'),
+                'birthdate': 'Aug 20, 2017',
+                'extra_field': 2
+            }
+        )
+        print(self.fields.show())
+        assert '<fieldset>' in self.fields.show()
+
+    def test_edit(self):
+        assert '<fieldset>' in self.fields.edit()
