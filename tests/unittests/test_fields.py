@@ -325,6 +325,16 @@ class TestBasicImageField(unittest.TestCase):
         self.assertIn('fake image attribute', self.field.binary_image_data)
         self.field.assign('another fake image')
         self.assertIn('another fake image', self.field.display_value())
+        self.assertEqual(self.field.evaluate(), {'photo': 'fake image attribute'})
+        self.assertEqual(self.field.value, 'another fake image')
+        self.assertIn('another', self.field.edit())
+
+    def test_initialize(self):
+        person = zoom.utils.Bunch(name='Joe', photo='binary data', url='/people/joe')
+        self.field._initialize(person)
+        self.assertIn('<img ', self.field.value)
+        self.assertIn('alt="Joe"', self.field.value)
+        self.assertIn('src="/people/joe/image?name=photo', self.field.value)
 
     def test_multipart(self):
-        self.assertTrue(self.field.requires_multipart_form)
+        self.assertTrue(self.field.requires_multipart_form())
