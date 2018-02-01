@@ -304,3 +304,27 @@ class TestFieldSet(TestFields):
 
     def test_edit(self):
         assert '<fieldset>' in self.fields.edit()
+
+class TestBasicImageField(unittest.TestCase):
+    def setUp(self):
+        self.field = BasicImageField('Photo', hint='Drag and Drop or click')
+
+    def test_hint(self):
+        self.assertIn('Drag and Drop', self.field.edit())
+
+    def test_edit(self):
+        self.assertIn('<input ', self.field.edit())
+
+    def test_display_value(self):
+        self.field.initialize('fake image')
+        self.assertIn('<img', self.field.display_value())
+
+    def test_assign(self):
+        fake_image = zoom.utils.Bunch(value='fake image attribute')
+        self.field.assign(fake_image)
+        self.assertIn('fake image attribute', self.field.binary_image_data)
+        self.field.assign('another fake image')
+        self.assertIn('another fake image', self.field.display_value())
+
+    def test_multipart(self):
+        self.assertTrue(self.field.requires_multipart_form)
