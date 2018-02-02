@@ -4,10 +4,11 @@
 import os
 import logging
 
-import zoom.collect
+import zoom
+
 from zoom.context import context
-from zoom.fields import (Fields, TextField, MemoField, MarkdownField)
-from zoom.validators import required
+from zoom.fields import (Fields, TextField, MemoField, MarkdownEditField)
+from zoom.validators import required, MinimumLength
 from zoom.helpers import link_to
 from zoom.utils import id_for
 from zoom.tools import load_content
@@ -66,24 +67,36 @@ def load_page(path):
     logger.debug('file not found %r', path + '.md')
     return None
 
-
 def page_fields():
     """Return page fields"""
     return Fields(
-        TextField('Title', required, maxlength=80),
+        TextField('Title', required, MinimumLength(3), maxlength=80),
         # TextField('Name', maxlength=80),
         TextField('Path', maxlength=80),
         # TextField('Template'),
         # TextField('Title', required, MinimumLength(3)),
         MemoField('Description'),
-        MarkdownField('Body', browse=False),
+        MarkdownEditField('Body', browse=False),
         # DateField('Publish Date', format='%A %b %d, %Y'),
     )
 
 
+class MyCollectionView(zoom.collect.CollectionView):
+
+    def edit(self, key):
+        page = zoom.collect.CollectionView.edit(self, key)
+        page.css = '.content .field_label { min-width: 15%; width: 15%; }'
+        return page
+
+    def show(self, key):
+        page = zoom.collect.CollectionView.show(self, key)
+        page.css = '.content .field_label { min-width: 15%; width: 15%; }'
+        return page
+
 main = zoom.collect.Collection(
     page_fields,
     model=PageCollection,
+    view=MyCollectionView,
     # store=PageStore,
 )
 main.order = lambda a: a.path
