@@ -12,6 +12,7 @@ import logging
 import os
 import timeit
 import warnings
+from decimal import Decimal
 
 import zoom
 
@@ -90,7 +91,7 @@ class Result(object):
         return result
 
     def __repr__(self):
-        """useful and unabiguous"""
+        """useful and unambiguous"""
         return repr(list(self))
 
     def first(self):
@@ -225,7 +226,9 @@ class Database(object):
                     args,
                 ))
                 source = format_stack(inspect.stack())
-                type(self).stats.append((elapsed, repr(command), repr(args), source))
+                type(self).stats.append(
+                    (elapsed, repr(command), repr(args), source)
+                )
 
         if cursor.description:
             return Result(cursor)
@@ -280,8 +283,8 @@ class Sqlite3Database(Database):
     paramstyle = 'qmark'
 
     def __init__(self, *args, **kwargs):
+        """Initialize with standard sqlite3 parameters"""
         import sqlite3
-        from decimal import Decimal
 
         keyword_args = dict(
             kwargs,
@@ -355,6 +358,7 @@ class MySQLDatabase(Database):
     paramstyle = 'pyformat'
 
     def __init__(self, *args, **kwargs):
+        """Initialize with standard pymysql parameters"""
         import pymysql
 
         keyword_args = dict(
