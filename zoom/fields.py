@@ -625,6 +625,16 @@ class EditField(MemoField):
         return layout_field(self.label, self.widget())
 
 
+class MarkdownEditField(EditField):
+    """Large markdown edit field
+
+    >>> MarkdownEditField('Notes').widget()
+    '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
+    """
+    def display_value(self):
+        return markdown(self.value)
+
+
 class PhoneField(TextField):
     """Phone field
 
