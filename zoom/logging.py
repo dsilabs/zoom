@@ -4,8 +4,7 @@
 
 import logging
 
-from zoom.context import context
-from zoom.tools import now
+import zoom
 
 cmd = """
     insert into log (
@@ -16,9 +15,9 @@ cmd = """
 
 
 def add_entry(request, status, entry):
+    """Add an entry to the system log"""
     if request.site.logging:
-        db = request.site.db
-        db(
+        request.site.db(
             cmd,
             hasattr(request, 'app') and request.app.name or None,
             request.path,
@@ -27,19 +26,25 @@ def add_entry(request, status, entry):
             request.ip_address,
             request.remote_user,
             request.host,
-            now(),
+            zoom.tools.now(),
             int(request.elapsed * 1000),
             entry,
         )
 
 
 def log_activity(message, *args, **kwargs):
-    # I think this should actually be a verb of some sort but I am
-    # drawing a blank at this moment of what to call it. :/
-    add_entry(context.request, 'A', message, *args, **kwargs)
+    """Log user activity
+
+    Use for high level user activity logging, such as editing records.
+    """
+    add_entry(zoom.system.request, 'A', message, *args, **kwargs)
 
 
 class LogHandler(logging.Handler):
+    """Log handler
+
+    Logs information to the log table in the system database.
+    """
 
     def __init__(self, request, level=logging.INFO):
         logging.Handler.__init__(self, level)
@@ -51,30 +56,15 @@ class LogHandler(logging.Handler):
         add_entry(self.request, status, entry)
 
 
-def add_log_handler(request):
-    log_handler = LogHandler(request)
-    logger = logging.getLogger()
-    logger.addHandler(log_handler)
-
-    logger = logging.getLogger(__name__)
-    logger.debug('added log handler')
-    return log_handler
-
-
-def remove_log_handler(log_handler):
-    logger = logging.getLogger(__name__)
-    logger.debug('removing log handler')
-
-    logger = logging.getLogger()
-    logger.removeHandler(log_handler)
-
-
-
 def handler(request, handler, *rest):
-    log_handler = add_log_handler(request)
+    """Handles logging"""
+    root_logger = logging.getLogger()
+
+    log_handler = LogHandler(request)
+    root_logger.addHandler(log_handler)
     try:
         result = handler(request, *rest)
     finally:
         request.profiler.time('log request', add_entry, request, 'C', 'complete')
-        remove_log_handler(log_handler)
+        root_logger.removeHandler(log_handler)
     return result
