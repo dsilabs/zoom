@@ -18,7 +18,46 @@ def get_config(pathname):
 
 
 class Config(object):
-    """config file parser
+    """Config file parser
+
+    The Config class looks in two places for config settings.  First
+    it looks in the site.ini file corresponding to the current site.
+    If the value being read is not defined there it falls back to
+    the site.ini in the default site.  If the value is not found there
+    then it returns the default value provided in the parameter list.
+
+    If no value is found it raises and exception.
+
+    >>> from zoom.tools import zoompath
+    >>> config = Config(zoompath('web/sites/default'), 'site.ini')
+    >>> config.get('site', 'name')
+    'ZOOM'
+
+    >>> config.get('site', 'value_missing', 'Got Default!')
+    'Got Default!'
+
+    >>> missing = False
+    >>> try:
+    ...     config.get('site', 'value_missing')
+    ... except Exception as e:
+    ...     missing = True
+    >>> missing
+    True
+
+    >>> config.has_option('site', 'name')
+    True
+
+    >>> config.has_option('section_missing', 'name')
+    False
+
+    >>> missing = False
+    >>> try:
+    ...     config.get('section_missing', 'name')
+    ... except Exception as e:
+    ...     missing = True
+    >>> missing
+    True
+
     """
 
     def __init__(self, directory, name, alternate=None):
@@ -34,7 +73,7 @@ class Config(object):
 
         def missing_report(section, option):
             """Raise an informative exception"""
-            raise Exception('Unable to read [%s]%s from configs:\n%s\n%s' % (
+            raise Exception('Unable to read [%s] %s from configs:\n%s\n%s' % (
                 section, option,
                 self.config_pathname,
                 self.default_config_pathname,
@@ -60,7 +99,7 @@ class Config(object):
             or self.default_config.has_option(section, option)
         )
 
-    def __str__(self):
+    def __str__(self):    # pragma: no cover
         return '<Config: %s>' % repr([
             self.default_config_pathname,
             self.config_pathname
