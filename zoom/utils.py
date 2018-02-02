@@ -275,6 +275,11 @@ class ItemList(list):
                     return '{:10}'
             return '{:<{width}}'
 
+        def nvl(value):
+            if value is None:
+                return 'None'
+            return value
+
         if len(self) == 0:
             return ''
 
@@ -294,7 +299,7 @@ class ItemList(list):
                 offset = 1
 
         # rows containing data
-        rows = [list(row) for row in self[offset:]]
+        rows = [list(nvl(v) for v in row) for row in self[offset:]]
 
         # calculate formats
         formats = []
@@ -329,6 +334,9 @@ class ItemList(list):
         ]
 
         sorted_names = sorted_column_names(labels)
+
+        for i, v in enumerate(formats):
+            formats[i] = v if v != '{}' else '{:<{width}}'
 
         if not self.labels:
             columns = sorted(columns, key=lambda a: sorted_names.index(labels[a]))
