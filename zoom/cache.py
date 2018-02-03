@@ -14,10 +14,6 @@ import logging
 import time
 
 import zoom
-# from zoom.store import store
-# from .store import Entity
-# from .system import system
-# from .helpers import message
 
 __all__ = ['cached', 'clear_cache']
 
