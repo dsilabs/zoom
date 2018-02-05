@@ -294,9 +294,7 @@ class Sqlite3Database(Database):
             return [s for s in statements.split(';\n') if s]
         logger = logging.getLogger(__name__)
 
-        curdir = os.path.dirname(__file__)
-        relpath = '../tools/zoom/sql/setup_sqlite3g.sql'
-        filename = filename or os.path.abspath(os.path.join(curdir, relpath))
+        filename = zoom.tools.zoompath('tools/zoom/sql/setup_sqlite3g.sql')
         statements = split(open(filename).read())
         logger.debug('%s SQL statements', len(statements))
 
@@ -363,9 +361,7 @@ class MySQLDatabase(Database):
             return [s for s in statements.split(';\n') if s]
         logger = logging.getLogger(__name__)
 
-        curdir = os.path.dirname(__file__)
-        relpath = '../tools/zoom/sql/setup_mysql.sql'
-        filename = os.path.realpath(os.path.join(curdir, relpath))
+        filename = zoom.tools.zoompath('tools/zoom/sql/setup_mysql.sql')
 
         with open(filename) as f:
             statements = split(f.read())
