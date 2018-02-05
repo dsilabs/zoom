@@ -732,6 +732,10 @@ class Collection(object):
         """Returns the sort key"""
         return item.name.lower()
 
+    def locate(self, key):
+        """locate a record"""
+        return locate(self, key)
+
     def get_columns(self):
         """Return the collection columns."""
         if self.columns:
