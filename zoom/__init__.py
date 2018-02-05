@@ -32,3 +32,4 @@ from .packages import requires
 from .store import store_of
 from .tools import home, redirect_to
 from .users import authorize
+from .utils import Record
