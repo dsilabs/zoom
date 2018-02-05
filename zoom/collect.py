@@ -676,6 +676,16 @@ class Collection(object):
             self.__fields = self.__fields()
         return self.__fields
 
+    def set_fields(self, fields):
+        """Set the fields to a new value
+
+        This can be used for switching fields on the fly, for example
+        when your collection contains entities that are similar enough
+        to be included in the same collection, but that require their
+        own fields.
+        """
+        self.__fields = fields
+
     def __init__(self, fields, **kwargs):
 
         def name_from(fields):
