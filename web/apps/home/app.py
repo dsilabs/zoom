@@ -5,13 +5,52 @@
 """
 
 import zoom
+import zoom.html as h
 
 
 def app(request):
     """Return a page containing a list of available apps"""
+
+    zoom.requires('fontawesome4')
+
+    css = """
+        .app-icons li {
+            display: inline;
+        }
+        .zoom-app-as-icon {
+            width: 100px;
+            text-align: center;
+            float: left;
+        }
+        .zoom-app-as-icon:hover {
+            background: #eee;
+        }
+        .zoom-app-icon {
+            height: 50px;
+            width: 50px;
+            border-radius: 5px;
+            margin-top: 16px;
+            padding-top: 5px;
+            line-height: 50px;
+            text-align: center;
+            box-shadow: inset 0px 49px 0px -24px #67828b;
+            background-color: #5a7179;
+            border: 1px solid #ffffff;
+            display: inline-block;
+            color: #ffffff;
+            font-size: 15px;
+            text-decoration: none;
+        }
+        .zoom-app-icon .fa {
+            font-size: 2em;
+        }
+    """
+
     skip = 'home', 'logout'
-    content = zoom.html.ol(
-        repr(a) for a in sorted(request.site.apps, key=lambda a: a.title)
-        if a.name not in skip and request.user.can_run(a)
+    content = h.div(
+        h.ul(
+            a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title)
+            if a.name not in skip and request.user.can_run(a),
+        ), classed='app-icons'
     )
-    return zoom.page(content, title="Apps")
+    return zoom.page(content, title="Apps", css=css)
