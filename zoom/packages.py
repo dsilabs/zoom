@@ -20,9 +20,19 @@ default_packages = {
             'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.css',
         ]
     },
-    'fontawsome': {
+    'fontawesome4': {
+        'styles': [
+            '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+        ]
+    },
+    'fontawesome': {
+        'styles': [
+            '//use.fontawesome.com/releases/v5.0.6/css/all.css'
+        ]
+    },
+    'fontawesome-svg': {
         'libs': [
-            'https://use.fontawesome.com/releases/v5.0.1/js/all.js'
+            '//use.fontawesome.com/releases/v5.0.6/js/all.js'
         ]
     },
 }
