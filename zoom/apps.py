@@ -158,9 +158,24 @@ class AppProxy(object):
         self.author = get('author')
         self.version = get('version')
         self.icon = get('icon')
+        self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
 
         self._method = None
+
+    def get_icon_view(self):
+        return """
+        <div class="zoom-app-as-icon">
+            <a href="{self.url}">
+                <div class="zoom-app-icon">
+                    <i class="fa fa-{self.icon}" aria-hidden="true"></i>
+                </div>
+                <div class="zoom-app-title">
+                    {self.title}
+                </div>
+            </a>
+        </div>
+        """.format(self=self)
 
     @property
     def method(self):
