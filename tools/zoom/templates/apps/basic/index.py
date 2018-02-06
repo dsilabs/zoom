@@ -7,11 +7,9 @@ import zoom
 class MyView(zoom.View):
     """Index View"""
 
-
     def index(self):
         """Index page"""
         return zoom.page('Content goes here', title='Overview')
-
 
     def about(self):
         """About page"""
@@ -22,4 +20,4 @@ class MyView(zoom.View):
         )
 
 
-view = MyView()
+main = zoom.dispatch(MyView)
