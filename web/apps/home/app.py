@@ -18,7 +18,8 @@ def app(request):
             display: inline;
         }
         .zoom-app-as-icon {
-            width: 100px;
+            width: 110px;
+            height: 120px;
             text-align: center;
             float: left;
         }
