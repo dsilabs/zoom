@@ -107,7 +107,6 @@ class AdminModel(object):
 
     def log(self, message, *args):
         self.logger.debug(message, *args)
-        print(message % args)
 
     def get_user_options(self):
         return sorted(
@@ -291,13 +290,11 @@ def update_user_groups(record):
         db('select group_id from members where user_id=%s', record_id)
     )
     logger.debug('existing_groups: %r', existing_groups)
-    print(existing_groups)
 
     updated_groups = set(
         int(group) for group in record['groups']
     )
     logger.debug('updated_groups: %r', updated_groups)
-    print(updated_groups)
 
     if updated_groups != existing_groups:
         if existing_groups - updated_groups:
@@ -312,7 +309,6 @@ def update_user_groups(record):
             db.execute_many(cmd, sequence)
     else:
         logger.debug('members unchanged')
-        print('unchanged')
 
 
 def update_group_relationships(record):

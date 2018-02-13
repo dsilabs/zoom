@@ -50,7 +50,6 @@ class TestView(DynamicView):
     pass
 
 def index_metrics_view(db):
-    # print('index_metrics_view got called')
     return MetricsView(get_index_metrics(db))
     # return '{}'.format(Component([
     #         MetricView(('test', '/admin/users', 10)),

@@ -9,12 +9,13 @@ import uuid
 from zoom.context import context
 from zoom.mvc import View, Controller
 from zoom.page import page
-from zoom.mail import get_mail_store, send
+from zoom.mail import get_mail_store, send, Attachment
 from zoom.browse import browse
 import zoom.fields as f
 from zoom.forms import Form
 from zoom.components import success
 from zoom.tools import home
+from zoom.alerts import success
 
 mail_form = Form([
     f.TextField('Recipient', size=60, maxlength=60, default=(context.user.email)),
@@ -33,7 +34,6 @@ class MyView(View):
         return page(content, title='Mail', actions=actions)
 
     def compose(self):
-        # print(context.site)
         return page(content='Send mail as "{} &lt;{}&gt;"<br><br>{}'.format(
             context.site.mail_from_name,
             context.site.mail_from_addr,
@@ -57,12 +57,11 @@ class MyController(Controller):
                         input['attachment'].file,
                     )],
                 )
-                message('message sent with attachment')
+                success('message sent with attachment')
             else:
                 send(input['recipient'], input['subject'], input['message'])
                 success('message sent')
 
-            # return page('done')
             return home('mail')
 
 view = MyView()
