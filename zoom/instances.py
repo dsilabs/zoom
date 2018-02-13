@@ -2,8 +2,11 @@
     zoom.instances
 
     Mananage zoom instances
+
+    Note: Experimental!
 """
 
+import logging
 import os
 
 import zoom
@@ -22,10 +25,25 @@ class InstanceMissingException(Exception):
 class SiteProxy(object):
     """Site proxy"""
 
-    def __init__(self, instance, name):
-        self.instance = instance
-        self.name = name
-        self.path = os.path.join(instance.path, name)
+    def __init__(self, path):
+        self.name = os.path.split(path)[-1]
+        self.path = path
+
+    def run_background_jobs(self):
+        """Run background jobs
+
+        Iterates through the apps in the site and calls
+        run_background_jobs on each one.
+
+        >>> site_directory = zoom.tools.zoompath('web/sites/localhost')
+        >>> site = SiteProxy(site_directory)
+        >>> site.run_background_jobs()
+        localhost
+        """
+        logger = logging.getLogger(__name__)
+        logger.info('running background jobs for site %r', self.name)
+        print(self.name)
+        logger.info('finished background jobs for site %r',self.name)
 
     def __repr__(self):
         return 'Site(%r)' % (self.name)
@@ -95,7 +113,7 @@ class Instance(object):
 
         >>> instance = Instance()
         >>> print(instance.sites)
-        {'localhost': Site('localhost'), 'default': Site('default')}
+        {'localhost': Site('localhost')}
 
         >>> import tempfile
         >>> instance_path = os.path.join(tempfile.gettempdir(), 'fakeinstance')
@@ -108,6 +126,9 @@ class Instance(object):
         >>> got_it
         True
         """
+        def get_site_proxy(path, name):
+            return SiteProxy(os.path.join(path, name))
+
         listdir = os.listdir
         isdir = os.path.isdir
         join = os.path.join
@@ -116,9 +137,27 @@ class Instance(object):
             msg = 'The %r directory does not exist'
             raise InstanceMissingException(msg, self.path)
         return {
-            name: SiteProxy(self, name) for name in listdir(path)
-            if isdir(join(path, name))
+            name: get_site_proxy(path, name)
+            for name in listdir(path)
+            if name != 'default' and isdir(join(path, name))
         }
+
+    def run_background_jobs(self):
+        """Run background jobs
+
+        Iterates through the sites in the instance and calls
+        run_background_jobs on each one.
+
+        >>> instance = Instance()
+        >>> instance.run_background_jobs()
+        localhost
+        """
+        logger = logging.getLogger(__name__)
+        logger.info('running background jobs for %r',self.path)
+        for name, site in sorted(self.sites.items()):
+            if name != 'default':
+                site.run_background_jobs()
+        logger.info('finished background jobs for %r',self.path)
 
     def __str__(self):  # pragma: nocover
         return 'Instance %r contains %s sites:\n%s' % (

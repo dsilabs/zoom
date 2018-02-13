@@ -218,6 +218,9 @@ class AppProxy(object):
             os.chdir(save_dir)
         return result
 
+    def run_background_jobs(self):
+        pass
+
     def menu(self):
         """generate an app menu"""
         def by_name(name):
