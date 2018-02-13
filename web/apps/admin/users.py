@@ -119,8 +119,8 @@ def main(route, request):
     db = request.site.db
     users = Users(db)
     fields = user_fields(request)
-    columns = 'link', 'phone', 'email', 'status_text', 'updated', 'updated_by'
-    labels = 'Username', 'Phone', 'Email', 'Status', 'Updated', 'Updated By'
+    columns = 'link', 'phone', 'email', 'status_text', 'updated_by_link', 'when_updated'
+    labels = 'Username', 'Phone', 'Email', 'Status', 'Updated By', 'Updated'
     return Collection(
         fields,
         model=User,

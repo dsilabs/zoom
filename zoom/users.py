@@ -404,6 +404,17 @@ class User(Record):
         now = getattr(self, 'now', None) or zoom.tools.now()
         return zoom.tools.how_long_ago(self.get('updated'), since=now)
 
+    @property
+    def updated_by_link(self):
+        """Human friendly user account"""
+        user_id = self.get('updated_by')
+        if user_id:
+            users = self.get('__store')
+            if users:
+                user = users.get(user_id)
+                if user:
+                    return user.link
+        return user_id
 
 class Users(RecordStore):
     """Zoom Users
@@ -446,6 +457,7 @@ class Users(RecordStore):
       status_text .........: 'active'
       is_developer ........: False
       when_updated ........: 'over a month ago'
+      updated_by_link .....: '<a href="/admin/users/admin">admin</a>'
       is_authenticated ....: False
 
 
