@@ -386,6 +386,18 @@ class User(Record):
         assert self._id
         zoom.system.site.db('delete from members where user_id=%s', self._id)
 
+    @property
+    def status_text(self):
+        """Return status as human friendly text"""
+        status = self.get('status')
+        label = {
+            'A': 'active',
+            'I': 'deactivated',
+            'S': 'security',
+            'D': 'deleted',
+        }.get(status, status)
+        return label
+
 
 class Users(RecordStore):
     """Zoom Users
@@ -423,6 +435,7 @@ class Users(RecordStore):
       groups_ids ..........: [4, 3]
       updated_by ..........: 1
       default_app .........: '/home'
+      status_text .........: 'active'
       is_developer ........: False
       is_authenticated ....: False
 
