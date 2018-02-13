@@ -246,7 +246,7 @@ def how_long(time1, time2):
         result = 'a moment'
     return result
 
-def how_long_ago(anytime):
+def how_long_ago(anytime, since=None):
     """
     Returns a string that describes the difference between any time and now.
 
@@ -261,8 +261,11 @@ def how_long_ago(anytime):
     >>> how_long_ago(now - 20 * one_minute)
     '20 minutes ago'
 
+    >>> how_long_ago(now - 20 * one_minute, now - 10 * one_minute)
+    '10 minutes ago'
+
     """
-    right_now = now()
+    right_now = since or now()
     if anytime < right_now:
         return how_long(anytime, right_now) + ' ago'
     else:

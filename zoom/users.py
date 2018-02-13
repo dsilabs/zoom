@@ -398,6 +398,12 @@ class User(Record):
         }.get(status, status)
         return label
 
+    @property
+    def when_updated(self):
+        """Human friendly updated timestamp"""
+        now = getattr(self, 'now', None) or zoom.tools.now()
+        return zoom.tools.how_long_ago(self.get('updated'), since=now)
+
 
 class Users(RecordStore):
     """Zoom Users
@@ -409,6 +415,7 @@ class Users(RecordStore):
     >>> user = users.first(username='guest')
     >>> user.created = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> user.updated = datetime.datetime(2017, 3, 30, 17, 23, 43)
+    >>> user.now = datetime.datetime(2017, 4, 30, 17, 23, 43)
     >>> print(user)
     User
       user_id .............: 3
@@ -416,6 +423,7 @@ class Users(RecordStore):
       name ................: 'Guest User'
       first_name ..........: 'Guest'
       last_name ...........: 'User'
+      now .................: datetime.datetime(2017, 4, 30, 17, 23, 43)
       url .................: '/admin/users/guest'
       apps ................: ['content', 'forgot', 'login', 'passreset', 'signup']
       link ................: '<a href="/admin/users/guest">guest</a>'
@@ -437,6 +445,7 @@ class Users(RecordStore):
       default_app .........: '/home'
       status_text .........: 'active'
       is_developer ........: False
+      when_updated ........: 'over a month ago'
       is_authenticated ....: False
 
 
