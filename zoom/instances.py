@@ -19,15 +19,16 @@ class InstanceMissingException(Exception):
     pass
 
 
-class SiteProxy(zoom.utils.Bunch):
+class SiteProxy(object):
     """Site proxy"""
 
-    def __init__(self, name, **kwargs):
-        zoom.utils.Bunch.__init__(self, **kwargs)
+    def __init__(self, instance, name):
+        self.instance = instance
         self.name = name
+        self.path = os.path.join(instance.path, name)
 
     def __repr__(self):
-        return repr(self.name)
+        return 'Site(%r)' % (self.name)
 
 
 subdirs = ['sites', 'apps', 'themes']
@@ -48,7 +49,7 @@ class Instance(object):
     True
     >>> os.path.exists(os.path.join(instance.path, 'sites'))
     True
-    >>> instance.sites == []
+    >>> instance.sites == {}
     True
     >>> instance.destroy()
     >>> os.path.exists(instance.path)
@@ -90,11 +91,11 @@ class Instance(object):
 
     @property
     def sites(self):
-        """a list of sites for the instance
+        """a dict of sites for the instance
 
         >>> instance = Instance()
-        >>> instance.sites
-        ['localhost', 'default']
+        >>> print(instance.sites)
+        {'localhost': Site('localhost'), 'default': Site('default')}
 
         >>> import tempfile
         >>> instance_path = os.path.join(tempfile.gettempdir(), 'fakeinstance')
@@ -114,8 +115,20 @@ class Instance(object):
         if not path:
             msg = 'The %r directory does not exist'
             raise InstanceMissingException(msg, self.path)
-        return [
-            SiteProxy(name) for name in listdir(path)
+        return {
+            name: SiteProxy(self, name) for name in listdir(path)
             if isdir(join(path, name))
-        ]
+        }
 
+    def __str__(self):  # pragma: nocover
+        return 'Instance %r contains %s sites:\n%s' % (
+            self.path,
+            len(self.sites),
+            '\n'.join(
+                '  ' + str(site)
+                for site in sorted(
+                    self.sites.values(),
+                    key=lambda a: a.name
+                )
+            ),
+        )
