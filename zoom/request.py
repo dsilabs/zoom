@@ -312,8 +312,22 @@ class Request(object):
         return zoom.utils.pretty(self)
 
 
-def build(url, data=None):
+def build(url, data=None, instance_path=None):
     """Build a request object
+
+    >>> request = build('http://localhost')
+    >>> request.path
+    ''
+    >>> request.host
+    'localhost'
+
+    >>> request = build('http://localhost/hello')
+    >>> request.path
+    '/hello'
+
+    >>> build('https://localhost/hello?name=Sally').data
+    {'name': 'Sally'}
+
     """
     parsed = urllib.parse.urlparse(url)
     logger = logging.getLogger(__name__)
@@ -328,6 +342,7 @@ def build(url, data=None):
             SERVER_PORT=parsed.port or '80',
             HTTP_HOST=parsed.hostname,
         ),
+        instance_path,
     )
     if data:
         request.body_consumed = True
