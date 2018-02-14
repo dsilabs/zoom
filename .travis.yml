@@ -41,6 +41,10 @@ before_script:
   - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest2;'
   - mysql -uroot -e "GRANT ALL ON zoomtest2.* TO 'testuser'@'localhost';"
   - mysql -uroot zoomtest < tools/zoom/sql/setup_mysql.sql
+  - mysql -uroot -e "CREATE USER 'zoomuser'@'localhost' IDENTIFIED BY 'password';"
+  - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomdata;'
+  - mysql -uroot -e "GRANT ALL ON zoomdata.* TO 'zoomuser'@'localhost';"
+  - mysql -uroot zoomdata < tools/zoom/sql/setup_mysql.sql
 script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v ./zoom ./tests/unittests
 
