@@ -1,2 +1,2 @@
 @echo OFF
-py %~dp0zoom3
+py %~dp0zoom3 %*
