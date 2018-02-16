@@ -13,6 +13,15 @@ import logging
 import zoom
 from zoom.site import Site as BasicSite
 
+class BackgroundJob(object):
+    """Background Job"""
+    def __init__(self, name, path):
+        self.name = name
+        self.path = path
+
+    def __repr__(self):
+        return 'BackgroundJob(%r)' % self.name
+
 class Site(BasicSite):
     """a Zoom site
 
@@ -47,7 +56,7 @@ class Site(BasicSite):
             site_path=path,
             instance=instance,
             domain=name,
-            protocol='https',
+            protocol='http',
         )
 
         # create a site based on the legacy api
@@ -58,6 +67,24 @@ class Site(BasicSite):
         self.queues = zoom.queues.Queues(db)
         self.groups = zoom.models.Groups(db)
         self.users = zoom.models.Users(db)
+
+    def get_background_jobs(self):
+        """Returns a dict of background jobs
+
+        >>> site = Site()
+        >>> site.name
+        'localhost'
+        >>> site.get_background_jobs()
+        [BackgroundJob('hello')]
+        """
+        result = []
+        for path in self.apps_paths:
+            app_path = os.path.realpath(os.path.join(self.path, path))
+            for app_name in os.listdir(app_path):
+                pathname = os.path.join(app_path, app_name, 'background.py')
+                if os.path.isfile(pathname):
+                    result.append(BackgroundJob(app_name, pathname))
+        return result
 
 
 class SiteProxy(object):
