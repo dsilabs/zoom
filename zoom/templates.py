@@ -2,6 +2,14 @@
     templates.zoom
 """
 
+friendly_error = """
+    <div class="jumbotron">
+        <h1>Whoops!</h1>
+        <p>Something went wrong!</p>
+        <p>Please try again later or contact {{owner_link}} for assistance.<p>
+    </div>
+    """
+
 page_not_found = """
     <div class="jumbotron">
         <h1>Page Not Found</h1>

@@ -307,6 +307,8 @@ def display_errors(request, handler, *rest):
     try:
         return handler(request, *rest)
     except Exception:
+        if not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
+            return page(zoom.templates.friendly_error).render(request)
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
         logger.error(msg)
