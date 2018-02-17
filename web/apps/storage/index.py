@@ -2,7 +2,8 @@
     storage index
 """
 
-from zoom.helpers import url_for, link_to
+import zoom
+from zoom.helpers import url_for, link_to, link_to_page
 from zoom.mvc import View, Controller
 from zoom.page import page, Page
 from zoom.utils import Record
@@ -44,8 +45,9 @@ class IndexView(View):
             ])
         )
 
+        zap = link_to_page('clear queues', 'clear_queues') + '<br>'
         queues = (
-            '<H3>Queues</H3>' + ', '.join([
+            '<H3>Queues</H3>' + zap + ', '.join([
                 link_to(kind, 'storage', 'queue', kind)
                 for kind in Queues(db).topics()
             ])
@@ -97,7 +99,11 @@ class IndexView(View):
 
 
 class IndexController(Controller):
-    pass
+
+    def clear_queues(self):
+        zoom.system.site.queues.clear()
+        zoom.alerts.success('queues cleared')
+        return zoom.home()
 
 def main(route, request):
     view = IndexView(request)
