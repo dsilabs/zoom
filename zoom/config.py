@@ -6,6 +6,8 @@ import os
 import configparser
 import logging
 
+import zoom
+
 
 def get_config(pathname):
     """Read a config file into a Config parser"""
@@ -63,8 +65,15 @@ class Config(object):
     def __init__(self, directory, name, alternate=None):
         self.config_pathname = os.path.join(directory, name)
         self.config = get_config(self.config_pathname)
+
         parent, _ = os.path.split(directory)
-        self.default_config_pathname = os.path.join(parent, 'default', name)
+        pathname = os.path.join(parent, 'default', name)
+        if not os.path.isfile(pathname):
+            pathname = zoom.tools.zoompath('web', 'sites', 'default', name)
+            if not os.path.isfile(pathname):
+                raise Exception('Unable to find default config file %s.' % pathname)
+
+        self.default_config_pathname = pathname
         self.default_config = get_config(self.default_config_pathname)
 
     def get(self, section, option, default=None):
