@@ -34,7 +34,8 @@ class TestApps(unittest.TestCase):
             description='An app',
             url='/app',
             menu=[],
-            keywords='one,two'
+            keywords='one,two',
+            theme=None,
         )
         self.request.user = zoom.users.Users(self.db).first(username='user')
 

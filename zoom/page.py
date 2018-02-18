@@ -193,7 +193,9 @@ class Page(object):
             full_page = Component(self.content)
         self.content = full_page.render()
 
-        self.theme = self.kwargs.get('theme', zoom.system.site.theme)
+        app_theme = request.app.theme
+        site_theme = zoom.system.site.theme
+        self.theme = self.kwargs.get('theme', app_theme or site_theme)
         self.theme_uri = '/themes/' + self.theme
 
         zoom.render.add_helpers(

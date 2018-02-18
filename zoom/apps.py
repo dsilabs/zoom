@@ -157,6 +157,7 @@ class AppProxy(object):
         self.enabled = get('enabled')
         self.author = get('author')
         self.version = get('version')
+        self.theme = get('theme')
         self.icon = get('icon')
         self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
