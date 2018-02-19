@@ -47,7 +47,7 @@ def app(request):
         }
     """
 
-    skip = 'home', 'logout'
+    skip = 'home', 'logout', 'login'
     content = h.div(
         h.ul(
             a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title)
