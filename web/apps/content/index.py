@@ -5,8 +5,17 @@
 import zoom
 from zoom.mvc import View
 
-from pages import load_page
+from pages import load_page, get_pages
 
+sitemap_tpl = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{pages}</urlset>"""
+
+url_tpl = """    <url>
+        <loc>{page.path}</loc>
+        <changefreq>daily</changefreq>
+    </url>
+"""
 
 class MyView(View):
     """View"""
@@ -34,5 +43,15 @@ class MyView(View):
         if content:
             return zoom.page(content, template=template)
         return None
+
+    def sitemap(self):
+        """Return a sitemap"""
+        content = sitemap_tpl.format(
+            pages='\n'.join(
+                url_tpl.format(page=page) for page in get_pages()
+                if not page.exclude_from_sitemap
+            )
+        )
+        return zoom.response.TextResponse(content)
 
 view = MyView()

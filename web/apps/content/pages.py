@@ -5,6 +5,7 @@ import os
 import logging
 
 import zoom
+import zoom.fields as f
 
 from zoom.context import context
 from zoom.fields import (Fields, TextField, MemoField, MarkdownEditField)
@@ -77,6 +78,7 @@ def page_fields():
         # TextField('Title', required, MinimumLength(3)),
         MemoField('Description'),
         MarkdownEditField('Body', browse=False),
+        f.CheckboxField('Exclude from Sitemap', default=False),
         # DateField('Publish Date', format='%A %b %d, %Y'),
     )
 
