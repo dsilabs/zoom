@@ -26,10 +26,14 @@ View at: http://localhost
 ----
 
 ## Table of Contents
+* [Requirements](#requirements)
 * [Introduction](#introduction)
 * [Getting Started with Zoom](#getting-started-with-zoom)
   * [Installing Zoom](#installing-zoom)
 * [Contributing](#contributing)
+
+## Requirements
+Zoom requires Python 3 and MySQL to run, along with a host of other 3rd party library requirements which are listed in the requirements.txt file.  It is currently tested and used on Various flavours of GNU/Linux, Mac and Windows.
 
 ## Introduction
 This guide provides a 60,000 foot view of Zoom, it's purpose and philosopy.
@@ -95,42 +99,46 @@ your system.
 All set?  Okay, here we go!
 
 1. clone zoom
-```shell
-$ git clone https://github.com/dsilabs/zoom.git
-```
+    ```shell
+    $ git clone https://github.com/dsilabs/zoom.git
+    ```
 
 2. install dependancies
-```shell
-$ pip3 install -r requirements.txt
-```
+    ```shell
+    $ pip3 install -r requirements.txt
+    ```
+
+3. put the zoom directory on your pythonpath
+There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll neeed to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
+    ```
+    $ export PYTHONPATH=/tmp/zoom/zoom
+    ```
 
 3. add zoom command to your path  
 Ubuntu example:  
-```shell
-$ ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
-```
+    ```shell
+    $ ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
+    ```
 
 4. configure zoom database  
-Zoom requires a database to be run.  If you don't already have MySQL or
-MariaDB installed follow the instructions for your operating system.  Once
+Currently, Zoom requires a MySQL comptabile database to run.  If you don't already have MySQL or MariaDB installed follow the instructions for your operating system.  Once
 that is installed create the database using the command:
-```shell
-$ zoom database create <db_name> -u <username> -p <password> -e mysql
-```
-Next, edit the site.ini file for the localhost site using your editor like
-so:
-```shell
-$ vi web/sites/default/site.ini
-```
-Find the database section of the config file and set the values for the
+    ```shell
+    $ zoom database create <db_name> -u <username> -p <password> -e mysql
+    ```
+   Next, edit the site.ini file for the localhost site using your editor like so:
+    ```shell
+    $ vi web/sites/default/site.ini
+    ```
+   Find the database section of the config file and set the values for the
 database configuration to correspond to your database configuration.
 
 5. Run zoom  
 If you are currently in the zoom directory then you don't need to tell
 zoom where to find your zoom instance.
-```shell
-$ zoom server
-```
+    ```shell
+    $ zoom server
+    ```
 
 ### Creating the Blog App
 Zoom comes with a command line tool that can do number of useful things for
@@ -139,9 +147,9 @@ which runs and has the building blocks of a well formed Zoom app.
 
 To use the tool, open a terminal window, navigate to the directory where you
 want to work on the app and type:
-```shell
-$ zoom new blog
-```
+  ```shell
+  $ zoom new blog
+  ```
 
 Go to your Zoom instance in your browser and you should see your new app.
 To start with it doesn't do anything useful so we need to add our blogging
