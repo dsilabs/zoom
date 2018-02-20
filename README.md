@@ -4,8 +4,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Zoom is a dynamic Python Web framework that promotes modularity and rapid
-prototyping for building and maintaining useful web sites quickly and easily.
+Zoom is a dynamic Python Web framework written specifically for Python 3 that
+promotes modularity and rapid prototyping for building and maintaining useful
+web sites quickly and easily.
 
 Create an app:
 ```python
@@ -83,6 +84,9 @@ installed.
 ### Installing Zoom
 Open up a terminal window and follow along with the following steps.  The
 dollar sign $ in the following examples is the command prompt.
+
+Zoom is a Python 3 framework so you'll need to have Python 3 installed to run it.  We
+recommend the latest version which you can from [python.org](https://www.python.org/downloads/).
 
 Zoom is currently available only on GitHub.  The best way to get Zoom is to
 clone it from here.  To do this you'll need git installed on
