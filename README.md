@@ -92,7 +92,7 @@ All set?  Okay, here we go!
 
 1. clone zoom
 ```shell
-$ git clone git@github.com:dsilabs/zoom.git
+$ git clone https://github.com/dsilabs/zoom.git
 ```
 
 2. install dependancies
