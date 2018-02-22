@@ -192,8 +192,8 @@ class User(Record):
         if self.is_admin:
             logger.debug('user is an administrator')
 
-        logger.debug('groups: %r' % self.groups)
-        logger.debug('apps: %r' % self.apps)
+        logger.debug('%r is a member of %s groups', self.username, len(self.groups))
+        logger.debug('%r can access %s apps', self.username, len(self.apps))
 
     @property
     def is_active(self):
