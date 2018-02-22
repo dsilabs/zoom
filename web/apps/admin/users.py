@@ -3,12 +3,13 @@
 """
 
 import zoom
+from zoom.audit import audit
 from zoom.components import success
 from zoom.collect import Collection, CollectionView, CollectionController
 from zoom.context import context
 from zoom.forms import Form
 from zoom.users import User, Users
-from zoom.tools import home
+from zoom.tools import home, now
 import zoom.validators as v
 import zoom.fields as f
 
@@ -104,14 +105,20 @@ class UserCollectionController(CollectionController):
 
     def activate(self, key):
         user = context.site.users.first(username=key)
-        user.activate()
-        user.save()
+        if user:
+            audit('activate', user.username, '')
+            user.activate()
+            user.updated_by = zoom.system.user._id
+            user.updated = now()
+            user.save()
         return home('users/' + key)
 
     def deactivate(self, key):
         user = context.site.users.first(username=key)
-        user.deactivate()
-        user.save()
+        if user:
+            user.deactivate()
+            user.save()
+            audit('deactivate', user.username, '')
         return home('users/' + key)
 
 
