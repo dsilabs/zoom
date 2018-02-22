@@ -12,6 +12,7 @@ import inspect
 import commands
 from argparse import ArgumentParser
 
+import zoom
 from zoom.utils import ItemList
 
 
@@ -36,6 +37,8 @@ def dispatch(args):
     if cmd in functions:
         del sys.argv[1]
         functions[cmd]()
+    elif cmd == '-V':
+        print(zoom.__version__)
     else:
         print('No such command {!r}\nUse -h for help'.format(cmd))
 
@@ -67,13 +70,9 @@ def main():
             description='{name} command line utility'.format(
                 name=installed_name
             ),
-            usage='{name} <command> [options] [arguments]\n'
-                  '       {name} <command> -h\n'
-                  '       {name} # list commands'.format(
-                      name=installed_name
-                  )
-            )
+        )
         parser.add_argument('command', nargs='?')
+        parser.add_argument('-V', '--version', type=str)
         parser.parse_args()
 
     try:

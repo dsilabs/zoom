@@ -9,6 +9,9 @@
     Zoom Web Framework
 """
 
+__version__ = "6.0"
+__license__ = "MIT"
+
 import zoom.alerts
 import zoom.collect
 import zoom.database
