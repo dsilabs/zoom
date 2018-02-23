@@ -105,12 +105,12 @@ class Site(object):
             self.template_path = existing(self.theme_path, 'templates')
             self.default_template_path = existing(
                 self.default_theme_path, 'templates')
-            self.templates_paths = list(filter(bool, [
+            self.templates_paths = list(filter(bool, set([
                 self.template_path,
                 self.default_template_path,
                 self.theme_path,
                 self.default_theme_path,
-                ]))
+                ])))
             self.templates = {}
 
             self.packages = zoom.packages.load(
@@ -132,7 +132,8 @@ class Site(object):
             self.monitor_system_database = get('monitoring', 'system_database', False) != '0'
 
             logger.debug('site path: %r', site_path)
-            logger.debug('theme path: %r', self.theme_path)
+            logger.debug('site themes path: %r', self.themes_path)
+            logger.debug('site theme path: %r', self.theme_path)
 
         else:
             logger.error('Site directory missing: %r', site_path)
