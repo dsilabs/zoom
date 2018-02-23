@@ -523,6 +523,7 @@ def load_template(name, default=None):
 
         logger = logging.getLogger(__name__)
         logger.warning('template missing: %r', name)
+        logger.debug('templates paths: %r', site.templates_paths)
         return default or '<!-- template missing -->'
 
     site = zoom.system.request.site
@@ -556,7 +557,7 @@ def get_template(template_name='default', theme='default'):
                 filename,
             )
             raise zoom.exceptions.ThemeTemplateMissingException(
-                'Default Site Template Missing'
+                'Default template missing %r' % filename
             )
         logger.warning(
             'template %s missing',
