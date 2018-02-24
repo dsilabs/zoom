@@ -214,10 +214,13 @@ class CollectionView(View):
             if 'updated' in record and 'updated_by' in record:
                 memo = (
                     '<div class="meta" style="float:right">'
-                    ' record updated %(updated)s by %(updated_by)s'
+                    ' record updated %(updated)s by %(who)s'
                     '</div>'
                     '<div style="clear:both"></div>'
-                ) % record
+                ) % dict(
+                    updated=record['updated'],
+                    who=zoom.helpers.who(record['updated_by'])
+                )
             else:
                 memo = ''
 

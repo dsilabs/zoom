@@ -205,6 +205,7 @@ class TestCollect(unittest.TestCase):
             db=self.db,
             url='',
             logging=False,
+            users=self.users,
         )
         self.request = context.request = FakeRequest(
             '/myapp',
