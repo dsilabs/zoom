@@ -53,7 +53,7 @@ from zoom.helpers import tag_for
 from zoom.tools import websafe
 
 
-def debug(request):  # pramga: no cover
+def debug(request):  # pragma: no cover
     """Debugging page
 
     >>> type(debug(zoom.request.build('http://localhost/')))
@@ -447,12 +447,12 @@ def reset_modules(request, handler, *rest):
     return handler(request, *rest)
 
 
-def _handle(request, handler, *rest):  # pramga: no cover
+def _handle(request, handler, *rest):  # pragma: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
 
-def handle(request, handlers=None):  # pramga: no cover
+def handle(request, handlers=None):  # pragma: no cover
     """handle a request"""
     default_handlers = (
         trap_errors,
