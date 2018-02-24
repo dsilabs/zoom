@@ -130,7 +130,21 @@ def serve_redirects(request, handler, *rest):
 
 
 def serve_response(*path):
-    """Serve up various respones with their correct response type"""
+    """Serve up various respones with their correct response type
+
+    >>> zoom_js = zoom.tools.zoompath('web/www/static/zoom/zoom.js')
+    >>> response = serve_response(zoom_js)
+    >>> isinstance(response, JavascriptResponse)
+    True
+
+    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> response = serve_response(zoom_path, 'www/static/zoom/nada.js')
+    >>> isinstance(response, JavascriptResponse)
+    False
+
+    >>> response.content
+    'file not found: www/static/zoom/nada.js'
+    """
     known_types = dict(
         png=PNGResponse,
         jpg=JPGResponse,
