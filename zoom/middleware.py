@@ -287,7 +287,28 @@ def serve_favicon(request, handler, *rest):
 
 
 def serve_html(request, handler, *rest):
-    """Direct a request for an HTML page to the content app"""
+    """Serve HTML from the Content app
+
+    Direct a request for an HTML page to the content app
+
+    >>> site = zoom.sites.Site()
+    >>> url = 'http://localhost/index.html'
+    >>> request = zoom.request.build(url)
+    >>> request.path == '/index.html'
+    True
+    >>> response = serve_html(request, lambda a: None)
+    >>> request.path == '/content/index.html'
+    True
+
+    >>> url = 'http://localhost/index.css'
+    >>> request = zoom.request.build(url)
+    >>> request.path == '/index.css'
+    True
+    >>> response = serve_html(request, lambda a: None)
+    >>> request.path == '/index.css'
+    True
+
+    """
     if request.path.endswith('.html'):
         logger = logging.getLogger(__name__)
         # request.path = '/content' + request.path[:-5] + '/show'
