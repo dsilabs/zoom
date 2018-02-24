@@ -106,12 +106,24 @@ def debug(request):
 
 
 def serve_redirects(request, handler, *rest):
-    """Serves redirects"""
+    """Serves redirects
+
+    >>> request = zoom.request.build('http://localhost')
+    >>> result = serve_redirects(request, lambda a: False)
+    >>> print(result)
+    False
+
+    >>> request.site = zoom.utils.Bunch(abs_url='http://localhost')
+    >>> redirect_home = zoom.response.RedirectResponse('/home')
+    >>> result = serve_redirects(request, lambda a: redirect_home)
+    >>> print(result.headers)
+    OrderedDict([('Location', '/home')])
+    """
     result = handler(request, *rest)
     if isinstance(result, RedirectResponse):
         tag = tag_for('abs_site_url')
         location = result.headers['Location'].replace(tag, request.site.abs_url)
-        result.headers['Location'] = location#.encode('utf8')
+        result.headers['Location'] = location
         logger = logging.getLogger(__name__)
         logger.debug('redirecting to %s', location)
     return result
