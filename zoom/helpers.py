@@ -294,3 +294,31 @@ def year():
 def include(filename):
     """Return the included file"""
     return zoom.tools.load_template(filename)
+
+def who(user_id):
+    """Formats a user_id
+
+    >>> zoom.system.site = site = zoom.sites.Site()
+    >>> zoom.system.user = site.users.first(username='admin')
+    >>> user_id = site.users.first(username='guest').user_id
+
+    >>> zoom.system.user.is_admin = True
+    >>> who(user_id)
+    '<a href="/admin/users/guest">guest</a>'
+    >>> who(100)
+    'unknown (100)'
+
+    >>> zoom.system.user.is_admin = False
+    >>> who(user_id)
+    'guest'
+    >>> who(100)
+    'unknown'
+    """
+    subject = zoom.system.site.users.get(user_id)
+    if subject:
+        return subject.link
+    else:
+        if zoom.system.user.is_admin:
+            return 'unknown (%s)' % user_id
+        else:
+            return 'unknown'
