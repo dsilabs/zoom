@@ -218,7 +218,10 @@ class User(Record):
     @property
     def link(self):
         """user as link"""
-        return link_to(self.username, self.url)
+        if zoom.system.user.is_admin:
+            return link_to(self.username, self.url)
+        else:
+            return self.username
 
     def set_password(self, password):
         """set the user password"""
@@ -437,7 +440,7 @@ class Users(RecordStore):
       now .................: datetime.datetime(2017, 4, 30, 17, 23, 43)
       url .................: '/admin/users/guest'
       apps ................: ['content', 'forgot', 'login', 'passreset', 'signup']
-      link ................: '<a href="/admin/users/guest">guest</a>'
+      link ................: 'guest'
       email ...............: 'guest@datazoomer.com'
       phone ...............: ''
       groups ..............: ['everyone', 'guests']
@@ -457,7 +460,7 @@ class Users(RecordStore):
       status_text .........: 'active'
       is_developer ........: False
       when_updated ........: 'over a month ago'
-      updated_by_link .....: '<a href="/admin/users/admin">admin</a>'
+      updated_by_link .....: 'admin'
       is_authenticated ....: False
 
 

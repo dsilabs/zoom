@@ -5,6 +5,7 @@ import unittest
 import datetime
 import logging
 
+import zoom
 from zoom.database import setup_test
 from zoom.users import User, Users, hash_password
 from zoom.exceptions import UnauthorizedException
@@ -53,6 +54,10 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='user')
         self.assertEqual(user._id, 2)
         logging.debug('user id is %r', user._id)
+        zoom.system.user = zoom.utils.Bunch(is_admin=False)
+        zoom.system.site = zoom.utils.Bunch(url='mysite.com/app')
+        self.assertEqual(user.link, 'user')
+        zoom.system.user = zoom.utils.Bunch(is_admin=True)
         self.assertEqual(user.link, '<a href="mysite.com/app/admin/users/user">user</a>')
 
     def test_user_activate(self):
