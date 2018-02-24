@@ -53,7 +53,7 @@ from zoom.helpers import tag_for
 from zoom.tools import websafe
 
 
-def debug(request):
+def debug(request):  # pramga: no cover
     """Debugging page
 
     >>> type(debug(zoom.request.build('http://localhost/')))
@@ -362,23 +362,23 @@ def capture_stdout(request, handler, *rest):
 def trap_errors(request, handler, *rest):
     """Trap exceptions and raise a server error
 
-        >>> def exception_handler(request, *rest):
-        ...     raise Exception('error!')
-        >>> def content_handler(request, *rest):
-        ...     return HTMLResponse('nuthin')
-        >>> request = {}
-        >>> response = trap_errors(request, content_handler)
-        >>> status, headers, content = response.as_wsgi()
-        >>> content
-        b'nuthin'
-        >>> status
-        '200 OK'
-        >>> response = trap_errors(request, exception_handler)
-        >>> status, headers, content = response.as_wsgi()
-        >>> status
-        '500 Internal Server Error'
-        >>> 'Exception: error!' in str(content)
-        True
+    >>> def exception_handler(request, *rest):
+    ...     raise Exception('error!')
+    >>> def content_handler(request, *rest):
+    ...     return HTMLResponse('nuthin')
+    >>> request = {}
+    >>> response = trap_errors(request, content_handler)
+    >>> status, headers, content = response.as_wsgi()
+    >>> content
+    b'nuthin'
+    >>> status
+    '200 OK'
+    >>> response = trap_errors(request, exception_handler)
+    >>> status, headers, content = response.as_wsgi()
+    >>> status
+    '500 Internal Server Error'
+    >>> 'Exception: error!' in str(content)
+    True
     """
     try:
         return handler(request, *rest)
@@ -447,12 +447,12 @@ def reset_modules(request, handler, *rest):
     return handler(request, *rest)
 
 
-def _handle(request, handler, *rest):
+def _handle(request, handler, *rest):  # pramga: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
 
-def handle(request, handlers=None):
+def handle(request, handlers=None):  # pramga: no cover
     """handle a request"""
     default_handlers = (
         trap_errors,
