@@ -144,6 +144,14 @@ def serve_response(*path):
 
     >>> response.content
     'file not found: www/static/zoom/nada.js'
+
+    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> response = serve_response(zoom_path, 'www/static/zoom/images')
+    >>> isinstance(response, JavascriptResponse)
+    False
+
+    >>> response.content
+    'unknown file type'
     """
     known_types = dict(
         png=PNGResponse,
@@ -183,6 +191,11 @@ def serve_static(request, handler, *rest):
     >>> isinstance(result, JavascriptResponse)
     True
 
+    >>> url = 'http://localhost/notstatic/zoom/zoom.js'
+    >>> request = zoom.request.build(url)
+    >>> result = serve_static(request, lambda a: False)
+    >>> isinstance(result, JavascriptResponse)
+    False
     """
     if request.path.startswith('/static/'):
         libpath = os.path.dirname(__file__)
@@ -192,7 +205,20 @@ def serve_static(request, handler, *rest):
 
 
 def serve_themes(request, handler, *rest):
-    """Serve a theme file"""
+    """Serve a theme file
+
+    >>> url = 'http://localhost/themes/default/css/style.css'
+    >>> request = zoom.request.build(url)
+    >>> request.site = zoom.sites.Site()
+    >>> result = serve_themes(request, lambda a: False)
+    >>> isinstance(result, CSSResponse)
+    True
+
+    >>> url = 'http://localhost/notthemes/default/default.html'
+    >>> request = zoom.request.build(url)
+    >>> serve_themes(request, lambda a: False)
+    False
+    """
     if request.path.startswith('/themes/'):
         # TODO: use site.theme_path
         theme_path = os.path.join(
@@ -205,7 +231,20 @@ def serve_themes(request, handler, *rest):
 
 
 def serve_images(request, handler, *rest):
-    """Serve an image file"""
+    """Serve an image file
+
+    >>> url = 'http://localhost/images/banner_logo.png'
+    >>> request = zoom.request.build(url)
+    >>> request.site = zoom.sites.Site()
+    >>> result = serve_images(request, lambda a: False)
+    >>> isinstance(result, PNGResponse)
+    True
+
+    >>> url = 'http://localhost/notimages/banner_logo.png'
+    >>> request = zoom.request.build(url)
+    >>> serve_images(request, lambda a: False)
+    False
+    """
     if request.path.startswith('/images/'):
         return serve_response(request.site_path, 'content', request.path[1:])
     else:
@@ -218,6 +257,17 @@ def serve_favicon(request, handler, *rest):
     >>> from zoom.request import Request
     >>> def content_handler(request, *rest):
     ...     return '200 OK', [], 'nuthin'
+
+    >>> request = Request(
+    ...     dict(REQUEST_URI='/favicon.ico'),
+    ... )
+    >>> response = serve_favicon(
+    ...     request,
+    ...     content_handler,
+    ... )
+    >>> isinstance(response, ICOResponse)
+    True
+
     >>> request = Request(
     ...     dict(REQUEST_URI='/'),
     ... )
@@ -225,6 +275,8 @@ def serve_favicon(request, handler, *rest):
     ...     request,
     ...     content_handler,
     ... )
+    >>> content
+    'nuthin'
     """
     if request.path == '/favicon.ico':
         libpath = os.path.dirname(__file__)
