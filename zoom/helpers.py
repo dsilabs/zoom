@@ -322,3 +322,16 @@ def who(user_id):
             return 'unknown (%s)' % user_id
         else:
             return 'unknown'
+
+def when(date, since=None):
+    """Formats a date
+
+    >>> now = datetime.datetime(2018, 2, 24, 1, 2, 42)
+    >>> when(now - zoom.tools.one_day * 2)
+    '<span title="2018-02-22 01:02:42">2 days ago</span>'
+
+    """
+    return zoom.html.span(
+        zoom.tools.how_long_ago(date, since),
+        title='%s' % date,
+    )
