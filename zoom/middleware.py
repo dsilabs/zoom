@@ -175,7 +175,15 @@ def serve_response(*path):
 
 
 def serve_static(request, handler, *rest):
-    """Serve a static file"""
+    """Serve a static file
+
+    >>> url = 'http://localhost/static/zoom/zoom.js'
+    >>> request = zoom.request.build(url)
+    >>> result = serve_static(request, lambda a: False)
+    >>> isinstance(result, JavascriptResponse)
+    True
+
+    """
     if request.path.startswith('/static/'):
         libpath = os.path.dirname(__file__)
         return serve_response(libpath, '..', 'web', 'www', request.path[1:])
