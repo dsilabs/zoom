@@ -14,11 +14,31 @@ from zoom.response import HTMLResponse
 
 
 def round(value):
+    """Round a decimal value
+
+    >>> round(Decimal(1.23422))
+    Decimal('1.234')
+    """
     return Decimal(value).quantize(Decimal('1.000'))
 
 
 class SystemTimer(object):
-    """time system events"""
+    """time system events
+
+    >>> timer = SystemTimer()
+    >>> timer.add('got here')
+    >>> timer.add('got there')
+
+    >>> import time
+    >>> timer.time('slow step', time.sleep, 0.1)
+
+    >>> report = timer.report()
+    >>> len(report.splitlines())
+    7
+
+    >>> len(timer.data)
+    5
+    """
 
     def __init__(self, start_time=None):
         self.start_time = start_time or timeit.default_timer()
