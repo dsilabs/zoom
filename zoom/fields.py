@@ -2449,6 +2449,13 @@ class RangeSliderField(IntegerField):
     >>> r.assign((10, 20))
     >>> r.value
     (10, 20)
+    >>> r.assign('10,20')
+    >>> r.value
+    (10, 20)
+    >>> isinstance(r.widget(), zoom.Component)
+    True
+    >>> isinstance(r.display_value(), str)
+    True
     """
     js_formatter = """var formatter = function(v) { return v;};"""
     js = """
@@ -2483,7 +2490,7 @@ class RangeSliderField(IntegerField):
         if v is None or not v or (isinstance(v, str) and v.strip()==','):
             self.value = (self.min, self.max)
         elif ',' in v:
-            self.value = map(int, v.split(','))
+            self.value = tuple(map(int, v.split(',')))
         else:
             self.value = (int(v[0]), int(v[1]))
 
