@@ -350,13 +350,19 @@ def check_csrf(request, handler, *rest):
 
     >>> data = dict(csrf_token='1234', name='Pat')
     >>> request = zoom.request.build('http://localhost/', data)
+    >>> request.session = zoom.utils.Bunch(csrf_token='4321')
+    >>> request.site = zoom.sites.Site()
+    >>> result = check_csrf(request, lambda a: False)
+    >>> isinstance(result, zoom.response.RedirectResponse)
+    True
+
+    >>> data = dict(csrf_token='1234', name='Pat')
+    >>> request = zoom.request.build('http://localhost/', data)
     >>> request.session = zoom.utils.Bunch(csrf_token='1234')
     >>> request.site = zoom.sites.Site()
     >>> result = check_csrf(request, lambda a: False)
     >>> isinstance(result, zoom.response.RedirectResponse)
     False
-
-
     """
 
     if request.method == 'POST' and request.site.csrf_validation:
