@@ -214,6 +214,8 @@ class Component(object):
 
     def render(self):
         """renders the component"""
+        if not hasattr(composition, 'parts'):
+            composition.parts = Component()
         composition.parts += self
         return ''.join(self.parts['html'])
 
