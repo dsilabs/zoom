@@ -483,6 +483,9 @@ def display_errors(request, handler, *rest):
     >>> isinstance(response, HTMLResponse)
     True
     >>> zoom.system.user.is_admin = False
+    >>> response = display_errors(request, throw)
+    >>> isinstance(response, HTMLResponse)
+    True
     """
     try:
         return handler(request, *rest)
