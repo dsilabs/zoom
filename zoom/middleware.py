@@ -410,7 +410,16 @@ def not_found(request):
 
 
 def capture_stdout(request, handler, *rest):
-    """Capture printed output for debugging purposes"""
+    """Capture printed output for debugging purposes
+
+    >>> request = zoom.request.build('http://localhost')
+    >>> def get_content(request):
+    ...     print('hey')
+    ...     return zoom.response.HTMLResponse('I said {*stdout*}')
+    >>> response = capture_stdout(request, get_content)
+    >>> response.content
+    'I said hey\\n'
+    """
     real_stdout = sys.stdout
     sys.stdout = io.StringIO()
     try:
