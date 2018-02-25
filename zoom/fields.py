@@ -12,7 +12,7 @@ import datetime
 from decimal import Decimal
 
 import zoom
-from zoom.component import compose
+from zoom.component import component
 from zoom.utils import name_for
 from zoom.tools import (
     htmlquote,
@@ -2161,7 +2161,7 @@ class PulldownField(TextField):
             blank_option = '<option value=""></option>\n'
             result.insert(1, blank_option)
         result.append('</select>')
-        return compose(''.join(result), libs=self.libs, styles=self.styles)
+        return component(result, libs=self.libs, styles=self.styles)
 
 
 class ChosenSelectField(PulldownField):
@@ -2436,7 +2436,7 @@ class ChosenMultiselectField(MultiselectField):
             else:
                 result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
         result.append('</select>')
-        return compose(''.join(result), libs=libs, styles=styles)
+        return component(result, libs=libs, styles=styles)
 
 
 class RangeSliderField(IntegerField):
@@ -2500,7 +2500,7 @@ class RangeSliderField(IntegerField):
             minv, maxv
           )
         slider = '<div id="{}"><input type="hidden" name="{}" value="{}, {}"></div>'.format(name, name, minv, maxv)
-        return compose('<div class="{}">{}{}</div>'.format(self.css_class, slider, labels), js=js)
+        return component('<div class="{}">{}{}</div>'.format(self.css_class, slider, labels), js=js)
 
     def display_value(self):
         units = self.units and (' ' + self.units) or ''
@@ -2807,7 +2807,7 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
             <span>Add files...</span>
         </span><div id="{self.id}Preview" class="dropzone-previews"></div></div>"""
         fallback = """<div class="fallback"><input id="{}" name="{}" type="file" multiple /></div>"""
-        return compose(
+        return component(
             previews.format(self=self),
             fallback.format(self.id, self.name),
             self.render_msg(),
