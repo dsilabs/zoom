@@ -78,6 +78,14 @@ class SystemTimer(object):
 
 
 def get_profile_data(profiler):
+    """Capture the stdout printout of the code profiler
+
+    >>> class Profiler(object):
+    ...     def print_stats(self):
+    ...         print('the stats!')
+    >>> get_profile_data(Profiler())
+    'the stats!\\n'
+    """
     save_stdout = sys.stdout
     try:
         sys.stdout = io.StringIO()
