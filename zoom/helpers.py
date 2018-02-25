@@ -327,7 +327,7 @@ def when(date, since=None):
     """Formats a date
 
     >>> now = datetime.datetime(2018, 2, 24, 1, 2, 42)
-    >>> when(now - zoom.tools.one_day * 2)
+    >>> when(now - zoom.tools.one_day * 2, now)
     '<span title="2018-02-22 01:02:42">2 days ago</span>'
 
     """
