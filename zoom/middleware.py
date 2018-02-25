@@ -514,9 +514,26 @@ def display_errors(request, handler, *rest):
 def reset_modules(request, handler, *rest):
     """reset the modules to a known starting set
 
-    Memorizes the modules currently in use and then removes any other
-    modules when called again.  This is useful during development
-    so changes can be tried without restarting the server.
+    Memorizes the modules in use on the first round.  Then
+    on every subsequent round, it removes any extra modules
+    before passing the request on.
+
+    >>> def loader(request):
+    ...     import zoom.audit
+
+    >>> def not_a_loader(request):
+    ...     pass
+
+    >>> if 'zoom.audit' in sys.modules:
+    ...     del sys.modules['zoom.audit']
+    >>> fresh = list(sys.modules)
+    >>> reset_modules(zoom.request.build('http://localhost'), loader)
+    >>> fresh == list(sys.modules)
+    False
+
+    >>> reset_modules(zoom.request.build('http://localhost'), not_a_loader)
+    >>> fresh == list(sys.modules)
+    True
     """
     # pylint: disable=global-variable-undefined, invalid-name
     # We know init_modules is undefined.  We are using it this
@@ -525,20 +542,13 @@ def reset_modules(request, handler, *rest):
     def keeper(module):
         """modules that we will not delete"""
         sigs = ['pymysql', 'pstats']
-        return any(filter(module.startswith, sigs))
-
-    logger = logging.getLogger(__name__)
-    removed = []
+        return (module in init_modules) or any(filter(module.startswith, sigs))
 
     global init_modules
     if 'init_modules' in globals():
-        current_modules = list(sys.modules)
-        removable = [x for x in current_modules if x not in init_modules]
+        removable = [x for x in list(sys.modules) if not keeper(x)]
         for module in removable:
-            if not keeper(module):
-                del sys.modules[module]
-                removed.append(module)
-        logger.debug('reset_modules removed: %r', removed)
+            del sys.modules[module]
     else:
         init_modules = list(sys.modules)
     return handler(request, *rest)
