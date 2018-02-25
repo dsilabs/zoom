@@ -321,7 +321,16 @@ def serve_html(request, handler, *rest):
 
 
 def reset_csrf_token(session):
-    """generate a csrf token"""
+    """generate a csrf token
+
+    >>> session = zoom.utils.Bunch()
+    >>> hasattr(session, 'csrf_token')
+    False
+    >>> bool(reset_csrf_token(session))
+    True
+    >>> hasattr(session, 'csrf_token')
+    True
+    """
     if not hasattr(session, 'csrf_token'):
         session.csrf_token = uuid.uuid4().hex
     return session.csrf_token
