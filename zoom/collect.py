@@ -143,6 +143,7 @@ class CollectionView(View):
         authorized = (i for i in records if user.can('read', i))
         filtered = c.filter and filter(c.filter, authorized) or authorized
         items = sorted(filtered, key=c.order)
+        items = c.sorter and c.sorter(items) or items
         num_items = len(items)
 
         if num_items != 1:
@@ -671,6 +672,7 @@ class Collection(object):
     url = None
     allows = shared_collection_policy('managers')
     verbose = True
+    sorter = None
 
     @property
     def fields(self):
