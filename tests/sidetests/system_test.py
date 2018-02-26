@@ -18,6 +18,7 @@ class SystemTests(SeleniumTests):
     """MyApp system tests"""
 
     headless = True
+    size = (1024, 2048)
     path = join(dirname(__file__), 'scripts')
     url = 'http://localhost:8000'
 
