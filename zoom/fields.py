@@ -273,6 +273,10 @@ class Field(object):
         >>> name_field.as_searchable()
         {'test'}
 
+        >>> name_field = Field('Age', value=10)
+        >>> name_field.as_searchable()
+        {'10'}
+
         >>> name_field = Field('Name', value='こんにちは')
         >>> name_field.as_searchable()
         {'\u3053\u3093\u306b\u3061\u306f'}
@@ -286,7 +290,7 @@ class Field(object):
         """
         return (
             self.visible and
-            set([self.value or self.default],) or
+            set([str(self.value) or str(self.default)],) or
             set()
         )
 
