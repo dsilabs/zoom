@@ -1,8 +1,10 @@
 """
     zoom.migrations
 
-
+    Work in progress - experimental
 """
+
+# pragma: no cover
 
 import zoom
 
