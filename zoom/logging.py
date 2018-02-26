@@ -57,7 +57,21 @@ class LogHandler(logging.Handler):
 
 
 def handler(request, handler, *rest):
-    """Handles logging"""
+    """Handles logging
+
+    >>> import zoom.request
+    >>> import zoom.profiler
+    >>> request = zoom.request.build('http://localhost')
+    >>> request.profiler = zoom.profiler.SystemTimer(request.start_time)
+    >>> request.site = zoom.sites.Site()
+    >>> def log_something(request):
+    ...     logger = logging.getLogger(__name__)
+    ...     logger.debug('hey')
+    >>> response = handler(request, log_something)
+    >>> response is None
+    True
+
+    """
     root_logger = logging.getLogger()
 
     log_handler = LogHandler(request)
