@@ -6,6 +6,7 @@ import datetime
 import logging
 
 import zoom
+# import zoom.request
 from zoom.database import setup_test
 from zoom.users import User, Users, hash_password
 from zoom.exceptions import UnauthorizedException
@@ -39,6 +40,15 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='user')
         self.assertEqual(user.groups, ['everyone', 'users'])
         self.assertEqual(sorted(user.groups_ids), [2, 4])
+
+    def test_user_initialize(self):
+        user = self.users.first(username='admin')
+        self.assertFalse(user.is_admin)
+        request = zoom.request.build('http://localhost')
+        request.site = zoom.sites.Site()
+        request.user = user
+        user.initialize(request)
+        self.assertTrue(user.is_admin)
 
     def test_user_is_member(self):
         user = self.users.first(username='admin')
