@@ -4,8 +4,6 @@
     Work in progress - experimental
 """
 
-# pragma: no cover
-
 import zoom
 
 class SystemMigrationRecord(zoom.utils.Record):
@@ -13,7 +11,7 @@ class SystemMigrationRecord(zoom.utils.Record):
     pass
 
 
-class Migration(object):
+class Migration(object):  # pragma: no cover
     """Migration Logic"""
 
     def __init__(self, db):
@@ -42,7 +40,7 @@ migrations = [
 ]
 
 
-def migrate(to_revision=None):
+def migrate(to_revision=None):  # pragma: no cover
     db = zoom.system.site.db
 
     migration_records = zoom.store.EntityStore(db, SystemMigrationRecord)
@@ -66,7 +64,7 @@ def migrate(to_revision=None):
                     )
 
 
-def rollback(to_revision=None):
+def rollback(to_revision=None):  # pragma: no cover
     db = zoom.system.site.db
 
     migration_records = zoom.store.EntityStore(db, SystemMigrationRecord)
