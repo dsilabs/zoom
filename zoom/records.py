@@ -7,6 +7,7 @@
 import datetime
 import decimal
 
+import zoom
 import zoom.exceptions
 from zoom.utils import Record, RecordList, kind
 from zoom.database import setup_test
@@ -830,3 +831,26 @@ class RecordStore(Store):
         """
         return '<RecordStore({})>'.format(self.record_class.__name__)
         # return repr(self.all())
+
+
+def table_of(klass, db=None):
+    """Return a table of Records of the given class
+
+    The klass parameter can be a subclass of zoom.Model or
+    a table name.  If a zoom.Model is provided the actual
+    table name is derived from the class name.  If the table
+    name is provivded then it's taken as-is.
+
+    Uses the current site database if none is provided.
+
+    >>> site = zoom.sites.Site()
+    >>> users = table_of('users', site.db)
+    >>> user = users.first(username='admin')
+    >>> user['first_name']
+    'Admin'
+    """
+    db = db or zoom.system.site.db
+    if isinstance(klass, str):
+        return RecordStore(db, name=klass)
+    else:
+        return RecordStore(db, klass)
