@@ -93,7 +93,7 @@ class Form(Fields):
     </div>
     </div>
     <BLANKLINE>
-    <BLANKLINE>
+    </form>
     """
 
     def __init__(self, *args, **kwargs):
@@ -117,7 +117,7 @@ class Form(Fields):
 
     def edit(self):
         fields = '\n  '.join([field.edit() for field in self.fields])
-        return form(
+        return form_for(
             fields,
             action=self.action,
             id=self.form_name,
