@@ -198,8 +198,9 @@ def serve_static(request, handler, *rest):
     False
     """
     if request.path.startswith('/static/'):
-        libpath = os.path.dirname(__file__)
-        return serve_response(libpath, '..', 'web', 'www', request.path[1:])
+        exists = os.path.isdir(os.path.join(request.instance, 'www', 'static'))
+        path = request.instance if exists else zoom.tools.zoompath('web')
+        return serve_response(path, 'www', request.path[1:])
     else:
         return handler(request, *rest)
 
