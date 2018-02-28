@@ -34,6 +34,11 @@ def existing(path, subdir=None):
     if pathname and exists(pathname):
         return pathname
 
+def dedup(seq):
+    """Remove duplicates while retaining order"""
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 class Site(object):
     """a Zoom site"""
@@ -105,7 +110,7 @@ class Site(object):
             self.template_path = existing(self.theme_path, 'templates')
             self.default_template_path = existing(
                 self.default_theme_path, 'templates')
-            self.templates_paths = list(filter(bool, set([
+            self.templates_paths = list(filter(bool, dedup([
                 self.template_path,
                 self.default_template_path,
                 self.theme_path,
