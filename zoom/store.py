@@ -872,6 +872,25 @@ class EntityStore(Store):
         return '<EntityStore({})>'.format(self.klass.__name__)
 
 
-def store_of(klass):
-    """Returns a store of the given entity class"""
-    return zoom.store.EntityStore(zoom.system.site.db, klass)
+def store_of(klass, db=None):
+    """Returns a store of the given entity class
+
+    The klass parameter can be a subclass of zoom.Model or
+    an entity kind.  If a zoom.Model is provided the actual
+    entity kind is derived from the class name.  If the entity
+    kind is provivded as a string then it's taken as-is.
+
+    Uses the current site database if none is provided.
+
+    >>> site = zoom.sites.Site()
+    >>> class Person(Entity): pass
+    >>> people = store_of(Person, site.db)
+    >>> id = people.put(Person(name='Sam', age=25))
+    >>> id = people.put(Person(name='Sally', age=55))
+    >>> id = people.put(Person(name='Bob', age=25))
+    >>> person = people.first(name='Sally')
+    >>> person['age']
+    55
+    """
+    db = db or zoom.system.site.db
+    return EntityStore(db, klass)
