@@ -13,7 +13,7 @@ def form_for(*args, **kwargs):
     """returns a form with optional hidden values
 
     >>> print(form_for('test'))
-    <form action="<dz:request_path>" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
+    <form action="<dz:request_path>" class="clearfix" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
     <input name="csrf_token" type="hidden" value="<dz:csrf_token>" />
     test
     </form>
@@ -54,6 +54,7 @@ def form_for(*args, **kwargs):
         id=name,
         method=method,
         enctype=enctype,
+        classed='clearfix'
     )
 
 
@@ -78,7 +79,7 @@ class Form(Fields):
     >>> from zoom.fields import TextField
     >>> form = Form(TextField("Name"))
     >>> print(form.edit())
-    <form action="" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
+    <form action="" class="clearfix" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
     <input name="csrf_token" type="hidden" value="<dz:csrf_token>" />
     <div class="field">
       <div class="field_label">Name</div>
