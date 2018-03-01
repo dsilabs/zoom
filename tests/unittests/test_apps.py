@@ -164,6 +164,7 @@ class TestApps(unittest.TestCase):
             '<li><a href="<dz:app_url>">Content</a></li>'
             '<li><a href="<dz:app_url>/fields">Fields</a></li>'
             '<li><a href="<dz:app_url>/collection">Collection</a></li>'
+            '<li><a href="<dz:app_url>/components">Components</a></li>'
             '<li><a href="<dz:app_url>/alerts">Alerts</a></li>'
             '<li><a href="<dz:app_url>/parts">Parts</a></li>'
             '<li><a href="<dz:app_url>/tools">Tools</a></li>'

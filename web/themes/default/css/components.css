@@ -1,0 +1,21 @@
+
+
+/* HeaderBar */
+.header-container {
+    padding: 0 10px;
+}
+.header-container .header-bar {
+    background: #fefefe;
+    border: #ddd;
+}
+.header-container .header-bar-left {
+    float: left;
+    height: 50px;
+    line-height: 50px;
+}
+.header-container .header-bar-right {
+    float: right;
+    text-align: right;
+    height: 50px;
+    line-height: 50px;
+}

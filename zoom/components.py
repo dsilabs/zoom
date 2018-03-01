@@ -4,6 +4,8 @@
 
 import logging
 
+import zoom
+from zoom.mvc import DynamicView
 from zoom.utils import id_for
 from zoom.helpers import url_for, tag_for
 from zoom.html import a, div, ul, tag, li
@@ -124,3 +126,28 @@ def warning(message):
 
 def error(message):
     compose(error=message)
+
+
+class HeaderBar(DynamicView):
+    """Header Bar
+
+    A horizontal header bar with a left and right content sections.  Useful
+    for section headers that may contain actions or other features.
+
+    >>> content = HeaderBar(left='Left Part', right='Right Part')
+    >>> print(content)
+    <div class="header-container">
+        <div class="header-bar clearfix">
+            <div class="header-bar-left">
+                Left Part
+            </div>
+            <div class="header-bar-right">
+                Right Part
+            </div>
+        </div>
+    </div>
+    <BLANKLINE>
+    """
+    left = ''
+    right = ''
+
