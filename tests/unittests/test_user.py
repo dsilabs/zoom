@@ -114,6 +114,15 @@ class TestUser(unittest.TestCase):
         self.assertEqual(user.groups, ['everyone', 'users'])
         self.assertEqual(sorted(user.groups_ids), [2, 4])
 
+    def test_user_login(self):
+        request = zoom.request.build('http://localhost')
+        request.site = zoom.sites.Site()
+        admin = request.site.users.first(username='admin')
+        request.user = admin
+        request.session = zoom.utils.Bunch()
+        admin.login(request, 'admin')
+        self.assertEqual(request.session.username, 'admin')
+
     def test_user_initialize(self):
         user = self.users.first(username='admin')
         self.assertFalse(user.is_admin)
