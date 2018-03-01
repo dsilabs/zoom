@@ -68,6 +68,18 @@ class TestUser(unittest.TestCase):
         )
         self.assertRaises(Exception, set_current_user, request)
 
+    def test_set_current_user_guest(self):
+        site = zoom.sites.Site()
+        request = zoom.utils.Bunch(
+            site=site,
+            session=zoom.utils.Bunch(),
+            remote_user=None,
+            user=None,
+            profiler=set(),
+        )
+        set_current_user(request)
+        self.assertEqual(request.user.username, 'guest')
+
     def test_user_groups(self):
         user = self.users.first(username='admin')
         self.assertEqual(user.groups, [
