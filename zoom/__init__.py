@@ -34,6 +34,7 @@ from .mvc import View, Controller, dispatch
 from .page import page, Page
 from .packages import requires
 from .store import store_of
+from .records import table_of
 from .tools import home, redirect_to
 from .users import authorize
 from .utils import Record
