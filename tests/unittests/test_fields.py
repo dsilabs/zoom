@@ -69,6 +69,17 @@ class TestField(unittest.TestCase):
         self.assertEqual(f.widget(), 'one')
 
 
+class TestButton(unittest.TestCase):
+
+    def test_display_value(self):
+        f = zoom.fields.Button('Save')
+        self.assertEqual(f.display_value(), '')
+
+    def test_as_searchable(self):
+        f = zoom.fields.Button('Save')
+        self.assertEqual(f.as_searchable(), set())
+
+
 class TestMarkdownText(unittest.TestCase):
 
     def test_evaluate(self):
