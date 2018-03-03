@@ -11,6 +11,14 @@ import zoom
 
 
 default_packages = {
+    'bootstrap3': {
+        'libs': [
+            '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
+        ],
+        'styles': [
+            '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
+        ]
+    },
     'c3': {
         'libs': [
             'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js',
