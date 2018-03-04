@@ -169,6 +169,9 @@ def how_long(time1, time2):
     >>> how_long(now, now + 35 * one_day)
     'over a month'
 
+    >>> how_long(now, now + 65 * one_day)
+    'over 2 months'
+
     >>> how_long(now, now + 361 * one_day)
     'almost a year'
 
