@@ -299,6 +299,21 @@ class TestFields(unittest.TestCase):
             [f1, f2, f3, f4, f5]
         )
 
+    def test_clean(self):
+        to_upper = zoom.validators.Cleaner(str.upper)
+        f1, f2, f3 = (
+            TextField('Name', to_upper),
+            DecimalField('Height', units='cm', default=''),
+            DateField('Birthdate'),
+        )
+        fields = Fields(f1, f2, f3)
+        fields.initialize(name='joe')
+        fields.clean()
+        self.assertEqual(
+            fields.evaluate(),
+            {'birthdate': None, 'height': None, 'name': 'JOE'}
+        )
+
 
 class TestFieldSet(TestFields):
     def setUp(self):
