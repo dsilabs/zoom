@@ -14,6 +14,7 @@ logger = logging.getLogger('zoom.fields')
 
 
 class TextTests(object):
+    # pylint: disable=E1101
 
     def setUp(self, field_type):
         self.field_type = field_type
