@@ -282,6 +282,24 @@ class TestFields(unittest.TestCase):
             [f1, f2, f3]
         )
 
+    def test_as_list_nested(self):
+        f1, f2, f3, f4, f5 = (
+            TextField('Name'),
+            DecimalField('Height', units='cm', default=''),
+            DateField('Birthdate'),
+            NumberField('Latitude', value=10),
+            NumberField('Longitude', value=20)
+        )
+        fields = Fields(f1, f2, f3, Fields(f4, f5))
+        for f in fields.as_list():
+            print(f)
+
+        self.assertEqual(
+            fields.as_list(),
+            [f1, f2, f3, f4, f5]
+        )
+
+
 class TestFieldSet(TestFields):
     def setUp(self):
         self.fields = zoom.fields.Fieldset('Section 1', [
