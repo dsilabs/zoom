@@ -3,7 +3,6 @@
 """
     zoom.utils
 """
-
 import collections
 import configparser
 import decimal
@@ -14,6 +13,8 @@ import logging
 import os
 import string
 import uuid
+
+import zoom
 import zoom.jsonz as json
 
 chars = ''.join(map(chr, range(256)))
@@ -387,7 +388,27 @@ def locate_config(filename='zoom.conf', start='.'):
 
 
 class Config(object):
-    """A Config with a handy get method."""
+    """Config File Reader
+
+    A Config with a handy get method.
+
+    >>> config = Config(zoom.tools.zoompath('web','sites','default','site.ini'))
+    >>> config.get('site', 'name')
+    'ZOOM'
+
+    >>> config.has_option('site', 'name')
+    True
+
+    >>> config.get('site', 'size', 100)
+    100
+
+    >>> try:
+    ...     config.get('site', 'size')
+    ... except (configparser.NoOptionError, configparser.NoSectionError):
+    ...     error = True
+    >>> error
+    True
+    """
 
     def __init__(self, filename):
         self.config = configparser.ConfigParser()
