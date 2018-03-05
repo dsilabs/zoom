@@ -102,6 +102,23 @@ class TestMemoField(unittest.TestCase, TextTests):
         f = zoom.fields.MemoField('Notes', value='some notes')
         self.assertTrue('some notes' in f.edit())
 
+class TestEmailField(unittest.TestCase, TextTests):
+
+    def setUp(self, *a, **k):
+        TextTests.setUp(self, MemoField)
+        self.show_css_class = 'textarea'
+        self.widget_template = (
+            '<textarea class="{self.css_class}" cols="60" id="field1" '
+            'name="field1" rows="6" size="10">{text}</textarea>'
+        )
+
+    def test_antispam(self):
+        f = zoom.fields.EmailField('Notes', value='a@b.com')
+        self.assertEqual(
+            f.display_value(),
+            '<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#64;&#98;&#46;&#99;&#111;&#109;">&#97;&#64;&#98;&#46;&#99;&#111;&#109;</a>'
+        )
+
 class TestMarkdownField(unittest.TestCase, TextTests):
 
     def setUp(self, *a, **k):
