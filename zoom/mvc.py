@@ -9,6 +9,7 @@ import logging
 from inspect import getfile
 from os.path import abspath, split, join, isfile
 
+import zoom
 from zoom.component import component
 from zoom.utils import kind
 
@@ -18,12 +19,24 @@ MISSING_CSS = '.missing-view { color: red }'
 
 
 def as_attr(text):
-    """Replace hyphens with underscores"""
+    """Replace hyphens with underscores
+
+    >>> as_attr('this-page')
+    'this_page'
+    """
     return text.replace('-', '_').lower()
 
 
 def evaluate(obj, name, route, data):
-    """Get the value of an attribute"""
+    """Get the value of an attribute
+
+    >>> thing = zoom.utils.Bunch(name='Thing', show=lambda a, name: 'showing %s' % name)
+    >>> route, data = ('app',), {'name': 'one'}
+    >>> evaluate(thing, 'name', route, data)
+    'Thing'
+    >>> evaluate(thing, 'show', route, data)
+    'showing one'
+    """
     try:
         attr = getattr(obj, as_attr(name))
     except AttributeError:
@@ -36,7 +49,21 @@ def evaluate(obj, name, route, data):
 
 
 def remove_buttons(data):
-    """Remove buttons from input data"""
+    """Remove buttons from input data
+
+    >>> data = dict(name='Pat', age=20, save_button='Save')
+    >>> zoom.utils.pp(remove_buttons(data))
+    [
+      {
+        "save_button": "Save"
+      },
+      {
+        "age": 20,
+        "name": "Pat"
+      }
+    ]
+
+    """
     buttons = {}
     names = list(data.keys())
     for name in names:
