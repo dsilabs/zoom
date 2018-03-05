@@ -19,3 +19,15 @@ class TestFill(unittest.TestCase):
         load = zoom.tools.load_template
         template = load('default')
         self.assertTrue('<html>' in template)
+
+    def test_load_template_missing(self):
+        zoom.system.request = zoom.utils.Bunch(site=zoom.sites.Site())
+        load = zoom.tools.load_template
+        template = load('notthere')
+        self.assertEqual('<!-- template missing -->', template)
+
+    def test_load_template_missing_and_default(self):
+        zoom.system.request = zoom.utils.Bunch(site=zoom.sites.Site())
+        load = zoom.tools.load_template
+        template = load('notthere', 'missing')
+        self.assertEqual('missing', template)
