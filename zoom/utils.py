@@ -667,6 +667,10 @@ class Record(Storage):
         >>> o = Record(a=2)
         >>> o.a
         2
+        >>> o.valid()
+        1
+        >>> o.attributes()
+        ['a']
         >>> o['a']
         2
         >>> o.double = property(lambda o: 2*o.a)
