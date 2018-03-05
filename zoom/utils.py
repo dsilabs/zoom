@@ -422,21 +422,22 @@ def get_config(filename):
 
 
 class OrderedSet(collections.MutableSet):
-    """
-    A Record with default values
+    """OrderedSet
 
-    trimmed_rows = [row.strip() for row in aligned_rows]
+    A set that preserves the order of the elements
 
-        >>> s = OrderedSet('abracadaba')
-        >>> t = OrderedSet('simsalabim')
-        >>> print(s | t)
-        OrderedSet(['a', 'b', 'r', 'c', 'd', 's', 'i', 'm', 'l'])
-        >>> print(s & t)
-        OrderedSet(['a', 'b'])
-        >>> print(s - t)
-        OrderedSet(['r', 'c', 'd'])
-        >>> print(OrderedSet(reversed(s - t)))
-        OrderedSet(['d', 'c', 'r'])
+    >>> s = OrderedSet('abracadaba')
+    >>> t = OrderedSet('simsalabim')
+    >>> print(s | t)
+    OrderedSet(['a', 'b', 'r', 'c', 'd', 's', 'i', 'm', 'l'])
+    >>> print(s & t)
+    OrderedSet(['a', 'b'])
+    >>> print(s - t)
+    OrderedSet(['r', 'c', 'd'])
+    >>> print(OrderedSet(reversed(s - t)))
+    OrderedSet(['d', 'c', 'r'])
+    >>> OrderedSet(['d', 'c', 'd']) == OrderedSet(['c', 'd', 'd'])
+    False
 
     credit: http://code.activestate.com/recipes/576694/
     Licensed under MIT License
