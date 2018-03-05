@@ -23,6 +23,8 @@ from http.cookies import SimpleCookie
 import logging
 import uuid
 
+import zoom
+
 
 SESSION_COOKIE_NAME = 'zoom_session'
 SUBJECT_COOKIE_NAME = 'zoom_subject'
@@ -62,7 +64,15 @@ def get_value(cookie):
 
 
 def set_session_cookie(response, session, subject, lifespan, secure=True):
-    """construct a session cookie"""
+    """construct a session cookie
+
+    >>> response = zoom.response.HTMLResponse('my page')
+    >>> set_session_cookie(response, 'sessionid', 'subjectid', 60)
+    >>> 'zoom_session=sessionid' in response.headers['Set-Cookie']
+    True
+    >>> 'HttpOnly; Secure' in response.headers['Set-Cookie']
+    True
+    """
     cookie = make_cookie()
     add_value(cookie, SESSION_COOKIE_NAME, session, lifespan, secure)
     add_value(cookie, SUBJECT_COOKIE_NAME, subject, ONE_YEAR, secure)
@@ -75,6 +85,17 @@ def set_session_cookie(response, session, subject, lifespan, secure=True):
 
 
 def handler(request, handler, *rest):
+    """Cookie handler
+
+    >>> request = zoom.utils.Bunch(
+    ...     cookies=None,
+    ...     session_timeout=1,
+    ...     site=zoom.sites.Site(),
+    ... )
+    >>> response = handler(request, lambda a: zoom.response.Response())
+    >>> 'zoom_session=' in response.headers['Set-Cookie']
+    True
+    """
     logger = logging.getLogger(__name__)
 
     cookies = get_cookies(request.cookies)
