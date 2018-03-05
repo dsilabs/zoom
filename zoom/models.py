@@ -4,6 +4,7 @@
     common models
 """
 
+import zoom
 from zoom.utils import DefaultRecord, id_for
 from zoom.helpers import link_to, url_for_item, url_for
 from zoom.utils import Record, id_for
@@ -28,6 +29,30 @@ class Model(DefaultRecord):
     friendly keys typically used in REST style URLs.  If used
     this way the key should generated such that it is unique
     for each record.
+
+    >>> zoom.system.site = site = zoom.sites.Site()
+    >>> zoom.system.request = zoom.utils.Bunch(route=[])
+    >>> class MyModel(Model):
+    ...     pass
+    >>> thing = MyModel(name='Pat Smith')
+
+    >>> thing.name
+    'Pat Smith'
+
+    >>> thing.key
+    'pat-smith'
+
+    >>> url_for_item('pat-smith')
+    '/pat-smith'
+
+    >>> thing.url
+    '/pat-smith'
+
+    >>> thing.link
+    '<a href="/pat-smith">Pat Smith</a>'
+
+    >>> thing.allows('user', 'edit')
+    False
     """
 
     @property
@@ -50,6 +75,15 @@ class Model(DefaultRecord):
 
 
 def get_users(db, group):
+    """Get users of a Group
+
+    Gets the users that are members of a group from a given database.
+
+    >>> site = zoom.sites.Site()
+    >>> users_group = Groups(site.db).first(name='users')
+    >>> get_users(site.db, users_group)
+    {2}
+    """
     my_users = {
         user_id
         for user_id, in db("""
@@ -82,6 +116,30 @@ class Members(RecordStore):
 
 
 class Group(Record):
+    """Zoom Users Group
+
+    >>> zoom.system.site = site = zoom.sites.Site()
+    >>> groups = Groups(site.db)
+    >>> group = groups.first(name='users')
+
+    >>> group.key
+    '2'
+
+    >>> group.url
+    '/admin/groups/2'
+
+    >>> group.link
+    '<a href="/admin/groups/2">users</a>'
+
+    >>> group.roles
+    {4}
+
+    >>> group.apps
+    {10, 12, 20, 28, 29}
+
+    >>> groups.first(name='everyone').subroups
+    
+    """
 
     @property
     def key(self):
