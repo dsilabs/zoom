@@ -122,6 +122,10 @@ class Group(Record):
     >>> groups = Groups(site.db)
     >>> group = groups.first(name='users')
 
+    >>> user = site.users.first(username='admin')
+    >>> group.allows(user, 'edit')
+    True
+
     >>> group.key
     '2'
 
@@ -134,11 +138,11 @@ class Group(Record):
     >>> group.roles
     {4}
 
-    >>> group.apps
+    >>> zoom.utils.pp(group.apps)
     {10, 12, 20, 28, 29}
 
     >>> groups.first(name='everyone').subroups
-    
+
     """
 
     @property
@@ -157,9 +161,7 @@ class Group(Record):
 
     def allows(self, user, action):
         system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
-        return [
-            self.name not in system_groups or action != 'delete'
-        ]
+        return self.name not in system_groups or action != 'delete'
 
     def get_users(self):
         return get_users(self['__store'].db, self)
