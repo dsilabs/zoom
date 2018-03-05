@@ -252,9 +252,6 @@ class ItemList(list):
         list.__init__(self, *args, **kwargs)
 
     def __str__(self):
-        def is_numeric(value):
-            return type(value) in [int, float, decimal.Decimal]
-
         def is_text(value):
             return type(value) in [str, bytes]
 
@@ -438,6 +435,8 @@ class OrderedSet(collections.MutableSet):
         OrderedSet(['a', 'b'])
         >>> print(s - t)
         OrderedSet(['r', 'c', 'd'])
+        >>> print(OrderedSet(reversed(s - t)))
+        OrderedSet(['d', 'c', 'r'])
 
     credit: http://code.activestate.com/recipes/576694/
     Licensed under MIT License
