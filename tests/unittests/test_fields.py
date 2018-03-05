@@ -88,6 +88,21 @@ class TestMarkdownText(unittest.TestCase):
         self.assertEqual(f.evaluate(), {})
 
 
+class TestMarkdownEditField(unittest.TestCase):
+
+    def test_evaluate(self):
+        content = """
+        Heading
+        ====
+        Paragraph text.
+        """
+        f = zoom.fields.MarkdownEditField('Test', value=content)
+        self.assertEqual(
+            f.display_value(),
+            '<h1 id="heading">Heading</h1>\n<p>Paragraph text.</p>'
+        )
+
+
 class TestMemoField(unittest.TestCase, TextTests):
 
     def setUp(self, *a, **k):
