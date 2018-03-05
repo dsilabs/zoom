@@ -2520,8 +2520,8 @@ class RangeSliderField(IntegerField):
         return websafe(value)
 
 
-class DataURIAttachmentsField(Field):
-    """An Attachments field
+class DataURIAttachmentsField(Field):  # pragma: no cover
+    """An Attachments field - DEPRECATED
 
         this field stores the data within the database
         this field uses dropzone.js heavily
