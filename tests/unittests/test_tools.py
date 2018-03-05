@@ -31,3 +31,20 @@ class TestFill(unittest.TestCase):
         load = zoom.tools.load_template
         template = load('notthere', 'missing')
         self.assertEqual('missing', template)
+
+    def test_get_template(self):
+        zoom.system.site = zoom.sites.Site()
+        template = zoom.tools.get_template('default')
+        self.assertTrue('<html>' in template)
+
+    def test_get_template_missing(self):
+        zoom.system.site = zoom.sites.Site()
+        template = zoom.tools.get_template('notthere')
+        self.assertTrue('<html>' in template)
+
+    def test_get_default_template_missing(self):
+        zoom.system.site = zoom.sites.Site()
+        self.assertRaises(
+            zoom.exceptions.ThemeTemplateMissingException,
+            zoom.tools.get_template, 'default', 'notheme'
+        )
