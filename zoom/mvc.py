@@ -104,6 +104,29 @@ class View(Dispatcher):
     """Views a model
 
     Use to view a model without altering it.
+
+    >>> class MyView(View):
+    ...     def index(self):
+    ...         return 'index page'
+    ...     def show(self, item):
+    ...         return 'showing %s' % item
+    ...     def throw(self, item):
+    ...         raise Exception('thrown')
+    >>> view = MyView()
+    >>> view()
+    'index page'
+    >>> view('100')
+    'showing 100'
+    >>> view('100', data=dict(d='extra'))
+    'showing 100'
+
+    >>> thrown = False
+    >>> try:
+    ...     view('throw')
+    ... except Exception:
+    ...     thrown = True
+    >>> thrown
+    True
     """
 
     def __call__(self, *args, **kwargs):
@@ -307,6 +330,19 @@ def dispatch(*args):
     being called.  If it is a callable, it will be called as-is.  As soon
     as one of them returns a response we exit.  If none of the returns a
     response we return None, which generally results in a 404.
+
+    >>> class MyView(View):
+    ...     def index(self):
+    ...         return 'home page'
+    ...     def show(self, key):
+    ...         return 'showing %s' % key
+    >>> main = zoom.dispatch(MyView)
+
+    >>> main((), zoom.utils.Bunch(data={}))
+    'home page'
+
+    >>> main(('100',), zoom.utils.Bunch(data={}))
+    'showing 100'
     """
     logger = logging.getLogger(__name__)
     def _dispatch(route, request):
