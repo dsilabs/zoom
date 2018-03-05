@@ -11,8 +11,8 @@ import unittest
 import zoom
 
 
-class TestFill(unittest.TestCase):
-    """test the fill function"""
+class TestTools(unittest.TestCase):
+    """test the tools module"""
 
     def test_load_template(self):
         zoom.system.request = zoom.utils.Bunch(site=zoom.sites.Site())
