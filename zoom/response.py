@@ -20,11 +20,19 @@ from hashlib import md5
 from collections import OrderedDict
 
 import zoom
+import zoom.templates
 from zoom.jsonz import dumps
 
 
 class Response(object):
-    """web response"""
+    """web response
+
+    >>> response = Response(b'this is it')
+    >>> response.render()
+    b'Content-length: 10\\n\\nthis is it'
+    >>> response.as_wsgi()
+    ('200 OK', [('Content-length', '10')], b'this is it')
+    """
 
     def __init__(self, content=b'', status='200 OK', headers=None):
         self.content = content
@@ -65,6 +73,18 @@ class BinaryResponse(Response):
     """Generic binary response
 
     use max_age=0 to avoid caching
+
+    >>> response = BinaryResponse(b'binary data')
+    >>> expected = (
+    ...     b'Content-type: application/octet-stream\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: e1a49b59e\\n'
+    ...     b'Content-length: 11\\n\\n'
+    ...     b'binary data'
+    ... )
+    >>> response.render() == expected
+    True
+
     """
 
     def __init__(self, content, max_age=86400):
@@ -76,7 +96,19 @@ class BinaryResponse(Response):
 
 
 class TTFResponse(Response):
-    """True Type Font response"""
+    """True Type Font response
+
+    >>> response = TTFResponse(b'myfont')
+    >>> expected = (
+    ...     b'Content-type: application/font-sfnt\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 794c8f9c8\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'myfont'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
@@ -86,7 +118,19 @@ class TTFResponse(Response):
 
 
 class WOFFResponse(Response):
-    """Web Open Font Format response"""
+    """Web Open Font Format response
+
+    >>> response = WOFFResponse(b'myfont')
+    >>> expected = (
+    ...     b'Content-type: application/font-woff\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 794c8f9c8\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'myfont'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
@@ -96,7 +140,19 @@ class WOFFResponse(Response):
 
 
 class PNGResponse(Response):
-    """PNG image response"""
+    """PNG image response
+
+    >>> response = PNGResponse(b'myimage')
+    >>> expected = (
+    ...     b'Content-type: image/png\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: b1a9acaf2\\n'
+    ...     b'Content-length: 7\\n\\n'
+    ...     b'myimage'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
@@ -106,7 +162,19 @@ class PNGResponse(Response):
 
 
 class ICOResponse(Response):
-    """Cached ICO image response"""
+    """ICO image response
+
+    >>> response = ICOResponse(b'myicon')
+    >>> expected = (
+    ...     b'Content-type: image/x-icon\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 78d2485ff\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'myicon'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         Response.__init__(self, content)
@@ -120,7 +188,17 @@ class ICOResponse(Response):
 
 
 class JPGResponse(Response):
-    """JPG image response"""
+    """JPG image response
+
+    >>> response = JPGResponse(b'myimage')
+    >>> expected = (
+    ...     b'Content-type: image/jpeg\\n'
+    ...     b'Content-length: 7\\n\\n'
+    ...     b'myimage'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content):
         Response.__init__(self, content)
@@ -128,7 +206,17 @@ class JPGResponse(Response):
 
 
 class GIFResponse(Response):
-    """GIF image response"""
+    """GIF image response
+
+    >>> response = GIFResponse(b'myimage')
+    >>> expected = (
+    ...     b'Content-type: image/gif\\n'
+    ...     b'Content-length: 7\\n\\n'
+    ...     b'myimage'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content):
         Response.__init__(self, content)
@@ -136,7 +224,18 @@ class GIFResponse(Response):
 
 
 class TextResponse(Response):
-    """Plan text response"""
+    """Plan text response
+
+    >>> response = TextResponse('mytext')
+    >>> expected = (
+    ...     b'Content-type: text\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'mytext'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content='', status='200 OK'):
         Response.__init__(self, content, status)
@@ -183,7 +282,18 @@ class HTMLResponse(TextResponse):
 
 
 class XMLResponse(Response):
-    """XML response"""
+    """XML response
+
+    >>> response = XMLResponse('myxml')
+    >>> expected = (
+    ...     b'Content-type: text/xml\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'Content-length: 26\\n\\n'
+    ...     b'<?xml version="1.0"?>myxml'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content=''):
         Response.__init__(self, content)
@@ -196,7 +306,19 @@ class XMLResponse(Response):
 
 
 class JavascriptResponse(Response):
-    """Javascript response"""
+    """Javascript response
+
+    >>> response = JavascriptResponse(b'myjs')
+    >>> expected = (
+    ...     b'Content-type: application/javascript\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 8be4a11f3\\n'
+    ...     b'Content-length: 4\\n\\n'
+    ...     b'myjs'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         TextResponse.__init__(self, content)
@@ -206,7 +328,19 @@ class JavascriptResponse(Response):
 
 
 class JSONResponse(TextResponse):
-    """JSON response"""
+    """JSON response
+
+    >>> response = JavascriptResponse(b'myjson')
+    >>> expected = (
+    ...     b'Content-type: application/javascript\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: f97258d47\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'myjson'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(
             self,
@@ -228,7 +362,19 @@ class JSONResponse(TextResponse):
 
 
 class CSSResponse(Response):
-    """CSS response"""
+    """CSS response
+
+    >>> response = CSSResponse(b'mycss')
+    >>> expected = (
+    ...     b'Content-type: text/css;charset=utf-8\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 12a586855\\n'
+    ...     b'Content-length: 5\\n\\n'
+    ...     b'mycss'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, content, max_age=86400):
         TextResponse.__init__(self, content)
@@ -238,7 +384,12 @@ class CSSResponse(Response):
 
 
 class RedirectResponse(TextResponse):
-    """Redirect response"""
+    """Redirect response
+
+    >>> response = RedirectResponse('/')
+    >>> response.as_wsgi()
+    ('302 Found', [('Location', '/'), ('Content-length', '0')], b'')
+    """
 
     def __init__(self, url):
         Response.__init__(self, '')
@@ -247,7 +398,19 @@ class RedirectResponse(TextResponse):
 
 
 class FileResponse(Response):
-    """File download response"""
+    """File download response
+
+    >>> response = FileResponse('file.txt', content=b'mydata')
+    >>> expected = (
+    ...     b'Content-type: application/octet-stream\\n'
+    ...     b'Content-Disposition: attachment; filename="file.txt"\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'mydata'
+    ... )
+    >>> response.render() == expected
+    True
+    """
 
     def __init__(self, filename, content=None):
         Response.__init__(self)
@@ -264,8 +427,18 @@ class FileResponse(Response):
 
 
 class PDFResponse(FileResponse):
-    """PDF file download response"""
+    """PDF file download response
 
+    >>> response = PDFResponse('file.pdf', content=b'mydata')
+    >>> expected = (
+    ...     b'Content-type: application/pdf\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'mydata'
+    ... )
+    >>> response.render() == expected
+    True
+    """
     def __init__(self, filename, content=None):
         FileResponse.__init__(self, filename, content)
         self.headers['Content-type'] = 'application/pdf'
@@ -273,7 +446,20 @@ class PDFResponse(FileResponse):
 
 
 class SiteNotFoundResponse(HTMLResponse):
-    """Site 404 Not Found response"""
+    """Site 404 Not Found response
+
+    >>> request = zoom.utils.Bunch(
+    ...     protocol='http',
+    ...     host='localhost',
+    ...     path='/',
+    ...     ip_address='127.0.0.1',
+    ...     module='index',
+    ...     request_id=1234,
+    ... )
+    >>> response = SiteNotFoundResponse(request)
+    >>> 'ZOOM' in str(response.render())
+    True
+    """
 
     def __init__(self, request):
         content = zoom.templates.site_not_found.format(
