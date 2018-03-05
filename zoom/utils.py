@@ -66,6 +66,14 @@ def dictify(item):
     """prepare an object for transmission by marshalling it's members
 
     Marshals only members that json can handle.
+
+    >>> class Thing(object): pass
+    >>> pp(dictify(Bunch(name='Terry', age=21, funky_type=Thing())))
+    {
+      "age": 21,
+      "name": "Terry"
+    }
+
     """
     # pylint: disable=W0703
 
