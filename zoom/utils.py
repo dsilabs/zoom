@@ -844,7 +844,38 @@ def matches(item, terms):
 
 
 def search(items, text):
-    """Returns items that match search terms"""
+    """Returns items that match search terms
+
+    >>> items = [
+    ...     {'name': 'Terry', 'instrument': 'guitar, drums, picolo', 'age': 25},
+    ...     {'name': 'Pat', 'instrument': 'drums, vocals', 'age': 29},
+    ...     {'name': 'Francis', 'instrument': 'saxophone, piano', 'age': 35},
+    ... ]
+
+    >>> pp(list(search(items, 'drums')))
+    [
+      {
+        "age": 25,
+        "instrument": "guitar, drums, picolo",
+        "name": "Terry"
+      },
+      {
+        "age": 29,
+        "instrument": "drums, vocals",
+        "name": "Pat"
+      }
+    ]
+
+    >>> pp(list(search(items, 'drums pat')))
+    [
+      {
+        "age": 29,
+        "instrument": "drums, vocals",
+        "name": "Pat"
+      }
+    ]
+
+    """
     search_terms = list(set([i.lower() for i in text.strip().split()]))
     for item in items:
         if matches(item, search_terms):
