@@ -453,7 +453,6 @@ def load(pathname, encoding='utf-8'):
     """Load a file into memory"""
     with open(pathname, encoding=encoding) as reader:
         return reader.read()
-    return ''
 
 
 def load_content(pathname, *args, **kwargs):
