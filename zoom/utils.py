@@ -33,10 +33,15 @@ def pretty(obj):
     try:
         return json.dumps(obj, indent=2, sort_keys=True)
     except TypeError:
-        if type(obj) == dict:
+        if isinstance(obj, dict):
             return '{\n%s\n}' % '\n'.join([
                 '  {!r} {}: {!r}'.format(key, '.' * (15 - len(key)), value)
                 for key, value in sorted(obj.items())
+            ])
+        elif isinstance(obj, set):
+            return '{\n%s\n}' % ',\n'.join([
+                '  {!r}'.format(key)
+                for key in sorted(obj)
             ])
         elif hasattr(obj, '__dict__'):
             return '<%s \n%s\n>' % (obj.__class__.__name__, '\n'.join([

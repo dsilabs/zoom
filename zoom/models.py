@@ -139,7 +139,13 @@ class Group(Record):
     {4}
 
     >>> zoom.utils.pp(group.apps)
-    {10, 12, 20, 28, 29}
+    {
+      10,
+      12,
+      20,
+      28,
+      29
+    }
 
     >>> groups.first(name='everyone').subroups
 
