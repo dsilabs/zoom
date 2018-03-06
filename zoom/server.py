@@ -78,7 +78,7 @@ class WSGIApplication(object):
         return [content]
 
 
-def run(port=80, instance=None, handlers=None):
+def run(port=80, instance=None, handlers=None):  # pragma: no cover
     """run using internal HTTP Server
 
     The instance variable is the path of the directory on the system where the
@@ -109,6 +109,15 @@ def application(environ, start_response):
     If you need to launch from somewhere else just build a function like this
     of your own and create the WSGIApplication instance using a path of your
     choosing.
+
+    >>> save_dir = os.getcwd()
+    >>> try:
+    ...     env = dict(DOCUMENT_ROOT=zoom.tools.zoompath('web', 'www'))
+    ...     response = application(env, lambda a, b: None)
+    ... finally:
+    ...     os.chdir(save_dir)
+    >>> len(response)
+    1
     """
     os.chdir(environ.get('DOCUMENT_ROOT'))
     return WSGIApplication(instance='..')(environ, start_response)

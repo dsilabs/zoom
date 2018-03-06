@@ -221,7 +221,7 @@ class TestApps(unittest.TestCase):
         path = sys.path.copy()
         try:
             if '.' in sys.path:
-                del sys.path['.']
+                del sys.path[sys.path.index('.')]
 
             result = zoom.apps.handler(self.request, next)
 
