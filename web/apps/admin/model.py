@@ -264,11 +264,14 @@ def get_index_metrics(db):
         """Return the result of a query that calculates an average"""
         return '{:,.1f}'.format((list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]))
 
+    the_day = today()
+
     num_users = count('users where status="A"')
     num_groups = count('groups where type="U"')
-    num_requests = count('log where status="C" and timestamp>=%s', today())
-    num_errors = count('log where status="E" and timestamp>=%s', today())
-    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s and path<>"/login"', today())
+    num_requests = count('log where status="C" and timestamp>=%s', the_day)
+    num_errors = count('log where status="E" and timestamp>=%s', the_day)
+    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s and path<>"/login"', the_day)
+    num_authorizations = count('audit_log where timestamp>=%s', the_day)
 
     metrics = [
         ('Users', '/admin/users', num_users),
@@ -276,6 +279,7 @@ def get_index_metrics(db):
         ('Requests Today', '/admin/requests', num_requests),
         ('Errors Today', '/admin/errors', num_errors),
         ('Performance (ms)', '/admin/requests', avg_speed),
+        ('Authorizations Today', '/admin/audit', 1)
     ]
     return metrics
 
