@@ -91,6 +91,14 @@ def activity_panel(db):
 
 
 def error_panel(db):
+    def user_link(user_id):
+        """Returns a link to a user based on a user_id"""
+        if user_id:
+            user = users.get(rec[1])
+            if user:
+                return user.link
+        return None
+
     data = db("""
         select
             id,
@@ -108,7 +116,7 @@ def error_panel(db):
     for rec in data:
         row = [
             link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
-            users.get(rec[1]).link,
+            user_link(rec[1]),
             rec[2],
             how_long_ago(rec[3]),
         ]
