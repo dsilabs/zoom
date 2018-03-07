@@ -279,7 +279,7 @@ def get_index_metrics(db):
         ('Requests Today', '/admin/requests', num_requests),
         ('Errors Today', '/admin/errors', num_errors),
         ('Performance (ms)', '/admin/requests', avg_speed),
-        ('Authorizations Today', '/admin/audit', 1)
+        ('Authorizations Today', '/admin/audit', num_authorizations)
     ]
     return metrics
 
