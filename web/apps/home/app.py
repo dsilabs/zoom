@@ -14,6 +14,9 @@ def app(request):
     zoom.requires('fontawesome4')
 
     css = """
+        .app-icons ul {
+            list-style-type: none;
+        }
         .app-icons li {
             display: inline;
         }
