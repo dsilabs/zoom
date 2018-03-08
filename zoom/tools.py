@@ -556,7 +556,7 @@ def get_template(template_name='default', theme='default'):
         if template_name == 'default':
             logger.error(
                 'default template %s missing',
-                filename,
+                os.path.realpath(filename),
             )
             raise zoom.exceptions.ThemeTemplateMissingException(
                 'Default template missing %r' % filename
