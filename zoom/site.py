@@ -136,6 +136,7 @@ class Site(object):
             self.monitor_app_database = get('monitoring', 'app_database', True) != '0'
             self.monitor_system_database = get('monitoring', 'system_database', False) != '0'
 
+            logger.debug('instance path: %r', instance)
             logger.debug('site path: %r', site_path)
             logger.debug('site themes path: %r', self.themes_path)
             logger.debug('site theme path: %r', self.theme_path)
