@@ -54,7 +54,9 @@ class IndexView(View):
         )
 
         content = tables + entities + queues
-        return Page(content, title='Storage')
+        database_info = 'database: %s' % zoom.system.site.db.connect_string
+
+        return Page(content, title='Storage', subtitle=database_info)
 
     def entity(self, name):
         items = EntityStore(self.model.site.db, MyModel, kind=name)
