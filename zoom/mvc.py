@@ -180,15 +180,16 @@ class View(Dispatcher):
 
 
 class DynamicView(View):
-    """dynamic view - experimental!
+    """Dynamic View - experimental (may change)
 
-    A class that provides views of other objects dynamically loading
-    its own templates in the process.  Templates are rendered using
-    python format() function so object structures can be taversed
-    in the usual way within templates.
+    A decorator class that provides views of objects dynamically loading
+    its own templates in the process.
 
-    The the view is referred to as self.  Any attribtues or properties
-    can be simply accessed using self.<name> for whatever the name is.
+    Within templates the object being decorated is referred to as self.  Any
+    attribtues or properties can be simply accessed using self.<name> for
+    whatever the name is.  Templates are rendered using python format()
+    function so object structures can be taversed in the usual way within
+    templates.
 
     The object optionally passed as the first parameter upon construction
     is referred to as self.model.  Additional objects can be added as
