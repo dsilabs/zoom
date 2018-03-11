@@ -415,3 +415,32 @@ class TestBasicImageField(unittest.TestCase):
 
     def test_multipart(self):
         self.assertTrue(self.field.requires_multipart_form())
+
+
+def trim(text):
+    return '\n'.join(filter(bool, (line.strip() for line in text.splitlines())))
+
+class TestMultiselectField(unittest.TestCase):
+
+    def test_multislect_basic(self):
+        user_options = ['Pat', 'Terry', 'Sam']
+        f = MultiselectField('Users', options=user_options)
+        self.assertEqual(f.display_value(), '')
+
+        t = trim("""
+        <select multiple="multiple" class="multiselect" name="users" id="users">
+        <option value="Pat">Pat</option>
+        <option value="Terry">Terry</option>
+        <option value="Sam">Sam</option>
+        </select>
+        """)
+        self.assertEqual(f.widget(), t)
+
+        f.validate(**dict(users='Pat'))
+        self.assertEqual(f.display_value(), 'Pat')
+
+        f.validate(**dict(users=['Pat', 'Terry']))
+        self.assertEqual(f.display_value(), 'Pat; Terry')
+
+        f.validate(**dict())
+        self.assertEqual(f.display_value(), '')
