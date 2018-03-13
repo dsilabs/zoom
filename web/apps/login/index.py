@@ -63,7 +63,6 @@ class LoginController(Controller):
         password = data.get('password')
         remember_me = bool(data.get('remember_me'))
         if username and password:
-            print(remember_me)
             users = Users(site.db)
             user = users.first(username=username, status='A')
             if user:
