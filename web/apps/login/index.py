@@ -4,6 +4,7 @@
 
 import logging
 
+import zoom
 from zoom.mvc import DynamicView, Controller, View
 from zoom.page import page
 from zoom.users import Users
@@ -24,6 +25,13 @@ class LoginForm(DynamicView):
     def forgot_password(self):
         if 'forgot' in self.user.apps:
             return load_content('views/forgot_password.html')
+        return ''
+
+    @property
+    def remember_me_checkbox(self):
+        remember_me = zoom.system.site.config.get('site', 'remember_me', True)
+        if remember_me in zoom.utils.POSITIVE:
+            return load_content('views/remember_me.html')
         return ''
 
 
@@ -55,6 +63,7 @@ class LoginController(Controller):
         password = data.get('password')
         remember_me = bool(data.get('remember_me'))
         if username and password:
+            print(remember_me)
             users = Users(site.db)
             user = users.first(username=username, status='A')
             if user:

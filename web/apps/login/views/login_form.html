@@ -13,11 +13,7 @@
             <div class="form-group">
               <input class="form-control" placeholder="Password" id="password" name="password" type="password" value="">
             </div>
-            <div class="checkbox">
-              <label>
-                <input name="remember_me" type="checkbox" value="true"> Remember Me
-              </label>
-            </div>
+            {self.remember_me_checkbox}
             {self.referrer}
             <input class="btn btn-lg btn-success btn-block" type="submit" name="login_button" id="login_button" value="Login">
             {self.registration_link}

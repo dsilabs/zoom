@@ -17,6 +17,9 @@ import uuid
 import zoom
 import zoom.jsonz as json
 
+POSITIVE = [True, 1, 'True', 'yes', 'y', 'on', '1']
+NEGATIVE = [False, 0, 'False', 'no', 'n', 'off', '0']
+
 chars = ''.join(map(chr, range(256)))
 keep_these = string.ascii_letters + string.digits + '- '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))

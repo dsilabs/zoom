@@ -110,6 +110,6 @@ class Config(object):
 
     def __str__(self):    # pragma: no cover
         return '<Config: %s>' % repr([
+            self.config_pathname,
             self.default_config_pathname,
-            self.config_pathname
         ])
