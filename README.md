@@ -67,11 +67,9 @@ It attempts to do this by adhering to the following key prinicples:
 
 * Reasonable defaults for everything
 
-Because of the modularity it encourages parts of your app can often be re-used in other projects
-so that the more you use it, the more productive you get.
+Because of the modularity it encourages parts of your app can often be re-used in other projects so that the more you use it, the more productive you get.
 
-As user requirements change and your app inevitably evolves, the dynamic and modular approach
-encourages you to make changes quickly and easily.
+As user requirements change and your app inevitably evolves, the dynamic and modular approach encourages you to make changes quickly and easily.
 
 
 ### When would you use it?
@@ -105,19 +103,19 @@ All set?  Okay, here we go!
 
 2. install dependancies
     ```shell
-    $ pip3 install -r requirements.txt
+    $ pip3 install -r zoom/requirements.txt
     ```
 
 3. put the zoom directory on your pythonpath
 There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll neeed to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
     ```
-    $ export PYTHONPATH=/tmp/zoom/zoom
+    $ export PYTHONPATH=/tmp/zoom
     ```
 
 3. add zoom command to your path  
 Ubuntu example:  
     ```shell
-    $ ln -s /path-to-libs/zoom/utils/zoom/zoom /usr/local/bin/zoom
+    $ ln -s /tmp/zoom/utils/zoom/zoom /usr/local/bin/zoom
     ```
 
 4. configure zoom database  
@@ -142,30 +140,30 @@ zoom where to find your zoom instance.
 
 ### Creating the Blog App
 First, you'll need a place to build your apps.  Make it and cd into it.
+```shell
+$ mkdir apps && cd apps
+```
 
-    ```shell
-    $ mkdir apps && cd apps
-    ```
 To let Zoom know where to find this apps directory add it to the site.ini file in your `site.ini` file which you'll find in the web/sites/localhost directory.  Look for the path setting in the [apps] section of the site.ini file and add the path to your apps directory.
 
 Next, let's create the blog app.  Start by creating a directory in your apps directory for the blog.
 
-    ```shell
-    $ mkdir blog
-    ```
+```shell
+$ mkdir blog
+```
 
 Now we'll create a very simple hello world app, just to make sure it's all working correctly.  Create a file called app.py that contains this:
 
-    ```python
-    """
-      zoom app v 0.1
-    """
+```python
+"""
+    zoom app v 0.1
+"""
 
-    imoprt zoom
+imoprt zoom
 
-    def hello(request):
-      return zoom.page('Hello, World!', title='Hello!')
-    ```
+def hello(request):
+    return zoom.page('Hello, World!', title='Hello!')
+```
 
 Go to your Zoom instance in your browser and you should see your new app.
 
@@ -173,15 +171,15 @@ This is the most basic app, which basically takes a request object as the sole p
 
 To do a more advanced app, Zoom provides a App class that handles basic routing and other services and calls other parts of your app.  To use it just create an instance of it in your app.py file, like this:
 
-    ```python
-    """
-      zoom app v 0.2
-    """
+```python
+"""
+    zoom app v 0.2
+"""
 
-    import zoom
+import zoom
 
-    app = zoom.App()
-    ```
+app = zoom.App()
+```
 
 Now when you run your app you should get a "Page Not Found" status 404 page.  This is happening because we haven't provided any pages for the app.  To do that create an index.py file to provided the app content.
 
@@ -191,54 +189,54 @@ In our case, we'd like to store blog posts.  For this example, for each blog ent
 
 We start by defining a function that returns the fields we want to use in our app.  We then pass that function to the Collection class which will use the fields to create a collection.
 
-    ```python
-    """
-      blog index v 0.1
-    """
+```python
+"""
+    blog index v 0.1
+"""
 
-    import zoom
-    import zoom.fields as f
+import zoom
+import zoom.fields as f
 
-    def blog_fields():
-      return f.Fields(
-        f.TextField('Name'),
-        f.MemoField('Description'),
-        f.EditField('Body'),
-        f.DateField('Date Published'),
-      )
-
-    main = zoom.collect.Collection(
-      blog_fields,
-      url=zoom.system.app.url,
+def blog_fields():
+    return f.Fields(
+    f.TextField('Name'),
+    f.MemoField('Description'),
+    f.EditField('Body'),
+    f.DateField('Date Published'),
     )
-    ```
+
+main = zoom.collect.Collection(
+    blog_fields,
+    url=zoom.system.app.url,
+)
+```
 
 Now, when you run your app.  You should see a list where you can enter blog entries.
 
 Now, let's say, you realized you would like to add an Author field.  Just add the field to the list and re-run your app.  Like this:
 
-    ```python
-    """
-      blog index v 0.1
-    """
+```python
+"""
+    blog index v 0.1
+"""
 
-    import zoom
-    import zoom.fields as f
+import zoom
+import zoom.fields as f
 
-    def blog_fields():
-      return f.Fields(
-        f.TextField('Name'),
-        f.TextField('Author'),
-        f.MemoField('Description'),
-        f.EditField('Body'),
-        f.DateField('Date Published'),
-      )
-
-    main = zoom.collect.Collection(
-      blog_fields,
-      url=zoom.system.app.url,
+def blog_fields():
+    return f.Fields(
+    f.TextField('Name'),
+    f.TextField('Author'),
+    f.MemoField('Description'),
+    f.EditField('Body'),
+    f.DateField('Date Published'),
     )
-    ```
+
+main = zoom.collect.Collection(
+    blog_fields,
+    url=zoom.system.app.url,
+)
+```
 
 Now, run it and try adding some data.
 
