@@ -50,6 +50,8 @@ class Site(BasicSite):
 
         # prepare a fake request adapter to satisfy the legacy api
         path = path or zoom.tools.zoompath('web', 'sites', 'localhost')
+        if not os.path.isdir(path):
+            raise Exception('Site missing: %s' % path)
         rest, name = os.path.split(path)
         instance, _ = os.path.split(rest)
         fake_request_adapter = zoom.utils.Bunch(
