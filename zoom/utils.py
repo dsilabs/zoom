@@ -419,7 +419,7 @@ class Config(object):
     """
 
     def __init__(self, filename):
-        self.config = configparser.ConfigParser()
+        self.config = configparser.ConfigParser(strict=False)
         if not filename or not os.path.exists(filename):
             raise Exception('%s file missing' % filename)
         self.config.read(filename)
