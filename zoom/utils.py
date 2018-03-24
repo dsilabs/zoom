@@ -21,7 +21,7 @@ POSITIVE = [True, 1, 'True', 'yes', 'y', 'on', '1']
 NEGATIVE = [False, 0, 'False', 'no', 'n', 'off', '0']
 
 chars = ''.join(map(chr, range(256)))
-keep_these = string.ascii_letters + string.digits + '- '
+keep_these = string.ascii_letters + string.digits + '-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
