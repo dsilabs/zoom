@@ -19,14 +19,6 @@ def get_user_group_options(site):
     return user_groups
 
 
-def get_user_memberships(user):
-    db = context.site.db
-    return set(
-        str(group_id) for group_id, in
-        db('select group_id from members where user_id=%s', user.user_id)
-    )
-
-
 def get_subgroups(db, groups):
     """get subgroups for a list of groups
     """
