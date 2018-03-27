@@ -127,15 +127,21 @@ class MyUser(User):
 
     def __init__(self, *a, **k):
         User.__init__(self, *a, **k)
-        self.memberships = model.get_user_memberships(self)
+        self.__memberships = None
+
+    @property
+    def memberships(self):
+        if not self.__memberships:
+            self.__memberships = model.get_user_memberships(self)
+        return self.__memberships
 
 
 def main(route, request):
     db = request.site.db
     users = Users(db, entity=MyUser)
     fields = user_fields(request)
-    columns = 'link', 'phone', 'email', 'status_text', 'updated_by_link', 'when_updated'
-    labels = 'Username', 'Phone', 'Email', 'Status', 'Updated By', 'Updated'
+    columns = 'link', 'phone', 'email', 'status_text', 'when_updated', 'when_last_seen'
+    labels = 'Username', 'Phone', 'Email', 'Status', 'Updated', 'Last Seen'
     return Collection(
         fields,
         model=User,
