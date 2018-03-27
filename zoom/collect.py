@@ -135,7 +135,7 @@ class CollectionView(View):
             if many_records and not kwargs.get('all'):
                 title = 'Most Recently Updated ' + c.title
                 records = get_recent(15)
-                actions.append(('Show All', 'clients?all=1'))
+                actions.append(('Show All', c.url + '?all=1'))
             else:
                 title = c.title
                 records = c.store
