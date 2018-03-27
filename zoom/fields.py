@@ -2365,7 +2365,7 @@ class MultiselectField(TextField):
         else:
             current_values = self.value
         current_values = ensure_listy(current_values)
-        current_labels = self._scan(current_values, lambda a: a[0])
+        current_values = list(map(str, ensure_listy(current_values)))
         result = []
         name = self.name
         tpl = '<select multiple="multiple" class="%s" name="%s" id="%s">\n'
@@ -2376,7 +2376,7 @@ class MultiselectField(TextField):
             else:
                 label, value = option, option
             style = self.option_style(label, value)
-            if value in current_values:
+            if str(value) in current_values:
                 result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value, label))
             else:
                 result.append('<option %svalue="%s">%s</option>\n' % (style, value, label))
@@ -2424,7 +2424,8 @@ class ChosenMultiselectField(MultiselectField):
             current_values = self.default
         else:
             current_values = self.value
-        current_values = ensure_listy(current_values)
+        # current_values = ensure_listy(current_values)
+        current_values = list(map(str, ensure_listy(current_values)))
         current_labels = self._scan(current_values, lambda a: a[0])
         result = []
         name = self.name
@@ -2435,7 +2436,7 @@ class ChosenMultiselectField(MultiselectField):
             else:
                 label, value = option, option
             style = self.option_style(label, value)
-            if value in current_values:
+            if str(value) in current_values:
                 result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value,label))
             else:
                 result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))

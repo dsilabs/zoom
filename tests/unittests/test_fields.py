@@ -422,9 +422,11 @@ def trim(text):
 
 class TestMultiselectField(unittest.TestCase):
 
-    def test_multislect_basic(self):
+    field_type = MultiselectField
+
+    def test_multiselect_basic(self):
         user_options = ['Pat', 'Terry', 'Sam']
-        f = MultiselectField('Users', options=user_options)
+        f = self.field_type('Users', options=user_options)
         self.assertEqual(f.display_value(), '')
 
         t = trim("""
@@ -434,7 +436,7 @@ class TestMultiselectField(unittest.TestCase):
         <option value="Sam">Sam</option>
         </select>
         """)
-        self.assertEqual(f.widget(), t)
+        self.assertEqual(str(f.widget()), t)
 
         f.validate(**dict(users='Pat'))
         self.assertEqual(f.display_value(), 'Pat')
@@ -451,7 +453,7 @@ class TestMultiselectField(unittest.TestCase):
             ('users', 2),
             ('guests', 3),
         ]
-        f = MultiselectField('Memberships', options=membership_options)
+        f = self.field_type('Memberships', options=membership_options)
         self.assertEqual(f.evaluate(), {'memberships': []})
         self.assertEqual(f.display_value(), '')
 
@@ -474,3 +476,133 @@ class TestMultiselectField(unittest.TestCase):
         f.initialize({'memberships': [3, '1']})
         self.assertEqual(f.evaluate(), {'memberships': [1, 3]})
         self.assertEqual(f.display_value(), 'admins; guests')
+
+        f = self.field_type(
+            'Memberships',
+            default=[2],
+            options=membership_options
+        )
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+        self.assertEqual(str(f.widget()),
+        trim(
+        """
+        <select multiple="multiple" class="multiselect" name="memberships" id="memberships">
+        <option value="1">admins</option>
+        <option value="2" selected>users</option>
+        <option value="3">guests</option>
+        </select>
+        """
+        ))
+
+        f = self.field_type(
+            'Memberships',
+            default=['2'],
+            options=membership_options
+        )
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+        self.assertEqual(str(f.widget()),
+        trim(
+        """
+        <select multiple="multiple" class="multiselect" name="memberships" id="memberships">
+        <option value="1">admins</option>
+        <option value="2" selected>users</option>
+        <option value="3">guests</option>
+        </select>
+        """
+        ))
+
+
+class TestChosenMultiselectField(unittest.TestCase):
+
+    field_type = ChosenMultiselectField
+
+    def test_multiselect_basic(self):
+        user_options = ['Pat', 'Terry', 'Sam']
+        f = self.field_type('Users', options=user_options)
+        self.assertEqual(f.display_value(), '')
+
+        t = trim("""
+        <select data-placeholder="Select Users" multiple="multiple" class="chosen" name="users" id="users">
+        <option value="Pat">Pat</option>
+        <option value="Terry">Terry</option>
+        <option value="Sam">Sam</option>
+        </select>
+        """)
+        self.assertEqual(str(f.widget()), t)
+
+        f.validate(**dict(users='Pat'))
+        self.assertEqual(f.display_value(), 'Pat')
+
+        f.validate(**dict(users=['Pat', 'Terry']))
+        self.assertEqual(f.display_value(), 'Pat; Terry')
+
+        f.validate(**dict())
+        self.assertEqual(f.display_value(), '')
+
+    def test_multiselect_numeric_codes(self):
+        membership_options = [
+            ('admins', 1),
+            ('users', 2),
+            ('guests', 3),
+        ]
+        f = self.field_type('Memberships', options=membership_options)
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+
+        f.initialize({'memberships': 1})
+        self.assertEqual(f.evaluate(), {'memberships': [1]})
+        self.assertEqual(f.display_value(), 'admins')
+
+        f.initialize({'memberships': [1, 2]})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': [2, 1]})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': ['2', '1']})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': [3, '1']})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 3]})
+        self.assertEqual(f.display_value(), 'admins; guests')
+
+        f = self.field_type(
+            'Memberships',
+            default=[2],
+            options=membership_options
+        )
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+        self.assertEqual(str(f.widget()),
+        zoom.utils.trim(
+        """
+<select data-placeholder="Select Memberships" multiple="multiple" class="chosen" name="memberships" id="memberships">
+<option value="1">admins</option>
+<option value="2" selected>users</option>
+<option value="3">guests</option>
+</select>
+        """
+        ))
+
+        f = self.field_type(
+            'Memberships',
+            default=['2'],
+            options=membership_options
+        )
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+        self.assertEqual(str(f.widget()),
+        zoom.utils.trim(
+        """
+<select data-placeholder="Select Memberships" multiple="multiple" class="chosen" name="memberships" id="memberships">
+<option value="1">admins</option>
+<option value="2" selected>users</option>
+<option value="3">guests</option>
+</select>
+        """
+        ))
