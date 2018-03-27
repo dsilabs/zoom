@@ -26,7 +26,7 @@ class SystemTests(WebdriverTestCase):
                 username=username,
             )
         )
-        self.chosen('groups', ['managers'])
+        self.chosen('memberships', ['managers'])
         self.click('create_button')
 
     def delete_user(self, username):

@@ -11,9 +11,19 @@ from zoom.models import Groups
 
 
 def get_user_group_options(site):
-    return list(
-        (name, str(id)) for name, id in
-        site.db('select name, id from groups where type="U" order by name')
+    groups = Groups(site.db)
+    user_groups = list(sorted(
+        (group.link, group.key)
+        for group in groups.find(**{'type': 'U'})
+    ))
+    return user_groups
+
+
+def get_user_memberships(user):
+    db = context.site.db
+    return set(
+        str(group_id) for group_id, in
+        db('select group_id from members where user_id=%s', user.user_id)
     )
 
 
@@ -295,9 +305,7 @@ def update_user_groups(record):
     )
     logger.debug('existing_groups: %r', existing_groups)
 
-    updated_groups = set(
-        int(group) for group in record['groups']
-    )
+    updated_groups = set(record['memberships'])
     logger.debug('updated_groups: %r', updated_groups)
 
     if updated_groups != existing_groups:
