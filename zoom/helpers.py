@@ -331,7 +331,10 @@ def when(date, since=None):
     '<span title="2018-02-22 01:02:42">2 days ago</span>'
 
     """
-    return zoom.html.span(
-        zoom.tools.how_long_ago(date, since),
-        title='%s' % date,
-    )
+    if date:
+        return zoom.html.span(
+            zoom.tools.how_long_ago(date, since),
+            title='%s' % date,
+        )
+    else:
+        return 'never'
