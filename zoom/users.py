@@ -157,6 +157,7 @@ class User(Record):
         self.__user_groups = None
         self.__user_group_ids = None
         self.__apps = None
+        self.__memberships = None
         self.request = None
 
     @property
@@ -315,6 +316,13 @@ class User(Record):
             self.__groups = get_groups(store.db, self)
         return self.__groups
 
+    def get_memberships(self):
+        db = zoom.system.site.db
+        return set(
+            group_id for group_id, in
+            db('select group_id from members where user_id=%s', self.user_id)
+        )
+
     @property
     def groups(self):
         """Returns the groups the user belongs to"""
@@ -423,6 +431,13 @@ class User(Record):
     def when_last_seen(self):
         return zoom.helpers.when(self.last_seen)
 
+    @property
+    def memberships(self):
+        if not self.__memberships:
+            self.__memberships = self.get_memberships()
+        return self.__memberships
+
+
 class Users(RecordStore):
     """Zoom Users
 
@@ -461,6 +476,7 @@ class Users(RecordStore):
       groups_ids ..........: [4, 3]
       updated_by ..........: 1
       default_app .........: '/home'
+      memberships .........: {3}
       status_text .........: 'active'
       is_developer ........: False
       when_updated ........: 'over a month ago'
