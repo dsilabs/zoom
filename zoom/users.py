@@ -419,6 +419,10 @@ class User(Record):
                     return user.link
         return user_id
 
+    @property
+    def when_last_seen(self):
+        return zoom.helpers.when(self.last_seen)
+
 class Users(RecordStore):
     """Zoom Users
 
@@ -460,6 +464,7 @@ class Users(RecordStore):
       status_text .........: 'active'
       is_developer ........: False
       when_updated ........: 'over a month ago'
+      when_last_seen ......: 'never'
       updated_by_link .....: 'admin'
       is_authenticated ....: False
 
