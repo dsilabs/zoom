@@ -2323,12 +2323,12 @@ class MultiselectField(TextField):
 
     def _scan(self, t, f):
         if t:
-            t = ensure_listy(t)
+            t = list(map(str, ensure_listy(t)))
             result = []
             for option in self.options:
                 if len(option) == 2 and is_listy(option):
                     label, value = option
-                    if label in t or value in t:
+                    if label in t or str(value) in t:
                         result.append(f(option))
                 elif option in t:
                     result.append(option)

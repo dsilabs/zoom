@@ -444,3 +444,33 @@ class TestMultiselectField(unittest.TestCase):
 
         f.validate(**dict())
         self.assertEqual(f.display_value(), '')
+
+    def test_multiselect_numeric_codes(self):
+        membership_options = [
+            ('admins', 1),
+            ('users', 2),
+            ('guests', 3),
+        ]
+        f = MultiselectField('Memberships', options=membership_options)
+        self.assertEqual(f.evaluate(), {'memberships': []})
+        self.assertEqual(f.display_value(), '')
+
+        f.initialize({'memberships': 1})
+        self.assertEqual(f.evaluate(), {'memberships': [1]})
+        self.assertEqual(f.display_value(), 'admins')
+
+        f.initialize({'memberships': [1, 2]})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': [2, 1]})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': ['2', '1']})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 2]})
+        self.assertEqual(f.display_value(), 'admins; users')
+
+        f.initialize({'memberships': [3, '1']})
+        self.assertEqual(f.evaluate(), {'memberships': [1, 3]})
+        self.assertEqual(f.display_value(), 'admins; guests')
