@@ -99,8 +99,14 @@ class TestUser(unittest.TestCase):
             remote_user='newuser',
             profiler=set(),
         )
+        # If the user is authenticated but not known to the system
+        # the user should be added to the users table.
+        self.assertFalse(site.users.first(username='newuser'))
         set_current_user(request)
         self.assertEqual(request.user.username, 'newuser')
+        self.assertTrue(site.users.first(username='newuser'))
+        site.users.delete(username='newuser')
+        self.assertFalse(site.users.first(username='newuser'))
 
     def test_user_groups(self):
         user = self.users.first(username='admin')
