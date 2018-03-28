@@ -196,26 +196,7 @@ class DynamicView(View):
     keyword parameters, which can then also be referenced with self.<name>.
     """
 
-    # The js_wrapper is something we should have introduced earlier.  The
-    # existing js rendering does not do this but it should have.  Consequently
-    # we have apps having to test for themselves whether the document is
-    # loaded when the framework could have done this.  Introducing it here
-    # so that at least new apps using DynamicView do not have to do this
-    # but ideally this logic would be implemented further along in the
-    # rendering process so that it could be done once for the entire rendered
-    # js code section.  We cant count on that yet so we're going to try
-    # doing it here for every DynamicView - which is not ideal, but at least
-    # it frees up the developer from having to do it now.  We will fix the
-    # actual implementation once we know we wont break any legacy apps
-    # in the process.
-
     asset_types = ['html', 'css', 'js']
-
-    js_wrapper = """
-        $(function(){{
-            {}
-        }});
-    """
 
     def __init__(self, model=None, **k):
         View.__init__(self, model, **k)
@@ -247,7 +228,7 @@ class DynamicView(View):
                 if k in ['html']:
                     result[k] = v.format(self=self)
                 elif k in ['js']:
-                    result[k] = self.js_wrapper.format(v)
+                    result[k] = v
                 else:
                     result[k] = v
             return component(**result)
