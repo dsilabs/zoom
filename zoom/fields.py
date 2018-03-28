@@ -2424,7 +2424,6 @@ class ChosenMultiselectField(MultiselectField):
             current_values = self.default
         else:
             current_values = self.value
-        # current_values = ensure_listy(current_values)
         current_values = list(map(str, ensure_listy(current_values)))
         current_labels = self._scan(current_values, lambda a: a[0])
         result = []
