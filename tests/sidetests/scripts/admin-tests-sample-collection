@@ -288,7 +288,7 @@
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>id=yes,_im_sure.__please_delete._button</td>
+	<td>id=yes_im_sure__please_delete_button</td>
 	<td></td>
 </tr>
 <tr>
@@ -323,7 +323,7 @@
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>id=yes,_im_sure.__please_delete._button</td>
+	<td>id=yes_im_sure__please_delete_button</td>
 	<td></td>
 </tr>
 <tr>
@@ -343,7 +343,7 @@
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>id=yes,_im_sure.__please_delete._button</td>
+	<td>id=yes_im_sure__please_delete_button</td>
 	<td></td>
 </tr>
 <tr>

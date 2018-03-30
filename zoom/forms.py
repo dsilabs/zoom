@@ -134,7 +134,7 @@ def delete_form(name, cancel=None):
         MarkdownText('Are you sure you want to delete **%s**?' % name),
         Hidden(name='confirm', value='no'),
         Button(
-            'Yes, I''m sure.  Please delete.',
+            'Yes, I\'m sure.  Please delete.',
             name='delete_button',
             cancel=cancel or url_for('..')
         )
