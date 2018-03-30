@@ -131,28 +131,26 @@ def kind(o):
 
 
 def id_for(*args):
-    """
-    Calculates a valid HTML tag id given an arbitrary string.
+    """Calculates a valid HTML tag id given an arbitrary string.
 
-        >>> id_for('Test 123')
-        'test-123'
-        >>> id_for('New Record')
-        'new-record'
-        >>> id_for('New "special" Record')
-        'new-special-record'
-        >>> id_for("hi", "test")
-        'hi~test'
-        >>> id_for("hi test")
-        'hi-test'
-        >>> id_for("hi-test")
-        'hi-test'
-        >>> id_for(1234)
-        '1234'
-        >>> id_for('this %$&#@^is##-$&*!it')
-        'this-is-it'
-        >>> id_for('test-this')
-        'test-this'
-
+    >>> id_for('Test 123')
+    'test-123'
+    >>> id_for('New Record')
+    'new-record'
+    >>> id_for('New "special" Record')
+    'new-special-record'
+    >>> id_for("hi", "test")
+    'hi~test'
+    >>> id_for("hi test")
+    'hi-test'
+    >>> id_for("hi-test")
+    'hi-test'
+    >>> id_for(1234)
+    '1234'
+    >>> id_for('this %$&#@^is##-$&*!it')
+    'this-is-it'
+    >>> id_for('test-this')
+    'test-this'
     """
     def id_(text):
         return str(text).strip().translate(allowed).lower().replace(' ', '-')
@@ -161,8 +159,26 @@ def id_for(*args):
 
 
 def name_for(text):
-    """Calculates a valid HTML field name given an arbitrary string."""
-    return text.replace('*', '').replace(' ', '_').strip().lower()
+    """Calculates a valid HTML field name given an arbitrary string.
+
+    >>> name_for('Test 123')
+    'test_123'
+    >>> name_for('New Record')
+    'new_record'
+    >>> name_for('New "special" Record')
+    'new_special_record'
+    >>> name_for("hi test")
+    'hi_test'
+    >>> name_for("hi-test")
+    'hi_test'
+    >>> name_for(1234)
+    '1234'
+    >>> name_for('this %$&#@^is##-$&*!it')
+    'this_is_it'
+    >>> name_for('test-this')
+    'test_this'
+    """
+    return id_for(text).replace('-', '_')
 
 
 def trim(text):
