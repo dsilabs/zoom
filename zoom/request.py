@@ -88,7 +88,7 @@ def get_library_instance():
     to run using the built-in instance.  This is most common
     in development environments.
     """
-    return os.path.abspath(
+    return os.path.realpath(
         os.path.join(
             os.path.dirname(__file__),
             '..',
@@ -114,7 +114,7 @@ def get_instance(directory):
 
     if directory and os.path.isdir(os.path.join(directory, 'sites')):
         # user wants to run a specific instance overriding the config files
-        instance = os.path.abspath(directory)
+        instance = os.path.realpath(directory)
         logger.debug('instance: %s', instance)
         return instance
 
