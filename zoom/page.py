@@ -73,6 +73,7 @@ class Page(object):
     def __init__(self, content, *args, **kwargs):
         self.content = content
         self.theme = 'default'
+        self.theme_uri = None
         self.template = 'default'
         self.title = ''
         self.subtitle = ''
@@ -193,9 +194,11 @@ class Page(object):
             full_page = Component(self.content)
         self.content = full_page.render()
 
-        app_theme = request.app.theme
-        site_theme = zoom.system.site.theme
-        self.theme = self.kwargs.get('theme', app_theme or site_theme)
+        app_theme = request.app.theme if hasattr(request, 'app') else None
+        site_theme = request.site.theme
+        self.theme = self.kwargs.get(
+            'theme', app_theme or site_theme or 'default'
+        )
         self.theme_uri = '/themes/' + self.theme
 
         zoom.render.add_helpers(
