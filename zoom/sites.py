@@ -63,6 +63,7 @@ class Site(BasicSite):
 
         # create a site based on the legacy api
         BasicSite.__init__(self, fake_request_adapter)
+        self.instance_path = instance
 
         # attach the supporting database attributes
         self.db = db = zoom.database.connect_database(self.config)
