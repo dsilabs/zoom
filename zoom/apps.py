@@ -371,6 +371,10 @@ def handle(request):
     logger.debug('app_name is: %r', app_name)
     app = app_name and load_app(request.site, app_name)
 
+    if not app:
+        logger.debug('app %r not found in site.apps_paths', app_name)
+        logger.debug('site.apps_paths: %r', request.site.apps_paths)
+
     redirect_response = zoom.response.RedirectResponse
 
     if app and app.enabled and user.can_run(app):
@@ -383,10 +387,10 @@ def handle(request):
 
     elif app and app.enabled:
         msg = (
-            'insufficient privileges to run app %s (%r), '
+            '%r has insufficient privileges to run app %s (%r), '
             'redirecting to default'
         )
-        logger.warning(msg, app_name, app.path)
+        logger.warning(msg, user.username, app_name, app.path)
         return redirect_response('/')
 
     elif app:
@@ -505,4 +509,6 @@ def handler(request, next_handler, *rest):
     if '.' not in sys.path:
         logger.debug('adding "." to path')
         sys.path.insert(0, '.')
-    return handle(request) or next_handler(request, *rest)
+    response = handle(request)
+    logger.debug('app respoded with type %s' % type(response))
+    return response or next_handler(request, *rest)
