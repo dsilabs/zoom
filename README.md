@@ -106,8 +106,8 @@ All set?  Okay, here we go!
     $ pip3 install -r zoom/requirements.txt
     ```
 
-3. put the zoom directory on your pythonpath
-There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll neeed to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
+3. put the zoom directory on your pythonpath  
+There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll need to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
     ```
     $ export PYTHONPATH=/tmp/zoom
     ```
@@ -115,7 +115,7 @@ There are several ways to do this, but the simplest is probably to add the zoom 
 3. add zoom command to your path  
 Ubuntu example:  
     ```shell
-    $ ln -s /tmp/zoom/utils/zoom/zoom /usr/local/bin/zoom
+    $ ln -s /tmp/zoom/utils/zoom/bin/zoom /usr/local/bin/zoom
     ```
 
 4. configure zoom database  
