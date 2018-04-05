@@ -9,7 +9,7 @@
 
 import os
 
-from .common import WebdriverTestCase
+from zoom.testing.webtest import WebdriverTestCase
 
 
 class MissingSiteTests(WebdriverTestCase):

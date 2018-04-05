@@ -2,9 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-    zoom.tests.webdriver_tests.common
+    web tests
 
-    Common functions and classes for WebDriver tests
+    Common functions and classes for WebDriver based system tests
+
+    Note:
+        Requires Python packages that are not included in the
+        main requiremen.txt file.  To run these types of tests
+        you'll need to install the packages listed in
+        zoom/tests/requirements.txt
+
 """
 
 import logging
@@ -45,7 +52,6 @@ class WebdriverTestPrimitives(unittest.TestCase):
     def tearDown(self):
         if self.headless:
             self.display.stop()
-
 
         if self.driver_name == 'phantomjs':
             del self.driver

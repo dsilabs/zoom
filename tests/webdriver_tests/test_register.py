@@ -10,7 +10,7 @@
 import zoom
 
 
-from .common import WebdriverTestCase
+from zoom.testing.webtest import WebdriverTestCase
 
 
 class RegisterTests(WebdriverTestCase):

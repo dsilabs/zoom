@@ -4,7 +4,7 @@
     A stub for now while we redesign app.
 """
 
-from .common import AdminTestCase
+from zoom.testing.webtest import AdminTestCase
 
 class WebTest(AdminTestCase):
 

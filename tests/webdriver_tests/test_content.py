@@ -8,7 +8,7 @@
 """
 
 
-from .common import WebdriverTestCase
+from zoom.testing.webtest import WebdriverTestCase
 
 
 class ContentTests(WebdriverTestCase):
