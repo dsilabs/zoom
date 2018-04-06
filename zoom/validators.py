@@ -187,6 +187,9 @@ class DateValidator(Validator):
 
     >>> v.valid('2016-01-41')
     False
+
+    >>> v.valid(datetime.date(2016, 1, 14))
+    True
     """
     def __init__(self, date_format='%b %d, %Y'):
         strftime = datetime.datetime.strftime
@@ -194,7 +197,7 @@ class DateValidator(Validator):
 
         def test(date):
             """test for valid date value"""
-            if not date:
+            if not date or isinstance(date, datetime.date):
                 return True
             try:
                 strptime(date, date_format)
