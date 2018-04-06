@@ -510,5 +510,5 @@ def handler(request, next_handler, *rest):
         logger.debug('adding "." to path')
         sys.path.insert(0, '.')
     response = handle(request)
-    logger.debug('app respoded with type %s' % type(response))
+    logger.debug('app responded with type %s' % type(response))
     return response or next_handler(request, *rest)
