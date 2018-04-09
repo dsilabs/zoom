@@ -28,6 +28,28 @@ default_packages = {
             'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.css',
         ]
     },
+    'datatables': {
+        'libs': [
+            '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js',
+            ],
+        'styles': [
+            '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css',
+        ]
+    },
+    'datatables.buttons': {
+        'libs': [
+            '//cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js',
+            '//cdn.datatables.net/buttons/1.5.1/js/buttons.bootstrap.min.js',
+            '//cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js',
+            '//cdn.datatables.net/buttons/1.5.1/js/buttons.jqueryui.min.js',
+            '//cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js',
+            ],
+        'styles': [
+            '//cdn.datatables.net/buttons/1.5.1/css/buttons.bootstrap.min.css',
+            '//cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css',
+            '//cdn.datatables.net/buttons/1.5.1/css/buttons.jqueryui.min.css'
+            ]
+    },
     'fontawesome4': {
         'styles': [
             '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
