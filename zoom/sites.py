@@ -59,6 +59,7 @@ class Site(BasicSite):
             instance=instance,
             domain=name,
             protocol='http',
+            host=name,
         )
 
         # create a site based on the legacy api
