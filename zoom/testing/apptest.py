@@ -191,6 +191,9 @@ class AppTestPrimitives(unittest.TestCase):
             else:
                 raise Exception('redirect location missing')
         else:
+            if self.response.status == '200 OK':
+                # usually a validation error so dump the page content for analysis
+                self.save_content()
             raise Exception('redirect missing %r' % self.response.status)
         return self.response
 
