@@ -637,29 +637,18 @@ class IndexedCollectionSearch(object):
     def search(self, text):
         """Return records that match search text"""
 
-        def matches(item, terms):
-            """match a search by field values"""
-            fields.initialize(item)
-            v = ';'.join(
-                map(str, fields.as_searchable())
-            ).lower()
-            return terms and not any(t not in v for t in terms)
-
-        fields = self.collection.fields
         terms = text and [t.lower() for t in text.split()]
+        cmd = 'select distinct row_id from tokens where kind=%s and token like %s'
 
-        # could potentially do better than this by doing multiple queries but
-        # this seems worth a try to see how it performs.
-        longest_term = sorted(terms, key=len)[-1]
-        target = '%{}%'.format(longest_term)
-        cmd = 'select row_id from tokens where kind=%s and token like %s'
+        result = []
+        for term in sorted(terms, key=len, reverse=True):
+            target = '%{}%'.format(term)
+            result.append(
+                set(i for i, in self.db(cmd, self.kind, target))
+            )
 
-        q1 = [record_id for record_id, in self.db(cmd, self.kind, target)]
-
-        return [
-            record for record in self.collection.store.get(q1)
-            if matches(record, terms)
-        ]
+        keys = list(set.intersection(*result))
+        return self.collection.store.get(keys)
 
 
 class Collection(object):
