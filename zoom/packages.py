@@ -79,8 +79,9 @@ def load(pathname):
 def get_registered_packages():
     """Returns the list of packages known to the site
 
-    >>> request = zoom.request.Request(dict(PATH_INFO='/'))
-    >>> zoom.system.site = zoom.site.Site(request)
+    >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.site.Site(zoom.system.request)
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={})
 
     >>> packages = get_registered_packages()
     >>> 'c3' in packages
@@ -90,7 +91,7 @@ def get_registered_packages():
     packages_list = [
         default_packages,
         zoom.system.site.packages,
-        # app_packages,
+        zoom.system.request.app.packages,
     ]
     for packages in packages_list:
         registered.update(packages)

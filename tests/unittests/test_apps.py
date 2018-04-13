@@ -21,7 +21,7 @@ class TestApps(unittest.TestCase):
     def setUp(self):
         zoom.component.composition.parts = zoom.component.Component()
         zoom.system.providers = []
-        self.request = build('http://localhost', {})
+        self.request = zoom.system.request = build('http://localhost', {})
         self.request.profiler = set()
         self.db = zoom.database.setup_test()
         zoom.system.site = zoom.site.Site(self.request)
@@ -29,13 +29,14 @@ class TestApps(unittest.TestCase):
         this_dir = os.path.dirname(__file__)
         # self.apps_dir = os.path.join(this_dir, '../../web/apps')
         self.apps_dir = zoom.tools.zoompath('web', 'apps')
-        self.request.app = zoom.utils.Bunch(
+        self.request.app = zoom.system.request.app = zoom.utils.Bunch(
             name='App',
             description='An app',
             url='/app',
             menu=[],
             keywords='one,two',
             theme=None,
+            packages={},
         )
         self.request.user = zoom.users.Users(self.db).first(username='user')
 
@@ -242,9 +243,8 @@ class TestApps(unittest.TestCase):
     def test_app_proxy_call(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
-        app = zoom.apps.AppProxy('hello', pathname, site)
+        zoom.system.request.app = app = zoom.apps.AppProxy('hello', pathname, site)
         app.request = self.request
-        print(app.method)
         method = app.method
         response = method(self.request).render(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)

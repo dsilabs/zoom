@@ -151,6 +151,7 @@ class AppProxy(object):
         self.config = self.get_config(DEFAULT_SETTINGS)
         self.link = zoom.helpers.link_to(self.title, self.url)
         self.request = None
+        self.packages = {}
 
         get = self.config.get
         self.visible = get('visible')
@@ -184,6 +185,7 @@ class AppProxy(object):
         if self._method is None:
             self.request.profiler.add('app loaded')
             self._method = getattr(load_module('app', self.filename), 'app')
+            self.packages = zoom.packages.load(os.path.join(self.path, 'packages.json'))
         return self._method
 
     @property
