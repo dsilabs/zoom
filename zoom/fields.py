@@ -2856,14 +2856,15 @@ class BasicImageField(Field):
     >>> i = BasicImageField('Photo')
     >>> i.initialize({'photo':'data blob', 't':12})
     >>> i.value
-    '<img class="image-field-image" alt="photo" src="image?name=photo">'
+    '<img alt="photo" class="image-field-image" src="image?name=photo" />'
     """
     size = maxlength = 40
     _type = 'file'
-    css_class = 'image_field'
-    no_image_url = '/static/zoom/images/no_photo.png'
+    css_class = 'image-field'
+    no_image_url = '/static/zoom/images/no_image.png'
     binary_image_data = None
     value = None
+    is_empty = True
 
     def _initialize(self, values):
         name = self.name.lower()
@@ -2871,17 +2872,16 @@ class BasicImageField(Field):
         if hasattr(values, name) and getattr(values, name):
             url = values.url + '/image?name=' + name
             alt = values.name
+            self.is_empty = False
         elif isinstance(values, dict) and values.get(name):
             # we do not know the route when passed as a dict
             # we just see the data blob
             url = 'image?name=' + name
+            self.is_empty = False
         else:
             url = self.no_image_url
-            # self.value = None
-        self.value = '<img class="image-field-image" alt="{}" src="{}">'.format(
-            alt,
-            url,
-        )
+            self.is_empty = True
+        self.value = html.img(url, alt=alt, classed='image-field-image')
 
     def display_value(self):
         return self.value
@@ -2892,18 +2892,18 @@ class BasicImageField(Field):
             'input',
             name=self.name,
             id=self.id,
-            Type=self._type,
-            Class=self.css_class,
+            typed=self._type,
+            classed=self.css_class,
         )
 
-        delete_link = (
-            '<div class="image-field-delete-link">'
-            '<a href="delete-image?name=%s">delete %s</a>'
-            '</div>' % (self.name.lower(), self.label.lower())
-        )
-
-        if self.value:
+        if not self.is_empty:
+            delete_link = (
+                '<div class="image-field-delete-link">'
+                '<a href="delete-image?name=%s">delete %s</a>'
+                '</div>' % (self.name.lower(), self.label.lower())
+            )
             tag += delete_link + self.display_value()
+
         return layout_field(
             self.label,
             ''.join([tag, self.render_msg(), self.render_hint()])
@@ -2913,16 +2913,17 @@ class BasicImageField(Field):
         return True
 
     def assign(self, value):
-        # print(f'{len(value)} bytes')
-        # self.value = None
         try:
             try:
                 self.binary_image_data = value.value
             except AttributeError:
                 self.value = value
+            self.is_empty = False
         except AttributeError:
             self.value = None
 
     def evaluate(self):
         value = self.binary_image_data
         return {self.name: value} if value else {}
+
+ImageField = BasicImageField

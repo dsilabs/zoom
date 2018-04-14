@@ -26,6 +26,10 @@
   min-height: 2em
   margin-bottom: 0.25em
 
+.field_show > img, .field_edit > img
+  border: 1px solid #dddddd
+  width: 200px
+
 .field_edit
   .dropzone
     border: 1px solid #ccc
@@ -71,12 +75,17 @@
     border-top-right-radius: 0
     border-bottom-right-radius: 0
     border-top: 1px solid #ccc
-  img.image-field-image
+
+  .image-field-image
     margin: 0
-  div.image-field-delete-link
+    border-color: #C0C0C0C0
+    width: 200px
+    border: 1px solid #dddddd
+  .image-field-delete-link
     text-align: center
-    margin: 1em 0 0 0
-    width: 490px
+    margin: 0.5
+    width: 200px
+
   .images_field
     width: 100%
     display: table-cell
@@ -85,6 +94,7 @@
     width: 490px
     border-radius: 4px
     padding: 10px
+
   input.checkbox_field
     margin: 0 0.5em 2px 0
     line-height: 2em
@@ -120,9 +130,6 @@
       font-weight: bold
       margin: 0
       padding: 0
-.field_show > img, .field_edit > img
-  border: 1px solid grey
-  width: 490px
 
 .content .field_edit td
   border: 0
@@ -240,8 +247,9 @@ select.pulldown
     margin: 0
     border-bottom: none
 
-/* Search
- *==========================
+
+// Search
+// ==========================
 
 div
   &.search
@@ -255,7 +263,7 @@ div
     input
       display: inline
       line-height: 25px
-      /* for IE
+      // for IE
       &.text_field
         width: 200px
   &.content input.search_button
@@ -277,8 +285,8 @@ div
       width: 40%
 
 
-/* Actions
- *==========================
+// Actions
+// ====================
 
 .actions
   display: inline
@@ -298,8 +306,8 @@ div
   margin-right: 2px
 
 
-/* Misc
- *==========================
+// Misc
+//==========================
 
 .meta
   color: #555
@@ -318,19 +326,9 @@ div
   margin-left: 0px
   font-size: 0.9em
 
-/* Alerts
- *==========================
+// Alerts
+//==========================
 .content
-  // .errors ul, .warnings ul, .messages ul
-  //   padding: 15px
-  //   margin-bottom: 20px
-  //   border: 1px solid transparent
-  //   border-radius: 4px
-  //
-  // .errors li, .warnings li, .messages li
-  //   list-style-type: none
-  //   padding: 0.25em
-  //   margin: 0
   .alert
     padding: 0
     margin: 0
@@ -340,10 +338,7 @@ div
 
   .alert ul
     padding: 0.5em
-    // border-style: solid
-    // border-width: medium
     margin: 0
-    // margin-top: 5px
 
   .alert li
     list-style-type: none
@@ -366,8 +361,8 @@ div
     border-color: #ebccd1
 
 
-/* Tables
- *==========================
+// Tables
+// ==========================
 
 .content
   table
@@ -401,8 +396,9 @@ div
       margin: 0
       vertical-align: top
 
-/* Lists (like tables but for data records)
- *==========================
+
+// Lists (like tables but for data records)
+// ==========================
 
 .baselist
   overflow-x: auto
