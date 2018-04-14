@@ -31,8 +31,12 @@ def tag(element, *args, **kwargs):
         content = ''
 
     keywords = dict(kwargs)
+
+    # avoids use of python reserved words
     if 'classed' in keywords:
         keywords['class'] = keywords.pop('classed')
+    if 'typed' in keywords:
+        keywords['type'] = keywords.pop('typed')
 
     parts = \
         [name] + \
