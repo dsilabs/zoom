@@ -201,3 +201,12 @@ def glyphicon(icon, **kwargs):
     }
     attributes.update(kwargs)
     return tag('span', '', **attributes)
+
+
+def img(src, **kwargs):
+    """HTML Image Tag
+
+    >>> img('/static/images/no_image.png', typed='standard-image')
+    '<img src="/static/images/no_image.png" type="standard-image" />'
+    """
+    return tag('img', src=src, **kwargs)
