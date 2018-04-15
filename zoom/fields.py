@@ -2854,39 +2854,73 @@ class BasicImageField(Field):
     'photo'
 
     >>> i = BasicImageField('Photo')
-    >>> i.initialize({'photo':'data blob', 't':12})
+    >>> i.initialize({'photo': b'data blob', 't':12})
     >>> i.value
-    '<img alt="photo" class="image-field-image" src="image?name=photo" />'
+    b'data blob'
+    >>> i.display_value()
+    '<img alt="Photo" class="image-field-image" src="image?name=photo" />'
     """
-    size = maxlength = 40
     _type = 'file'
     css_class = 'image-field'
     no_image_url = '/static/zoom/images/no_image.png'
-    binary_image_data = None
+    url = None
     value = None
-    is_empty = True
+    alt = None
+    default = None
+    updated_value = None
 
     def _initialize(self, values):
-        name = self.name.lower()
-        alt = self.name
-        if hasattr(values, name) and getattr(values, name):
-            url = values.url + '/image?name=' + name
-            alt = values.name
-            self.is_empty = False
-        elif isinstance(values, dict) and values.get(name):
-            # we do not know the route when passed as a dict
-            # we just see the data blob
-            url = 'image?name=' + name
-            self.is_empty = False
-        else:
-            url = self.no_image_url
-            self.is_empty = True
-        self.value = html.img(url, alt=alt, classed='image-field-image')
+        self.value = None
+        Field._initialize(self, values)
+        self.alt = values.get('name', getattr(values, 'name', None))
+        self.object_url = values.get('url', getattr(values, 'url', None))
+
+    def update(self, **values):
+        """Update the ImageField field values
+
+        We override the superclass here because we need behaviour
+        specific to how image fields arrive from forms.
+        """
+        try:
+            self.updated_value = values.get(self.name, None).value
+        except AttributeError:
+            self.updated_value = values.get(self.name, None)
 
     def display_value(self):
-        return self.value
+        """Display BasicImageField value
 
-    def edit(self):
+        BasicImageFields rely on the controller of the current resource
+        providing an image method so that when it wants to display
+        the associted image, it uses a standard img field which
+        calls back to the app to get the image.
+        """
+        if not self.value:
+            return ''
+        if self.value:
+            url = (
+                (self.object_url + '/')
+                if self.object_url else ''
+            ) + 'image?name=' + self.name
+        else:
+            url = self.no_image_url
+        return html.img(
+            url,
+            alt=self.alt or self.label,
+            classed='image-field-image'
+        )
+
+    def widget(self):
+        """Returns the BasicImageField widget
+
+        BasicImageField use an HTML input of type "file"
+        to collect the filename of the image to be uploaded.
+
+        If the field aready has a value, the BasicImageField
+        also provides a view of the current image with a link
+        for deleting the current image.  BasicImageField
+        relies on the current controller to provide the
+        delete-image method.
+        """
 
         tag = html.tag(
             'input',
@@ -2896,7 +2930,7 @@ class BasicImageField(Field):
             classed=self.css_class,
         )
 
-        if not self.is_empty:
+        if self.value:
             delete_link = (
                 '<div class="image-field-delete-link">'
                 '<a href="delete-image?name=%s">delete %s</a>'
@@ -2904,26 +2938,30 @@ class BasicImageField(Field):
             )
             tag += delete_link + self.display_value()
 
-        return layout_field(
-            self.label,
-            ''.join([tag, self.render_msg(), self.render_hint()])
-        )
+        return tag
 
     def requires_multipart_form(self):
+        """Returns True because images require multipart forms"""
         return True
 
     def assign(self, value):
+        """Assign a value to a BasicImageField
+        """
         try:
             try:
-                self.binary_image_data = value.value
+                # accept from a cgi field object
+                new_value = value.value
             except AttributeError:
-                self.value = value
-            self.is_empty = False
+                # accept from a database or blob
+                new_value = value
         except AttributeError:
-            self.value = None
+            new_value = None
+        if new_value:
+            self.value = new_value
 
     def evaluate(self):
-        value = self.binary_image_data
+        """Evaluate a BasicImageField"""
+        value = self.updated_value or self.value
         return {self.name: value} if value else {}
 
 ImageField = BasicImageField

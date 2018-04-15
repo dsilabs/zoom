@@ -9,6 +9,7 @@ import logging
 
 from zoom.fields import *
 from zoom.tools import unisafe
+import zoom.validators as v
 
 logger = logging.getLogger('zoom.fields')
 
@@ -384,37 +385,207 @@ class TestFieldSet(TestFields):
 
 class TestBasicImageField(unittest.TestCase):
     def setUp(self):
-        self.field = BasicImageField('Photo', hint='Drag and Drop or click')
+        self.field = BasicImageField('Photo', hint='click to select')
 
     def test_hint(self):
-        self.assertIn('Drag and Drop', self.field.edit())
+        self.assertIn('click to select', self.field.edit())
 
     def test_edit(self):
-        self.assertIn('<input ', self.field.edit())
+        target = '<input class="image-field" id="photo" name="photo" type="file" />'
+        self.assertIn(target, self.field.edit())
 
     def test_display_value(self):
-        self.field.initialize('fake image')
+        self.field.initialize({'photo': b'fake image'})
         self.assertIn('<img', self.field.display_value())
 
-    def test_assign(self):
-        fake_image = zoom.utils.Bunch(value='fake image attribute')
-        self.field.assign(fake_image)
-        self.assertIn('fake image attribute', self.field.binary_image_data)
-        self.field.assign('another fake image')
-        self.assertIn('another fake image', self.field.display_value())
-        self.assertEqual(self.field.evaluate(), {'photo': 'fake image attribute'})
-        self.assertEqual(self.field.value, 'another fake image')
-        self.assertIn('another', self.field.edit())
+    def test_assign_object(self):
+        field = self.field
+        fake_image = zoom.utils.Bunch(value=b'fake image')
+        field.assign(fake_image)
+        self.assertEqual(b'fake image', field.value)
+        self.assertEqual({'photo': b'fake image'}, field.evaluate())
+
+    def test_assign_value(self):
+        field = self.field
+        field.assign(b'fake image')
+        self.assertEqual(b'fake image', field.value)
+        self.assertEqual({'photo': b'fake image'}, field.evaluate())
 
     def test_initialize(self):
-        person = zoom.utils.Bunch(name='Joe', photo='binary data', url='/people/joe')
+        person = zoom.utils.Record(name='Joe', photo=b'fake photo', url='/people/joe')
         self.field._initialize(person)
-        self.assertIn('<img ', self.field.value)
-        self.assertIn('alt="Joe"', self.field.value)
-        self.assertIn('src="/people/joe/image?name=photo', self.field.value)
+        self.assertEqual(b'fake photo', self.field.value)
+        self.assertIn('alt="Joe"', self.field.display_value())
+        self.assertEqual({'photo': b'fake photo'}, self.field.evaluate())
+
+        person = zoom.utils.Record(title='DSI', photo=b'fake photo', url='/company/dsi')
+        self.field._initialize(person)
+        self.assertEqual(b'fake photo', self.field.value)
+        self.assertIn('alt="Photo"', self.field.display_value())
+        self.assertEqual({'photo': b'fake photo'}, self.field.evaluate())
+
+    def test_alt_override(self):
+        person = zoom.utils.Record(title='DSI', photo=b'fake photo', url='/company/dsi')
+        self.field._initialize(person)
+        self.field.alt = 'DSI'
+        self.assertEqual(b'fake photo', self.field.value)
+        self.assertIn('alt="DSI"', self.field.display_value())
+        self.assertEqual({'photo': b'fake photo'}, self.field.evaluate())
 
     def test_multipart(self):
         self.assertTrue(self.field.requires_multipart_form())
+
+    def test_create_record_validation_fail_and_retry(self):
+        # Test the case where a user specifies an
+        # image in the ImageField but some other
+        # field fails validation.   We want this field
+        # to reset since at this point there is no
+        # way for this simiple field type to save to
+        # keep the image that was specified at this
+        # point.  Next, the user fixes the field that failed
+        # and re-specifies the image, and the validation
+        # should pass.
+        fields = Fields(
+            TextField('Title', v.MinimumLength(10)),
+            ImageField('Photo'),
+            URLField('Site'),
+        )
+        form_data = dict(
+            title='DSI',
+            photo=zoom.utils.Bunch(value=b'fake photo'),
+            site='http://localhost',
+            url='/clients/dsi'
+        )
+        self.assertFalse(fields.validate(form_data))
+
+        # The record has been rejected because
+        # of the title length.  The image field has not had
+        # the chance to save anything so there is nothing to
+        # show.  With this simple field it's not smart enough
+        # to save the image anywhere so it goes back to being
+        # empty.
+        self.assertEqual('minimum length 10', fields['title'].msg)
+        self.assertEqual(None, fields['photo'].value)
+        # self.assertEqual(b'fake photo', fields['photo'].value)
+        photo = fields['photo']
+        target = (
+            '<input '
+                'class="image-field" '
+                'id="photo" '
+                'name="photo" '
+                'type="file" '
+            '/>'
+        )
+        self.assertEqual(target, fields['photo'].widget())
+
+        # The form is now re-submitted with a valid title
+        # and it should pass validation, and the re-specified
+        # image will be saved as well.
+        form_data['title'] = 'Dynamic Solutions'
+        form_data['photo'] = zoom.utils.Bunch(value=b'fake photo')
+        self.assertTrue(fields.validate(form_data))
+        self.assertEqual({'photo': b'fake photo'}, fields['photo'].evaluate())
+
+    def test_create_record_validation_fail(self):
+        # User is creating a new record.
+        # Test the case where a user specifies an
+        # image in the ImageField but some other
+        # field fails validation.   We want this field
+        # to reset since at this point there is no
+        # way for this simiple field type to save to
+        # keep the image that was specified at this
+        # point.  Next, the user fixes the field that failed
+        # and does not re-specify the image, and the validation
+        # should pass but there is no image.
+        fields = Fields(
+            TextField('Title', v.MinimumLength(10)),
+            ImageField('Photo'),
+            URLField('Site'),
+        )
+        form_data = dict(
+            title='DSI',
+            photo=zoom.utils.Bunch(value=b'fake photo'),
+            site='http://localhost',
+            url='/clients/dsi'
+        )
+        self.assertFalse(fields.validate(form_data))
+
+        # The record has been rejected because
+        # of the title length.  The image field has not had
+        # the chance to save anything so there is nothing to
+        # show.  With this simple field it's not smart enough
+        # to save the image anywhere so it goes back to being
+        # empty.
+        self.assertEqual('minimum length 10', fields['title'].msg)
+        self.assertEqual(None, fields['photo'].value)
+        target = (
+            '<input '
+                'class="image-field" '
+                'id="photo" '
+                'name="photo" '
+                'type="file" '
+            '/>'
+        )
+        self.assertEqual(target, fields['photo'].widget())
+
+    def test_edit_record_validation_fail(self):
+        # User is editing an existing a new record.
+        # Test the case where a user specifies an
+        # image in the ImageField but some other
+        # field fails validation.   We want this field
+        # to reset since at this point there is no
+        # way for this simiple field type to save to
+        # keep the image that was specified at this
+        # point.  Next, the user fixes the field that failed
+        # and does not re-specify the image, and the validation
+        # should pass but there is no image.
+        fields = Fields(
+            TextField('Title', v.MinimumLength(10)),
+            ImageField('Photo'),
+            URLField('Site'),
+        )
+        client = zoom.utils.Record(
+            title='Old Company Name',
+            photo=b'old photo',
+            site='http://localhost',
+            url='/clients/dsi'
+        )
+        fields.initialize(client)
+        self.assertTrue(fields.valid())
+
+        form_data = dict(
+            title='DSI',
+            photo=b'new photo',
+            site='http://localhost',
+            url='/clients/dsi'
+        )
+        self.assertFalse(fields.validate(form_data))
+
+        # The record has been rejected because
+        # of the title length.  The image field has not had
+        # the chance to save anything so there is nothing to
+        # show.  With this simple field it's not smart enough
+        # to save the image anywhere so it goes back to being
+        # empty.
+        self.assertEqual('minimum length 10', fields['title'].msg)
+        self.assertEqual(b'old photo', fields['photo'].value)
+        target = (
+            '<input '
+                'class="image-field" '
+                'id="photo" '
+                'name="photo" '
+                'type="file" '
+            '/>'
+            '<div class="image-field-delete-link">'
+                '<a href="delete-image?name=photo">delete photo</a>'
+            '</div>'
+            '<img '
+                'alt="Photo" '
+                'class="image-field-image" '
+                'src="/clients/dsi/image?name=photo" '
+            '/>'
+        )
+        self.assertEqual(target, fields['photo'].widget())
 
 
 def trim(text):
