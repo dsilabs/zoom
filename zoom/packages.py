@@ -65,6 +65,12 @@ default_packages = {
             '//use.fontawesome.com/releases/v5.0.6/js/all.js'
         ]
     },
+    'spin': {
+        'libs': [
+            '//cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js',
+            '/static/zoom/spin.js',
+        ]
+    }
 }
 
 
