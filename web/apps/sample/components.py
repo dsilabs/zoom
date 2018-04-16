@@ -8,11 +8,18 @@ import zoom.components as c
 
 def view():
 
+    hr = '<hr>'
+
     content = zoom.Component(
+        'zoom.components.HeaderBar',
         c.HeaderBar(
-            left=h.h2('Title'),
-            right='What\'s all this then?'
+            left=h.h2('HeaderBar Left'),
+            right='HeaderBar right'
         ),
+        hr,
+        'zoom.components.spinner',
+        h.div(c.spinner(), classed="clearfix", style="margin: 40px auto; width: 0;"),
+        hr,
     )
 
     return zoom.page(content, title='Components')

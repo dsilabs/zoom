@@ -151,3 +151,9 @@ class HeaderBar(DynamicView):
     left = ''
     right = ''
 
+
+def spinner():
+    """A progress spinner"""
+    zoom.requires('spin')
+    return div(id='spinner')
+
