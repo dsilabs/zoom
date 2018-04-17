@@ -3,6 +3,7 @@
 """
 
 import logging
+import uuid
 
 import zoom
 from zoom.mvc import DynamicView
@@ -153,7 +154,41 @@ class HeaderBar(DynamicView):
 
 
 def spinner():
-    """A progress spinner"""
+    """A progress spinner
+
+    >>> isinstance(spinner(), str)
+    True
+    """
     zoom.requires('spin')
     return div(id='spinner')
 
+
+def dropzone(url):
+    """Dropzone component
+
+    A basic dropzone component that supports drag and drop uploading
+    of files which are posted to the URL provided.
+
+    >>> zoom.system.site = zoom.sites.Site()
+    >>> zoom.system.site.packages = {}
+    >>> zoom.system.request = zoom.utils.Bunch(app=zoom.utils.Bunch(name='hello', packages={}))
+    >>> c = dropzone('/app/files')
+    >>> isinstance(c, zoom.Component)
+    True
+    """
+    zoom.requires('dropzone')
+
+    id = 'dropzone_' + uuid.uuid4().hex
+
+    js = """
+    var %(id)s = new Dropzone("#%(id)s", {url: "%(url)s"});
+    """ % dict(id=id, url=url)
+
+    css = """
+    .dropzone {
+        background: #eee;
+        border: dashed thin #ccc;
+    }
+    """
+    html = div(classed='dropzone', id=id)
+    return zoom.Component(html, css=css, js=js)

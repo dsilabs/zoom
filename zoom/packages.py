@@ -50,6 +50,15 @@ default_packages = {
             '//cdn.datatables.net/buttons/1.5.1/css/buttons.jqueryui.min.css'
             ]
     },
+    'dropzone': {
+        'libs': [
+            '//cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/dropzone.js',
+            '/static/zoom/dropzone.js'
+        ],
+        'styles': [
+            '//cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/dropzone.css'
+        ]
+    },
     'fontawesome4': {
         'styles': [
             '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
