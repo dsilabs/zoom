@@ -228,6 +228,7 @@ class AppTestCase(AppTestPrimitives):
             self.get('/logout')
 
     def as_user(self, username):
+        self.logout()
         if username in self.credentials:
             self.login(username, self.credentials[username])
         else:
