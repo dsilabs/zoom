@@ -525,10 +525,14 @@ class BasicSearch(object):
         warning('BasicSearch does not use indexing')
 
 
-def as_tokens(values):
-    """Return values as a set of tokens"""
+def as_tokens(values, max_len=20):
+    """Return values as a set of tokens
+
+    >>> sorted(list(as_tokens(['this is a test', 'other', 'tokentoolongtobecapturedasis'])))
+    ['a', 'is', 'other', 'test', 'this', 'tokentoolongtobecapt']
+    """
     tokens = set([
-        t for v in values
+        t[:max_len] for v in values
         for t in v.lower().split()
     ])
     return tokens
@@ -601,7 +605,7 @@ class IndexedCollectionSearch(object):
             count += 1
 
             fields.initialize(collection.model(record))
-            values = as_tokens(fields.as_searchable())
+            values = as_tokens(fields.as_searchable(), self.max_token_len)
             block.extend(zip([record._id] * len(values), values))
 
         if block:
@@ -611,7 +615,7 @@ class IndexedCollectionSearch(object):
 
     def add(self, key, values):
         """Add record values to index"""
-        tokens = [(t,) for t in as_tokens(values)]
+        tokens = [(t,) for t in as_tokens(values, self.max_token_len)]
         cmd = 'insert into tokens values ({!r}, {!r}, %s)'.format(
             self.kind, key
         )
