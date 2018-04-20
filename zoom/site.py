@@ -131,6 +131,10 @@ class Site(object):
             if basic_apps not in self.apps_paths:
                 self.apps_paths.insert(0, basic_apps)
 
+            self.data_path = realpath(
+                get('data', 'path', join(self.path, 'data'))
+            )
+
             self.logging = get('monitoring', 'logging', True) != '0'
             self.profiling = get('monitoring', 'profiling', True) != '0'
             self.monitor_app_database = get('monitoring', 'app_database', True) != '0'
