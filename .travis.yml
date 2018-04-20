@@ -47,7 +47,7 @@ before_script:
   - mysql -uroot -e "GRANT ALL ON zoomdata.* TO 'zoomuser'@'localhost';"
   - mysql -uroot zoomdata < tools/zoom/sql/setup_mysql.sql
 script:
-  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --ignore-dir=zoom/testing
+  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing
 
 after_success:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
