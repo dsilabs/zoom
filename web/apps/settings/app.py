@@ -5,4 +5,4 @@
 import zoom
 
 app = zoom.App()
-app.menu = 'About',
+app.menu = 'Settings', 'About'
