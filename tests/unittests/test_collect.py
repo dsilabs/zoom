@@ -197,7 +197,6 @@ class TestCollect(unittest.TestCase):
 
     def setUp(self):
         # setup the system and install our own test database
-        # system.setup(os.path.expanduser('~'))
         self.db = zoom.database.setup_test()
         self.users = Users(self.db)
         self.user = self.users.first(username='admin')
@@ -217,10 +216,6 @@ class TestCollect(unittest.TestCase):
             host='localhost',
             data={},
         )
-        zoom.component.composition.parts = zoom.component.component()
-
-        # user.initialize('guest')
-        # self.user.groups = ['managers']
 
         # create the test collection
         self.collection = Collection(

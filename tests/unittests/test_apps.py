@@ -9,7 +9,6 @@ import sys
 
 import zoom
 import zoom.apps
-import zoom.component
 import zoom.request
 import zoom.site
 
@@ -19,7 +18,7 @@ join = os.path.join
 class TestApps(unittest.TestCase):
 
     def setUp(self):
-        zoom.component.composition.parts = zoom.component.Component()
+        zoom.system.parts = zoom.component.Component()
         zoom.system.providers = []
         self.request = zoom.system.request = build('http://localhost', {})
         self.request.profiler = set()

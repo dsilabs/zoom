@@ -398,7 +398,6 @@ def check_csrf(request, handler, *rest):
 def not_found(request):
     """return a 404 page for site
 
-    >>> zoom.component.composition.parts = zoom.Component()
     >>> zoom.system.site = site = zoom.sites.Site()
     >>> site.theme = 'default'
     >>> site.title = 'My Site'

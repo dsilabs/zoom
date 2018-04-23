@@ -2004,8 +2004,7 @@ class RadioField(TextField):
 class PulldownField(TextField):
     """Pulldown Field
 
-    >>> from zoom.component import composition, Component
-    >>> composition.parts = Component()
+    >>> from zoom.component import Component
     >>> PulldownField('Type',value='One',options=['One','Two']).display_value()
     'One'
 
@@ -2166,7 +2165,7 @@ class PulldownField(TextField):
             blank_option = '<option value=""></option>\n'
             result.insert(1, blank_option)
         result.append('</select>')
-        return component(result, libs=self.libs, styles=self.styles)
+        return zoom.Component(result, libs=self.libs, styles=self.styles)
 
 
 class ChosenSelectField(PulldownField):
@@ -2389,8 +2388,7 @@ class ChosenMultiselectField(MultiselectField):
     """
     Chosen Multiselect field.
 
-    >>> from zoom.component import composition, Component
-    >>> composition.parts = Component()
+    >>> from zoom.component import Component
     >>> f = ChosenMultiselectField('Choose', options=['One','Two','Three'], hint='test hint')
     >>> print(f.widget())
     <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">

@@ -123,9 +123,10 @@ def requires(*package_names):
 
     >>> request = zoom.request.Request(dict(PATH_INFO='/'))
     >>> zoom.system.site = zoom.site.Site(request)
+    >>> zoom.system.parts = zoom.Component()
 
     >>> requires('c3')
-    >>> libs = zoom.component.composition.parts.parts['libs']
+    >>> libs = zoom.system.parts.parts['libs']
     >>> list(libs)[0]
     'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'
 
@@ -149,4 +150,4 @@ def requires(*package_names):
             missing = set(package_names) - set(registered_packages)
             raise Exception('Missing required packages: {}'.format(missing))
 
-    zoom.component.composition.parts += parts
+    zoom.system.parts += parts

@@ -22,10 +22,8 @@ import logging
 import threading
 import sys
 
-from zoom.utils import OrderedSet, pp
-
-# TODO: rename this to context (or system?)
-composition = threading.local()
+import zoom
+from zoom.utils import OrderedSet
 
 
 class Component(object):
@@ -72,7 +70,7 @@ class Component(object):
     >>> Component(Component('test1', css='css1'), Component('test2', css='css2'))
     <Component: {'css': OrderedSet(['css1', 'css2']), 'html': ['test1', 'test2']}>
 
-    >>> composition.parts = Component()
+    >>> zoom.system.parts = Component()
     >>> c = Component(Component('test1', css='css1'), Component('test2', css='css2'))
     >>> c.render()
     'test1test2'
@@ -214,9 +212,9 @@ class Component(object):
 
     def render(self):
         """renders the component"""
-        if not hasattr(composition, 'parts'):
-            composition.parts = Component()
-        composition.parts += self
+        if not hasattr(zoom.system, 'parts'):
+            zoom.system.parts = Component()
+        zoom.system.parts += self
         return ''.join(self.parts['html'])
 
     def __str__(self):
@@ -228,7 +226,7 @@ component = Component
 
 def compose(*args, **kwargs):
     """Compose a response - DEPRECATED"""
-    composition.parts += component(**kwargs)
+    zoom.system.parts += component(**kwargs)
     return ''.join(args)
 
 
@@ -237,7 +235,7 @@ def handler(request, handler, *rest):
 
     pop = request.session.__dict__.pop
 
-    composition.parts = Component(
+    zoom.system.parts = Component(
         success=pop('system_successes', []),
         warning=pop('system_warnings', []),
         error=pop('system_errors', []),
@@ -250,19 +248,19 @@ def handler(request, handler, *rest):
     logger.debug('component middleware')
 
     # TODO: clean this up, use a single alerts list with an alert type value
-    success_alerts = composition.parts.parts.get('success')
+    success_alerts = zoom.system.parts.parts.get('success')
     if success_alerts:
         if not hasattr(request.session, 'system_successes'):
             request.session.system_successes = []
         request.session.system_successes = list(success_alerts)
 
-    warning_alerts = composition.parts.parts.get('warning')
+    warning_alerts = zoom.system.parts.parts.get('warning')
     if warning_alerts:
         if not hasattr(request.session, 'system_warnings'):
             request.session.system_warnings = []
         request.session.system_warnings = list(warning_alerts)
 
-    error_alerts = composition.parts.parts.get('error')
+    error_alerts = zoom.system.parts.parts.get('error')
     if error_alerts:
         if not hasattr(request.session, 'system_errors'):
             request.session.system_errors = []

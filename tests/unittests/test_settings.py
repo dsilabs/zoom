@@ -31,7 +31,7 @@ class TestAudit(unittest.TestCase):
             user=zoom.system.site.users.first(username='user')
         )
         # zoom.system.user = zoom.system.site.users.first(username='user')
-        zoom.component.composition.parts = zoom.component.component()
+        # zoom.component.composition.parts = zoom.component.component()
 
     def test_settings_store(self):
         settings = zoom.settings.Settings()

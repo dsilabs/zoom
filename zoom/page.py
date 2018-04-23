@@ -6,7 +6,8 @@ import io
 import logging
 import sys
 
-from zoom.component import composition, Component
+import zoom
+from zoom.component import Component
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
@@ -94,7 +95,7 @@ class Page(object):
 
             def get_alert(name, Class):
                 """get an alert as an unordered list"""
-                alerts = list(composition.parts.parts.pop(name, []))
+                alerts = list(zoom.system.parts.parts.pop(name, []))
                 if alerts:
                     return html.div(html.ul(alerts), Class='alert %s' % Class)
                 return ''
@@ -106,7 +107,7 @@ class Page(object):
             return errors + warnings + successes
 
         def get(part, formatter='{}', joiner='\n'):
-            parts = composition.parts.parts.get(part, OrderedSet())
+            parts = zoom.system.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
                 if isinstance(page_part, (list, tuple)):
@@ -157,7 +158,7 @@ class Page(object):
                 sys.stdout.close()
                 sys.stdout = io.StringIO()
             value = ''.join(
-                list(composition.parts.parts.get('stdout', [])) +
+                list(zoom.system.parts.parts.get('stdout', [])) +
                 [stdout]
             )
             if value:
