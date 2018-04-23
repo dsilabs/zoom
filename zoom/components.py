@@ -163,7 +163,7 @@ def spinner():
     return div(id='spinner')
 
 
-def dropzone(url):
+def dropzone(url, **kwargs):
     """Dropzone component
 
     A basic dropzone component that supports drag and drop uploading
@@ -184,11 +184,5 @@ def dropzone(url):
     var %(id)s = new Dropzone("#%(id)s", {url: "%(url)s"});
     """ % dict(id=id, url=url)
 
-    css = """
-    .dropzone {
-        background: #eee;
-        border: dashed thin #ccc;
-    }
-    """
-    html = div(classed='dropzone', id=id)
-    return zoom.Component(html, css=css, js=js)
+    html = div(classed='dropzone', id=id, **kwargs)
+    return zoom.Component(html)#, js=js)

@@ -2,19 +2,22 @@
     zoom.collect
 """
 
+import io
 import logging
+import os
 
 import zoom
 from zoom.browse import browse
+from zoom.buckets import Bucket
 from zoom.context import context
 from zoom.alerts import success, error, warning
 from zoom.fields import ButtonField
 from zoom.forms import form_for, delete_form
 from zoom.helpers import link_to
-from zoom.models import Model
+from zoom.models import Model, Attachment
 from zoom.store import EntityStore
 from zoom.mvc import View, Controller
-from zoom.utils import name_for, id_for
+from zoom.utils import name_for, id_for, Record
 from zoom.page import page
 from zoom.tools import redirect_to, now
 from zoom.logging import log_activity
@@ -59,6 +62,17 @@ def locate(collection, key):
         collection.store.first(**{collection.key_name: key}) or
         scan(collection.store, key)
     )
+
+
+def image_response(name, data):
+    """provide an image response based on the file extension"""
+    _, ext = os.path.splitext(name.lower())
+    if ext == '.png':
+        return zoom.response.PNGResponse(data)
+    elif ext == '.jpg':
+        return zoom.response.JPGResponse(data)
+    elif ext == '.gif':
+        return zoom.response.GIFResponse(data)
 
 
 class CollectionStore(object):
@@ -283,6 +297,24 @@ class CollectionView(View):
             if record:
                 return page(delete_form(record.name))
 
+    def list_images(self, key=None, value=None):
+        """return list of images for an ImagesField value for this record"""
+        attachments = zoom.store.store_of(Attachment)
+        t = [dict(
+            name=a.attachment_name,
+            size=a.attachment_size,
+            item_id=a.attachment_id,
+            url=zoom.helpers.url_for('get-image', item_id=a.attachment_id),
+        ) for a in attachments.find(field_value=value)]
+        return zoom.jsonz.dumps(t)
+
+    def get_image(self, *a, **k):  # pylint: disable=W0613
+        """return one of the images from an ImagesField value"""
+        item_id = k.get('item_id', None)
+        path = os.path.join(zoom.system.site.data_path, 'buckets')
+        bucket = Bucket(path)
+        return image_response('house.png', bucket.get(item_id))
+
 
 class CollectionController(Controller):
     """Perform operations on a Collection"""
@@ -446,6 +478,62 @@ class CollectionController(Controller):
             del record[name]
             record.save()
             return redirect_to(zoom.helpers.url_for(record.url, 'edit'))
+
+    def add_image(self, *_, **kwargs):
+        """accept uploaded images and attach them to the record"""
+        logger = logging.getLogger(__name__)
+
+        dummy = Record(
+            filename='dummy.png',
+            file=io.StringIO('test'),
+        )
+
+        # put the uploaded image data in a bucket
+        path = os.path.join(zoom.system.site.data_path, 'buckets')
+        bucket = Bucket(path)
+        f = kwargs.get('file', dummy)
+        name = f.filename
+        data = f.file.read()
+        item_id = bucket.put(data)
+
+        # create an attachment record for this bucket
+        c = self.collection
+        field_name = kwargs.get('field_name', 'unknown')
+        field_value = kwargs.get('field_value', 'unknown')
+        attachment = Attachment(
+            record_kind=c.store.kind,
+            field_name=field_name,
+            field_value=field_value,
+            attachment_id=item_id,
+            attachment_size=len(data),
+            attachment_name=name,
+        )
+        attachments = zoom.store.store_of(Attachment)
+        attachments.put(attachment)
+
+        return item_id
+
+    def remove_image(self, *_, **kwargs):
+        """remove a dropzone image"""
+        # k contains item_id and filename for file to be removed
+        item_id = kwargs.get('id', None)
+
+        # detach the image from the record
+        if item_id:
+            attachments = zoom.store.store_of(Attachment)
+            key = attachments.first(attachment_id=item_id)
+            if key:
+                attachments.delete(key)
+
+            # delete the bucket
+            path = os.path.join(zoom.system.site.data_path, 'buckets')
+            bucket = Bucket(path)
+            items = bucket.keys()
+            if item_id in bucket.keys():
+                bucket.delete(item_id)
+                return 'ok'
+            return 'empty'
+
 
     def before_update(self, record):
         """Things to do before updating a record"""

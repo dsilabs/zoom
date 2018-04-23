@@ -261,6 +261,13 @@ class Groups(RecordStore):
         )
 
 
+class SystemAttachment(Record):
+    pass
+
+
+Attachment = SystemAttachment
+
+
 def handler(request, handler, *rest):
     request.site.groups = Groups(request.site.db)
     request.site.users = Users(request.site.db)

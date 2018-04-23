@@ -30,10 +30,28 @@
   border: 1px solid #dddddd
   width: 200px
 
-.field_edit
-  .dropzone
-    border: 1px solid #ccc
-    display: table-cell
+.field_edit, .field_show
+  .images-field
+    border-radius: 4px
+    border-color: red
+    background: yellow
+    border: dashed thin #ccc
+    background: #eee
+    display: block
+    .dropzone
+      width: 500px
+      padding: 10px
+      min-height: 105px
+      height: 105px
+      display: table-cell
+      background: none
+      border: none
+      .dz-preview
+        margin: 10px 15px
+.field_show
+  .images-field
+    background: none
+    border: none
 
 .field_edit
   input, select, textarea
@@ -86,15 +104,6 @@
     margin: 0.5
     width: 200px
 
-  .images_field
-    width: 100%
-    display: table-cell
-    border: 1px solid #ccc
-    min-height: 400px
-    width: 490px
-    border-radius: 4px
-    padding: 10px
-
   input.checkbox_field
     margin: 0 0.5em 2px 0
     line-height: 2em
@@ -115,7 +124,7 @@
     width: 100%
     line-height: 1.25em
     padding-top: 0.5em
-  .images_field
+  .images-field
     width: 100%
     display: table-cell
     border: 1px solid #ccc
@@ -137,8 +146,12 @@
     width: 400px
     margin: 0 10px
 
-.dropzone .dz-preview .dz-image
+.content .dropzone
   border-radius: 10px
+  border: dashed thin #ccc
+  background: #eee
+  .dz-preview .dz-image
+    border-radius: 10px
 
 input
   &.decimal_field, &.float_field, &.number_field

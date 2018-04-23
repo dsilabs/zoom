@@ -10,6 +10,7 @@ import os
 import types
 import datetime
 from decimal import Decimal
+import uuid
 
 import zoom
 from zoom.component import component
@@ -2965,3 +2966,63 @@ class BasicImageField(Field):
         return {self.name: value} if value else {}
 
 ImageField = BasicImageField
+
+
+class ImagesField(Field):  # pragma: no cover
+    """Display a drag and drop multiple image storage field
+
+    this field is experimental - may change for a while yet
+
+    >>> ImagesField('Photo')
+    <Field name='photo' value=None>
+
+    """
+    _type = 'images-field'
+    value = None
+    default = uuid.uuid4().hex
+    wrap = ''
+    url = ''
+
+    def show(self):
+        """show the images field"""
+        attachments = zoom.store.store_of(zoom.models.Attachment)
+        return (
+            self.visible and
+            attachments.first(field_value=self.value) and
+            layout_field(self.label, self.display_value(), edit=False) or ''
+        )
+
+    def display_value(self):
+        zoom.requires('dropzone', 'images-field')
+        return html.div(
+            zoom.components.dropzone(
+                self.url,
+                field_name=self.name,
+                field_value=self.value or self.default,
+            ),
+            classed='images-field'
+        )
+
+    def widget(self):
+        zoom.requires('dropzone', 'images-field')
+
+        csrf_token = getattr(zoom.system.request.session, 'csrf_token', None)
+        logger = logging.getLogger(__name__)
+        logger.debug('csrf_token for ImagesField %s', csrf_token)
+
+        result = zoom.Component(
+            html.div(
+                zoom.components.dropzone(
+                    self.url,
+                    field_name=self.name,
+                    field_value=self.value or self.default,
+                    token=csrf_token,
+                ),
+                classed='images-field'
+            ),
+            html.hidden(
+                name=self.name,
+                value=self.value or self.default
+            ),
+        )
+        return result
