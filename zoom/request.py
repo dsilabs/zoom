@@ -205,6 +205,7 @@ class Request(object):
         self.start_time = start_time or timer()
         self.session_token = None
         self.session_timeout = None
+        self.session = zoom.utils.Bunch()
         self.subject_token = None
         self.request_id = make_request_id()
         self.server = None

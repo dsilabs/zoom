@@ -9,7 +9,7 @@ from zoom.database import setup_test
 from zoom.request import Request
 from zoom.site import Site
 from zoom.session import Session
-from zoom.middleware import check_csrf, reset_csrf_token
+from zoom.middleware import check_csrf, get_csrf_token
 
 
 logger = logging.getLogger(__name__)
@@ -28,11 +28,11 @@ class TestCSRFMiddleware(unittest.TestCase):
             'REQUEST_METHOD': 'POST',
         }
         zoom.system.providers = []
-        request = Request(self.env)
+        zoom.system.request = request = Request(self.env)
         request.site = Site(request)
         request.site.db = setup_test()
         request.session = Session(request)
-        reset_csrf_token(request.session)  # bind a token
+        zoom.forms.form_for('test') # trigger crsf token creation
         self.request = request
 
     def tearDown(self):
@@ -52,4 +52,5 @@ class TestCSRFMiddleware(unittest.TestCase):
         request.data_values = dict(csrf_token=token)
         check_csrf(request, noop)
         self.assertIsNotNone(getattr(request.session, 'csrf_token', None))
+        zoom.forms.form_for('test') # generates a new token
         self.assertIsNot(request.session.csrf_token, token)

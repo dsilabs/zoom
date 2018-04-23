@@ -21,6 +21,7 @@ import traceback
 import logging
 import uuid
 
+import zoom
 import zoom.apps
 from zoom.response import (
     PNGResponse,
@@ -321,20 +322,28 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
-def reset_csrf_token(session):
+def get_csrf_token(session):
     """generate a csrf token
 
-    >>> session = zoom.utils.Bunch()
+    >>> zoom.system.request.session = session = zoom.utils.Bunch()
     >>> hasattr(session, 'csrf_token')
     False
-    >>> bool(reset_csrf_token(session))
+    >>> bool(get_csrf_token(session))
     True
+    >>> hasattr(session, 'csrf_token')
+    False
+    >>> _ = zoom.forms.form_for('test')
     >>> hasattr(session, 'csrf_token')
     True
     """
-    if not hasattr(session, 'csrf_token'):
-        session.csrf_token = uuid.uuid4().hex
-    return session.csrf_token
+    def _get_token():
+        # if not hasattr(session, 'csrf_token'):
+        # logger = logging.getLogger(__name__)
+        # session.csrf_token = uuid.uuid4().hex
+        # logger.debug('generated new token %s', session.csrf_token)
+        # logger.debug('zoom token %s', zoom.system.request.session.csrf_token)
+        return session.csrf_token
+    return _get_token
 
 
 def check_csrf(request, handler, *rest):
@@ -366,6 +375,8 @@ def check_csrf(request, handler, *rest):
     False
     """
 
+    zoom.render.add_helpers(dict(csrf_token=get_csrf_token(request.session)))
+
     if request.method == 'POST' and request.site.csrf_validation:
         logger = logging.getLogger(__name__)
 
@@ -374,17 +385,12 @@ def check_csrf(request, handler, *rest):
 
         logger.debug('csrf session %s form %s', csrf_token, form_token)
 
-        if csrf_token and csrf_token == form_token:
-            del request.session.csrf_token
-        else:
+        if not (csrf_token and csrf_token == form_token):
             if csrf_token:
-                logger.warning('csrf token invalid')
+                logger.warning('invalid csrf token passed %r', form_token)
             else:
-                logger.warning('csrf token missing')
+                logger.warning('internal csrf token missing')
             return RedirectResponse('/')
-
-    new_token = reset_csrf_token(request.session)
-    zoom.render.add_helpers(dict(csrf_token=new_token))
 
     return handler(request, *rest)
 
@@ -491,7 +497,7 @@ def display_errors(request, handler, *rest):
     try:
         return handler(request, *rest)
     except Exception:
-        if not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
+        if False and not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
             return page(zoom.templates.friendly_error).render(request)
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)

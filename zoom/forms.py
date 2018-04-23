@@ -4,6 +4,7 @@
 
 import uuid
 
+import zoom
 from zoom.helpers import tag_for, url_for
 from zoom.fields import Fields, MarkdownText, Hidden, Button
 import zoom.html as html
@@ -28,6 +29,15 @@ def form_for(*args, **kwargs):
     action = params.pop('action', '<dz:request_path>')
     enctype = params.pop('enctype', 'application/x-www-form-urlencoded')
 
+    t = []
+    if method == 'POST':
+        request = zoom.system.request
+        if hasattr(request, 'session'):
+            request.session.csrf_token = uuid.uuid4().hex
+        t.append(
+            html.hidden(name='csrf_token', value='<dz:csrf_token>')
+        )
+
     content = []
     for arg in args:
         if arg:
@@ -35,15 +45,9 @@ def form_for(*args, **kwargs):
             if hasattr(arg, 'requires_multipart_form') and arg.requires_multipart_form():
                 enctype = "multipart/form-data"
 
-    t = []
     for key, value in params.items():
         t.append(
             html.hidden(name=key, value=value)
-        )
-
-    if method == 'POST':
-        t.append(
-            html.hidden(name='csrf_token', value=tag_for('csrf_token'))
         )
 
     return html.tag(
