@@ -729,7 +729,7 @@ class IndexedCollectionSearch(object):
     def search(self, text):
         """Return records that match search text"""
 
-        terms = text and [t.lower() for t in text.split()]
+        terms = text and [t.lower()[:self.max_token_len] for t in text.split()]
         cmd = 'select distinct row_id from tokens where kind=%s and token like %s'
 
         result = []
