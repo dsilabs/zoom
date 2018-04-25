@@ -752,10 +752,6 @@ class Record(Storage):
                 raise k
 
     def __str__(self):
-        return self.__repr__(pretty=True)
-
-    def __repr__(self, pretty=False):
-
         name = self.__class__.__name__
         attributes = self.attributes()
         t = []
@@ -765,29 +761,38 @@ class Record(Storage):
             if not key.startswith('_')
         ]
 
-        if pretty:
-            for key, value in items:
-                if callable(value):
-                    v = value()
-                else:
-                    v = value
-                t.append('  {} {}: {!r}'.format(
-                    key,
-                    '.'*(20-len(key[:20])),
-                    v
-                ))
-            return '\n'.join([name] + t)
+        for key, value in items:
+            if callable(value):
+                v = value()
+            else:
+                v = value
+            t.append('  {} {}: {!r}'.format(
+                key,
+                '.'*(20-len(key[:20])),
+                v
+            ))
+        return '\n'.join([name] + t)
 
-        else:
-            for key, value in items:
-                if callable(value):
-                    v = value()
-                else:
-                    v = value
-                t.append((repr(key), repr(v)))
-            return '<%s {%s}>' % (
-                name, ', '.join('%s: %s' % (k, v) for k, v in t)
-            )
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        attributes = self.attributes()
+        t = []
+
+        items = [
+            (key, self.get(key, None)) for key in attributes
+            if not key.startswith('_')
+        ]
+
+        for key, value in items:
+            if callable(value):
+                v = value()
+            else:
+                v = value
+            t.append((repr(key), repr(v)))
+        return '<%s {%s}>' % (
+            name, ', '.join('%s: %s' % (k, v) for k, v in t)
+        )
 
 
 class DefaultRecord(Record):
