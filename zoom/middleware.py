@@ -145,6 +145,8 @@ def serve_response(*path):
 
     >>> response.content
     'file not found: www/static/zoom/nada.js'
+    >>> response.status
+    '404 Not Found'
 
     >>> zoom_path = zoom.tools.zoompath('web')
     >>> response = serve_response(zoom_path, 'www/static/zoom/images')
@@ -153,6 +155,8 @@ def serve_response(*path):
 
     >>> response.content
     'unknown file type'
+    >>> response.status
+    '415 Unsupported Media Type'
     """
     known_types = dict(
         png=PNGResponse,
@@ -175,12 +179,12 @@ def serve_response(*path):
                 data = open(filename, 'rb').read()
                 response = known_types[file_type](data)
                 return response
-        return HTMLResponse('unknown file type')
+        return HTMLResponse('unknown file type', status='415 Unsupported Media Type')
     else:
         logger.warning('unable to serve filename %r', filename)
         relative_path = os.path.join(*path[1:])
         msg = 'file not found: {}'
-        return HTMLResponse(msg.format(relative_path))
+        return HTMLResponse(msg.format(relative_path), status='404 Not Found')
 
 
 def serve_static(request, handler, *rest):
