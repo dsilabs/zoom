@@ -107,14 +107,14 @@ def args_to_dict(values=None, **kwargs):
 class Field(object):
     """Field base class
     """
-    value = ''
-    options = []
     label = ''
-    hint = ''
+    value = ''
     default = ''
+    hint = ''
     placeholder = None
     msg = ''
     visible = True
+    options = []
     validators = []
     wrap = ' nowrap'
     browse = True
