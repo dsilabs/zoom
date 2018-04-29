@@ -107,21 +107,15 @@ def args_to_dict(values=None, **kwargs):
 class Field(object):
     """Field base class
     """
-    js_init = ''
-    js = ''
-    css = ''
     value = ''
     options = []
     label = ''
     hint = ''
-    addon = ''
     default = ''
     placeholder = None
     msg = ''
-    required = False
     visible = True
     validators = []
-    style = ''
     wrap = ' nowrap'
     browse = True
 
@@ -1027,10 +1021,10 @@ class Button(Field):
     ''
 
     >>> Button('Save').edit()
-    '<input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" />'
+    '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />'
 
     >>> Button('Save', cancel='/app/cancel').edit()
-    '<input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" />&nbsp;<a href="/app/cancel">cancel</a>'
+    '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<a href="/app/cancel">cancel</a>'
     """
     def __init__(self, caption='Save', **keywords):
         Field.__init__(self, caption+' Button', **keywords)
@@ -1050,7 +1044,6 @@ class Button(Field):
             Type='submit',
             Class='button',
             name=self.name,
-            style=self.style,
             id=self.id,
             value=self.caption
             ) + cancel_link
@@ -1143,7 +1136,7 @@ class ButtonField(Button):
     >>> print(ButtonField('Save').edit())
     <div class="field">
       <div class="field_label">&nbsp;</div>
-      <div class="field_edit"><input class="button" type="submit" id="save_button" name="save_button" style="" value="Save" /></div>
+      <div class="field_edit"><input class="button" type="submit" id="save_button" name="save_button" value="Save" /></div>
     </div>
     <BLANKLINE>
 
