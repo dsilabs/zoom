@@ -79,6 +79,19 @@ default_packages = {
             '/static/zoom/images-field.js',
         ]
     },
+    'jquery': {
+        'libs': [
+            '//code.jquery.com/jquery-3.3.1.min.js'
+        ],
+    },
+    'jquery-ui': {
+        'libs': [
+            '//code.jquery.com/ui/1.12.1/jquery-ui.min.js'
+        ],
+        'styles': [
+            '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css'
+        ]
+    },
     'spin': {
         'libs': [
             '//cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js',
