@@ -104,6 +104,28 @@ def args_to_dict(values=None, **kwargs):
     return values or kwargs
 
 
+class FieldLayout(object):
+
+    field_template = zoom.tools.load(locate_view('field'))
+    hint_template = zoom.tools.load(locate_view('hint'))
+
+    def __call__(self, label, content, edit=True):
+        mode = 'edit' if edit else 'show'
+        return self.field_template.format(
+            label=label,
+            content=content,
+            mode=mode
+        )
+
+    def edit(self, field):
+        content = self.hint_template.format(
+            widget=field.widget(),
+            hints=field.render_msg() + field.render_hint(),
+            wrap=field.wrap,
+        )
+        return self(field.label, content, True)
+
+
 class Field(object):
     """Field base class
     """
@@ -118,6 +140,7 @@ class Field(object):
     validators = []
     wrap = ' nowrap'
     browse = True
+    field_layout = FieldLayout()
 
     def __init__(self, label='', *validators, **keywords):
         self.label = label
@@ -127,12 +150,15 @@ class Field(object):
         if 'value' in keywords:
             self.assign(keywords['value'])
 
+    def layout(self, label, content, edit=True):
+        return self.field_layout(label, content, edit)
+
     def show(self):
         """show the field"""
         return (
             self.visible and
             (bool(self.value) or bool(self.default)) and
-            layout_field(self.label, self.display_value(), edit=False) or ''
+            self.layout(self.label, self.display_value(), edit=False) or ''
         )
 
     def widget(self):
@@ -141,13 +167,7 @@ class Field(object):
 
     def edit(self):
         """edit the field"""
-        content = load_content(
-            locate_view('hint'),
-            widget=self.widget(),
-            hints=self.render_msg() + self.render_hint(),
-            wrap=self.wrap,
-        )
-        return layout_field(self.label, content)
+        return self.field_layout.edit(self)
 
     def __getattr__(self, name):
         if name == 'name' and hasattr(self, 'label'):
@@ -288,7 +308,6 @@ class Field(object):
             set([str(self.value) or str(self.default)],) or
             set()
         )
-
 
     def render_hint(self):
         """Render hint.
@@ -560,7 +579,7 @@ class MemoField(Field):
             )
             table_middle = '</td><td>'
             table_end = '</td></tr></table>'
-            return layout_field(
+            return self.layout(
                 self.label,
                 ''.join([
                     table_start,
@@ -572,13 +591,13 @@ class MemoField(Field):
                 ])
             )
         else:
-            return layout_field(self.label, widget)
+            return self.layout(self.label, widget)
 
     def show(self):
         return (
             self.visible and
             (bool(self.value) or bool(self.default)) and
-            layout_field(
+            self.layout(
                 self.label,
                 html.tag('div', self.display_value(), Class='textarea'),
                 edit=False
@@ -592,6 +611,15 @@ class MarkdownField(MemoField):
     >>> f = MarkdownField('Notes', value='test **one** 23')
     >>> f.display_value()
     '<p>test <strong>one</strong> 23</p>'
+
+    >>> target = (
+    ...     '<div class="field">\\n'
+    ...     '  <div class="field_label">Notes</div>\\n'
+    ...     '  <div class="field_edit"><textarea class="memo_field" cols="60" id="notes" name="notes" rows="6" size="10">test **one** 23</textarea></div>\\n'
+    ...     '</div>\\n'
+    ... )
+    >>> f.edit() == target
+    True
 
     """
     def display_value(self):
@@ -621,7 +649,7 @@ class EditField(MemoField):
         )
 
     def edit(self):
-        return layout_field(self.label, self.widget())
+        return self.layout(self.label, self.widget())
 
 
 class MarkdownEditField(EditField):
@@ -1046,7 +1074,7 @@ class Button(Field):
             name=self.name,
             id=self.id,
             value=self.caption
-            ) + cancel_link
+        ) + cancel_link
 
     def evaluate(self):
         return {}
@@ -1067,7 +1095,7 @@ class Buttons(Field):
     >>> Buttons(['Save','Publish']).widget()
     '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<input class="button" type="submit" id="publish_button" name="publish_button" value="Publish" />'
 
-    >>> Buttons(['Save'],cancel='/app/id').widget()
+    >>> Buttons(['Save'], cancel='/app/id').widget()
     '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<a href="/app/id">cancel</a>'
     """
 
@@ -1124,7 +1152,7 @@ class ButtonsField(Buttons):
     """
 
     def edit(self):
-        return layout_field('&nbsp;', self.widget())
+        return self.layout('&nbsp;', self.widget())
 
 
 class ButtonField(Button):
@@ -1143,7 +1171,7 @@ class ButtonField(Button):
     """
 
     def edit(self):
-        return layout_field('&nbsp;', Button.edit(self))
+        return self.layout('&nbsp;', Button.edit(self))
 
     def evaluate(self):
         return {}
@@ -1699,7 +1727,7 @@ class DateField(Field):
         return html.tag('input', **parameters)
 
     def show(self):
-        return self.visible and bool(self.value) and layout_field(self.label,self.display_value()) or ''
+        return self.visible and bool(self.value) and self.layout(self.label, self.display_value()) or ''
 
     def evaluate(self):
         if self.value:
@@ -1774,7 +1802,7 @@ class CheckboxesField(Field):
         return result
 
     def show(self):
-        return layout_field(self.label, ', '.join(ensure_listy(self.value)))
+        return self.layout(self.label, ', '.join(ensure_listy(self.value)))
 
 
 class CheckboxField(TextField):
@@ -1906,7 +1934,7 @@ class CheckboxField(TextField):
         return self.value in self.truthy and self.options[0] or self.options[1] or ''
 
     def show(self):
-        return layout_field(self.label, self.display_value(), False)
+        return self.layout(self.label, self.display_value(), False)
 
     def update(self,**values):
         for value in values:
@@ -2820,7 +2848,7 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
         )
 
     def edit(self):
-        return layout_field(self.label, self.widget())
+        return self.layout(self.label, self.widget())
 
     def as_searchable(self):
         return set()
@@ -2980,7 +3008,7 @@ class ImagesField(Field):  # pragma: no cover
         return (
             self.visible and
             attachments.first(field_value=self.value) and
-            layout_field(self.label, self.display_value(), edit=False) or ''
+            self.layout(self.label, self.display_value(), edit=False) or ''
         )
 
     def display_value(self):
