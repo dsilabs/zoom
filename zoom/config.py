@@ -61,11 +61,11 @@ class Config(object):
     True
 
     >>> target = [
-    ...     ('default', 'guest'),
     ...     ('administrator_group', 'administrators'),
+    ...     ('default', 'guest'),
     ...     ('developer_group', 'developers')
     ... ]
-    >>> config.items('users') == target
+    >>> sorted(config.items('users')) == target
     True
 
     """
