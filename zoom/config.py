@@ -60,6 +60,14 @@ class Config(object):
     >>> missing
     True
 
+    >>> target = [
+    ...     ('default', 'guest'),
+    ...     ('administrator_group', 'administrators'),
+    ...     ('developer_group', 'developers')
+    ... ]
+    >>> config.items('users') == target
+    True
+
     """
 
     def __init__(self, directory, name, alternate=None):
@@ -107,6 +115,17 @@ class Config(object):
             self.config and self.config.has_option(section, option)
             or self.default_config.has_option(section, option)
         )
+
+    def items(self, section):
+        """Return a list of (name, value) tuples for each option in a section.
+
+        Both the site config and the default sites config files are read and
+        the results combined to produce the list of tuples.
+        """
+        result = {}
+        result.update(self.default_config.items(section))
+        result.update(self.config.items(section))
+        return list(result.items())
 
     def __str__(self):    # pragma: no cover
         return '<Config: %s>' % repr([
