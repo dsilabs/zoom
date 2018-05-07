@@ -664,13 +664,19 @@ class EntityStore(Store):
             >>> id = people.put(Person(name='Sally', age=55))
             >>> id = people.put(Person(name='Bob', age=25))
             >>> people.first(age=5)
-            >>> people.first(age=25)
+            >>> people.first(age=55)
+            <Person {'name': 'Sally', 'age': 55}>
+            >>> people.first()
             <Person {'name': 'Sam', 'age': 25}>
             >>> db.close()
 
         """
-        for item in self.find(**kv):
-            return item
+        if kv:
+            for item in self.find(**kv):
+                return item
+        else:
+            for item in self:
+                return item
 
     def last(self, **kv):
         """
