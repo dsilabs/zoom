@@ -97,7 +97,7 @@ class Site(object):
             )
 
             theme_dir = get('theme', 'path', join(instance, 'themes'))
-            self.themes_path = theme_dir
+            self.themes_path = realpath(join(self.path, theme_dir))
             self.theme = get('theme', 'name', 'default')
             self.theme_path = os.path.join(theme_dir, self.theme)
             self.default_theme_path = existing(theme_dir, 'default')
