@@ -7,9 +7,63 @@
 import zoom
 from zoom.page import page
 
+
 class AppSettings(zoom.store.Entity):
     """settings storage class"""
     pass
+
+
+class SystemSettings(zoom.store.Entity):
+    """site settings"""
+    pass
+
+
+class SiteSettings(object):
+    """Site Settings"""
+
+    def __init__(self, config):
+        self.kind = SystemSettings
+        self.settings = zoom.store_of(self.kind)
+        self.values = None
+        self.config = config
+
+    def save(self, values):
+        """save the settings values"""
+        if self.values == None:
+            self.load()
+        self.values.update(values)
+        rec = self.settings.first() or self.kind()
+        rec.update(dict(value=zoom.jsonz.dumps(self.values)))
+        self.settings.put(rec)
+
+    def load(self):
+        """load the settings values"""
+        rec = self.settings.first()
+        if rec:
+            self.values = zoom.jsonz.loads(rec.value)
+        else:
+            self.values = {}
+        return self.values
+
+    def clear(self):
+        """Clear all settings"""
+        self.values = None
+        self.settings.zap()
+
+    def items(self, section):
+        if self.values is None:
+            self.load()
+        items = dict(self.config.items(section))
+        items.update(self.values)
+        return items
+
+    def get(self, name, default=None):
+        if self.values is None:
+            self.load()
+        return self.values.get(name, self.config.get(name))
+
+    def __getattr__(self, name):
+        return self.get(name)
 
 
 class Settings(object):
