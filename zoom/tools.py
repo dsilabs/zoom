@@ -451,6 +451,9 @@ def markdown(content):
 
 def load(pathname, encoding='utf-8'):
     """Load a file into memory"""
+
+    logger = logging.getLogger(__name__)
+    logger.debug('load %r', pathname)
     with open(pathname, encoding=encoding) as reader:
         return reader.read()
 
@@ -545,25 +548,28 @@ def load_template(name, default=None):
 def get_template(template_name='default', theme='default'):
     """Get site page template"""
 
+    logger = logging.getLogger(__name__)
     path = zoom.system.site.themes_path
 
-    filename = os.path.join(path, theme, template_name + '.html')
-    if os.path.isfile(filename):
-        with open(filename) as reader:
+    pathname = os.path.realpath(
+        os.path.join(path, theme, template_name + '.html')
+    )
+    if os.path.isfile(pathname):
+        logger.debug('get_template %r', pathname)
+        with open(pathname) as reader:
             return reader.read()
     else:
-        logger = logging.getLogger(__name__)
         if template_name == 'default':
             logger.error(
                 'default template %s missing',
-                os.path.realpath(filename),
+                os.path.realpath(pathname),
             )
             raise zoom.exceptions.ThemeTemplateMissingException(
-                'Default template missing %r' % filename
+                'Default template missing %r' % pathname
             )
         logger.warning(
-            'template %s missing',
-            filename,
+            'template %r missing',
+            pathname,
         )
         return get_template('default')
 
