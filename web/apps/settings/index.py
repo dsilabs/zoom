@@ -90,24 +90,49 @@ class SettingsController(zoom.mvc.Controller):
     """Settings Controller"""
 
     menu = SettingsManager(
+        'Site',
+        'Theme',
         'Mail',
         title='System Settings'
     )
 
+    site_form = model.get_site_settings_form()
+    theme_form = model.get_theme_settings_form()
     mail_form = model.get_mail_settings_form()
 
     def index(self, selected=None, *args, **kwargs):
         """index page"""
-        return zoom.home('mail')
+        return zoom.home('site')
 
     def reset(self):
         zoom.system.site.settings.clear()
         return zoom.home('mail')
 
+    def site(self, *args, **kwargs):
+        return zoom.page(self.site_form.edit(), title='Site')
+
+    def theme(self, *args, **kwargs):
+        return zoom.page(self.theme_form.edit(), title='Theme')
+
     def mail(self, *args, **kwargs):
         return zoom.page(self.mail_form.edit(), title='Mail')
 
     def save_button(self, *args, **kwargs):
+
+        if args and args[0] == 'site':
+            if self.site_form.validate(kwargs):
+                model.save_site_settings(self.site_form.evaluate())
+                zoom.alerts.success('site settings saved')
+                return zoom.home(args[0])
+            return None
+
+        if args and args[0] == 'theme':
+            if self.theme_form.validate(kwargs):
+                model.save_theme_settings(self.theme_form.evaluate())
+                zoom.alerts.success('theme settings saved')
+                return zoom.home(args[0])
+            return None
+
         if args and args[0] == 'mail':
             if self.mail_form.validate(kwargs):
                 model.save_mail_settings(self.mail_form.evaluate())
