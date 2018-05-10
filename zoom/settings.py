@@ -13,8 +13,14 @@ class AppSettings(zoom.store.Entity):
     pass
 
 
+
 class SystemSettings(zoom.store.Entity):
     """site settings"""
+    pass
+
+
+class SettingsSection(zoom.utils.Record):
+    """settings section"""
     pass
 
 
@@ -24,46 +30,48 @@ class SiteSettings(object):
     def __init__(self, config):
         self.kind = SystemSettings
         self.settings = zoom.store_of(self.kind)
-        self.values = None
+        self._values = None
         self.config = config
-
-    def save(self, values):
-        """save the settings values"""
-        if self.values == None:
-            self.load()
-        self.values.update(values)
-        rec = self.settings.first() or self.kind()
-        rec.update(dict(value=zoom.jsonz.dumps(self.values)))
-        self.settings.put(rec)
 
     def load(self):
         """load the settings values"""
         rec = self.settings.first()
-        if rec:
-            self.values = zoom.jsonz.loads(rec.value)
-        else:
-            self.values = {}
-        return self.values
+        self._values = zoom.jsonz.loads(rec.value) if rec else {}
+        return self._values
+
+    @property
+    def values(self):
+        if self._values is None:
+            self.load()
+        return self._values
+
+    def save(self):
+        """save the settings values"""
+        rec = self.settings.first() or self.kind()
+        rec.update(dict(value=zoom.jsonz.dumps(self.values)))
+        self.settings.put(rec)
 
     def clear(self):
         """Clear all settings"""
-        self.values = None
+        self._values = None
         self.settings.zap()
 
     def items(self, section):
-        if self.values is None:
-            self.load()
         items = dict(self.config.items(section))
-        items.update(self.values)
+        items.update(self.values.get(section, {}))
         return items
 
-    def get(self, name, default=None):
-        if self.values is None:
-            self.load()
-        return self.values.get(name, self.config.get(name))
+    def get(self, section, name, default=None):
+        return self.values.get(section, {}).get(name, self.config.get(name))
+
+    def section(self, name):
+        return SettingsSection(self.items(name))
 
     def __getattr__(self, name):
-        return self.get(name)
+        return self.section(name)
+
+    def update(self, section, values):
+        self._values.setdefault(section, {}).update(values)
 
 
 class Settings(object):

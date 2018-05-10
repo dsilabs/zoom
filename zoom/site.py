@@ -40,6 +40,120 @@ def dedup(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
+
+class ConfigSection(zoom.utils.Record):
+    """site configuration section"""
+    pass
+
+
+class SiteConfig(object):
+    """Site Config Reader
+
+    Site configuration is managed with the site.ini files provided
+    in the site directory and the default directory.
+
+    The SiteConfig class maps unique config keywords used by the system
+    into the section/name pairs used in the physical configuration files
+    and provides default values in the event that no value is provided
+    in the config files.
+
+    >>> site = zoom.sites.Site()
+    >>> site.config.get('site', 'name') # without SiteConfig
+    'ZOOM'
+    >>> conf = SiteConfig(site.config) # using SiteConfig
+    >>> conf.site.get('name')
+    'ZOOM'
+
+    >>> conf.section('sessions')
+    <ConfigSection {'secure_cookies': True}>
+
+    >>> conf.section('notasection')
+    <ConfigSection {}>
+
+    >>> conf.site['name']
+    'ZOOM'
+
+    >>> conf.site.get('notaname', 'Nope')
+    'Nope'
+
+    >>> conf.site.notaname == None
+    True
+
+    >>> conf.mail.get('smtp_port')
+    '587'
+
+    >>> conf.mail.smtp_port
+    '587'
+
+    """
+
+    defaults = {
+        'site': {
+            'name': 'ZOOM',
+            'url': '',
+            'owner_name': 'Company Name',
+            'owner_email': '',
+            'owner_url': DEFAULT_OWNER_URL,
+            'admin_email': '',
+            'register_email': '',
+            'support_email': '',
+        },
+        'users': {
+            'default': 'guest',
+            'administrators_group': 'administrators',
+            'developers_group': 'developers',
+            'override': None,
+        },
+        'apps': {
+            'index': 'content',
+            'home': 'home',
+            'login': 'login',
+            'path': 'apps;../../apps',
+        },
+        'theme': {
+            'name': 'default',
+            'path': None,
+        },
+        'monitoring': {
+            'profiling': False,
+            'logging': False,
+            'app_database': False,
+            'system_database': False,
+        },
+        'error': {
+            'users': False,
+        },
+        'sessions': {
+            'secure_cookies': True,
+        },
+        'mail': {
+            'smtp_host': '',
+            'smtp_port': '587',
+            'smtp_user': '',
+            'smtp_passwd': '',
+            'logo': '',
+            'from_addr': '',
+            'from_name': 'ZOOM Support',
+            'gnupg_home': None,
+        }
+    }
+
+    def __init__(self, config):
+        self.config = config
+
+    def items(self, section):
+        result = {}
+        result.update(self.defaults.get(section, {}))
+        result.update(self.config.items(section))
+        return result
+
+    def section(self, name):
+        return ConfigSection(self.items(name))
+
+    def __getattr__(self, name):
+        return self.section(name)
+
+
 class Site(object):
     """a Zoom site"""
     # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -52,6 +166,7 @@ class Site(object):
         instance = request.instance
         self.name = name = request.domain
         self.__apps = None
+        self.__settings = None
 
         # TODO: consider getting site to do this calculation instead of reqeust
         site_path = request.site_path
@@ -60,6 +175,7 @@ class Site(object):
             self.name = name
             self.path = site_path
             self.config = zoom.config.Config(site_path, 'site.ini')
+            self.conf = SiteConfig(self.config)
 
             get = self.config.get
             self.url = get('site', 'url', '')
@@ -148,6 +264,12 @@ class Site(object):
         else:
             logger.error('Site directory missing: %r', site_path)
             raise zoom.exceptions.SiteMissingException('site {!r} does not exist'.format(site_path))
+
+    @property
+    def settings(self):
+        if not self.__settings:
+            self.__settings = zoom.settings.SiteSettings(self.conf)
+        return self.__settings
 
     @property
     def tracker(self):
