@@ -5,6 +5,8 @@
 import zoom
 import zoom.html as h
 
+import model
+
 
 def side_menu(*items):
     css = """
@@ -77,41 +79,46 @@ class SettingsManager(object):
         )
 
 
-class SettingsView(zoom.mvc.Dispatcher):
-    """Setttings View
-    """
+class SettingsView(zoom.mvc.View):
+    """Settings View"""
+
+    def about(self):
+        return zoom.page(zoom.tools.load_content('about.md'))
+
+
+class SettingsController(zoom.mvc.Controller):
+    """Settings Controller"""
 
     menu = SettingsManager(
-        'General',
-        'Theme',
-        # 'Blacklist Addresses',
         'Mail',
         title='System Settings'
     )
 
-    def index(self, selected=None, *a, **kwarg):
+    mail_form = model.get_mail_settings_form()
+
+    def index(self, selected=None, *args, **kwargs):
         """index page"""
-        return zoom.home('general')
-        # return zoom.page('dashboard could go here')
+        return zoom.home('mail')
 
-    def general(self, *args, **kwargs):
-        return zoom.page('<h2>General</h2>General site settings will go here.')
-
-    def theme(self, *args, **kwargs):
-        return zoom.page('<h2>Theme</h2>theme settings to go here')
-
-    # def blacklist_addresses(self, *args, **kwargs):
-    #     def blacklist_addresses():
-    #         return zoom.fields.Fields(
-    #             zoom.fields.TextField('IP Address', zoom.validators.required),
-    #         )
-    #     return zoom.collect.Collection(blacklist_addresses).process(*args, **kwargs)
+    def reset(self):
+        zoom.system.site.settings.clear()
+        return zoom.home('mail')
 
     def mail(self, *args, **kwargs):
-        return zoom.page('<h2>Mail</h2>mail settings to go here')
+        return zoom.page(self.mail_form.edit(), title='Mail')
+
+    def save_button(self, *args, **kwargs):
+        if args and args[0] == 'mail':
+            if self.mail_form.validate(kwargs):
+                model.save_mail_settings(self.mail_form.evaluate())
+                zoom.alerts.success('mail settings saved')
+                return zoom.home(args[0])
+            return None
+
 
     def __call__(self, *args, **kwargs):
-        response = zoom.mvc.Dispatcher.__call__(self, *args, **kwargs)
+        response = zoom.mvc.Controller.__call__(self, *args, **kwargs)
         return self.menu.page(response)
 
-main = zoom.dispatch(SettingsView)
+
+main = zoom.dispatch(SettingsController, SettingsView)
