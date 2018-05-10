@@ -260,6 +260,19 @@ def serve_images(request, handler, *rest):
 def serve_favicon(request, handler, *rest):
     """Serve a favicon file
 
+    This function only handles the case where the favicon
+    reference is /favicon.ico, as would be typical in a local
+    dev environment.  For production environments the favicon
+    would typically be either part of the theme or would
+    be stored statically, both of which would typically be
+    served up by your proxy or your web server depending on
+    your config.
+
+    If your web sever is not configured to handle static or
+    themes for you, Zoom will happily serve them up via
+    the serve_theme or serve_static middleware found
+    elsewhere in this module.
+
     >>> from zoom.request import Request
     >>> def content_handler(request, *rest):
     ...     return '200 OK', [], 'nuthin'
