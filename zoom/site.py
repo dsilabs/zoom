@@ -251,8 +251,8 @@ class Site(object):
                 get('data', 'path', join(self.path, 'data'))
             )
 
-            self.logging = get('monitoring', 'logging', True) != '0'
-            self.profiling = get('monitoring', 'profiling', True) != '0'
+            self.logging = get('monitoring', 'logging', True) in zoom.utils.POSITIVE
+            self.profiling = get('monitoring', 'profiling', False) in zoom.utils.POSITIVE
             self.monitor_app_database = get('monitoring', 'app_database', True) != '0'
             self.monitor_system_database = get('monitoring', 'system_database', False) != '0'
 
