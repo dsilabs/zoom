@@ -450,7 +450,7 @@ def markdown(content):
 
 
 def load(pathname, encoding='utf-8'):
-    """Load a file into memory"""
+    """Read a file and return the contents"""
 
     logger = logging.getLogger(__name__)
     logger.debug('load %r', pathname)
