@@ -54,6 +54,7 @@ def get_current_username(request):
     """get current user username"""
     site = request.site
     return (
+        getattr(request, 'username', None) or
         site.config.get('users', 'override', '') or
         getattr(request.session, 'username', None) or
         request.remote_user or

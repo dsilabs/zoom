@@ -64,34 +64,36 @@ class WSGIApplication(object):
     """a WSGI Application wrapper
     """
     # pylint: disable=too-few-public-methods
-    def __init__(self, instance='.', handlers=None):
+    def __init__(self, instance='.', handlers=None, username=None):
         self.handlers = handlers
         self.instance = instance
+        self.username = username
 
     def __call__(self, environ, start_response):
         reset_modules()
         start_time = timer()
-        request = Request(environ, self.instance, start_time)
+        request = Request(environ, self.instance, start_time, self.username)
         response = middleware.handle(request, self.handlers)
         status, headers, content = response.as_wsgi()
         start_response(status, headers)
         return [content]
 
 
-def run(port=80, instance=None, handlers=None):  # pragma: no cover
+def run(port=80, instance=None, handlers=None, username=None):  # pragma: no cover
     """run using internal HTTP Server
 
     The instance variable is the path of the directory on the system where the
     sites folder is located. (e.g. /work/web)
     """
 
-    the_appliation = WSGIApplication(instance, handlers)
+    the_appliation = WSGIApplication(instance, handlers, username)
     server = make_server('', int(port), the_appliation, handler_class=ZoomWSGIRequestHandler)
     try:
         message = zoom.utils.trim("""
-         * running on http://localhost{} (press Ctrl+C to quit)
+         * running on http://localhost{} {}(press Ctrl+C to quit)
         """).format(
             port != 80 and ':{}'.format(port) or '',
+            username and 'as {} '.format(username) or '',
         )
         print(message)
         server.serve_forever()

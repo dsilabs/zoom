@@ -76,6 +76,8 @@ def server(instance='.'):
                         help='http service port')
     parser.add_argument("-n", "--noop", action='store_true',
                         help='use special debugging middleware stack')
+    parser.add_argument("-u", "--user", type=str, default=None,
+                        help='run site as specified user')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
     parser.add_argument("-f", "--filter", type=str, default=None,
@@ -118,7 +120,7 @@ def server(instance='.'):
                 handlers = zoom.middleware.DEBUGGING_HANDLERS
                 runweb(port=args.port, instance=instance, handlers=handlers)
             else:
-                runweb(port=args.port, instance=instance)
+                runweb(port=args.port, instance=instance, username=args.user)
 
             print('\rstopped')
 

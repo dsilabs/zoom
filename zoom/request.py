@@ -197,12 +197,14 @@ class Request(object):
 
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, env=None, instance=None, start_time=None):
+    def __init__(self, env=None, instance=None, start_time=None, username=None):
 
         self.env = env or os.environ
         get = env.get
 
         self.start_time = start_time or timer()
+        self.username = username
+
         self.session_token = None
         self.session_timeout = None
         self.session = zoom.utils.Bunch()
