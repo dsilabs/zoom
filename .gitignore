@@ -7,5 +7,5 @@ testsold
 *.log
 .linter*
 __pycache__
-./*\.png
+/*\.png
 .vscode
