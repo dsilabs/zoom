@@ -300,6 +300,7 @@ class NoApp(object):
     menu_items = []
     menu = ''
     name = 'none'
+    theme = None
 
 
 def respond(content, request):
