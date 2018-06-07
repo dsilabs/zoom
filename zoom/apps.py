@@ -246,6 +246,36 @@ class AppProxy(object):
         result = as_links(menu, select=by_name(selected))
         return result
 
+    def read_config(self, section, key, default=None):
+        """read app config file values"""
+        path = self.path
+        join = os.path.join
+        split = os.path.split
+
+        local_config_file = join(path, 'config.ini')
+        shared_config_file = join(split(path)[0], 'default.ini')
+        system_config_file = join(split(path)[0], '..', '..', 'default.ini')
+
+        config = self.config_parser
+        try:
+            config.read(local_config_file)
+            return config.get(section, key)
+        except:
+            try:
+                config.read(shared_config_file)
+                return config.get(section, key)
+            except:
+                try:
+                    config.read(system_config_file)
+                    return config.get(section, key)
+                except:
+                    if default != None:
+                        return default
+                    else:
+                        tpl = 'config setting [{}]{} not found in {} or {} or {}'
+                        msg = tpl.format(section, key, local_config_file, shared_config_file, system_config_file)
+                        raise Exception(msg)
+
     def get_config(self, default=None):
         """get the app config"""
 

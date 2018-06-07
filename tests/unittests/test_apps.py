@@ -293,7 +293,15 @@ class TestApps(unittest.TestCase):
         response = self.call('aaa')
         self.assertTrue(response is None)
 
-    # def test_handle_allowed(self):
-    #     response = self.call('home')
-    #     self.assertTrue('<h1>Apps</h1>' in response)
+    def test_read_config(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        app = zoom.apps.AppProxy('Sample', pathname, site)
+        self.assertTrue(app.read_config('settings', 'title', 'notfound'), 'Sample')
 
+    def test_read_config_missing(self):
+        site = zoom.system.site
+        pathname = zoom.tools.zoompath('web', 'apps', 'ping', 'app.py')
+        app = zoom.apps.AppProxy('Ping', pathname, site)
+        self.assertTrue(app.read_config('settings', 'icon', 'notfound'), 'cube')
+        
