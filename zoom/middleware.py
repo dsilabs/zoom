@@ -190,6 +190,37 @@ def serve_response(*path):
 def serve_static(request, handler, *rest):
     """Serve a static file
 
+    Static files can be served in serveral ways.  This particular
+    middleware intended to be inserted into the middleware stack
+    near the front before most other things.  The reason being is
+    that in many cases the static files are not site specific or
+    app specific but rather are shared by the entire instance.  In
+    addition, many times static files require no authorization or
+    special rights.  This means that in many cases static files
+    can be served without knowing who is asking or what site they
+    are for.  That is what this middleware does.
+
+    This handler is mainly intended for development purposes as
+    in a production evironment this type of content would typically
+    be served up by the HTTP server or a caching layer.
+
+    Note: This layer looks in four separate places for static files
+    to serve.  Three related to the zoom instance, and one, as a last
+    resort, from the zoom library itself.  If you are concerned
+    about exposing the wrong files, be careful what you put in those
+    directories or better yet, use a proxy.
+
+    In addition to this instance wide static serving Sites and Apps
+    may implement static file serving.  If they do, this layer is
+    unaware of that fact.
+
+    The locations this handler will look are relative to the zoom
+    instance. They are:
+        <instance>/static
+        <instance>/www/static
+        <instance>/../static
+        zoom/web/www/static
+
     >>> url = 'http://localhost/static/zoom/zoom.js'
     >>> request = zoom.request.build(url)
     >>> result = serve_static(request, lambda a: False)
@@ -203,9 +234,23 @@ def serve_static(request, handler, *rest):
     False
     """
     if request.path.startswith('/static/'):
-        exists = os.path.isdir(os.path.join(request.instance, 'www', 'static'))
-        path = request.instance if exists else zoom.tools.zoompath('web')
-        return serve_response(path, 'www', request.path[1:])
+        logger = logging.getLogger(__name__)
+        isdir, join = os.path.isdir, os.path.join
+        locations = list(filter(isdir, [
+            join(request.instance, 'static'),
+            join(request.instance, 'www', 'static'),
+            join(request.instance, '..', 'static'),
+            zoom.tools.zoompath('web', 'www', 'static'),
+        ]))
+        for location in locations:
+            pathname = join(location, *request.route[1:])
+            logger.debug('looking for %r', pathname)
+            if os.path.isfile(pathname):
+                return serve_response(pathname)
+        path = '/'.join(request.route[1:])
+        logger.warning('static resource %r not found in %r', path, locations)
+        msg = 'resource not found: {!r}'
+        return HTMLResponse(msg.format(path), status='404 Not Found')
     else:
         return handler(request, *rest)
 
