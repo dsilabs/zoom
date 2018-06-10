@@ -19,36 +19,39 @@ delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
 
-def id_for(*args):
+def key_for(username):
     """
     Calculates a valid HTML tag id given an arbitrary string.
 
-        >>> id_for('Test 123')
+        >>> key_for('Test 123')
         'test-123'
-        >>> id_for('New Record')
+        >>> key_for('New Record')
         'new-record'
-        >>> id_for('New "special" Record')
+        >>> key_for('New "special" Record')
         'new-special-record'
-        >>> id_for("hi", "test")
-        'hi~test'
-        >>> id_for("hi test")
+        >>> key_for("hi test")
         'hi-test'
-        >>> id_for("hi-test")
+        >>> key_for("hi-test")
         'hi-test'
-        >>> id_for(1234)
+        >>> key_for(1234)
         '1234'
-        >>> id_for('this %$&#@^is##-$&*!it')
+        >>> key_for('this %$&#@^is##-$&*!it')
         'this-is-it'
-        >>> id_for('test-this')
+        >>> key_for('test-this')
         'test-this'
-        >>> id_for('test.this')
+        >>> key_for('test.this')
         'test.this'
+        >>> key_for('test\\\\this')
+        'test-this'
 
     """
-    def id_(text):
+    def _key_for(text):
         return str(text).strip().translate(allowed).lower().replace(' ', '-')
 
-    return '~'.join([id_(arg) for arg in args])
+    if '\\' in str(username):
+        username = username.replace('\\','-')
+
+    return _key_for(username)
 
 def get_current_username(request):
     """get current user username"""
@@ -143,11 +146,7 @@ class User(Record):
     # key = property(lambda a: id_for(a.username))
     @property
     def key(self):
-        if '\\' in self.username:
-            username = self.username.replace('\\','-')
-        else:
-            username = self.username
-        return id_for(username)
+        return key_for(self.username)
 
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)

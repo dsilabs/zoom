@@ -4,6 +4,7 @@
 
 import datetime
 
+import zoom
 # from zoom.audit import audit
 from zoom.component import component
 from zoom.context import context
@@ -15,6 +16,10 @@ from zoom.component import Component
 from zoom.helpers import link_to
 
 from views import index_metrics_view, IndexPageLayoutView
+
+
+def link_to_user(username):
+    return link_to(username, '/admin/users/{}'.format(zoom.users.key_for(username)))
 
 
 def log_data(db, status, n, limit, q):
@@ -77,7 +82,7 @@ def activity_panel(db):
     for rec in data:
         row = [
             link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
-            link_to(rec[1], '/admin/users/{}'.format(rec[1])),
+            link_to_user(rec[1]),
             rec[2],
             rec[3],
             how_long_ago(rec[4]),
@@ -101,13 +106,13 @@ def error_panel(db):
 
     data = db("""
         select
-            id,
-            user_id,
+            log.id,
+            username,
             path,
             timestamp
-        from log
-        where status in ("E") and timestamp>=%s
-        order by id desc
+        from log left join users on log.user_id = users.id
+        where log.status in ("E") and timestamp>=%s
+        order by log.id desc
         limit 10
         """, today())
 
@@ -116,7 +121,7 @@ def error_panel(db):
     for rec in data:
         row = [
             link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
-            user_link(rec[1]),
+            link_to_user(rec[1]),
             rec[2],
             how_long_ago(rec[3]),
         ]
@@ -143,7 +148,7 @@ def users_panel(db):
     rows = []
     for rec in data:
         row = [
-            link_to(rec[0], '/admin/users/' + rec[0]),
+            link_to_user(rec[0]),
             how_long_ago(rec[1]),
             rec[2],
         ]
