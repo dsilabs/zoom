@@ -4,6 +4,7 @@
 
 import logging
 
+import zoom
 from zoom.context import context
 from zoom.tools import today
 from zoom.users import Users
@@ -318,3 +319,34 @@ def update_user_groups(record):
 def update_group_relationships(record):
     admin = AdminModel(context.site.db)
     admin.update_group_relationships(record)
+
+
+def admin_crud_policy():
+    """Authourization policy for Admin app collections
+    """
+    def _policy(item, user, action):
+        """Policy rules for shared collection"""
+
+        def can_crud(user):
+            """Return True if user can crud this collection
+            """
+            return user.is_admin or user.is_member('authorizers')
+
+        actions = {
+            'create': can_crud,
+            'read': can_crud,
+            'update': can_crud,
+            'delete': can_crud,
+        }
+
+        if action not in actions:
+            raise Exception('action missing: {}'.format(action))
+
+        return actions.get(action)(user)
+    return _policy
+
+
+class AdminCollection(zoom.collect.Collection):
+    """Admin app Collection"
+
+    allows = admin_crud_policy()

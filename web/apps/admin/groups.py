@@ -96,7 +96,7 @@ def main(route, request):
     users = Groups(db)
     fields = group_fields(request)
     columns = 'link', 'description', 'administrators'
-    return Collection(
+    return model.AdminCollection(
         fields,
         model=Group,
         controller=GroupCollectionController,

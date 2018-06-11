@@ -129,7 +129,7 @@ def main(route, request):
     fields = user_fields(request)
     columns = 'link', 'phone', 'email', 'status_text', 'when_updated', 'when_last_seen'
     labels = 'Username', 'Phone', 'Email', 'Status', 'Updated', 'Last Seen'
-    return Collection(
+    return model.AdminCollection(
         fields,
         model=User,
         view=UserCollectionView,
