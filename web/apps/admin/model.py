@@ -347,6 +347,6 @@ def admin_crud_policy():
 
 
 class AdminCollection(zoom.collect.Collection):
-    """Admin app Collection"
+    """Admin app Collection"""
 
     allows = admin_crud_policy()
