@@ -28,7 +28,7 @@ from .browse import browse
 from .component import Component
 from .context import context as system
 from .forms import form, Form
-from .helpers import link_to
+from .helpers import link_to, url_for, url_for_page
 from .instances import Instance
 from .mvc import View, Controller, dispatch
 from .page import page, Page
