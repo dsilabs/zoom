@@ -104,11 +104,14 @@ def pre(content):
         return tag('pre', content)
     return ''
 
-def div(content='', **kwargs):
+def div(*content, **kwargs):
     """
     generates an div tag
 
         >>> div('some content')
+        '<div>some content</div>'
+
+        >>> div('some', ' content')
         '<div>some content</div>'
 
         >>> div('')
@@ -119,7 +122,7 @@ def div(content='', **kwargs):
 
 
     """
-    return tag('div', content, **kwargs)
+    return tag('div', ''.join(content), **kwargs)
 
 
 def span(content='', **kwargs):
