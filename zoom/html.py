@@ -105,8 +105,10 @@ def pre(content):
     return ''
 
 def div(*content, **kwargs):
-    """
-    generates an div tag
+    """generates an HTML div tag
+
+    Content can be any number of items that support str conversion.  Named
+    arguments are used as tag attributes for the div tag.
 
         >>> div('some content')
         '<div>some content</div>'
@@ -122,7 +124,7 @@ def div(*content, **kwargs):
 
 
     """
-    return tag('div', ''.join(content), **kwargs)
+    return tag('div', ''.join(map(str, content)), **kwargs)
 
 
 def span(content='', **kwargs):
