@@ -28,7 +28,7 @@ def new(name=None):
     parser = ArgumentParser(
         description='create a new app',
         usage='zoom new [options] name'
-        )
+    )
 
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
