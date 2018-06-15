@@ -324,6 +324,14 @@ def build(url, data=None, instance_path=None):
     >>> request.host
     'localhost'
 
+    >>> request = build('http://testsite.local:8000/info')
+    >>> request.host
+    'testsite.local'
+    >>> request.port
+    8000
+    >>> request.path
+    '/info'
+
     >>> request = build('http://localhost/hello')
     >>> request.path
     '/hello'
