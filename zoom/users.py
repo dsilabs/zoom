@@ -219,7 +219,7 @@ class User(Record):
     @property
     def link(self):
         """user as link"""
-        if zoom.system.user.is_admin:
+        if zoom.system.user and zoom.system.user.is_admin:
             return link_to(self.username, self.url)
         else:
             return self.username
