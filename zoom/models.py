@@ -150,6 +150,11 @@ class Group(Record):
     >>> groups.first(name='everyone').subgroups
     {2, 3}
 
+    >>> groups.first(name='users').user_ids
+    [2]
+    >>> {u.username for u in site.users.get(groups.first(name='users').user_ids)}
+    {'user'}
+
     """
 
     @property
@@ -176,7 +181,19 @@ class Group(Record):
     @property
     def users(self):
         """Return list of users that are part of this group"""
+        # TODO:
+        # Ideally, this should have returned users as it advertises.  Instead
+        # it returns user IDs.  We're introducing the user_ids property below
+        # to take the place of this property prior to switching this it
+        # over to fixing it so clients from this point forward have a property
+        # that returns value consistent with its name.  Plan to do a scan of
+        # existing systems before switching this over so we don't break things.
         return self.get_users()
+
+    @property
+    def user_ids(self):
+        """Return list of user IDs of users that are in the group"""
+        return list(self.get_users())
 
     def add_user(self, user):
         store = self.get('__store')
