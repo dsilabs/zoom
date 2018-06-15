@@ -147,7 +147,8 @@ class Group(Record):
       29
     }
 
-    >>> groups.first(name='everyone').subroups
+    >>> groups.first(name='everyone').subgroups
+    {2, 3}
 
     """
 
