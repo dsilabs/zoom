@@ -26,6 +26,17 @@ ERROR_TPL = """
   message: {}
 """
 
+def obfuscate(text):
+    """obfuscate text so it is recognizable without divulging it
+
+    >>> obfuscate('12345')
+    '1***5'
+
+    >>> obfuscate('')
+    ''
+
+    """
+    return text[:1] + '*' * (len(text) - 2) + text[-1:]
 
 class UnknownDatabaseException(Exception):
     """exception raised when the database is unknown"""
@@ -408,12 +419,10 @@ class MySQLDatabase(Database):
     @property
     def connect_string(self):
         """Return a string representation of the connection parameters"""
-        def obfuscate(text):
-            return text[:1] + '*' * (len(text) - 2) + text[-1:]
 
         return 'mysql://{}{}@{}/{}'.format(
             self.user.decode('utf8'),
-            self.password and ':' + obfuscate(self.password) or '',
+            self.password and ':' + obfuscate(str(self.password)) or '',
             str(self.host),
             self.db.decode('utf8'),
         )
