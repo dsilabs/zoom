@@ -183,17 +183,18 @@ class Page(object):
             theme_uri=self.theme_uri,
         )
 
+    def header(self):
+        """return page header"""
+        if self.title or self.subtitle or self.actions or self.search:
+            return PageHeader(page=self)
+
     def render(self, request):
         """render page"""
 
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
 
-        if self.title or self.subtitle or self.actions or self.search:
-            full_page = Component(PageHeader(page=self), self.content)
-        else:
-            full_page = Component(self.content)
-        self.content = full_page.render()
+        self.content = Component(self.header(), self.content).render()
 
         app_theme = request.app.theme if hasattr(request, 'app') else None
         site_theme = request.site.theme
