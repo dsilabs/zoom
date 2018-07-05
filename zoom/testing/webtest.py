@@ -63,18 +63,18 @@ class WebdriverTestPrimitives(unittest.TestCase):
         pass
 
     def get_driver(self):
-        chrome_options = Options()
 
         driver_name = self.driver_name
 
         if driver_name == 'chrome':
+            chrome_options = Options()
             chrome_options.add_experimental_option('prefs', {
                 'credentials_enable_service': False,
                 'profile': {
                     'password_manager_enabled': False
                 }
             })
-            driver = webdriver.Chrome(chrome_options=chrome_options)
+            driver = webdriver.Chrome(options=chrome_options)
             driver.set_window_size(*self.size)
             driver.implicitly_wait(10)
 
