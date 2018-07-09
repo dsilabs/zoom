@@ -571,7 +571,7 @@ def get_template(template_name='default', theme='default'):
             'template %r missing',
             pathname,
         )
-        return get_template('default')
+        return get_template('default', theme)
 
 def zoompath(*args):
     """Returns the location of a standard Zoom asset"""
