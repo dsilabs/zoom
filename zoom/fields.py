@@ -1680,7 +1680,8 @@ class DateField(Field):
 
     """
 
-    value = default = None
+    value = None
+    default = None
     size = maxlength = 12
     input_format = '%b %d, %Y'
     alt_input_format = '%Y-%m-%d'
@@ -1691,6 +1692,7 @@ class DateField(Field):
     min = max = None
 
     def display_value(self, alt_format=None):
+        # pylint: disable=E1101
         format = alt_format or self.format
         if self.value:
             strftime = datetime.datetime.strftime
@@ -2377,6 +2379,7 @@ class MultiselectField(TextField):
         self.assign([])
 
     def option_style(self, label, value):
+        # pylint: disable=E1102
         if self.styler is not None:
             return 'class="{}" '.format(self.styler(label, value))
         return ''
@@ -2427,6 +2430,54 @@ class ChosenMultiselectField(MultiselectField):
     <option value="Three">Three</option>
     </select>
 
+    >>> f = ChosenMultiselectField('Choose', value='2', options=['One', 'Two', 'Three'])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="One">One</option>
+    <option value="Two">Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', value='Two', options=['One', 'Two', 'Three'])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="One">One</option>
+    <option value="Two" selected>Two</option>
+    <option value="Three">Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', value='2', options=[('One', '1'), ('Two', '2'), ('Three', '3')])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    <option value="3">Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', value='Two', options=[('One', '1'), ('Two', '2'), ('Three', '3')])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    <option value="3">Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', value=['Two', 3], options=[('One', '1'), ('Two', '2'), ('Three', '3')])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="1">One</option>
+    <option value="2" selected>Two</option>
+    <option value="3" selected>Three</option>
+    </select>
+
+    >>> f = ChosenMultiselectField('Choose', value=['One', 3], options=[('One', 1), ('Two', 2), ('Three', 3)])
+    >>> print(f.widget())
+    <select data-placeholder="Select Choose" multiple="multiple" class="chosen" name="choose" id="choose">
+    <option value="1" selected>One</option>
+    <option value="2">Two</option>
+    <option value="3" selected>Three</option>
+    </select>
+
 
 
     """
@@ -2446,7 +2497,6 @@ class ChosenMultiselectField(MultiselectField):
         else:
             current_values = self.value
         current_values = list(map(str, ensure_listy(current_values)))
-        current_labels = self._scan(current_values, lambda a: a[0])
         result = []
         name = self.name
         result.append(self.select_layout.format(self.placeholder, self.css_class, name, name))
