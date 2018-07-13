@@ -1996,7 +1996,6 @@ class RadioField(TextField):
                 text, value = option
             else:
                 text = value = option
-            label = self.label
             checked = (value == current_value) and 'checked' or ''
             result.append(
                 html.span(
