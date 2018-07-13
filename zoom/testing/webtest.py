@@ -16,7 +16,9 @@
 
 import logging
 import os
+import time
 import unittest
+import warnings
 
 from pyvirtualdisplay import Display
 from selenium import webdriver
@@ -89,7 +91,10 @@ class WebdriverTestPrimitives(unittest.TestCase):
         return driver
 
     def get(self, url):
-        self.driver.get(self.url + url)
+        target = self.url + url
+        logger = logging.getLogger(__name__)
+        logger.debug('getting: %r', target)
+        self.driver.get(target)
 
     def find(self, target):
         """find an element in the page"""
