@@ -61,6 +61,8 @@ def layout_field(label, content, edit=True):
         </div>
         <BLANKLINE>
     """
+    # pylint: disable=W0612
+
     pathname = os.path.join(os.path.dirname(__file__), 'views', 'field.html')
     mode = bool(edit) and 'edit' or 'show'
     return load_content(**locals())
@@ -2504,6 +2506,8 @@ class RangeSliderField(IntegerField):
         });
         $("#%(name)s").slider("values", $("#%(name)s").slider("values")); // set formatted label
     """
+    # pylint: disable=W0612
+
     min = 0
     max = 10
     show_labels = True
