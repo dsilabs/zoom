@@ -4,7 +4,10 @@
     Work in progress - experimental
 """
 
+import logging
+
 import zoom
+
 
 class SystemMigrationRecord(zoom.utils.Record):
     """Migration Record"""
@@ -12,13 +15,17 @@ class SystemMigrationRecord(zoom.utils.Record):
 
 
 class Migration(object):  # pragma: no cover
-    """Migration Logic"""
+    """Migration
+
+    Provies the methods to apply or revert transformations
+    to get system to a desired state.
+    """
 
     def __init__(self, db):
         self.db = db
 
-    def change(self):
-        """Apply changes to the database"""
+    def apply(self):
+        """apply changes to the database"""
         pass
 
     def revert(self):
@@ -31,58 +38,180 @@ class Migration(object):  # pragma: no cover
 
 
 class StartMigration(Migration):
-    """Initial migration"""
+    """Start Migration
+
+    This is a starting state migration.  It serves as a starting point
+    for the system before any migrations were applied and does not
+    itself apply any data transformations.  This migration should be used
+    as the first element of all migration sequences.
+
+    In theory, migrating back to this state should put the database back
+    into its original state.  By "in theory" we mean that assuming all
+    of the applied migrations are completely revertable which may not
+    be the case in all cases.
+    """
     pass
 
 
-migrations = [
-    StartMigration,
-]
+class Migrations(object):
+    """performs the migration steps needed to get to the target version
 
+    Systems are migrated from one state to another by providing a sequence
+    of steps typically subclassed from the Migration class.  Migrations
+    should provide both an apply method to peform a transformation to take a
+    system to a desired state and, where possible, a revert method to undo the
+    transformation to transform the sytem back to its original state.
 
-def migrate(to_revision=None):  # pragma: no cover
-    db = zoom.system.site.db
+    As they are applied and reverted, the migrations are tracked in a
+    data store including the name of the object peforming the migration (
+    usually a subclass of Migration) the version of the system that was
+    attained by applying or reverting the migration, the revision number
+    of the migration (an integer representing the application or reversion
+    of a transformation), the method used (apply or revert) and the timestamp
+    of when the migration took place.
 
-    migration_records = zoom.store.EntityStore(db, SystemMigrationRecord)
-    num_migration_records = len(migration_records)
+    >>> class AddFaxColumnToUser(Migration):
+    ...     def apply(self):
+    ...         self.db('alter table users add column fax char(30)')
+    ...     def revert(self):
+    ...         self.db('alter table users drop column fax')
 
-    if len(migrations) > num_migration_records:
+    >>> steps = [
+    ...     StartMigration,
+    ...     AddFaxColumnToUser,
+    ... ]
 
-        for i, migration in enumerate(migrations):
-            if i >= num_migration_records:
-                if to_revision == None or i <= to_revision:
-                    migration(db).change()
+    >>> zoom.system.site = site = zoom.sites.Site()
+    >>> site.db = zoom.database.setup_test()
+
+    >>> print(site.db('describe users'))
+    Field      Type             Null Key Default Extra
+    ---------- ---------------- ---- --- ------- --------------
+    id         int(10) unsigned NO   PRI None    auto_increment
+    username   char(50)         NO   UNI None
+    password   varchar(125)     YES      None
+    first_name char(40)         YES      None
+    last_name  char(40)         YES      None
+    email      char(60)         YES  MUL None
+    phone      char(30)         YES      None
+    created    datetime         YES      None
+    updated    datetime         YES      None
+    last_seen  datetime         YES  MUL None
+    created_by int(10) unsigned YES      None
+    updated_by int(10) unsigned YES      None
+    status     char(1)          YES      None
+
+    >>> migrations = Migrations(site.db, steps)
+    >>> migrations.migrate()
+
+    >>> print(site.db('describe users'))
+    Field      Type             Null Key Default Extra
+    ---------- ---------------- ---- --- ------- --------------
+    id         int(10) unsigned NO   PRI None    auto_increment
+    username   char(50)         NO   UNI None
+    password   varchar(125)     YES      None
+    first_name char(40)         YES      None
+    last_name  char(40)         YES      None
+    email      char(60)         YES  MUL None
+    phone      char(30)         YES      None
+    created    datetime         YES      None
+    updated    datetime         YES      None
+    last_seen  datetime         YES  MUL None
+    created_by int(10) unsigned YES      None
+    updated_by int(10) unsigned YES      None
+    status     char(1)          YES      None
+    fax        char(30)         YES      None
+
+    >>> migrations.migrate(0)
+    >>> print(site.db('describe users'))
+    Field      Type             Null Key Default Extra
+    ---------- ---------------- ---- --- ------- --------------
+    id         int(10) unsigned NO   PRI None    auto_increment
+    username   char(50)         NO   UNI None
+    password   varchar(125)     YES      None
+    first_name char(40)         YES      None
+    last_name  char(40)         YES      None
+    email      char(60)         YES  MUL None
+    phone      char(30)         YES      None
+    created    datetime         YES      None
+    updated    datetime         YES      None
+    last_seen  datetime         YES  MUL None
+    created_by int(10) unsigned YES      None
+    updated_by int(10) unsigned YES      None
+    status     char(1)          YES      None
+
+    >>> migrations.revisions.zap()
+
+    """
+
+    def __init__(self, db, steps):
+        self.db = db
+        self.steps = steps
+        self.revisions = zoom.store_of(SystemMigrationRecord)
+
+    def migrate(self, target=None):
+        """migrate to a target version
+
+        Target is the desired version.  If no target is supplied the
+        migrations required to get to the most up to date version are
+        applied.
+        """
+        logger = logging.getLogger(__name__)
+
+        revisions = self.revisions
+        target = target if target is not None else len(self.steps) - 1
+        revision = max(m.revision for m in revisions) if revisions else -1
+        current_version = revisions.first(revision=revision).version if revisions else -1
+
+        if current_version < target:
+
+            for i, migration in enumerate(self.steps):
+
+                if i > current_version and i <= target:
+
+                    migration(self.db).apply()
+
+                    revision += 1
                     record = SystemMigrationRecord(
-                        revision=i,
-                        timestame=zoom.tools.now(),
-                        method='change',
-                        name=migration.name,
+                        version=i,
+                        revision=revision,
+                        timestamp=zoom.tools.now(),
+                        method='apply',
+                        name=migration.__name__,
                     )
-                    migration_records.put(record)
-                    zoom.system.site.log.info(
-                        'migration change {!r} ran', migration.name
+                    revisions.put(record)
+
+                    logger.info(
+                        'migration %s - %r applied', i, migration.__name__
                     )
 
+                else:
+                    logger.debug('skipping migration %s - %r', i, migration.__name__)
 
-def rollback(to_revision=None):  # pragma: no cover
-    db = zoom.system.site.db
+        elif current_version > target:
 
-    migration_records = zoom.store.EntityStore(db, SystemMigrationRecord)
-    num_migration_records = len(migration_records)
+            for i, migration in reversed(list(enumerate(self.steps))):
 
-    if len(migrations) > num_migration_records:
+                if i <= current_version and i > target:
 
-        for i, migration in enumerate(migrations):
-            if i >= num_migration_records:
-                if to_revision == None or i <= to_revision:
-                    migration(db).change()
+                    migration(self.db).revert()
+
+                    revision += 1
                     record = SystemMigrationRecord(
-                        revision=i,
-                        timestame=zoom.tools.now(),
-                        method='change',
-                        name=migration.name,
+                        version=i,
+                        revision=revision,
+                        timestamp=zoom.tools.now(),
+                        method='revert',
+                        name=migration.__name__,
                     )
-                    migration_records.put(record)
-                    zoom.system.site.log.info(
-                        'migration change {!r} ran', migration.name
+                    revisions.put(record)
+
+                    logger.info(
+                        'migration %s - %r reverted', i, migration.__name__
                     )
+
+                else:
+                    logger.debug('skipping migration %s - %r', i, migration.__name__)
+
+
+
