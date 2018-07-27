@@ -35,6 +35,7 @@ from zoom.response import (
     TTFResponse,
     WOFFResponse,
     BinaryResponse,
+    JSONResponse,
 )
 import zoom.context
 import zoom.cookies
@@ -144,7 +145,7 @@ def serve_response(*path):
     False
 
     >>> response.content
-    'file not found: www/static/zoom/nada.js'
+    "file not found: 'www/static/zoom/nada.js'"
     >>> response.status
     '404 Not Found'
 
@@ -154,7 +155,7 @@ def serve_response(*path):
     False
 
     >>> response.content
-    'unknown file type'
+    "unknown file type ''"
     >>> response.status
     '415 Unsupported Media Type'
     """
@@ -169,21 +170,28 @@ def serve_response(*path):
         woff=WOFFResponse,
         map=BinaryResponse,
     )
-    filename = os.path.realpath(os.path.join(*path))
+    pathname = os.path.realpath(os.path.join(*path))
     logger = logging.getLogger(__name__)
-    logger.debug('attempting to serve up filename %r', filename)
-    if os.path.exists(filename):
-        filenamel = filename.lower()
-        for file_type in known_types:
-            if filenamel.endswith('.' + file_type):
-                data = open(filename, 'rb').read()
-                response = known_types[file_type](data)
-                return response
-        return HTMLResponse('unknown file type', status='415 Unsupported Media Type')
+    logger.debug('attempting to serve up file %r', pathname)
+    if os.path.exists(pathname):
+        pathnamel = pathname.lower()
+        _, file_type = os.path.splitext(pathnamel)
+        file_type = file_type[1:]
+        response_type = known_types.get(file_type)
+        if response_type:
+
+            with open(pathname, 'rb') as f:
+                data = f.read()
+
+            return response_type(data)
+
+        msg = 'unknown file type {!r}'.format(file_type)
+        logger.warning(file_type)
+        return HTMLResponse(msg, status='415 Unsupported Media Type')
     else:
-        logger.warning('unable to serve filename %r', filename)
+        logger.warning('unable to serve file %r', pathname)
         relative_path = os.path.join(*path[1:])
-        msg = 'file not found: {}'
+        msg = 'file not found: {!r}'
         return HTMLResponse(msg.format(relative_path), status='404 Not Found')
 
 
