@@ -167,6 +167,7 @@ def serve_response(*path):
         css=CSSResponse,
         js=JavascriptResponse,
         ttf=TTFResponse,
+        json=JSONResponse,
         woff=WOFFResponse,
         map=BinaryResponse,
     )
@@ -182,6 +183,14 @@ def serve_response(*path):
 
             with open(pathname, 'rb') as f:
                 data = f.read()
+
+            if file_type == 'json':
+                # JSONResponse expects an object which it will seriaize
+                # so this unserializaing / reserializing an extra step
+                # which may be unnecessary.  For now, we'll use the
+                # JSONResponse as designed but we may eventually want to
+                # create a different response type in this case.
+                data = zoom.jsonz.loads(data)
 
             return response_type(data)
 
