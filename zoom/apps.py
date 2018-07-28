@@ -70,6 +70,9 @@ class App(object):
         self.menu = []
         self.request = None
 
+    def static(self, *args, **kwargs):
+        return zoom.middleware.serve_response('static', *args)
+
     def process(self, *route, **data):
         """Process request parameters"""
 
