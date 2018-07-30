@@ -20,6 +20,7 @@ import zoom.helpers
 import zoom.render
 import zoom.tools
 
+
 class ClearSearch(DynamicView):
     pass
 
@@ -83,6 +84,7 @@ class Page(object):
         self.actions = []
         self.search = None
         self.clear = None
+        self.status = '200 OK'
         self.__dict__.update(kwargs)
         self.args = args
         self.kwargs = kwargs
@@ -210,7 +212,7 @@ class Page(object):
 
         template = zoom.tools.get_template(self.template, self.theme)
 
-        return HTMLResponse(template)
+        return HTMLResponse(template, status=self.status)
 
 
 page = Page  # pylint: disable=invalid-name
