@@ -329,6 +329,8 @@ class CollectionController(Controller):
         collection = self.collection
         user = collection.user
 
+        logger = logging.getLogger(__name__)
+
         if collection.fields.validate(data):
 
             record = collection.model(
@@ -378,11 +380,13 @@ class CollectionController(Controller):
                     collection.link,
                     record.link
                 )
-                logger = logging.getLogger(__name__)
                 logger.info(msg)
                 log_activity(msg)
 
                 return redirect_to(collection.url)
+
+        else:
+            logger.debug('field validation failed: %r', collection.fields)
 
     def save_button(self, key, *a, **data):
         """Save a record"""
