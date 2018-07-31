@@ -12,6 +12,11 @@ import zoom
 import zoom.middleware as middleware
 
 
+def get_path():
+    default_test_path = zoom.tools.zoompath('web', 'sites', 'localhost')
+    path = os.environ.get('ZOOM_TEST_PATH', default_test_path)
+    return path
+
 class AppTestPrimitives(unittest.TestCase):
     """AppTest Primitives"""
 
@@ -22,7 +27,7 @@ class AppTestPrimitives(unittest.TestCase):
     subject_token = None
     request = None
     redirected = False
-    path = zoom.tools.zoompath('web', 'sites', 'localhost')
+    path = get_path()
 
     name = property(lambda a: os.path.dirname(a.path))
     url = property(lambda a: 'http://'+os.path.basename(a.path))
