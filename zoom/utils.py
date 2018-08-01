@@ -455,6 +455,12 @@ class Config(object):
             self.config and self.config.has_option(section, option)
         )
 
+    def has_section(self, section, option):
+        """Return True if config file section exists."""
+        return (
+            self.config and self.config.has_section(section)
+        )
+
 
 def get_config(filename):
     """load a config file into a Config object
