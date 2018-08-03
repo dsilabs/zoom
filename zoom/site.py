@@ -109,6 +109,7 @@ class SiteConfig(object):
             'home': 'home',
             'login': 'login',
             'path': 'apps;../../apps',
+            'include_basics': True,
         },
         'theme': {
             'name': 'default',
@@ -244,8 +245,13 @@ class Site(object):
                 if exists(realpath(join(self.path, p)))
             ]
             basic_apps = realpath(join(dirname(__file__), '..', 'web', 'apps'))
-            if basic_apps not in self.apps_paths:
+
+            positive = zoom.utils.POSITIVE
+            if self.conf.section('apps').get('include_basics') in positive and basic_apps not in self.apps_paths:
+                logger.debug('including default apps (%r)', basic_apps)
                 self.apps_paths.insert(0, basic_apps)
+            else:
+                logger.debug('not including default apps')
 
             self.data_path = realpath(
                 get('data', 'path', join(self.path, 'data'))
