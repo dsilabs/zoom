@@ -139,6 +139,28 @@ class WOFFResponse(Response):
         self.headers['ETag'] = md5(content).hexdigest()[:9]
 
 
+class WOFF2Response(Response):
+    """Web Open Font 2 Format response
+
+    >>> response = WOFF2Response(b'myfont')
+    >>> expected = (
+    ...     b'Content-type: font/woff2\\n'
+    ...     b'Cache-Control: max-age=86400\\n'
+    ...     b'ETag: 794c8f9c8\\n'
+    ...     b'Content-length: 6\\n\\n'
+    ...     b'myfont'
+    ... )
+    >>> response.render() == expected
+    True
+    """
+
+    def __init__(self, content, max_age=86400):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = 'font/woff2'
+        self.headers['Cache-Control'] = 'max-age={}'.format(max_age)
+        self.headers['ETag'] = md5(content).hexdigest()[:9]
+
+
 class PNGResponse(Response):
     """PNG image response
 
