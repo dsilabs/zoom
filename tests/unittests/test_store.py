@@ -8,7 +8,7 @@ from decimal import Decimal
 from datetime import date, time, datetime
 import unittest
 
-from zoom.store import Entity, EntityStore
+from zoom.store import Entity, EntityStore, EntityList
 from zoom.database import setup_test
 
 
@@ -131,6 +131,11 @@ class TestStore(unittest.TestCase):
         self.assertEqual(3, len(self.people))
         self.people.zap()
         self.assertEqual(0, len(self.people))
+
+    def test_empty(self):
+        empty_store = EntityStore(self.db, 'none_of_these')
+        self.assertEqual(type(empty_store.all()), EntityList)
+        self.assertEqual(str(empty_store), 'Empty list')
 
 
 class TestEntify(unittest.TestCase):
