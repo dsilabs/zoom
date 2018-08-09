@@ -29,6 +29,7 @@ class RegisterTests(WebdriverTestCase):
         WebdriverTestCase.tearDown(self)
 
     def add_register_app(self):
+        """ checks if register app is visible to guest group and adds it if not """
         self.login('admin', 'admin')
         # TODO: get by group name instead of id
         self.get('/admin/groups/3')
@@ -42,6 +43,7 @@ class RegisterTests(WebdriverTestCase):
         self.logout()
 
     def remove_register_app(self):
+        """ sets the guest group apps to just Forgot and Login, dropping Register """
         self.login('admin', 'admin')
         # TODO: get by group name instead of id
         self.get('/admin/groups/3/edit')
