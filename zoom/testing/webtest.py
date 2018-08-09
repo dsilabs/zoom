@@ -201,6 +201,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             for result in results:
                 logger.debug('possible result: %r', result.text)
                 if result.text == value:
+                    logger.debug('matched: %r', result.text)
                     found = True
                     break
             if found:
