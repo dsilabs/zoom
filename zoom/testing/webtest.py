@@ -22,7 +22,7 @@ import warnings
 
 from pyvirtualdisplay import Display
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.remote_connection import LOGGER
 
@@ -171,7 +171,12 @@ class WebdriverTestPrimitives(unittest.TestCase):
             self.type(name, value)
 
     def click(self, target):
-        self.find(target).click()
+        try:
+            self.find(target).click()
+        except WebDriverException:
+            test_name = unittest.TestCase.id(self)
+            self.driver.save_screenshot('%s-click_error_screen.png' % test_name)
+            raise
 
     def click_and_wait(self, target):
         self.find(target).click()
