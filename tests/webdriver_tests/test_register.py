@@ -19,10 +19,37 @@ class RegisterTests(WebdriverTestCase):
     def setUp(self):
         WebdriverTestCase.setUp(self)
         self.delete_user('joe3')
+        self.add_register_app()
 
     def tearDown(self):
         self.delete_user('joe3')
+        if self.added_register:
+            self.remove_register_app()
+
         WebdriverTestCase.tearDown(self)
+
+    def add_register_app(self):
+        """ checks if register app is visible to guest group and adds it if not """
+        self.login('admin', 'admin')
+        # TODO: get by group name instead of id
+        self.get('/admin/groups/3')
+        if not self.contains('Register'):
+            self.get('/admin/groups/3/edit')
+            self.chosen('apps', ['Forgot', 'Login', 'Register'])
+            self.click('id=save_button')
+            self.added_register = True
+        else:
+            self.added_register = False
+        self.logout()
+
+    def remove_register_app(self):
+        """ sets the guest group apps to just Forgot and Login, dropping Register """
+        self.login('admin', 'admin')
+        # TODO: get by group name instead of id
+        self.get('/admin/groups/3/edit')
+        self.chosen('apps', ['Forgot', 'Login'])
+        self.click('name=save_button')
+        self.logout()
 
     def delete_user(self, username):
         """Delete a user using the admin app"""
