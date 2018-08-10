@@ -125,7 +125,7 @@ class Config(object):
         result = {}
         if section in self.default_config.sections():
             result.update(self.default_config.items(section))
-        if section in self.config.sections():
+        if self.config and section in self.config.sections():
             result.update(self.config.items(section))
         return list(result.items())
 

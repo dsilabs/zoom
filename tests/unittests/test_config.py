@@ -2,11 +2,12 @@
     Test the config module
 """
 
-
+import os
 from os.path import join, split, abspath, exists, dirname
 import unittest
 import logging
 
+import zoom
 from zoom.config import Config
 
 
@@ -64,3 +65,13 @@ class TestConfig(unittest.TestCase):
         self.assertIsNotNone(config)
         self.assertTrue(config.has_option('apps', 'home'))
         self.assertFalse(config.has_option('ksjfklsjdfl', 'skjfkls'))
+
+    def test_section_failover_when_site_config_missing(self):
+
+        site_dir = zoom.tools.zoompath('web', 'sites', 'temptestsite')
+        try:
+            os.mkdir(site_dir)
+            config = Config(site_dir, 'site.ini')
+            self.assertTrue(config.items('apps'))
+        finally:
+            os.rmdir(site_dir)
