@@ -29,7 +29,8 @@ class TestApps(unittest.TestCase):
         # self.apps_dir = os.path.join(this_dir, '../../web/apps')
         self.apps_dir = zoom.tools.zoompath('web', 'apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
-            name='App',
+            name='app',
+            title='App',
             description='An app',
             url='/app',
             menu=[],
@@ -304,4 +305,4 @@ class TestApps(unittest.TestCase):
         pathname = zoom.tools.zoompath('web', 'apps', 'ping', 'app.py')
         app = zoom.apps.AppProxy('Ping', pathname, site)
         self.assertTrue(app.read_config('settings', 'icon', 'notfound'), 'cube')
-        
+

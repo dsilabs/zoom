@@ -523,7 +523,9 @@ def main_menu(request):
 
 def helpers(request):
     """return a dict of app helpers"""
+    app = request.app
     return dict(
+        app_title=app.title,
         app_url=request.app.url,
         app_menu=request.app.menu,
         app_name=request.app.name,
