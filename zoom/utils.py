@@ -899,7 +899,11 @@ class RecordList(list):
 def matches(item, terms):
     """Returns True if an item matches search terms"""
     if not terms: return True
-    v = [str(i).lower() for i in item.values()]
+    try:
+        values = item.values()
+    except AttributeError:
+        values = item
+    v = [str(i).lower() for i in values]
     return all(any(t in s for s in v) for t in terms)
 
 
@@ -933,6 +937,15 @@ def search(items, text):
         "instrument": "drums, vocals",
         "name": "Pat"
       }
+    ]
+
+    >>> pp(list(search((list(item.values()) for item in items), '35')))
+    [
+      [
+        "Francis",
+        "saxophone, piano",
+        35
+      ]
     ]
 
     """
