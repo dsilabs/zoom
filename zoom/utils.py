@@ -977,8 +977,8 @@ def search(items, text):
       }
     ]
 
-    >>> list(search((list(item.values()) for item in items), '35'))
-    [['Francis', 'saxophone, piano', 35]]
+    >>> sorted(list(search((list(item.values()) for item in items), '35'))[0], key=str)
+    [35, 'Francis', 'saxophone, piano']
 
     """
     search_terms = list(set([i.lower() for i in text.strip().split()])) if text else []
