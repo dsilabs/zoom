@@ -939,21 +939,52 @@ def search(items, text):
       }
     ]
 
-    >>> pp(list(search((list(item.values()) for item in items), '35')))
+    >>> pp(list(search(items, '')))
     [
-      [
-        "Francis",
-        "saxophone, piano",
-        35
-      ]
+      {
+        "age": 25,
+        "instrument": "guitar, drums, picolo",
+        "name": "Terry"
+      },
+      {
+        "age": 29,
+        "instrument": "drums, vocals",
+        "name": "Pat"
+      },
+      {
+        "age": 35,
+        "instrument": "saxophone, piano",
+        "name": "Francis"
+      }
     ]
 
+    >>> pp(list(search(items, None)))
+    [
+      {
+        "age": 25,
+        "instrument": "guitar, drums, picolo",
+        "name": "Terry"
+      },
+      {
+        "age": 29,
+        "instrument": "drums, vocals",
+        "name": "Pat"
+      },
+      {
+        "age": 35,
+        "instrument": "saxophone, piano",
+        "name": "Francis"
+      }
+    ]
+
+    >>> list(search((list(item.values()) for item in items), '35'))
+    [['Francis', 'saxophone, piano', 35]]
+
     """
-    search_terms = list(set([i.lower() for i in text.strip().split()]))
+    search_terms = list(set([i.lower() for i in text.strip().split()])) if text else []
     for item in items:
         if matches(item, search_terms):
             yield item
-
 
 def generate_key():
     """make a new key
