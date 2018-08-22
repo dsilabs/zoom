@@ -215,9 +215,8 @@ class WebdriverTestPrimitives(unittest.TestCase):
         if not self.contains(text):
             test_name = unittest.TestCase.id(self)
             self.driver.save_screenshot('%s-error_screen.png' % test_name)
-            raise Exception('page does not contain {!r})'.format(
-                text
-            ))
+            msg = 'page does not contain {!r}'.format(text)
+            raise self.failureException(msg)
 
     @property
     def page_source(self):
