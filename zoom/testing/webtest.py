@@ -42,6 +42,8 @@ class WebdriverTestPrimitives(unittest.TestCase):
     driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
 
     def setUp(self):
+        easyprocess_logger = logging.getLogger('easyprocess')
+        easyprocess_logger.setLevel(logging.WARNING)
         if self.headless:
             self.logger.info('running headless')
             self.display = Display(visible=0, size=self.size)
