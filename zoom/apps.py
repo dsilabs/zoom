@@ -456,8 +456,18 @@ def handle(request):
 
 
 def get_system_apps(request):
-    """get a list of system apps"""
-    names = DEFAULT_SYSTEM_APPS
+    """Returns a list containing the system apps.
+
+    System apps are apps that appear in the system menu, which is usually found
+    at the top left of a web site.  The system menu typically includes apps such
+    as login, logout, profile and register.
+
+    This list can be defined in the site.ini file in the [apps] section using the
+    key `system`.  A example is provided in the default site.ini file.
+    """
+    get = request.site.config.get
+    names = get('apps', 'system', '')
+    names = names and [s.strip() for s in names.split(',')] or DEFAULT_SYSTEM_APPS
     user = request.user
     apps = filter(user.can_run, [
         load_app(request.site, name) for name in names
