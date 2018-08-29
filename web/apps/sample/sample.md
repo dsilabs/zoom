@@ -1,4 +1,4 @@
-Sample  
+Sample
 ====
 This application displays a sample of (almost) all of the widgets and application elements that the Zoom platform offers.
 
@@ -16,8 +16,6 @@ Paragraph of Text
 ----
 <dz:lorem>
 
-<dz:lorum>
-
 Paragraphs with a Photo
 ----
 
@@ -25,7 +23,7 @@ Paragraphs with a Photo
 
 ### Level Three
 
-<dz:lorem>  
+<dz:lorem>
 
 <dz:lorem>
 
@@ -52,11 +50,11 @@ Tables
 ----
 This is a sample table:
 
-One   | Two   | Three  
+One   | Two   | Three
 ----- | ----- | -------
-One   | Two   | Three 
-One   | Two   | Three 
-One   | Two   | Three 
+One   | Two   | Three
+One   | Two   | Three
+One   | Two   | Three
 
 Data Tables
 ----
@@ -86,10 +84,14 @@ Or, you can do numbered lists, like this:
         1. Level Three Numeric
     1. Level Two Numeric
 1. Level One Numeric
-    * A list item.  
-      With multiple paragraphs.
+    * A list item.
+
+        With multiple paragraphs.
+
+        Just indent the paragraphs to add them to the list item.
+
     * Another item in the list.
-     
+
 
 List Paragraphs
 ----
