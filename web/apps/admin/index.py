@@ -3,6 +3,7 @@
 """
 
 import datetime
+import json
 
 import zoom
 # from zoom.audit import audit
@@ -268,7 +269,14 @@ class MyView(View):
         return page(content, title='Log Entry')
 
     def configuration(self):
-        return page(load_content('configuration.md').format(request=self.model))
+        items = zoom.packages.get_registered_packages()
+        packages = '<dt>combined</dt><dd>{}</dd>'.format(
+            zoom.html.pre(json.dumps(items, indent=4, sort_keys=True))
+        )
+        return page(load_content('configuration.md').format(
+            request=self.model,
+            packages=packages,
+        ))
 
     def about(self, *a):
         return page(load_content('about.md'))

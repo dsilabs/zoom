@@ -19,7 +19,6 @@ App
 Apps
 : {{request.site.apps_paths}}
 
-
 Database
 ----
 
@@ -41,3 +40,8 @@ user
 
 password
 : {{request.site.smtp_passwd}}
+
+
+Packages
+----
+: {{packages}}
