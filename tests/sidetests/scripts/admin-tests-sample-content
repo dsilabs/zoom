@@ -46,16 +46,6 @@
 	<td>id=name</td>
 	<td>John Doe</td>
 </tr>
-<tr>
-	<td>assertText</td>
-	<td>//p[29]</td>
-	<td>Site name: ZOOM</td>
-</tr>
-<tr>
-	<td>assertText</td>
-	<td>//p[47]</td>
-	<td>&lt;dz:user_full_name&gt; : &quot;Admin User&quot;</td>
-</tr>
 </tbody></table>
 </body>
 </html>
