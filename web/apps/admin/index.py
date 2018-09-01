@@ -66,6 +66,9 @@ def log_data(db, status, n, limit, q):
 
 
 def activity_panel(db):
+
+    host = zoom.system.request.host
+
     data = db("""
     select
         log.id,
@@ -75,9 +78,10 @@ def activity_panel(db):
         log.timestamp,
         log.elapsed
     from log left join users on log.user_id = users.id
+    where server = %s and path not like "%%\\/\\_%%"
     order by timestamp desc
     limit 15
-    """)
+    """, host)
 
     rows = []
     for rec in data:
