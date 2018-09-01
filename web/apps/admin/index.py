@@ -25,9 +25,12 @@ def link_to_user(username):
 
 def log_data(db, status, n, limit, q):
     """retreive log data"""
-    statuses = ','.join("'{}'".format(s) for s in status)
+
+    host = zoom.system.request.host
+
+    statuses = tuple(status)
     offset = int(n) * int(limit)
-    data = db("""
+    cmd = """
         select
             id,
             status,
@@ -38,23 +41,25 @@ def log_data(db, status, n, limit, q):
             timestamp,
             elapsed
         from log
-        where status in ({statuses})
+        where status in %s
         order by id desc
         limit {limit}
         offset {offset}
         """.format(
-            limit=limit,
+            limit=int(limit),
             offset=offset,
             statuses=statuses
         )
-    )
+    data = db(cmd, statuses)
     data = [
         [
             link_to(
                 str(item[0]),
                 '/admin/show_error/' + str(item[0])
-            )
-        ] + list(item[1:])
+            ),
+            item[1],
+            zoom.helpers.who(item[2]),
+        ] + list(item[3:])
         for item in data
         if q in repr(item)
     ]
@@ -109,6 +114,8 @@ def error_panel(db):
                 return user.link
         return None
 
+    host = zoom.system.request.host
+
     data = db("""
         select
             log.id,
@@ -117,9 +124,10 @@ def error_panel(db):
             timestamp
         from log left join users on log.user_id = users.id
         where log.status in ("E") and timestamp>=%s
+        and server = %s
         order by log.id desc
         limit 10
-        """, today())
+        """, today(), host)
 
     users = context.site.users
     rows = []
@@ -137,6 +145,9 @@ def error_panel(db):
 
 
 def users_panel(db):
+
+    host = zoom.system.request.host
+
     data = db("""
     select
         users.username,
@@ -145,10 +156,12 @@ def users_panel(db):
     from log, users
         where log.user_id = users.id
         and timestamp >= %s
+        and server = %s
+        and path not like "%%\\/\\_%%"
     group by users.username
     order by timestamp desc
     limit 10
-    """, today() - datetime.timedelta(days=30))
+    """, today() - datetime.timedelta(days=30), host)
 
     rows = []
     for rec in data:
@@ -242,14 +255,20 @@ class MyView(View):
         return page(browse(data), title='Activity')
 
     def requests(self):
+        def fmt(rec):
+            return rec[:4] + (zoom.helpers.who(rec[4]),) + rec[5:]
         db = self.model.site.db
         data = db("""
-            select *
+            select
+                id, app, path, status, user_id, address, login, timestamp, elapsed
             from log
             where status in ('C', 'I')
+            and server = %s
             order by id desc
-            limit 100""")
-        return page(browse(data), title='Requests')
+            limit 100""", zoom.system.request.host)
+        labels = 'id', 'app', 'path', 'status', 'user', 'address', 'login', 'timestamp', 'elapsed'
+        data = list(map(fmt, data))
+        return page(browse(data, labels=labels), title='Requests')
 
     def performance(self, n=0, limit=50, q=''):
         db = self.model.site.db
