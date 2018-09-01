@@ -195,7 +195,7 @@ def serve_response(*path):
             return response_type(data)
 
         msg = 'unknown file type {!r}'.format(file_type)
-        logger.warning(file_type)
+        logger.warning(msg)
         return HTMLResponse(msg, status='415 Unsupported Media Type')
     else:
         logger.warning('unable to serve file %r', pathname)
