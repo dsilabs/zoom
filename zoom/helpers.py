@@ -249,7 +249,7 @@ def link_to(label, *args, **kwargs):
 
 
 def link_to_page(label, *args, **kwargs):
-    nargs = args or [label]
+    nargs = args or [label.lower().replace(' ', '_')]
     return html.tag('a', label, href=url_for_page(*nargs, **kwargs))
 
 
