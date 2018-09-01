@@ -14,7 +14,7 @@ from zoom.page import page
 from zoom.browse import browse
 from zoom.tools import load_content, today, how_long_ago
 from zoom.component import Component
-from zoom.helpers import link_to
+from zoom.helpers import link_to, link_to_page
 
 from views import index_metrics_view, IndexPageLayoutView
 
@@ -102,7 +102,7 @@ def activity_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
-    return browse(rows, labels=labels, title='Activity')
+    return browse(rows, labels=labels, title=link_to_page('Requests'))
 
 
 def error_panel(db):
@@ -141,7 +141,7 @@ def error_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'path', 'when'
-    return browse(rows, labels=labels, title='Errors')
+    return browse(rows, labels=labels, title=link_to_page('Errors'))
 
 
 def users_panel(db):
@@ -161,7 +161,7 @@ def users_panel(db):
     group by users.username
     order by timestamp desc
     limit 10
-    """, today() - datetime.timedelta(days=30), host)
+    """, today() - datetime.timedelta(days=14), host)
 
     rows = []
     for rec in data:
@@ -173,7 +173,7 @@ def users_panel(db):
         rows.append(row)
 
     labels = 'user', 'last seen', 'requests'
-    return browse(rows, labels=labels, title='User Activity')
+    return browse(rows, labels=labels, title=link_to_page('Users'))
 
 
 def callback(method, url=None, timeout=5000):
@@ -254,9 +254,10 @@ class MyView(View):
             limit 100""")
         return page(browse(data), title='Activity')
 
-    def requests(self):
+    def requests(self, show_all=False):
         def fmt(rec):
             return rec[:4] + (zoom.helpers.who(rec[4]),) + rec[5:]
+        path_filter = '' if show_all else 'and path not like "%%\\/\\_%%"'
         db = self.model.site.db
         data = db("""
             select
@@ -264,11 +265,13 @@ class MyView(View):
             from log
             where status in ('C', 'I')
             and server = %s
+            {}
             order by id desc
-            limit 100""", zoom.system.request.host)
+            limit 100""".format(path_filter), zoom.system.request.host)
         labels = 'id', 'app', 'path', 'status', 'user', 'address', 'login', 'timestamp', 'elapsed'
         data = list(map(fmt, data))
-        return page(browse(data, labels=labels), title='Requests')
+        actions = () if show_all else ('Show All',)
+        return page(browse(data, labels=labels), title='Requests', actions=actions)
 
     def performance(self, n=0, limit=50, q=''):
         db = self.model.site.db
