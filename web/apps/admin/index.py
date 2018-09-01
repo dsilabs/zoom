@@ -41,7 +41,7 @@ def log_data(db, status, n, limit, q):
             timestamp,
             elapsed
         from log
-        where status in %s
+        where status in %s and server = %s
         order by id desc
         limit {limit}
         offset {offset}
@@ -50,7 +50,7 @@ def log_data(db, status, n, limit, q):
             offset=offset,
             statuses=statuses
         )
-    data = db(cmd, statuses)
+    data = db(cmd, statuses, host)
     data = [
         [
             link_to(
