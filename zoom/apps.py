@@ -496,8 +496,18 @@ def system_menu(request):
 
 
 def get_main_apps(request):
-    """Returns the main apps."""
-    names = DEFAULT_MAIN_APPS
+    """Returns a list of the main apps.
+
+    Main apps are apps that appear in the main menu, which is usually found
+    at the top of a web site's pages.  The system menu typically includes apps
+    such as home, admin and the apps app.
+
+    This list can be defined in the site.ini file in the [apps] section using the
+    key `main`.  A example is provided in the default site.ini file.
+    """
+    get = request.site.config.get
+    names = get('apps', 'main', '')
+    names = names and [s.strip() for s in names.split(',')] or DEFAULT_MAIN_APPS
     user = request.user
     apps = filter(user.can_run, [
         load_app(request.site, name) for name in names
