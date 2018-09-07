@@ -551,7 +551,6 @@ def connect_database(config):
     if connection:
         logger.debug('database connected: %r', parameters)
 
-    connection.autocommit(1)
     return connection
 
 
