@@ -131,11 +131,15 @@ class AdminModel(object):
         )
 
     def get_app_options(self, group_id):
-        app_titles = {app.name: app.title for app in context.site.apps}
+        groups_lookup = {
+            g.name: g._id
+            for g in zoom.system.site.groups.find(type='A')
+        }
         return sorted([
-            (app_titles.get(app.name[2:], app.name[2:]), app._id)
-            for app in self.groups.find(type="A")
-            if app.name[2:] in app_titles
+            (
+                app.title,
+                groups_lookup.get('a_' + app.name, 'a_' + app.name)
+            ) for app in zoom.system.site.apps
         ])
 
     def update_group_users(self, record):
@@ -230,18 +234,45 @@ class AdminModel(object):
         group = context.site.groups.get(record_id)
         assert group
 
-        updated_apps = set(int(user) for user in record['apps'])
-        self.log('updated apps: %r', updated_apps)
+        updated_apps = set(
+            app_key if isinstance(app_key, str) and app_key.startswith('a_') else int(app_key)
+            for app_key in record['apps']
+        )
 
         existing_apps = group.apps
-        self.log('existing apps: %r', existing_apps)
 
         if updated_apps != existing_apps:
+
+            self.log('updated apps: %r', updated_apps)
+            self.log('existing apps: %r', existing_apps)
+
             if existing_apps - updated_apps:
                 self.log('deleting: %r', existing_apps - updated_apps)
                 cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
                 self.db(cmd, record_id, existing_apps - updated_apps)
+
             if updated_apps - existing_apps:
+
+                new_groups_required = [
+                    g for g in updated_apps
+                    if isinstance(g, str) and g.startswith('a_')
+                ]
+                for group_name in new_groups_required:
+                    zoom.system.site.groups.put(
+                        zoom.models.Group(
+                            name=group_name,
+                            type='A',
+                            description='',
+                        )
+                    )
+                    self.log('added required group %s', group_name)
+
+                groups_lookup = {
+                    g.name: g._id
+                    for g in zoom.system.site.groups.find(type='A')
+                }
+                updated_apps = set(groups_lookup.get(g, g) for g in updated_apps)
+
                 self.log('inserting: %r', updated_apps - existing_apps)
                 cmd = 'insert into subgroups (subgroup_id, group_id) values (%s, %s)'
                 values = updated_apps - existing_apps
