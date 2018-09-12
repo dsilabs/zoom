@@ -140,7 +140,7 @@ class AdminModel(object):
                 app.title,
                 groups_lookup.get('a_' + app.name, 'a_' + app.name)
             ) for app in zoom.system.site.apps
-        ])
+        ], key=repr)
 
     def update_group_users(self, record):
         """Post updated group users"""
