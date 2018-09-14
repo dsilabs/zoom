@@ -38,6 +38,7 @@ class Response(object):
         self.content = content
         self.status = status
         self.headers = OrderedDict(headers or {})
+        self.cookie = {}
 
     def render_doc(self):
         """Renders the payload"""
@@ -53,18 +54,24 @@ class Response(object):
 
         doc = self.render_doc()
         length_entry = {'Content-length': '%s' % len(doc)}
-        headers = render_headers(
-            OrderedDict(self.headers, **length_entry)
+        headers = (
+            render_headers(
+                OrderedDict(self.headers, **length_entry)
+            ) + str(self.cookie or '')
         ).encode('utf8')
         return b''.join([headers, b'\n', doc])
 
     def as_wsgi(self):
         """Render the entire response"""
         doc = self.render_doc()
-        length_entry = [('Content-length', '%s' % len(doc))]
+        headers = list(self.headers.items())
+        headers.extend(('Set-Cookie', morsel.OutputString())
+                for morsel
+                in self.cookie.values())
+        headers.append(('Content-length', '%s' % len(doc)))
         return (
             self.status,
-            list(self.headers.items()) + length_entry,
+            headers,
             doc
         )
 

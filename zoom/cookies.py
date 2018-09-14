@@ -8,7 +8,7 @@
     handling the time calculation so without diving into the innards of the
     http.cookies module this is what we have right now.
 
-    >>> cookie = make_cookie()
+    >>> cookie = SimpleCookie()
     >>> add_value(cookie, 'name1', 'value1', 60, True)
     >>> v = get_value(cookie)
     >>> v.startswith('name1=value1; expires=')
@@ -16,7 +16,7 @@
     >>> v.endswith('; Secure')
     True
     >>> len(v)
-    69
+    77
 """
 
 from http.cookies import SimpleCookie
@@ -43,15 +43,11 @@ def get_cookies(raw_cookie):
     return result
 
 
-def make_cookie():
-    """construct a cookie"""
-    return SimpleCookie()
-
-
 def add_value(cookie, name, value, lifespan, secure):
     """add a value to a cookie"""
     cookie[name] = value
     cookie[name]['httponly'] = True
+    cookie[name]['path'] = '/'
     cookie[name]['expires'] = lifespan  # in seconds
     if secure:
         cookie[name]['secure'] = True
@@ -68,20 +64,18 @@ def set_session_cookie(response, session, subject, lifespan, secure=True):
 
     >>> response = zoom.response.HTMLResponse('my page')
     >>> set_session_cookie(response, 'sessionid', 'subjectid', 60)
-    >>> 'zoom_session=sessionid' in response.headers['Set-Cookie']
+    >>> 'zoom_session=sessionid' in str(response.cookie)
     True
-    >>> 'HttpOnly; Secure' in response.headers['Set-Cookie']
+    >>> 'Secure' in str(response.cookie)
     True
     """
-    cookie = make_cookie()
+    cookie = SimpleCookie()
     add_value(cookie, SESSION_COOKIE_NAME, session, lifespan, secure)
     add_value(cookie, SUBJECT_COOKIE_NAME, subject, ONE_YEAR, secure)
-    key, value = str(cookie).split(': ', 1)
+    response.cookie = cookie
 
-    # mod_wsgi doesn't like newlines
-    value = value.replace('\r', ' ').replace('\n', ' ')
-
-    response.headers[key] = value
+    logger = logging.getLogger(__name__)
+    logger.debug('cookie: %r', str(cookie))
 
 
 def handler(request, handler, *rest):
@@ -93,7 +87,7 @@ def handler(request, handler, *rest):
     ...     site=zoom.sites.Site(),
     ... )
     >>> response = handler(request, lambda a: zoom.response.Response())
-    >>> 'zoom_session=' in response.headers['Set-Cookie']
+    >>> 'zoom_session=' in str(response.cookie)
     True
     """
     logger = logging.getLogger(__name__)
@@ -102,6 +96,7 @@ def handler(request, handler, *rest):
     request.session_token = cookies.get(SESSION_COOKIE_NAME) or new_token()
     request.subject_token = cookies.get(SUBJECT_COOKIE_NAME) or new_token()
     logger.debug('session token: {}'.format(request.session_token))
+    logger.debug('subject token: {}'.format(request.subject_token))
 
     logger.debug('cookies read')
 
@@ -114,6 +109,5 @@ def handler(request, handler, *rest):
         request.session_timeout,
         request.site.secure_cookies,
     )
-    logger.debug('cookies set')
 
     return response
