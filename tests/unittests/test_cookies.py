@@ -25,22 +25,16 @@ class TestCookies(unittest.TestCase):
         cookie = http.cookies.SimpleCookie()
         add_value(cookie, SESSION_COOKIE_NAME, 'mysession', 60, True)
         add_value(cookie, SUBJECT_COOKIE_NAME, 'mysubject', 60, True)
-        logger.info(str(cookie))
+        cookie = str(cookie)
+        logger.info(cookie)
 
-        cookie2 = http.cookies.SimpleCookie()
-        cookie2[SESSION_COOKIE_NAME] = 'mysession'
-        cookie2[SESSION_COOKIE_NAME]['httponly'] = True
-        cookie2[SESSION_COOKIE_NAME]['expires'] = 60
-        cookie2[SESSION_COOKIE_NAME]['secure'] = True
-        cookie2[SESSION_COOKIE_NAME]['path'] = '/'
-        cookie2[SUBJECT_COOKIE_NAME] = 'mysubject'
-        cookie2[SUBJECT_COOKIE_NAME]['httponly'] = True
-        cookie2[SUBJECT_COOKIE_NAME]['expires'] = 60
-        cookie2[SUBJECT_COOKIE_NAME]['secure'] = True
-        cookie2[SUBJECT_COOKIE_NAME]['path'] = '/'
-        logger.info(str(cookie2))
+        self.assertIn('Set-Cookie:', cookie)
+        self.assertIn('zoom_session=mysession', cookie)
+        self.assertIn('expires=', cookie)
+        self.assertIn('HttpOnly', cookie)
+        self.assertIn('Path=/', cookie)
+        self.assertIn('Secure', cookie)
 
-        self.assertEqual(str(cookie), str(cookie2))
 
     def test_create_not_secure_cookie(self):
         logger = logging.getLogger('zoom.cookies')
@@ -48,17 +42,12 @@ class TestCookies(unittest.TestCase):
         cookie = http.cookies.SimpleCookie()
         add_value(cookie, SESSION_COOKIE_NAME, 'mysession', 60, False)
         add_value(cookie, SUBJECT_COOKIE_NAME, 'mysubject', 60, False)
-        logger.info(str(cookie))
+        cookie = str(cookie)
+        logger.info(cookie)
 
-        cookie2 = http.cookies.SimpleCookie()
-        cookie2[SESSION_COOKIE_NAME] = 'mysession'
-        cookie2[SESSION_COOKIE_NAME]['httponly'] = True
-        cookie2[SESSION_COOKIE_NAME]['expires'] = 60
-        cookie2[SESSION_COOKIE_NAME]['path'] = '/'
-        cookie2[SUBJECT_COOKIE_NAME] = 'mysubject'
-        cookie2[SUBJECT_COOKIE_NAME]['httponly'] = True
-        cookie2[SUBJECT_COOKIE_NAME]['expires'] = 60
-        cookie2[SUBJECT_COOKIE_NAME]['path'] = '/'
-        logger.info(str(cookie2))
-
-        self.assertEqual(str(cookie), str(cookie2))
+        self.assertIn('Set-Cookie:', cookie)
+        self.assertIn('zoom_session=mysession', cookie)
+        self.assertIn('expires=', cookie)
+        self.assertIn('HttpOnly', cookie)
+        self.assertIn('Path=/', cookie)
+        self.assertNotIn('Secure', cookie)
