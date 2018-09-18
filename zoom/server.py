@@ -132,3 +132,14 @@ def debug(environ, start_response):
     status, headers, body = response.as_wsgi()
     start_response(status, headers)
     return [body]
+
+
+def run_as_cgi(environ=None, instance=None):
+    """Run Zoom as a CGI script"""
+    env = environ or os.environ
+    path = instance or os.path.realpath('..')
+    start_time = timer()
+    request = Request(env, path, start_time)
+    response = middleware.handle(request)
+    result = response.render()
+    sys.stdout.buffer.write(result)

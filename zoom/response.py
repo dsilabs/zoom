@@ -29,7 +29,7 @@ class Response(object):
 
     >>> response = Response(b'this is it')
     >>> response.render()
-    b'Content-length: 10\\n\\nthis is it'
+    b'Status: 200 OK\\nContent-length: 10\\n\\nthis is it'
     >>> response.as_wsgi()
     ('200 OK', [('Content-length', '10')], b'this is it')
     """
@@ -52,14 +52,15 @@ class Response(object):
             return (''.join(["%s: %s\n" % (header, value) for header, value in
                              headers.items()]))
 
-        doc = self.render_doc()
-        length_entry = {'Content-length': '%s' % len(doc)}
-        headers = (
-            render_headers(
-                OrderedDict(self.headers, **length_entry)
-            ) + str(self.cookie or '')
+        status, headers, doc = self.as_wsgi()
+        start = (
+            ''.join(
+                '{}: {}\n'.format(k, v) for k, v in
+                [('Status', self.status)] + headers
+            )
         ).encode('utf8')
-        return b''.join([headers, b'\n', doc])
+
+        return b''.join([start, b'\n', doc])
 
     def as_wsgi(self):
         """Render the entire response"""
@@ -83,6 +84,7 @@ class BinaryResponse(Response):
 
     >>> response = BinaryResponse(b'binary data')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/octet-stream\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: e1a49b59e\\n'
@@ -107,6 +109,7 @@ class TTFResponse(Response):
 
     >>> response = TTFResponse(b'myfont')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/font-sfnt\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 794c8f9c8\\n'
@@ -129,6 +132,7 @@ class WOFFResponse(Response):
 
     >>> response = WOFFResponse(b'myfont')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/font-woff\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 794c8f9c8\\n'
@@ -151,6 +155,7 @@ class WOFF2Response(Response):
 
     >>> response = WOFF2Response(b'myfont')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: font/woff2\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 794c8f9c8\\n'
@@ -173,6 +178,7 @@ class PNGResponse(Response):
 
     >>> response = PNGResponse(b'myimage')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: image/png\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: b1a9acaf2\\n'
@@ -195,6 +201,7 @@ class ICOResponse(Response):
 
     >>> response = ICOResponse(b'myicon')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: image/x-icon\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 78d2485ff\\n'
@@ -221,6 +228,7 @@ class JPGResponse(Response):
 
     >>> response = JPGResponse(b'myimage')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: image/jpeg\\n'
     ...     b'Content-length: 7\\n\\n'
     ...     b'myimage'
@@ -239,6 +247,7 @@ class GIFResponse(Response):
 
     >>> response = GIFResponse(b'myimage')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: image/gif\\n'
     ...     b'Content-length: 7\\n\\n'
     ...     b'myimage'
@@ -257,6 +266,7 @@ class TextResponse(Response):
 
     >>> response = TextResponse('mytext')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: text\\n'
     ...     b'Cache-Control: no-cache\\n'
     ...     b'Content-length: 6\\n\\n'
@@ -281,6 +291,7 @@ class HTMLResponse(TextResponse):
     HTML response
 
     >>> HTMLResponse('test123').render() == (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: text/html\\n'
     ...     b'Cache-Control: no-cache\\n'
     ...     b'X-FRAME-OPTIONS: DENY\\n'
@@ -315,6 +326,7 @@ class XMLResponse(Response):
 
     >>> response = XMLResponse('myxml')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: text/xml\\n'
     ...     b'Cache-Control: no-cache\\n'
     ...     b'Content-length: 26\\n\\n'
@@ -339,6 +351,7 @@ class JavascriptResponse(Response):
 
     >>> response = JavascriptResponse(b'myjs')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/javascript\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 8be4a11f3\\n'
@@ -361,6 +374,7 @@ class JSONResponse(TextResponse):
 
     >>> response = JavascriptResponse(b'myjson')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/javascript\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: f97258d47\\n'
@@ -395,6 +409,7 @@ class CSSResponse(Response):
 
     >>> response = CSSResponse(b'mycss')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: text/css;charset=utf-8\\n'
     ...     b'Cache-Control: max-age=86400\\n'
     ...     b'ETag: 12a586855\\n'
@@ -431,6 +446,7 @@ class FileResponse(Response):
 
     >>> response = FileResponse('file.txt', content=b'mydata')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/octet-stream\\n'
     ...     b'Content-Disposition: attachment; filename="file.txt"\\n'
     ...     b'Cache-Control: no-cache\\n'
@@ -460,6 +476,7 @@ class PDFResponse(FileResponse):
 
     >>> response = PDFResponse('file.pdf', content=b'mydata')
     >>> expected = (
+    ...     b'Status: 200 OK\\n'
     ...     b'Content-type: application/pdf\\n'
     ...     b'Cache-Control: no-cache\\n'
     ...     b'Content-length: 6\\n\\n'
