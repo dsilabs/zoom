@@ -446,7 +446,7 @@ def markdown(content):
     >>> markdown('this **is** bold')
     '<p>this <strong>is</strong> bold</p>'
     """
-    return markdown_converter.convert(unisafe(trim(content)))
+    return markdown_converter.convert(trim(content))
 
 
 def load(pathname, encoding='utf-8'):
