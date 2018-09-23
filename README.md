@@ -106,19 +106,19 @@ All set?  Okay, here we go!
     $ pip3 install -r zoom/requirements.txt
     ```
 
-3. put the zoom directory on your pythonpath  
+3. put the zoom directory on your pythonpath
 There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll need to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
     ```
     $ export PYTHONPATH=/tmp/zoom
     ```
 
-3. add zoom command to your path  
-Ubuntu example:  
+3. add zoom command to your path
+Ubuntu example:
     ```shell
     $ ln -s /tmp/zoom/utils/zoom/bin/zoom /usr/local/bin/zoom
     ```
 
-4. configure zoom database  
+4. configure zoom database
 Currently, Zoom requires a MySQL comptabile database to run.  If you don't already have MySQL or MariaDB installed follow the instructions for your operating system.  Once
 that is installed create the database using the command:
     ```shell
@@ -126,12 +126,12 @@ that is installed create the database using the command:
     ```
    Next, edit the site.ini file for the localhost site using your editor like so:
     ```shell
-    $ vi web/sites/default/site.ini
+    $ vi web/sites/localhost/site.ini
     ```
    Find the database section of the config file and set the values for the
 database configuration to correspond to your database configuration.
 
-5. Run zoom  
+5. Run zoom
 If you are currently in the zoom directory then you don't need to tell
 zoom where to find your zoom instance.
     ```shell
@@ -264,7 +264,7 @@ at the Dockerfile or Vagrantfile of the boxes and see how those are set up.
 
 ### Testing
 Once your box is setup you can run the tests by switching to the zoom directory
-and running nosetests.  
+and running nosetests.
 ```shell
 $ nosetests
 ```
