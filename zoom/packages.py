@@ -19,13 +19,20 @@ default_packages = {
             '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
         ]
     },
-    'c3': {
+    'd3': {
         'libs': [
             'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js',
+        ],
+    },
+    'c3': {
+        'libs': [
             'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.js'
             ],
         'styles': [
             'https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.css',
+        ],
+        'requires': [
+            'd3',
         ]
     },
     'datatables': {
@@ -90,7 +97,10 @@ default_packages = {
         ],
         'styles': [
             '//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css'
-        ]
+        ],
+        'requires': [
+            'jquery'
+        ],
     },
     'spin': {
         'libs': [
@@ -108,10 +118,10 @@ def load(pathname):
             return json.load(data)
     return {}
 
-
 def get_registered_packages():
     """Returns the list of packages known to the site
 
+    >>> import zoom.request
     >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
     >>> zoom.system.site = zoom.site.Site(zoom.system.request)
     >>> zoom.system.request.app = zoom.utils.Bunch(packages={})
@@ -134,14 +144,23 @@ def get_registered_packages():
 def requires(*package_names):
     """Inform framework of the packages required for rendering
 
+    >>> import zoom.request
     >>> request = zoom.request.Request(dict(PATH_INFO='/'))
     >>> zoom.system.site = zoom.site.Site(request)
     >>> zoom.system.parts = zoom.Component()
 
     >>> requires('c3')
     >>> libs = zoom.system.parts.parts['libs']
-    >>> list(libs)[0]
-    'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'
+    >>> print('\\n'.join(list(libs)))
+    https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js
+    https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.15/c3.min.js
+
+    >>> zoom.system.parts = zoom.Component()
+    >>> requires('jquery-ui')
+    >>> libs = zoom.system.parts.parts['libs']
+    >>> print('\\n'.join(list(libs)))
+    //code.jquery.com/jquery-3.3.1.min.js
+    //code.jquery.com/ui/1.12.1/jquery-ui.min.js
 
     >>> try:
     ...     requires('d4')
@@ -150,7 +169,6 @@ def requires(*package_names):
     'raised!'
 
     """
-
     parts = zoom.Component()
 
     registered_packages = get_registered_packages()
@@ -158,6 +176,9 @@ def requires(*package_names):
     for name in package_names:
         package = registered_packages.get(name)
         if package:
+            requirements = package.get('requires')
+            if requirements:
+                requires(*requirements)
             parts += zoom.Component(**package)
         else:
             missing = set(package_names) - set(registered_packages)
