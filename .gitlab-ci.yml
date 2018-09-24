@@ -1,0 +1,10 @@
+image: docker:stable
+
+stages:
+  - Build Image
+
+docker build:
+  stage: Build Image
+  script:
+  - "curl -X POST -F token=$TOKEN -F ref=master https://gitlab.dsilabs.ca/api/v4/projects/130/trigger/pipeline"
+  
