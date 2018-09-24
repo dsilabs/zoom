@@ -1,23 +1,10 @@
 image: docker:stable
 
-variables:
-  LATEST_VER: dsilabs/zoom:latest
-
 stages:
   - Build Image
-  - Push to Docker Hub
 
 docker build:
   stage: Build Image
   script:
-  - docker info
-  - docker build -t $LATEST_VER .
-  
-docker push:
-  stage: Push to Docker Hub
-  only:
-  - master
-  script:
-  - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
-  - docker push $LATEST_VER && docker image rm $LATEST_VER
+  - "curl -X POST -F token=$TOKEN -F ref=REF_NAME https://gitlab.dsilabs.ca/api/v4/projects/130/trigger/pipeline"
   
