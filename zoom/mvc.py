@@ -221,12 +221,26 @@ class DynamicView(View):
 
     def render(self, view=None):
         """Render the view"""
+
+        # user = zoom.system.request.user
+        # app = zoom.system.request.app
+
+        def fmt(text, obj):
+            start_placeholder = '((zoom**'
+            end_placeholder = '**zoom))'
+            t = text
+            t = text.replace('{{', start_placeholder).replace('}}', end_placeholder)
+            t = t.format(self=obj)
+            # t = t.format(self=obj, user=user, app=app)
+            t = t.replace(start_placeholder, '{{').replace(end_placeholder, '}}')
+            return t
+
         assets = self.get_assets(view)
         if assets:
             result = {}
             for k, v in assets.items():
                 if k in ['html']:
-                    result[k] = v.format(self=self)
+                    result[k] = fmt(v, self)
                 elif k in ['js']:
                     result[k] = v
                 else:
