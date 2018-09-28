@@ -186,8 +186,15 @@ class Topic(object):
                 row_id = rec.first()[0]
             if row_id:
                 message = self.messages.get(row_id)
-                if message:
+
+                if message and message.body is not None and message.topic is not None:
+                    # Checking for message body because finding an id does not guarantee
+                    # that a message is ready to go depending on isolation level of
+                    # database.  Rather than require a specific isolation level we
+                    # just check to see if the message body and topic are present and if
+                    # not, we ignore the message.
                     return row_id, decoded(message.topic), json.loads(decoded(message.body))
+
         raise EmptyException
 
     def peek(self, newest=None):
