@@ -23,7 +23,7 @@ Database
 ----
 
 connect
-: {{request.site.db.connect_string}}
+: {{request.site.db.connect_string}}{{isolation}}
 
 
 Mail
