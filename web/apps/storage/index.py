@@ -81,7 +81,7 @@ class IndexView(View):
         # want from the list.
         columns = db.get_column_names(name)
         limit = int(limit)
-        data = 'id' in columns and items[:limit] or list(items)[:limit]
+        data = 'id' in columns and list(items)[:limit] or list(items)[:limit]
 
         return page(browse(data, footer=footer), title='Record: '+name)
 
