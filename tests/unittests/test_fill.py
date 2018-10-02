@@ -6,10 +6,11 @@
 # pylint: disable=invalid-name
 # It's reasonable in this case.
 
-import unittest
 import datetime
+import re
+import unittest
 
-from zoom.fill import _fill, fill as viewfill
+from zoom.fill import parts_re, _fill, fill as viewfill
 
 today = datetime.datetime.today()
 
@@ -113,6 +114,106 @@ class TestFill(unittest.TestCase):
         self.assertEqual(
             viewfill('foo {{missing "nothing"}} bar', defaultfiller),
             "foo nothing bar"
+        )
+
+    def test_missing_with_default_single_quotes(self):
+        self.assertEqual(
+            viewfill("foo {{missing \'nothing\'}} bar", defaultfiller),
+            "foo nothing bar"
+        )
+
+    def test_missing_quoted_with_nested_default_single_quotes(self):
+        self.assertEqual(
+            viewfill('foo "/{{missing \'nothing\'}}" bar', defaultfiller),
+            "foo \"/nothing\" bar"
+        )
+
+    def test_missing_with_default_no_quotes(self):
+        self.assertEqual(
+            viewfill('foo {{missing nothing}} bar', defaultfiller),
+            "foo nothing bar"
+        )
+
+    def test_partially_missing_double_quoted_defaults(self):
+        template = """<a href="/{{action \"\"}}{{other \"\"}}">{{title ""}}</a>"""
+        values = {'title': 'The Title'}
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/">The Title</a>'
+        )
+
+        values['action'] = 'one'
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/one">The Title</a>'
+        )
+
+        values['other'] = '/two'
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/one/two">The Title</a>'
+        )
+
+    def test_re(self):
+        self.assertEqual(
+            re.findall(parts_re, 'the name="test"'),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('name', 'test', '', '', '', '', '', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, "the name='test'"),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('', '', 'name', 'test', '', '', '', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, "the name=test"),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('', '', '', '', 'name', 'test', '', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, 'the "test"'),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('', '', '', '', '', '', 'test', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, 'the ""'),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('', '', '', '', '', '', '', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, "the ''"),
+            [('', '', '', '', '', '', '', '', 'the'), ('', '', '', '', '', '', '', '', '')]
+        )
+
+        self.assertEqual(
+            re.findall(parts_re, "the other"),
+            [('', '', '', '', '', '', '', '', 'the'),
+             ('', '', '', '', '', '', '', '', 'other')]
+        )
+
+    def test_partially_missing_single_quoted_defaults(self):
+        template = r"""<a href="/{{action ''}}{{other ''}}">{{title ""}}</a>"""
+        values = {'title': 'The Title'}
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/">The Title</a>'
+        )
+
+        values['action'] = 'one'
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/one">The Title</a>'
+        )
+
+        values['other'] = '/two'
+        self.assertEqual(
+            viewfill(template, values.get),
+            '<a href="/one/two">The Title</a>'
         )
 
     def test_surrounded(self):
