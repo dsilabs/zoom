@@ -30,7 +30,7 @@ from .context import context as system
 from .forms import form, Form
 from .helpers import link_to, url_for, url_for_page
 from .instances import Instance
-from .mvc import View, Controller, dispatch
+from .mvc import View, Controller, dispatch, DynamicView
 from .page import page, Page
 from .packages import requires
 from .store import store_of
