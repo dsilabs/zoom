@@ -2593,6 +2593,24 @@ class RangeSliderField(IntegerField):
         return websafe(value)
 
 
+class FileField(TextField):
+    """FileField
+
+    >>> FileField('Document').widget()
+    '<input class="file_field" id="document" name="document" type="file" value="None" />'
+    """
+    value = default = None
+    _type = 'file'
+    css_class = 'file_field'
+
+    def requires_multipart_form(self):
+        return True
+
+    def assign(self, value):
+        if hasattr(value, 'filename'):
+            self.value = dict(filename=value.filename, value=value.value)
+
+
 class DataURIAttachmentsField(Field):  # pragma: no cover
     """An Attachments field - DEPRECATED
 
