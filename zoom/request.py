@@ -232,6 +232,7 @@ class Request(object):
         self.agent = get('HTTP_USER_AGENT')
         self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
         self.referrer = get('HTTP_REFERER')
+        self.node = platform.node()
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]
@@ -308,7 +309,7 @@ class Request(object):
             elapsed=get_elapsed,
             request_path=self.path,
             parent_path=self.parent_path,
-            node=platform.node(),
+            node=self.node,
         )
 
     def __str__(self):
