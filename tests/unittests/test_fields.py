@@ -227,6 +227,25 @@ class DateTests(object):
         f.initialize({'field1': self.basic_text})
         self.assertEqual(f.evaluate(), {'field1': datetime.date(2017, 8, 20)})
 
+    def test_searchable(self):
+        f = self.field_type('Field1')
+        f.initialize({'field1': self.basic_text})
+        self.assertEqual(
+            f.as_searchable(),
+            {'2017-08-20 08-20-2017 Sunday August 20 2017'}
+        )
+
+        f.initialize({'field1': None})
+        self.assertEqual(
+            f.as_searchable(),
+            set()
+        )
+
+        f.initialize({'field1': '2016-04-01'})
+        self.assertEqual(
+            f.as_searchable(),
+            {'2016-04-01 04-01-2016 Friday April 1 2016'}
+        )
 
 class TestDateField(unittest.TestCase, DateTests):
 

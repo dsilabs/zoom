@@ -11,6 +11,7 @@ import types
 import datetime
 from decimal import Decimal
 import uuid
+from platform import system
 
 import zoom
 from zoom.component import component
@@ -1690,6 +1691,11 @@ class DateField(Field):
     css_class = 'date_field'
     validators = [valid_date]
     min = max = None
+    search_fmt = (
+        '{:%Y-%m-%d %m-%d-%Y %A %B %-d %Y}'
+        if system() != 'Windows' else
+        '{:%Y-%m-%d %m-%d-%Y %A %B %#d %Y}'
+    )
 
     def display_value(self, alt_format=None):
         # pylint: disable=E1101
@@ -1764,10 +1770,9 @@ class DateField(Field):
         def get_formatted_value():
             value = self.evaluate()[self.name]
             if value:
-                return set([fmt.format(value)])
+                return set([self.search_fmt.format(value)])
             return set()
 
-        fmt = '{:%Y-%m-%d %m-%d-%Y %A %B %-d %Y}'
         return self.visible and get_formatted_value()
 
 
