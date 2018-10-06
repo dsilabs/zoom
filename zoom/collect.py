@@ -119,18 +119,6 @@ class CollectionView(View):
     def index(self, q='', *args, **kwargs):
         """collection landing page"""
 
-        def get_recent(number):
-            cmd = """
-                select row_id, max(value) as newest
-                from attributes
-                where kind = %s and attribute in ("created", "updated")
-                group by row_id
-                order by newest desc
-                limit %s
-            """
-            ids = [id for id, _ in c.store.db(cmd, c.store.kind, number)]
-            return c.store.get(ids)
-
         c = self.collection
         user = c.user
 
@@ -144,11 +132,11 @@ class CollectionView(View):
             title = 'Selected ' + c.title
             records = c.search_engine(c).search(q)
         else:
-            many_records = bool(len(c.store) > 50)
-            logger.debug('many records: %r', many_records)
-            if many_records and not kwargs.get('all'):
+            has_many_records = c.has_many_records
+            logger.debug('has many records: %r', has_many_records)
+            if has_many_records and not kwargs.get('all'):
                 title = 'Most Recently Updated ' + c.title
-                records = get_recent(15)
+                records = self._get_recent(15)
                 actions.append(('Show All', c.url + '?all=1'))
             else:
                 title = c.title
@@ -177,7 +165,7 @@ class CollectionView(View):
                 c.title.lower(),
             )
         else:
-            if many_records:
+            if has_many_records:
                 footer = '{:,} {} shown of {:,} {}'.format(
                     num_items,
                     footer_name,
@@ -200,6 +188,19 @@ class CollectionView(View):
     def clear(self):
         """Clear the search"""
         return redirect_to('/' + '/'.join(self.collection.request.route[:-1]))
+
+    def _get_recent(self, number):
+        c = self.collection
+        cmd = """
+            select row_id, max(value) as newest
+            from attributes
+            where kind = %s and attribute in ("created", "updated")
+            group by row_id
+            order by newest desc
+            limit %s
+        """
+        ids = [id for id, _ in c.store.db(cmd, c.store.kind, number)]
+        return c.store.get(ids)
 
     def new(self, *args, **kwargs):
         """Return a New Item form"""
@@ -814,9 +815,14 @@ class Collection(object):
         self.request = None
         self.route = None
         self.search_engine = get('search_engine', BasicSearch)
+        self.many_records = 50
 
         if 'policy' in kwargs:
             self.allows = get('policy')
+
+    @property
+    def has_many_records(self):
+        return len(self.store) >= self.many_records
 
     def order(self, item):
         """Returns the sort key"""
