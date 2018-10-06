@@ -529,7 +529,18 @@ def load_template(name, default=None):
         logger = logging.getLogger(__name__)
         logger.warning('template missing: %r', name)
         logger.debug('templates paths: %r', site.templates_paths)
-        return default or '<!-- template missing -->'
+
+        if default:
+            return default
+
+        if site.theme_comments == 'path':
+            comment = '%r missing in %r ' % (name, site.templates_paths)
+        elif site.theme_comments == 'name':
+            comment = 'missing %r ' % (name)
+        else:
+            comment = 'missing '
+
+        return default or '<!-- template %s-->' % comment
 
     site = zoom.system.request.site
 

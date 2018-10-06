@@ -56,7 +56,7 @@ class TestTools(unittest.TestCase):
         zoom.system.request = zoom.utils.Bunch(site=zoom.sites.Site())
         load = zoom.tools.load_template
         template = load('notthere')
-        self.assertEqual('<!-- template missing -->', template)
+        self.assertEqual('<!-- template missing \'notthere.html\' -->', template)
 
     def test_load_template_invalid_path(self):
         zoom.system.request = zoom.utils.Bunch(site=zoom.sites.Site())
