@@ -20,6 +20,7 @@ import zoom
 import zoom.utils
 import zoom.cookies
 from zoom.context import context
+from zoom.profiler import SystemTimer
 
 
 def make_request_id():
@@ -233,6 +234,7 @@ class Request(object):
         self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
         self.referrer = get('HTTP_REFERER')
         self.node = platform.node()
+        self.profiler = SystemTimer(self.start_time)
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]

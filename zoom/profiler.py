@@ -114,8 +114,6 @@ def handler(request, handler, *rest):
                 logger.debug('profiling turned off')
 
     logger = logging.getLogger(__name__)
-    request.profiler = SystemTimer(request.start_time)
-
     code_profiler = cProfile.Profile()
     code_profiler.enable()
 
