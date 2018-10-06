@@ -215,7 +215,7 @@ class Component(object):
         if not hasattr(zoom.system, 'parts'):
             zoom.system.parts = Component()
         zoom.system.parts += self
-        return ''.join(self.parts['html'])
+        return ''.join(map(str, self.parts['html']))
 
     def __str__(self):
         return self.render()
