@@ -79,6 +79,17 @@ class UserCollectionView(CollectionView):
             content = 'Error locating user %r' % key
         return zoom.page(content, title='Reset Password')
 
+    def _get_recent(self, number):
+        c = self.collection
+        cmd = """
+            select id
+            from users
+            order by updated desc
+            limit %s
+        """
+        ids = [id for id, in c.store.db(cmd, number)]
+        return c.store.get(ids)
+
 
 class UserCollectionController(CollectionController):
 
