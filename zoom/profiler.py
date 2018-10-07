@@ -113,17 +113,26 @@ def profiled(request, handler, *rest):
             elif not request.site.profiling:
                 logger.debug('profiling turned off')
 
+
+    profiling_code = request.env.get('ZOOM_CODE_PROFILER')
+
+
     logger = logging.getLogger(__name__)
-    code_profiler = cProfile.Profile()
-    code_profiler.enable()
+
+    if profiling_code:
+        code_profiler = cProfile.Profile()
+        code_profiler.enable()
 
     try:
 
         result = handler(request, *rest)
 
     finally:
-        code_profiler.disable()
-        code_profile = get_profile_data(code_profiler)
+        if profiling_code:
+            code_profiler.disable()
+            code_profile = get_profile_data(code_profiler)
+        else:
+            code_profile = 'code profiler is off'
 
         request.profiler.add('finished')
 
