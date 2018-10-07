@@ -486,7 +486,6 @@ class CollectionController(Controller):
 
     def add_image(self, *_, **kwargs):
         """accept uploaded images and attach them to the record"""
-        logger = logging.getLogger(__name__)
 
         dummy = Record(
             filename='dummy.png',
@@ -533,7 +532,6 @@ class CollectionController(Controller):
             # delete the bucket
             path = os.path.join(zoom.system.site.data_path, 'buckets')
             bucket = Bucket(path)
-            items = bucket.keys()
             if item_id in bucket.keys():
                 bucket.delete(item_id)
                 return 'ok'

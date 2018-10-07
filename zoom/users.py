@@ -53,6 +53,11 @@ def key_for(username):
 
     return _key_for(username)
 
+
+def link_to_user(username):
+    return link_to(username, '/admin/users/{}'.format(key_for(username)))
+
+
 def get_current_username(request):
     """get current user username"""
     site = request.site

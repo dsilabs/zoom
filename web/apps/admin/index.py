@@ -15,12 +15,9 @@ from zoom.browse import browse
 from zoom.tools import load_content, today, how_long_ago
 from zoom.component import Component
 from zoom.helpers import link_to, link_to_page
+from zoom.users import link_to_user
 
 from views import index_metrics_view, IndexPageLayoutView
-
-
-def link_to_user(username):
-    return link_to(username, '/admin/users/{}'.format(zoom.users.key_for(username)))
 
 
 def log_data(db, status, n, limit, q):
@@ -107,13 +104,6 @@ def activity_panel(db):
 
 
 def error_panel(db):
-    def user_link(user_id):
-        """Returns a link to a user based on a user_id"""
-        if user_id:
-            user = users.get(rec[1])
-            if user:
-                return user.link
-        return None
 
     host = zoom.system.request.host
 
@@ -130,7 +120,6 @@ def error_panel(db):
         limit 10
         """, today(), host)
 
-    users = context.site.users
     rows = []
     for rec in data:
         row = [
