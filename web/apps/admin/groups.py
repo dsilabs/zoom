@@ -2,6 +2,9 @@
     system users
 """
 
+import logging
+
+import zoom
 from zoom.collect import Collection, CollectionController
 from zoom.models import Group, Groups
 from zoom.tools import now, ensure_listy, is_listy
@@ -11,6 +14,71 @@ import zoom.fields as f
 
 # from model import update_group_members
 import model
+
+class GroupsSearch(object):
+    """Provides search capability for groups"""
+
+    def __init__(self, collection):
+        self.collection = collection
+        logger = logging.getLogger(__name__)
+        logger.debug(
+            'starting BasicSearch for %s collection',
+            self.collection.name
+        )
+
+    def ssearch(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            v = ';'.join(
+                map(str, item.values())
+            ).lower()
+            return terms and not any(t not in v for t in terms)
+
+        terms = text and [t.lower() for t in text.split()]
+
+        print('searching for %s', terms)
+
+        return [
+            record for record in self.collection.store
+            if matches(record, terms)
+        ]
+
+    def search(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            v = ';'.join([
+                str(value).lower()
+                for key, value in item.items()
+                if not key.startswith('_')
+            ])
+            return terms and not any(t not in v for t in terms)
+
+        # fields = self.collection.fields
+        terms = text and [t.lower() for t in text.split()]
+
+        return [
+            record for record in self.collection.store
+            if matches(record, terms)
+        ]
+
+    def add(self, key, values):
+        """Add record values to index"""
+        pass
+
+    def update(self, key, values):
+        """Update indexed record values"""
+        pass
+
+    def delete(self, key):
+        """Delete indexed record values"""
+        pass
+
+    def reindex(self):   # pragma: no cover
+        zoom.alerts.warning('GroupsSearch does not use indexing')
 
 
 class SelectionField(f.ChosenMultiselectField):
@@ -106,4 +174,5 @@ def main(route, request):
         filter=user_group,
         columns=columns,
         key_name='id',
+        search_engine=GroupsSearch
     )(route, request)
