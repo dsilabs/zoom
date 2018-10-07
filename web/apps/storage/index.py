@@ -67,7 +67,7 @@ class IndexView(View):
         footer = len(items) and '%s %s' % (len(items), footer_name) or ''
         return page(browse(items, footer=footer), title='Entity: '+name)
 
-    def table(self, name, limit='50'):
+    def table(self, name, limit='6'):
         db = self.model.site.db
         items = RecordStore(db, MyModel, name=name)
         if len(items) == 1:
@@ -76,14 +76,28 @@ class IndexView(View):
             footer_name = 'records'
         footer = len(items) and '%s %s' % (len(items), footer_name) or ''
 
-        # If there is an id column we will use it to select the first N items,
+        # If there is an id column we will use it to select the last N items,
         # otherwise we'll just select the whole thing and then take what we
         # want from the list.
         columns = db.get_column_names(name)
         limit = int(limit)
-        data = 'id' in columns and list(items)[:limit] or list(items)[:limit]
+        data = 'id' in columns and items[-limit:] or list(items)[-limit:]
 
-        return page(browse(data, footer=footer), title='Record: '+name)
+        content = browse(data, footer=footer, title='Sample Data')
+
+        if name in db.get_tables():
+            content += browse(db('describe ' + name), title='Structure')
+
+        if name in db.get_tables():
+            content += browse(db('show index from ' + name), title='Index')
+
+        database = db.database.name
+        if database:
+            content += browse(db('show table status in {} where name=%s'.format(
+                database
+            ), name), title='Metadata')
+
+        return page(content, title='Record: '+name)
 
     def queue(self, name):
         items = self.model.site.queues.topic(name, -1)
