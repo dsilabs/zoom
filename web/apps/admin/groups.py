@@ -124,7 +124,7 @@ def group_fields(request):
     db = request.site.db
     admin = model.AdminModel(db)
 
-    if len(request.route) > 2 and request.route[2] != 'new':
+    if len(request.route) > 2 and request.route[2] not in ['new', 'clear']:
         group_id = int(request.route[2])
     else:
         group_id = None
