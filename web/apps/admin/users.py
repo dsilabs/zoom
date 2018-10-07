@@ -5,7 +5,7 @@
 import zoom
 from zoom.audit import audit
 from zoom.components import success
-from zoom.collect import Collection, CollectionView, CollectionController
+from zoom.collect import Collection, CollectionView, CollectionController, RawSearch
 from zoom.context import context
 from zoom.forms import Form
 from zoom.users import User, Users
@@ -150,5 +150,6 @@ def main(route, request):
         columns=columns,
         labels=labels,
         url='/admin/users',
-        key_name='id'
+        key_name='id',
+        search_engine=RawSearch
     )(route, request)
