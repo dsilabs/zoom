@@ -572,29 +572,30 @@ class CollectionController(Controller):
         return page('complete!', title='Reindex')
 
 
-class BasicSearch(object):
-    """Provides basic search capability"""
+class RawSearch(object):
+    """Raw Data Search"""
 
     def __init__(self, collection):
         self.collection = collection
         logger = logging.getLogger(__name__)
         logger.debug(
-            'starting BasicSearch for %s collection',
+            'starting %s for %s collection',
+            self.__class__.__name__,
             self.collection.name
         )
 
     def search(self, text):
-        """Return records that match search text"""
+        """Return records that match raw search text"""
 
         def matches(item, terms):
             """match a search by field values"""
-            fields.initialize(item)
-            v = ';'.join(
-                map(str, fields.as_searchable())
-            ).lower()
+            v = ';'.join([
+                str(value).lower()
+                for key, value in item.items()
+                if not key.startswith('_')
+            ])
             return terms and not any(t not in v for t in terms)
 
-        fields = self.collection.fields
         terms = text and [t.lower() for t in text.split()]
 
         return [
@@ -615,7 +616,30 @@ class BasicSearch(object):
         pass
 
     def reindex(self):   # pragma: no cover
-        warning('BasicSearch does not use indexing')
+        zoom.alerts.warning('%s does not use indexing' % self.__class__.__name__)
+
+
+class BasicSearch(RawSearch):
+    """Provides basic unindexed field aware search capability"""
+
+    def search(self, text):
+        """Return records that match search text"""
+
+        def matches(item, terms):
+            """match a search by field values"""
+            fields.initialize(item)
+            v = ';'.join(
+                map(str, fields.as_searchable())
+            ).lower()
+            return terms and not any(t not in v for t in terms)
+
+        fields = self.collection.fields
+        terms = text and [t.lower() for t in text.split()]
+
+        return [
+            record for record in self.collection.store
+            if matches(record, terms)
+        ]
 
 
 def as_tokens(values, max_len=20):
