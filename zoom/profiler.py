@@ -96,7 +96,7 @@ def get_profile_data(profiler):
     return result
 
 
-def handler(request, handler, *rest):
+def profiled(request, handler, *rest):
     def send(message):
         if hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling:
             topic = 'system.debug.%s' % request.user._id
@@ -152,3 +152,12 @@ def handler(request, handler, *rest):
 
         del request.profiler
     return result
+
+
+def handler(request, handler, *rest):
+    """Handle profiled requests"""
+
+    if request.env.get('ZOOM_PROFILER'):
+        return profiled(request, handler, *rest)
+    else:
+        return handler(request, *rest)
