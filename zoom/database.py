@@ -265,6 +265,15 @@ class Database(object):
         """get a list of database tables"""
         pass
 
+    @property
+    def database(self):
+        """Returns an object containing database parameters"""
+        return zoom.utils.Bunch(
+            name=self.__keywords.get('db'),
+            host=self.__keywords.get('host'),
+            port=self.__keywords.get('port'),
+            user=self.__keywords.get('user'),
+        )
 
 class Sqlite3Database(Database):
     """Sqlite3 Database"""
