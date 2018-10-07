@@ -6,9 +6,9 @@
 
 import uuid
 
+import zoom
 from zoom.context import context
 from zoom.mvc import View, Controller
-from zoom.page import page
 from zoom.mail import get_mail_store, send, Attachment
 from zoom.browse import browse
 import zoom.fields as f
@@ -30,13 +30,23 @@ class MyView(View):
 
     def index(self):
         actions = ['Compose']
-        content = '<h2>Waiting</h2>' + browse(get_mail_store(context.site))
-        return page(content, title='Mail', actions=actions)
+        site = zoom.system.request.site
+        mail_settings = '&nbsp;&nbsp;'.join([
+            '%s: %s' % (k, v) for k, v in dict(
+                host=site.smtp_host,
+                user=site.smtp_user,
+                port=site.smtp_port,
+                passwd=('*' * (len(site.smtp_passwd) - 2)) + site.smtp_passwd[-2:],
+            ).items() if v
+        ])
+        content = mail_settings + '<h2>Waiting</h2>' + browse(get_mail_store(context.site))
+        return zoom.page(content, title='Mail', actions=actions)
 
     def compose(self):
-        return page(content='Send mail as "{} &lt;{}&gt;"<br><br>{}'.format(
-            context.site.mail_from_name,
-            context.site.mail_from_addr,
+        site = zoom.system.request.site
+        return zoom.page(content='Send mail as "{} &lt;{}&gt;"<br><br>{}'.format(
+            site.mail_from_name,
+            site.mail_from_addr,
             mail_form.edit(),
         ), title='Send Mail')
 
