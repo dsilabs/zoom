@@ -34,6 +34,7 @@ from zoom.response import (
     RedirectResponse,
     TTFResponse,
     WOFFResponse,
+    WOFF2Response,
     BinaryResponse,
     JSONResponse,
 )
@@ -169,6 +170,7 @@ def serve_response(*path):
         ttf=TTFResponse,
         json=JSONResponse,
         woff=WOFFResponse,
+        woff2=WOFF2Response,
         map=BinaryResponse,
     )
     pathname = os.path.realpath(os.path.join(*path))
