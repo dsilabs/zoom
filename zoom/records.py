@@ -262,7 +262,7 @@ class RecordStore(Store):
             )
             self.db(cmd, *values)
         else:
-            names = ', '.join(keys)
+            names = ', '.join('`%s`' % k for k in keys)
             placeholders = ','.join(['%s'] * len(keys))
             cmd = 'insert into %s (%s) values (%s)' % (
                 self.kind, names, placeholders)
