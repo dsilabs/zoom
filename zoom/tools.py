@@ -10,7 +10,7 @@ from markdown import Markdown
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
-from zoom.utils import trim
+from zoom.utils import trim, dedup
 from zoom.render import apply_helpers
 
 one_day = datetime.timedelta(1)
@@ -489,11 +489,11 @@ def load_template(name, default=None):
     """
 
     def find_template(name):
-        for path in site.templates_paths:
+        for path in templates_paths:
             if os.path.exists(path) and (name in os.listdir(path)):
                 return os.path.join(path, name)
         name_lower = name.lower()
-        for path in site.templates_paths:
+        for path in templates_paths:
             if os.path.exists(path):
                 for filename in os.listdir(path):
                     if filename.lower() == name_lower:
@@ -528,13 +528,13 @@ def load_template(name, default=None):
 
         logger = logging.getLogger(__name__)
         logger.warning('template missing: %r', name)
-        logger.debug('templates paths: %r', site.templates_paths)
+        logger.debug('templates paths: %r', templates_paths)
 
         if default:
             return default
 
         if site.theme_comments == 'path':
-            comment = '%r missing in %r ' % (name, site.templates_paths)
+            comment = '%r missing in %r ' % (name, templates_paths)
         elif site.theme_comments == 'name':
             comment = 'missing %r ' % (name)
         else:
@@ -543,6 +543,8 @@ def load_template(name, default=None):
         return default or '<!-- template %s-->' % comment
 
     site = zoom.system.request.site
+    app = zoom.system.request.app
+    templates_paths = dedup(app.templates_paths + site.templates_paths)
 
     if not '.' in name:
         name = name + '.html'

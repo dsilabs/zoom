@@ -1017,3 +1017,22 @@ def generate_key():
     """
     new_uuid = uuid.uuid4().bytes
     return hmac.new(new_uuid, digestmod=hashlib.sha1).hexdigest()
+
+def existing(path, subdir=None):
+    """Returns existing directories only"""
+    realpath = os.path.realpath
+    join = os.path.join
+    exists = os.path.exists
+
+    pathname = (
+        path and subdir and join(realpath(path), subdir) or
+        path and realpath(path)
+        )
+    if pathname and exists(pathname):
+        return pathname
+
+def dedup(seq):
+    """Remove duplicates while retaining order"""
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]

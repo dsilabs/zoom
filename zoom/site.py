@@ -13,6 +13,7 @@ import zoom.config
 from zoom.context import context
 import zoom.helpers
 from zoom.helpers import link_to, mail_to
+from zoom.utils import dedup, existing
 
 
 isdir = os.path.isdir
@@ -23,22 +24,6 @@ listdir = os.listdir
 dirname = os.path.dirname
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
-
-
-def existing(path, subdir=None):
-    """Returns existing directories only"""
-    pathname = (
-        path and subdir and join(realpath(path), subdir) or
-        path and realpath(path)
-        )
-    if pathname and exists(pathname):
-        return pathname
-
-def dedup(seq):
-    """Remove duplicates while retaining order"""
-    seen = set()
-    seen_add = seen.add
-    return [x for x in seq if not (x in seen or seen_add(x))]
 
 
 class ConfigSection(zoom.utils.Record):

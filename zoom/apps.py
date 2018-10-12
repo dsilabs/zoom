@@ -14,6 +14,7 @@ import zoom
 from zoom.components import as_links
 from zoom.database import Database
 import zoom.html as html
+from zoom.utils import existing
 
 
 DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
@@ -167,6 +168,26 @@ class AppProxy(object):
         self.in_development = get('in_development')
 
         self._method = None
+        self._templates_paths = None
+
+    @property
+    def templates_paths(self):
+        """Calculate Templates Paths"""
+        join = os.path.join
+        if self._templates_paths:
+            return self._templates_paths
+        site = self.site
+        if self.theme:
+            template_path = existing(join(site.themes_path, self.theme, 'templates'))
+            theme_path = existing(join(site.themes_path, self.theme))
+            paths = list(filter(bool, [
+                template_path,
+                theme_path,
+            ]))
+        else:
+            paths = []
+        self._templates_paths = paths
+        return paths
 
     def get_icon_view(self):
         return """
