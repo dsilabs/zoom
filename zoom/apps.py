@@ -412,13 +412,15 @@ def handle(request):
         """Run an app"""
         request.app = app
         zoom.render.add_helpers(helpers(request))
-        # change Database class attribute to catch non system instances
-        #  and ojbects inheriting from Database
-        Database.debug = request.site.monitor_app_database
-        request.profiler.add('system ready')
-        result = app.run(request)
-        request.profiler.add('app finished')
-        Database.debug = False
+
+        saved_database_debug_setting =  Database.debug
+        try:
+            Database.debug = request.site.monitor_app_database
+            request.profiler.add('system ready')
+            result = app.run(request)
+            request.profiler.add('app finished')
+        finally:
+            Database.debug = saved_database_debug_setting
         return result
 
     logger = logging.getLogger(__name__)
