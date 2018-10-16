@@ -112,6 +112,31 @@ class TestCGIRequest(unittest.TestCase):
         request = self.get_post_request(body)
         self.assertEqual(request.json_body, payload)
 
+    def prep_payload(self, payload):
+        body = io.BytesIO()
+        body.write(payload.encode('utf-8'))
+        body.seek(0)
+        return body
+
+    def set_payload(self, payload):
+        sys.stdin = self.prep_payload(payload)
+
+    def test_delete(self):
+        self.env['REQUEST_METHOD'] = 'DELETE'
+        self.env['CONTENT_TYPE'] = 'application/x-www-form-urlencoded'
+        self.set_payload('parameter=value&also=another')
+        request = Request(self.env)
+        result = {'also': 'another', 'parameter': 'value'}
+        self.assertEqual(request.data, result)
+
+    def test_delete_no_body(self):
+        self.env['REQUEST_METHOD'] = 'DELETE'
+        self.env['CONTENT_TYPE'] = 'application/x-www-form-urlencoded'
+        self.set_payload('')
+        request = Request(self.env)
+        result = {}
+        self.assertEqual(request.data, result)
+
 
 class TestWSGIRequest(TestCGIRequest):
 
@@ -126,3 +151,6 @@ class TestWSGIRequest(TestCGIRequest):
     def get_post_request(self, body):
         self.env['wsgi.input'] = body
         return Request(self.env)
+
+    def set_payload(self, payload):
+        self.env['wsgi.input'] = self.prep_payload(payload)
