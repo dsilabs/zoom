@@ -3,27 +3,18 @@
 """
 
 import zoom.collect
-from zoom.fields import (Fields, TextField, EditField)
+import zoom.fields as f
 from zoom.validators import required
-
-
-statuses = [
-    ('New', 'N'),
-    ('Open', 'O'),
-    ('Pending', 'P'),
-    ('Closed', 'C'),
-]
 
 
 def snippet_fields():
     """Return snippet fields"""
-    return Fields(
-        TextField('Name', required, maxlength=80),
-        # TextField('Title', required, MinimumLength(3)),
-        # DateField('Date', format='%A %b %d, %Y'),
-        # RadioField('Status', values=statuses),
-        EditField('Body'),
+    return f.Fields(
+            f.TextField('Name', required, maxlength=80),
+            f.EditField('Body', required),
     )
 
-
-main = zoom.collect.Collection(snippet_fields)
+main = zoom.collect.Collection(
+    snippet_fields,
+    model=zoom.snippets.SystemSnippet,
+)

@@ -7,7 +7,7 @@ import datetime
 
 import zoom
 import zoom.html as html
-
+from zoom.snippets import snippet
 
 def username():
     """Returns the username."""

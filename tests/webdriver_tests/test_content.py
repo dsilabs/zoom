@@ -48,3 +48,41 @@ class ContentTests(WebdriverTestCase):
         self.assertContains('Overview')
         self.assertContains('Pages')
         self.assertContains('Snippets')
+
+
+class SnippetTests(WebdriverTestCase):
+    """Snippet Feature of Content App"""
+
+    def setUp(self):
+        WebdriverTestCase.setUp(self)
+        self.login('admin', 'admin')
+
+    def tearDown(self):
+        self.logout()
+        WebdriverTestCase.tearDown(self)
+
+    def add_snippet(self, **parts):
+        assert parts.get('name')
+        self.get('/content/snippets/new')
+        self.fill(parts)
+        self.click('create_button')
+
+    def delete_snippet(self, locator):
+        self.get('/content/snippets')
+        self.click_link(locator)
+        self.click_link('Delete')
+        self.click('delete_button')
+
+    def test_index(self):
+        self.get('/content/snippets')
+        self.assertContains('<h1>Snippets</h1>')
+
+    def test_add_remove_snippet(self):
+        self.get('/content/snippets')
+        self.add_snippet(
+            name='Test Snippet',
+            body='This is a test snippet.'
+        )
+        self.assertContains('Test Snippet')
+        self.delete_snippet('Test Snippet')
+
