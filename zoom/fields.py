@@ -1187,8 +1187,11 @@ class EmailField(TextField):
     """Email field
 
     >>> EmailField('Email').widget()
-    '<input class="text_field" id="email" name="email" type="text" value="" />'
+    '<input class="text_field" id="email" maxlength="60" name="email" size="30" type="text" value="" />'
     """
+
+    size = 30
+    maxlength = 60
 
     def __init__(self, label, *validators, **keywords):
         TextField.__init__(self, label, valid_email, *validators, **keywords)
