@@ -48,7 +48,7 @@ def group_fields(request):
 
     fields = f.Fields([
         f.TextField('Name', v.required, v.valid_name),
-        f.MemoField('Description'),
+        f.TextField('Description', maxlength=60),
         f.PulldownField(
             'Administrators',
             default='administrators',
