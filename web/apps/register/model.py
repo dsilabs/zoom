@@ -153,7 +153,7 @@ def submit_registration(data):
 
             subject = zoom.system.site.title + ' registration'
 
-            # zoom.mail.send(recipient, subject, body)
+            zoom.mail.send(recipient, subject, body)
             logger.debug(
                 'registration %r',
                 dict(
