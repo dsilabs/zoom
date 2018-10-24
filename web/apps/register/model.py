@@ -8,6 +8,7 @@ import time
 import uuid
 
 import zoom
+import zoom.mail
 import zoom.fields as f
 import zoom.validators as v
 
