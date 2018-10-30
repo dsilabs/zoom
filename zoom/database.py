@@ -95,30 +95,48 @@ class Database(object):
     """
     database object
 
-        >>> import sqlite3
-        >>> db = database('sqlite3', database=':memory:')
-        >>> db('drop table if exists person')
-        >>> db(\"\"\"
-        ...     create table if not exists person (
-        ...     id integer primary key autoincrement,
-        ...     name      varchar(100),
-        ...     age       smallint,
-        ...     kids      smallint,
-        ...     birthdate date,
-        ...     salary    decimal(8,2)
-        ...     )
-        ... \"\"\")
+    >>> import sqlite3
+    >>> db = database('sqlite3', database=':memory:')
+    >>> db('drop table if exists person')
+    >>> db(\"\"\"
+    ...     create table if not exists person (
+    ...     id integer primary key autoincrement,
+    ...     name      varchar(100),
+    ...     age       smallint,
+    ...     kids      smallint,
+    ...     birthdate date,
+    ...     salary    decimal(8,2)
+    ...     )
+    ... \"\"\")
 
-        >>> db("insert into person (name, age) values ('Joe',32)")
-        1
+    >>> db("insert into person (name, age) values ('Joe',32)")
+    1
 
-        >>> db('select * from person')
-        [(1, 'Joe', 32, None, None, None)]
+    >>> db('select * from person')
+    [(1, 'Joe', 32, None, None, None)]
 
-        >>> print(db('select * from person'))
-        id name age kids birthdate salary
-        -- ---- --- ---- --------- ------
-         1 Joe   32 None None      None
+    >>> print(db('select * from person'))
+    id name age kids birthdate salary
+    -- ---- --- ---- --------- ------
+     1 Joe   32 None None      None
+
+    >>> create_person_table = \"\"\"
+    ...     create table if not exists person (
+    ...     id integer primary key autoincrement,
+    ...     name      varchar(100),
+    ...     age       smallint,
+    ...     kids      smallint,
+    ...     birthdate date,
+    ...     salary    decimal(8,2)
+    ...     )
+    ... \"\"\"
+    >>> insert_person = "insert into person (name, age) values (%s, %s)"
+    >>> with database('sqlite3', database=':memory:') as db:
+    ...    db(create_person_table)
+    ...    db(insert_person, 'Joe', 32)
+    ...    db('select * from person')
+    1
+    [(1, 'Joe', 32, None, None, None)]
 
     """
 
@@ -274,6 +292,15 @@ class Database(object):
             port=self.__keywords.get('port'),
             user=self.__keywords.get('user'),
         )
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        logger = logging.getLogger(__name__)
+        logger.debug('closing %s connection',
+            self.__class__.__name__)
+        self.close()
 
 class Sqlite3Database(Database):
     """Sqlite3 Database"""
