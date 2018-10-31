@@ -459,10 +459,12 @@ def check_csrf(request, handler, *rest):
     zoom.render.add_helpers(dict(csrf_token=get_csrf_token(request.session)))
 
     if request.method == 'POST':
-        if request.site.csrf_validation:
-            logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__)
 
-            form_token = request.data.pop('csrf_token', None)
+        form_token = request.data.pop('csrf_token', None)
+
+        if request.site.csrf_validation:
+
             csrf_token = getattr(request.session, 'csrf_token', None)
 
             logger.debug('csrf session %s form %s', csrf_token, form_token)

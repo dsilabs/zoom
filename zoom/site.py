@@ -167,7 +167,7 @@ class Site(object):
             self.url = get('site', 'url', '')
             self.title = get('site', 'name', self.name)
             self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
-            self.csrf_validation = True
+            self.csrf_validation = get('site', 'csrf_validation', True) in zoom.utils.POSITIVE
             self.tracking_id = get('site', 'tracking_id', '')
 
             self.owner = get('site', 'owner', 'Company Name')
