@@ -215,3 +215,19 @@ def img(src, **kwargs):
     '<img src="/static/images/no_image.png" type="standard-image" />'
     """
     return tag('img', src=src, **kwargs)
+
+
+def table(rows):
+    """returns rows wrapped in an HTML table"""
+    content = []
+    content.append('<table><tbody>')
+    for row in rows:
+        content.append('<tr>')
+        for item in row:
+            content.append('<td>')
+            content.append(str(item))
+            content.append('</td>')
+        content.append('</tr>')
+    content.append('</tbody></table>')
+    return ''.join(content)
+

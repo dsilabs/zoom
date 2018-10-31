@@ -246,7 +246,9 @@ class MyView(View):
 
     def requests(self, show_all=False):
         def fmt(rec):
-            return rec[:4] + (zoom.helpers.who(rec[4]),) + rec[5:]
+            entry = (link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),)
+            user = (zoom.helpers.who(rec[4]),)
+            return entry + rec[1:4] + user + rec[5:]
         path_filter = '' if show_all else 'and path not like "%%\\/\\_%%"'
         db = self.model.site.db
         data = db("""
@@ -273,7 +275,7 @@ class MyView(View):
 
     def errors(self, n=0, limit=50, q=''):
         db = self.model.site.db
-        return page(log_data(db, ['E','W'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
+        return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
 
     def show_error(self, key):
         db = self.model.site.db
@@ -283,6 +285,25 @@ class MyView(View):
             '\n', '<br>'
         )
         return page(content, title='Log Entry')
+
+    def entry(self, key):
+        entries = zoom.table_of('log')
+        entry = list(entries.first(id=key).items())
+
+        visible = lambda a: not a[0].startswith('_')
+
+        content = zoom.html.table(
+            filter(visible, entry)
+        )
+        css = """
+        .content table {
+            width: 70%;
+        }
+        .content table tr:first-child {
+            padding-right: 70%;
+        }
+        """
+        return page(content, title='Log Entry', css=css)
 
     def configuration(self):
         def get_isolation_level():
