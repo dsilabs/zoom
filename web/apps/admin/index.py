@@ -52,7 +52,7 @@ def log_data(db, status, n, limit, q):
         [
             link_to(
                 str(item[0]),
-                '/admin/show_error/' + str(item[0])
+                '/admin/entry/' + str(item[0])
             ),
             item[1],
             zoom.helpers.who(item[2]),
@@ -89,7 +89,7 @@ def activity_panel(db):
     rows = []
     for rec in data:
         row = [
-            link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
+            link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
             rec[3],
@@ -123,7 +123,7 @@ def error_panel(db):
     rows = []
     for rec in data:
         row = [
-            link_to(str(rec[0]), '/admin/show_error/' + str(rec[0])),
+            link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
             how_long_ago(rec[3]),
@@ -277,30 +277,38 @@ class MyView(View):
         db = self.model.site.db
         return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
 
-    def show_error(self, key):
-        db = self.model.site.db
-        log_entry = db('select * from log where id=%s', key).first()
-
-        content = '<br><br>'.join(map(str, log_entry)).replace(
-            '\n', '<br>'
-        )
-        return page(content, title='Log Entry')
-
     def entry(self, key):
+
+        def fmt(item):
+            name, value = item
+            return name, zoom.html.pre(value)
+
         entries = zoom.table_of('log')
         entry = list(entries.first(id=key).items())
 
         visible = lambda a: not a[0].startswith('_')
 
         content = zoom.html.table(
-            filter(visible, entry)
+            map(fmt, filter(visible, entry))
         )
         css = """
         .content table {
-            width: 70%;
+            width: 80%;
+            vertical-align: top;
         }
-        .content table tr:first-child {
-            padding-right: 70%;
+        .content table td:nth-child(1) {
+            width: 30%;
+        }
+        .content table td {
+            padding: 5px;
+            line-height: 20px;
+        }
+        .content table pre {
+            padding: 0px;
+            background: 0;
+            border: none;
+            line-height: 20px;
+            margin: 0;
         }
         """
         return page(content, title='Log Entry', css=css)
