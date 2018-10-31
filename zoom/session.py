@@ -130,11 +130,12 @@ class Session(object):
 
         def load_existing(token):
             """load an existing session"""
+            now = time.time()
             cmd = (
                 'select value from sessions '
                 'where id=%s and expiry>%s and status="A"'
             )
-            result = db(cmd, token, time.time())
+            result = db(cmd, token, now)
             if len(result):
                 data = list(result)[0][0]
                 # print(data)
@@ -145,7 +146,21 @@ class Session(object):
                 )
                 return values
             else:
-                logger.warning('session missing or expired')
+                cmd = (
+                    'select expiry, status from sessions '
+                    'where id=%s'
+                )
+                result = db(cmd, token)
+                if len(result):
+                    status, expiry = list(result)[0]
+                    if expiry <= now:
+                        logger.warning('session expired')
+                    elif status != 'A':
+                        logger.warning('session not active')
+                    else:
+                        logger.warning('session invalid')
+                else:
+                    logger.warning('session record missing')
 
         logger = logging.getLogger(__name__)
         logger.debug('loading session: {}'.format(token))
