@@ -1,6 +1,12 @@
 Configuration
 ====
 
+Site
+----
+
+CSRF Validation
+: {{request.site.csrf_validation}}
+
 Paths
 ----
 

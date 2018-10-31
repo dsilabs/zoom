@@ -253,7 +253,7 @@ class MyView(View):
             select
                 id, app, path, status, user_id, address, login, timestamp, elapsed
             from log
-            where status in ('C', 'I')
+            where status in ('C', 'I', 'W')
             and server = %s
             {}
             order by id desc
@@ -273,7 +273,7 @@ class MyView(View):
 
     def errors(self, n=0, limit=50, q=''):
         db = self.model.site.db
-        return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
+        return page(log_data(db, ['E','W'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
 
     def show_error(self, key):
         db = self.model.site.db
