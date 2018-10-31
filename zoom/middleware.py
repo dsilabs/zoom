@@ -673,10 +673,10 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.logging.handler,
         zoom.session.handler,
         zoom.component.handler,
-        check_csrf,
         zoom.users.handler,
         zoom.render.handler,
         display_errors,
+        check_csrf,
         zoom.apps.handler,
         not_found,
     )
