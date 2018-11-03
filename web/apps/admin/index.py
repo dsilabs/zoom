@@ -236,13 +236,22 @@ class MyView(View):
 
     def audit(self):
         """view audit log"""
+        def fmt(rec):
+            user = (zoom.helpers.who(rec[2]),)
+            when = (zoom.helpers.when(rec[-1]),)
+            return rec[0:2] + user + rec[3:-1] + when
+
         db = self.model.site.db
-        data = db("""
-            select *
+        data = list(map(fmt, db("""
+            select
+                *
             from audit_log
             order by id desc
-            limit 100""")
-        return page(browse(data), title='Activity')
+            limit 100"""
+        )))
+
+        labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When'
+        return page(browse(data, labels=labels), title='Activity')
 
     def requests(self, show_all=False):
         def fmt(rec):
