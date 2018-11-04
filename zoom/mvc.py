@@ -203,6 +203,10 @@ class DynamicView(View):
         path, _ = split(abspath(getfile(self.__class__)))
         self._asset_path = path + '/views'
 
+    def index(self):
+        """return the default rendered view"""
+        return str(self)
+
     def get_assets(self, name=None):
         """Get view assets"""
         def load(pathname):
