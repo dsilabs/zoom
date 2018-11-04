@@ -92,3 +92,30 @@ class TestTools(unittest.TestCase):
             zoom.exceptions.ThemeTemplateMissingException,
             zoom.tools.get_template, 'default', 'notheme'
         )
+
+    def test_raw_helpers(self):
+        content = "this is a [[raw!site_name-raw]] helper"
+        self.assertEqual(
+            zoom.tools.restore_helpers(content),
+            'this is a {{site_name}} helper'
+        )
+
+    def test_websafe(self):
+        content = "send a message to <info@{{site_name}}> for assistance"
+        self.assertEqual(
+            zoom.tools.websafe(content),
+            'send a message to &lt;info@[[raw!site_name-raw]]&gt; for assistance'
+        )
+
+        content = "<script>alert('nasty code')</script>"
+        self.assertEqual(
+            zoom.tools.websafe(content),
+            '&lt;script&gt;alert(&#39;nasty code&#39;)&lt;/script&gt;'
+        )
+
+    def test_htmlquote_as_rendered(self):
+        content = "send a message to <info@{{site_name}}> for assistance"
+        self.assertEqual(
+            zoom.tools.restore_helpers(zoom.tools.htmlquote(content)),
+            'send a message to &lt;info@{{site_name}}&gt; for assistance'
+        )

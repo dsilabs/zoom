@@ -17,7 +17,6 @@ import zoom
 from zoom.component import component
 from zoom.utils import name_for
 from zoom.tools import (
-    htmlquote,
     websafe,
     markdown,
     is_listy,
@@ -149,6 +148,7 @@ class Field(object):
         self.label = label
         self.validators = list(validators) + self.validators
         self.id = self.name
+        self.safe = False
         self.__dict__.update(keywords)
         if 'value' in keywords:
             self.assign(keywords['value'])
@@ -278,7 +278,7 @@ class Field(object):
         >>> name_field.display_value()
         ''
         """
-        return self.visible and websafe(self.value) or self.default or ''
+        return self.visible and websafe(self.value or self.default) or ''
 
     def as_searchable(self):
         """Return searchable parts of field
@@ -485,7 +485,7 @@ class TextField(Field):
 
         value = self.value or self.default
         try:
-            value = htmlquote(value)
+            value = websafe(value)
         except AttributeError:
             value = value
 
@@ -564,7 +564,7 @@ class MemoField(Field):
     def widget(self):
         return html.tag(
             'textarea',
-            content=htmlquote(self.value),
+            content=websafe(self.value),
             name=self.name,
             id=self.id,
             size=self.size,
@@ -643,7 +643,7 @@ class EditField(MemoField):
     def widget(self):
         return html.tag(
             'textarea',
-            content=htmlquote(self.value),
+            content=websafe(self.value),
             name=self.name,
             id=self.id,
             size=self.size,
@@ -662,7 +662,7 @@ class MarkdownEditField(EditField):
     '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
     """
     def display_value(self):
-        return markdown(self.value)
+        return markdown(websafe(self.value))
 
 
 class PhoneField(TextField):
@@ -1202,7 +1202,7 @@ class EmailField(TextField):
             if t.startswith('<p>') and t.endswith('</p>'):
                 return t[3:-4]
             return t
-        address = htmlquote(self.value or self.default)
+        address = websafe(self.value or self.default)
         return self.visible and address and antispam_format(address) or ''
 
 
@@ -2607,7 +2607,7 @@ class FileField(TextField):
     >>> FileField('Document').widget()
     '<input class="file_field" id="document" name="document" type="file" value="None" />'
     """
-    value = default = None
+    value = default = 'None'
     _type = 'file'
     css_class = 'file_field'
 

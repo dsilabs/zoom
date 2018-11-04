@@ -43,7 +43,7 @@ class TextTests(object):
     def test_widget_with_unicode(self):
         f = self.field_type('Field1')
         f.initialize({'field1': self.encoded_text})
-        t = self.widget_template.format(self=self, text=htmlquote(self.encoded_text))
+        t = self.widget_template.format(self=self, text=websafe(self.encoded_text))
         self.compare(t, f.widget())
 
     def test_display_value(self):
@@ -55,7 +55,7 @@ class TextTests(object):
     def test_display_value_with_unicode(self):
         f = self.field_type('Field1')
         f.initialize({'field1': self.encoded_text})
-        t = self.display_template.format(self=self, text=htmlquote(self.encoded_text))
+        t = self.display_template.format(self=self, text=websafe(self.encoded_text))
         self.compare(t, f.display_value())
 
 

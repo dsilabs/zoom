@@ -383,7 +383,7 @@ def websafe(content):
     >>> websafe(b'This could be <problematic>')
     'This could be &lt;problematic&gt;'
     """
-    return htmlquote(unisafe(content))
+    return hide_helpers(htmlquote(unisafe(content)))
 
 
 def htmlquote(text):
@@ -592,3 +592,14 @@ def zoompath(*args):
     dirname = os.path.dirname
     join = os.path.join
     return realpath(join(realpath(dirname(zoom.__file__)), '..', *args))
+
+
+def hide_helpers(content):
+    """prevent helper requests from being filled"""
+    return content.replace('{{', '[[raw!').replace('}}', '-raw]]')
+
+
+def restore_helpers(content):
+    """Restores content helpers to their usual form"""
+    return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
+

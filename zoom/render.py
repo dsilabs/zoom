@@ -38,29 +38,35 @@ def apply_helpers(template, obj, providers):
         def _filler(name, *args, **kwargs):
             """handle the details of filling in templates"""
 
-            # TODO: phase this block out and get caller to provide
-            #       helpers instead
-            if hasattr(obj, name):
-                attr = getattr(obj, name)
-                if callable(attr):
-                    repl = attr(obj, *args, **kwargs)
-                else:
-                    repl = attr
-                return fill(repl, _filler)
+            try:
+                # TODO: phase this block out and get caller to provide
+                #       helpers instead
+                if hasattr(obj, name):
+                    attr = getattr(obj, name)
+                    if callable(attr):
+                        repl = attr(obj, *args, **kwargs)
+                    else:
+                        repl = attr
+                    return fill(repl, _filler)
 
-            helper = helpers.get(name)
-            if helper is not None:
-                if callable(helper):
-                    repl = helper(*args, **kwargs)
-                else:
-                    repl = helper
-                return fill(repl, _filler)
+                helper = helpers.get(name)
+                if helper is not None:
+                    if callable(helper):
+                        repl = helper(*args, **kwargs)
+                    else:
+                        repl = helper
+                    return fill(repl, _filler)
 
-            elif len(args) == 1:
-                repl = str(args[0])
-                return fill(repl, _filler)
+                elif len(args) == 1:
+                    repl = str(args[0])
+                    return fill(repl, _filler)
 
-            logger.debug('no help for %r', (name, args, kwargs))
+                logger.debug('no help for %r', (name, args, kwargs))
+
+            except TypeError:
+                a1 = ' '.join(str(a) for a in args)
+                k1 = ' '.join('{}={!r}'.format(k, v) for k, v in kwargs.items())
+                return 'error filling {}{} {}{}{}'.format('{{', name, a1, k1, '}}')
 
         return _filler
 
@@ -123,7 +129,7 @@ def handler(request, handle, *rest):
 
     providers = zoom.system.providers
     if response.content and isinstance(response.content, str):
-        response.content = apply_helpers(response.content, None, providers)
+        response.content = zoom.tools.restore_helpers(apply_helpers(response.content, None, providers))
 
     logger.debug('render handler called')
     request.profiler.add('response rendered')
