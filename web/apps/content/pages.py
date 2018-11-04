@@ -15,7 +15,7 @@ from zoom.utils import id_for
 from zoom.tools import load_content
 from zoom.store import EntityStore
 from zoom.render import render
-from zoom.tools import markdown
+from zoom.tools import markdown, websafe
 
 class PageCollection(zoom.collect.CollectionModel):
     """CollectionModel"""
@@ -34,7 +34,7 @@ class PageCollection(zoom.collect.CollectionModel):
     @property
     def name(self):
         """Return a name"""
-        return self.title
+        return websafe(self.title)
 
     @property
     def link(self):
