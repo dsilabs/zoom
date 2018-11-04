@@ -107,6 +107,10 @@ default_packages = {
             '//cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js',
             '/static/zoom/spin.js',
         ]
+    },
+    "vue": {
+        "libs":
+            ["//cdn.jsdelivr.net/npm/vue/dist/vue.js"]
     }
 }
 
