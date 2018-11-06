@@ -374,6 +374,21 @@ class Sqlite3Database(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+    def __enter__(self):
+        self.save_isolation_level = self.isolation_level
+        self.isolation_level = 'DEFERRED'
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if exc_type is not None:
+            self.rollback()
+            result = False
+        else:
+            self.commit()
+            result = True
+        self.isolation_level = self.save_isolation_level
+        return result
+
 
 class MySQLDatabase(Database):
     """MySQL Database"""
@@ -468,6 +483,22 @@ class MySQLDatabase(Database):
             self.__class__.__name__,
             self.connect_string,
         )
+
+    def __enter__(self):
+        self.save_autocommit = self.autocommit_mode
+        self.autocommit(0)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if exc_type is not None:
+            self.rollback()
+            result = False
+        else:
+            self.commit()
+            result = True
+        self.autocommit(self.save_autocommit)
+        return result
+
 
 
 class MySQLdbDatabase(Database):   # pragma: no cover
