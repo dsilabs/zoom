@@ -302,6 +302,28 @@ class Database(object):
             self.__class__.__name__)
         self.close()
 
+
+class Sqlite3DatabaseTransaction(Database):
+
+    def __init__(self, db):
+        self.db = db
+
+    def __enter__(self):
+        self.save_isolation_level = self.db.isolation_level
+        self.db.isolation_level = 'DEFERRED'
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if exc_type is not None:
+            self.db.rollback()
+            result = False
+        else:
+            self.db.commit()
+            result = True
+        self.db.isolation_level = self.save_isolation_level
+        return result
+
+
 class Sqlite3Database(Database):
     """Sqlite3 Database"""
 
@@ -374,19 +396,28 @@ class Sqlite3Database(Database):
         self('drop table if exists person')
         self('drop table if exists account')
 
+    def transaction(self):
+        return Sqlite3DatabaseTransaction(self)
+
+
+class MySQLDatabaseTransaction(Database):
+
+    def __init__(self, db):
+        self.db = db
+
     def __enter__(self):
-        self.save_isolation_level = self.isolation_level
-        self.isolation_level = 'DEFERRED'
+        self.save_autocommit = self.db.autocommit_mode
+        self.db.autocommit(0)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         if exc_type is not None:
-            self.rollback()
+            self.db.rollback()
             result = False
         else:
-            self.commit()
+            self.db.commit()
             result = True
-        self.isolation_level = self.save_isolation_level
+        self.db.autocommit(self.save_autocommit)
         return result
 
 
@@ -484,21 +515,8 @@ class MySQLDatabase(Database):
             self.connect_string,
         )
 
-    def __enter__(self):
-        self.save_autocommit = self.autocommit_mode
-        self.autocommit(0)
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        if exc_type is not None:
-            self.rollback()
-            result = False
-        else:
-            self.commit()
-            result = True
-        self.autocommit(self.save_autocommit)
-        return result
-
+    def transaction(self):
+        return MySQLDatabaseTransaction(self)
 
 
 class MySQLdbDatabase(Database):   # pragma: no cover
