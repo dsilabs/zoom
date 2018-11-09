@@ -323,13 +323,6 @@ class MyView(View):
         return page(content, title='Log Entry', css=css)
 
     def configuration(self):
-        def get_isolation_level():
-            db = zoom.system.site.db
-            if db.connect_string.startswith('mysql'):
-                return '<br>Isolation Level: {}'.format(list(db('select @@TX_ISOLATION'))[0][0])
-            else:
-                return ''
-
         items = zoom.packages.get_registered_packages()
         packages = '<dt>combined</dt><dd>{}</dd>'.format(
             zoom.html.pre(json.dumps(items, indent=4, sort_keys=True))
@@ -337,7 +330,6 @@ class MyView(View):
         return page(load_content('configuration.md').format(
             request=self.model,
             packages=packages,
-            isolation=get_isolation_level()
         ))
 
     def about(self, *a):
