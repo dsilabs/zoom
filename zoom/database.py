@@ -518,6 +518,13 @@ class MySQLDatabase(Database):
     def transaction(self):
         return MySQLDatabaseTransaction(self)
 
+    def __del__(self):
+        if self.open:
+            logger = logging.getLogger(__name__)
+            logger.debug('closing %s connection with del',
+                self.__class__.__name__)
+            self.close()
+
 
 class MySQLdbDatabase(Database):   # pragma: no cover
     """MySQLdb Database
