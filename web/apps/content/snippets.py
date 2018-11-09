@@ -17,4 +17,5 @@ def snippet_fields():
 main = zoom.collect.Collection(
     snippet_fields,
     model=zoom.snippets.SystemSnippet,
+    columns=('link', 'body', 'impressions')
 )
