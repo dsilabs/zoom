@@ -299,12 +299,13 @@ def get_index_metrics(db):
         return '{:,.1f}'.format((list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]))
 
     the_day = today()
+    host = zoom.system.request.host
 
     num_users = count('users where status="A"')
     num_groups = count('groups where type="U"')
-    num_requests = count('log where status="C" and timestamp>=%s', the_day)
-    num_errors = count('log where status="E" and timestamp>=%s', the_day)
-    avg_speed = avg('elapsed', 'log where status="C" and timestamp>=%s and path<>"/login"', the_day)
+    num_requests = count('log where status="C" and server=%s and timestamp>=%s', host, the_day)
+    num_errors = count('log where status="E" and server=%s and timestamp>=%s', host, the_day)
+    avg_speed = avg('elapsed', 'log where status="C" and server=%s and timestamp>=%s and path<>"/login"', host, the_day)
     num_authorizations = count('audit_log where timestamp>=%s', the_day)
 
     metrics = [
