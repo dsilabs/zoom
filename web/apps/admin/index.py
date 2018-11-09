@@ -4,8 +4,12 @@
 
 import datetime
 import json
+import os
+import sys
+import platform
 
 import zoom
+import zoom.html as h
 # from zoom.audit import audit
 from zoom.component import component
 from zoom.context import context
@@ -331,6 +335,40 @@ class MyView(View):
             request=self.model,
             packages=packages,
         ))
+
+    def environment(self):
+        return page(
+            zoom.Component(
+                h.h2('Python'),
+                zoom.html.table([
+                    ('Version', sys.version),
+                    ('PYTHONPATH', '<br>'.join(sys.path)),
+                    ('PATH', '<br>'.join(os.environ.get('PATH').split(':')))
+                ]),
+                h.h2('Operating System'),
+                zoom.html.table([
+                    ('Name', os.name),
+                    ('PYTHONPATH', '<br>'.join(sys.path)),
+                    ('PATH', '<br>'.join(os.environ.get('PATH').split(':')))
+                ]),
+                h.h2('Platform'),
+                zoom.html.table([
+                    ('Node', platform.node()),
+                    ('System', platform.system()),
+                    ('Machine', platform.machine()),
+                    ('Archtitecture', ' '.join(platform.architecture()))
+                ]),
+                h.h2('Variables'),
+                zoom.html.table(
+                    list(os.environ.items())
+                ),
+                css = """
+                    .content table { width: 100%; }
+                    .content table td { vertical-align: top; }
+                """
+            ),
+            title='Environment'
+        )
 
     def about(self, *a):
         return page(load_content('about.md'))
