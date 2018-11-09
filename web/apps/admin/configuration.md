@@ -25,12 +25,6 @@ App
 Apps
 : {{request.site.apps_paths}}
 
-Database
-----
-
-connect
-: {{request.site.db.connect_string}}{{isolation}}
-
 
 Packages
 ----

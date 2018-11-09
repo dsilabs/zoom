@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add database information page to admin app
 - Add confirmation emails to register app
 - Add snippets
 - Add support for including templates from app specific themes.
