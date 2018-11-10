@@ -478,7 +478,7 @@ class Config(object):
             self.config and self.config.has_option(section, option)
         )
 
-    def has_section(self, section, option):
+    def has_section(self, section):
         """Return True if config file section exists."""
         return (
             self.config and self.config.has_section(section)
