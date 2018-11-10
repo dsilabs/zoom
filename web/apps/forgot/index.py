@@ -74,7 +74,6 @@ class MyController(Controller):
         error('please enter a valid email address')
 
     def reset_password_button(self, view, token, new_password="", confirm=""):
-        print((view, token, new_password, confirm))
         if reset_form.validate(dict(new_password=new_password, confirm=confirm)):
             return model.reset_password(token, new_password, confirm)
 
