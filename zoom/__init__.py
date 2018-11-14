@@ -24,6 +24,7 @@ import zoom.store
 import zoom.users
 
 from .apps import App
+from .auditing import audit
 from .browse import browse
 from .component import Component
 from .context import context as system
