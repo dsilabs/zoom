@@ -116,21 +116,15 @@ class UserCollectionController(CollectionController):
                 return home('users/' + key)
 
     def activate(self, key):
-        user = context.site.users.first(username=key)
+        user = zoom.system.site.users.first(username=key)
         if user:
-            audit('activate', user.username, '')
             user.activate()
-            user.updated_by = zoom.system.user._id
-            user.updated = now()
-            user.save()
         return home('users/' + key)
 
     def deactivate(self, key):
-        user = context.site.users.first(username=key)
+        user = zoom.system.site.users.first(username=key)
         if user:
             user.deactivate()
-            user.save()
-            audit('deactivate', user.username, '')
         return home('users/' + key)
 
 
