@@ -560,7 +560,7 @@ def display_errors(request, handler, *rest):
     """Display errors for developers
 
     >>> request = zoom.request.build('http://localhost')
-    >>> request.app = zoom.utils.Bunch(theme='default')
+    >>> request.app = zoom.utils.Bunch(theme='default', templates_paths=[])
     >>> request.host = 'localhost'
     >>> request.site = zoom.sites.Site()
     >>> request.site.theme = 'default'
@@ -582,11 +582,14 @@ def display_errors(request, handler, *rest):
     try:
         return handler(request, *rest)
     except Exception:
-        if False and not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
-            return page(zoom.templates.friendly_error).render(request)
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
         logger.error(msg)
+
+        if not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
+            content = zoom.tools.load_template('friendly_error', zoom.templates.friendly_error)
+            return page(content).render(request)
+
         content = """
         <h2>Exception</h2>
         {}
@@ -597,10 +600,11 @@ def display_errors(request, handler, *rest):
             html.pre(msg),
             str(request),
         )
+
         return page(
-                content,
-                title='Application Error'
-            ).render(request)
+            content,
+            title='Application Error'
+        ).render(request)
 
 
 def reset_modules(request, handler, *rest):
