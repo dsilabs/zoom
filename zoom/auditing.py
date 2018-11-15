@@ -4,7 +4,7 @@
 
 import zoom
 
-def audit(action, subject1, subject2, user=None):
+def audit(action, subject1, subject2='', user=None):
     """audit an action"""
     db = zoom.system.site.db
     user_id = user.user_id if user else zoom.system.user.user_id
