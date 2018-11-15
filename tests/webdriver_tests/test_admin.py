@@ -8,10 +8,10 @@
 """
 
 
-from zoom.testing.webtest import WebdriverTestCase
+from zoom.testing.webtest import AdminTestCase
 
 
-class SystemTests(WebdriverTestCase):
+class SystemTests(AdminTestCase):
     """MyApp system tests"""
 
     def add_user(self, first_name, last_name, email, username):
@@ -36,12 +36,41 @@ class SystemTests(WebdriverTestCase):
         self.click('id=delete-action')
         self.click('name=delete_button')
 
-    def test_admin_login_logout(self):
-        self.login('admin', 'admin')
-        self.logout()
-
     def test_admin_add_remove_user(self):
-        self.login('admin', 'admin')
+        self.get('/admin/users')
+        self.assertDoesNotContain('sally')
+
         self.add_user('Sally', 'Jones', 'sally@testco.com', 'sally')
+
+        self.get('/admin/users')
+        self.assertContains('sally')
+
         self.delete_user('sally')
-        self.logout()
+        self.get('/admin/users')
+        self.assertDoesNotContain('sally')
+
+    def test_deactivate_activate_user(self):
+        self.get('/admin/users')
+        self.assertDoesNotContain('sally')
+
+        try:
+            self.add_user('Sally', 'Jones', 'sally@testco.com', 'sally')
+            self.assertContains('sally')
+            self.get('/admin/users/sally')
+            self.assertContains('sally@testco.com')
+            self.assertContains('Deactivate')
+
+            self.click('Deactivate')
+            self.assertNotContains('Deactivate')
+
+            self.assertContains('sally@testco.com')
+            self.assertContains('Activate')
+            self.click('Activate')
+            self.assertNotContains('Activate')
+            self.assertContains('Deactivate')
+
+        finally:
+            self.delete_user('sally')
+            self.get('/admin/users')
+            self.assertDoesNotContain('sally')
+

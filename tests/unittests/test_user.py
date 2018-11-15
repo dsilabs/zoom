@@ -18,6 +18,11 @@ class TestUser(unittest.TestCase):
     def setUp(self):
         self.db = setup_test()
         self.users = Users(self.db)
+        zoom.system.request = zoom.utils.Bunch(
+            app=zoom.utils.Bunch(
+                name=__name__,
+            )
+        )
 
     def tearDown(self):
         self.db.close()
@@ -165,14 +170,12 @@ class TestUser(unittest.TestCase):
         user.deactivate()
         self.assertFalse(user.is_active)
         self.assertNotEqual(user.status, 'A')
-        user.save()
 
         user = self.users.first(username='user')
         self.assertFalse(user.is_active)
         self.assertEqual(user.status, 'I')
         user.activate()
         self.assertTrue(user.is_active)
-        user.save()
 
         user = self.users.first(username='user')
         self.assertTrue(user.is_active)

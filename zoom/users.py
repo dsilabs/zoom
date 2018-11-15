@@ -6,6 +6,7 @@ import logging
 import string
 
 import zoom
+from zoom.auditing import audit
 from zoom.context import context
 from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
@@ -290,18 +291,20 @@ class User(Record):
         return '/home'
 
     def deactivate(self):
-        """Deactivate the user
-
-        Note: does not save.
-        """
+        """Deactivate the user"""
+        audit('deactivate user', self.username)
         self.status = 'I'
+        self.updated_by = zoom.system.user.user_id
+        self.updated = zoom.tools.now()
+        self.save()
 
     def activate(self):
-        """Activate the user
-
-        Note: does not save.
-        """
+        """Activate the user"""
+        audit('activate user', self.username)
         self.status = 'A'
+        self.updated_by = zoom.system.user.user_id
+        self.updated = zoom.tools.now()
+        self.save()
 
     def get_groups(self):
         """get groups this user belongs to
