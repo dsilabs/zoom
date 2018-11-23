@@ -68,7 +68,6 @@ def user_activity_logs(user, weeks=12):
     thus changes in authorizations affect all hosts
     using that database.
     """
-
     recent_weeks = weeks
     max_len = 50
     websafe = zoom.tools.websafe

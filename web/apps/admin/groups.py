@@ -76,6 +76,84 @@ def group_fields(request):
 
     return f.Fields(fields, include_fields, access_fields)
 
+def group_activity_log(group):
+    """gathers log information for the group
+
+    Authorization activity related to groups is captured
+    by zoom and retreived from the audit_log table.
+
+    Note that system log entries are host specific,
+    however, audit logs are not host specific
+    as hosts sometimes share authozation databases and
+    thus changes in authorizations affect all hosts
+    using that database.
+    """
+    query = """
+        select
+            app,
+            user_id,
+            activity,
+            subject1,
+            subject2,
+            timestamp
+        from audit_log
+        where subject2=%s
+        union select
+            app,
+            user_id,
+            activity,
+            subject1,
+            subject2,
+            timestamp
+        from audit_log
+        where
+            activity in (
+                "add group",
+                "remove group",
+                "create group",
+                "delete group",
+                "add member",
+                "remove member"
+            )
+            and subject1=%s
+        order by timestamp desc
+        limit 20
+    """
+    db = zoom.system.site.db
+    items = [
+        (
+            app,
+            zoom.helpers.who(user_id),
+            activity,
+            subject1,
+            subject2,
+            timestamp,
+            zoom.helpers.when(timestamp)
+        ) for app, user_id, activity, subject1, subject2, timestamp in db(query, group.name, group.name)
+    ]
+    labels = [
+        'App',
+        'User',
+        'Activity',
+        'Subject1',
+        'Subject2',
+        'Timestamp',
+        'When'
+    ]
+    auth_activity = zoom.browse(items, labels=labels)
+    return """
+    <h2>Recent Authorizations Activity<h2>
+    {}
+    """.format(auth_activity)
+
+class GroupCollectionView(zoom.collect.CollectionView):
+
+    def show(self, key):
+        page = super().show(key)
+        group = zoom.system.site.groups.get(key)
+        if group:
+            page.content += group_activity_log(group)
+        return page
 
 class GroupCollectionController(CollectionController):
 
@@ -103,6 +181,7 @@ def main(route, request):
         fields,
         model=Group,
         controller=GroupCollectionController,
+        view=GroupCollectionView,
         store=users,
         item_name='group',
         url='/admin/groups',
