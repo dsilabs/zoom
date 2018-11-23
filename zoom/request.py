@@ -35,6 +35,11 @@ def get_web_vars(env):
     module = get('wsgi.version', None) and 'wsgi' or 'cgi'
     method = get('REQUEST_METHOD')
 
+    if method not in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']:
+        logger = logging.getLogger(__name__)
+        logger.warn('ignoring unsupported HTTP method %r', method)
+        return {}
+
     if method == 'GET':
         cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
 
