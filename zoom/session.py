@@ -147,7 +147,7 @@ class Session(object):
                 return values
             else:
                 cmd = (
-                    'select expiry, status from sessions '
+                    'select status, expiry from sessions '
                     'where id=%s'
                 )
                 result = db(cmd, token)
