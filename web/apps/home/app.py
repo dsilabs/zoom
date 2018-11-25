@@ -16,6 +16,7 @@ def app(request):
     css = """
         .app-icons ul {
             list-style-type: none;
+            margin-top: 50px;
         }
         .app-icons li {
             display: inline;
@@ -57,4 +58,4 @@ def app(request):
             if a.name not in skip and request.user.can_run(a)
         ), classed='app-icons'
     )
-    return zoom.page(content, title="Apps", css=css)
+    return zoom.page(content, css=css)
