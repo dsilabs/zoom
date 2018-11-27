@@ -235,6 +235,14 @@ def trim(text):
     '    from block'
     'of text'
 
+    >>> text = (
+    ...     '\\nremove spaces'
+    ...     '\\n    from block'
+    ... )
+    >>> print(trim(text))
+    remove spaces
+        from block
+
     """
     trim_size = None
     lines = text.splitlines()
@@ -242,7 +250,7 @@ def trim(text):
         if not line or line.isspace():
             continue
         n = len(line) - len(line.lstrip())
-        trim_size = trim_size is not None and min([trim_size, n]) or n
+        trim_size = min([trim_size, n]) if trim_size is not None else n
     if trim_size:
         result = []
         for line in lines:
