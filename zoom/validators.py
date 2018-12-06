@@ -224,6 +224,10 @@ class TimeValidator(Validator):
     Validates a time in a variety of formats with time_format
     being the preferred format.
 
+    >>> import locale
+    >>> locale.setlocale(locale.LC_ALL, 'C')
+    'C'
+
     >>> v = TimeValidator()
     >>> v.valid('asdf')
     False
