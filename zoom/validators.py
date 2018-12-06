@@ -228,7 +228,7 @@ class TimeValidator(Validator):
     >>> v.valid('asdf')
     False
     >>> v.msg
-    'enter valid time in 12 hour "02:20 pm" format'
+    'enter valid time in 12 hour "02:20 PM" format'
 
     >>> v.valid('10:20')
     True
