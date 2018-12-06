@@ -218,6 +218,89 @@ class DateValidator(Validator):
         Validator.__init__(self, msg, test)
 
 
+class TimeValidator(Validator):
+    """Time validator
+
+    Validates a time in a variety of formats with time_format
+    being the preferred format.
+
+    >>> v = TimeValidator()
+    >>> v.valid('asdf')
+    False
+    >>> v.msg
+    'enter valid time in 12 hour "02:20 pm" format'
+
+    >>> v.valid('10:20')
+    True
+
+    >>> v.valid('07:20')
+    True
+
+    >>> v.valid('7:20')
+    True
+
+    >>> v.valid('10:70')
+    False
+
+    >>> v.valid('14:20')
+    True
+
+    >>> v.valid('10:20 PM')
+    True
+
+    >>> v.valid('14:70')
+    False
+
+    >>> v.valid('10:20:10')
+    True
+
+    >>> v.valid('10:20:70')
+    False
+
+    >>> v.valid('10:70:20')
+    False
+
+    >>> v.valid(datetime.time(10, 20))
+    True
+
+    >>> v.valid(datetime.time(10, 20, 30))
+    True
+    """
+
+    valid_formats = ["%I:%M %p", "%I:%M:%S %p", '%H:%M', '%H:%M:%S']
+    def __init__(self, time_format='%I:%M %p'):
+        strftime = datetime.time.strftime
+        strptime = datetime.datetime.strptime
+
+        def test(time):
+            """test for valid time value"""
+            if not time or isinstance(time, datetime.time):
+                return True
+
+            try:
+                strptime(time, '%H:%M')
+            except ValueError:
+                for valid_format in [time_format] + self.valid_formats:
+                    try:
+                        strptime(time, valid_format)
+                    except ValueError:
+                        pass
+                    else:
+                        return True
+                return False
+            else:
+                return True
+
+        msg = 'enter valid time in {} hour "{}" format'.format(
+            24 if '%H' in time_format else 12,
+            strftime(
+                datetime.time(14, 20, 30),
+                time_format,
+            )
+        )
+        Validator.__init__(self, msg, test)
+
+
 class MinimumLength(Validator):
     """A minimum length validator
 
@@ -483,6 +566,7 @@ valid_new_password = MinimumLength(8)
 valid_url = URLValidator()
 valid_postal_code = PostalCodeValidator()
 valid_date = DateValidator()
+valid_time = TimeValidator()
 image_mime_type = Validator(
     "provide image in a supported format (gif, jpeg, png)",
     image_mime_type_valid
