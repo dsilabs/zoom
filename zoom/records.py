@@ -253,8 +253,8 @@ class RecordStore(Store):
 
         if updating:
             _id = record[self.id_name]
-            set_clause = ', '.join('%s=%s' % (i, '%s') for i in keys)
-            cmd = 'update %s set %s where %s=%d' % (
+            set_clause = ', '.join('`%s`=%s' % (i, '%s') for i in keys)
+            cmd = 'update %s set %s where `%s`=%d' % (
                 self.kind,
                 set_clause,
                 self.key,
