@@ -130,7 +130,7 @@ class CollectionView(View):
         logger = logging.getLogger(__name__)
         if q:
             title = 'Selected ' + c.title
-            records = c.search_engine(c).search(q)
+            records = c.search(q)
         else:
             has_many_records = c.has_many_records
             logger.debug('has many records: %r', has_many_records)
@@ -841,6 +841,10 @@ class Collection(object):
 
         if 'policy' in kwargs:
             self.allows = get('policy')
+
+    def search(self, text):
+        """Seach the collection for records matching text"""
+        return self.search_engine(self).search(text)
 
     @property
     def has_many_records(self):
