@@ -466,6 +466,7 @@ class Config(object):
     """
 
     def __init__(self, filename):
+        self.filename = filename
         self.config = configparser.ConfigParser(strict=False)
         if not filename or not os.path.exists(filename):
             raise Exception('%s file missing' % filename)
