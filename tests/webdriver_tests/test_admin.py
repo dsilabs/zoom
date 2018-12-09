@@ -74,3 +74,24 @@ class SystemTests(AdminTestCase):
             self.get('/admin/users')
             self.assertDoesNotContain('sally')
 
+    def test_index_search(self):
+        self.get('/admin')
+        self.fill(dict(q='sally'))
+        self.click('search-button')
+        self.assertContains('no records found')
+
+        self.add_user('Sally', 'Jones', 'sally@testco.com', 'sally')
+
+        self.get('/admin')
+        self.fill(dict(q='sally'))
+        self.click('search-button')
+        self.assertNotContains('no records found')
+        self.assertContains('sally@testco.com')
+
+        self.delete_user('sally')
+
+        self.get('/admin')
+        self.fill(dict(q='sally'))
+        self.click('search-button')
+        self.assertContains('no records found')
+

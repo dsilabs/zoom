@@ -205,8 +205,7 @@ class UserCollectionController(CollectionController):
             user.deactivate()
         return home('users/' + key)
 
-
-def main(route, request):
+def get_users_collection(request):
     db = request.site.db
     users = Users(db)
     fields = user_fields(request)
@@ -224,4 +223,7 @@ def main(route, request):
         url='/admin/users',
         key_name='id',
         search_engine=RawSearch
-    )(route, request)
+    )
+
+def main(route, request):
+    return get_users_collection(request)(route, request)

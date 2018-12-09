@@ -23,6 +23,8 @@ from zoom.users import link_to_user
 
 from views import index_metrics_view, IndexPageLayoutView
 
+import users
+import groups
 
 def log_data(db, status, n, limit, q):
     """retreive log data"""
@@ -198,8 +200,46 @@ def callback(method, url=None, timeout=5000):
 class MyView(View):
 
     def index(self, q=''):
-        # return page(self._index(), title='Overview')
-        return page(callback(self._index), title='Overview')
+
+        content = callback(self._index)
+
+        if q:
+            request = zoom.system.request
+            users_collection = users.get_users_collection(request)
+            user_records = users_collection.search(q)
+
+            groups_collection = groups.get_groups_collection(request)
+            group_records = groups_collection.search(q)
+
+            if user_records or group_records:
+                content = zoom.Component()
+                if group_records:
+                    footer = '%d groups found' % len(group_records)
+                    content += zoom.browse(
+                        group_records,
+                        columns=groups_collection.columns,
+                        labels=groups_collection.labels,
+                        title='Groups',
+                        footer=footer,
+                    )
+
+                if user_records:
+                    footer = '%d users found' % len(user_records)
+                    content += zoom.browse(
+                        user_records,
+                        columns=users_collection.columns,
+                        labels=users_collection.labels,
+                        title='Users',
+                        footer=footer,
+                    )
+            else:
+                zoom.alerts.warning('no records found')
+
+        return page(
+            content,
+            title='Overview',
+            search=q
+        )
 
     def _index(self):
         # return None
@@ -215,6 +255,10 @@ class MyView(View):
             ),
         )
         return content
+
+    def clear(self):
+        """Clear the search"""
+        return zoom.home()
 
     def log(self):
         """view system log"""

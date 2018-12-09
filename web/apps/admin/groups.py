@@ -168,8 +168,7 @@ class GroupCollectionController(CollectionController):
         model.update_group_relationships(record)
 
 
-def main(route, request):
-
+def get_groups_collection(request):
     def user_group(group):
         return group.type == 'U' and not group.name.startswith('a_')
 
@@ -189,4 +188,8 @@ def main(route, request):
         columns=columns,
         key_name='id',
         search_engine=RawSearch
-    )(route, request)
+    )
+
+
+def main(route, request):
+    return get_groups_collection(request)(route, request)

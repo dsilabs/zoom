@@ -6,7 +6,7 @@ from zoom.apps import App
 
 app = App()
 app.menu = (
-    'Overview', 'Apps', 'Users', 'Groups',
+    'Overview', 'Users', 'Groups', 'Apps',
     'Database', 'Mail',
     'Requests', 'Activity', 'Errors', 'Audit',
     'Configuration', 'Environment', 'About'
