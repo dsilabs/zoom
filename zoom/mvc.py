@@ -223,6 +223,22 @@ class DynamicView(View):
                 result[asset_type] = load(pathname)
         return result
 
+    def fill_js(self, script, obj):
+        """Fill js tags
+
+        DynamicView object attributes and properties can
+        be accessed from their accompanying .js content
+        via a {self.<name>} reference.
+
+        This method is responsible for filling in these
+        tags and can be overridden by subclasses of
+        DynamicView if a different behaviour is desired.
+        """
+        def _js_filler(name, *_, **__):
+            return getattr(obj, name)
+        fill = zoom.fill._fill
+        return fill('{self.', '}', script, _js_filler)
+
     def render(self, view=None):
         """Render the view"""
 
@@ -246,7 +262,7 @@ class DynamicView(View):
                 if k in ['html']:
                     result[k] = fmt(v, self)
                 elif k in ['js']:
-                    result[k] = v
+                    result[k] = self.fill_js(v, self)
                 else:
                     result[k] = v
             return component(**result)
