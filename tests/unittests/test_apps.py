@@ -141,7 +141,7 @@ class TestApps(unittest.TestCase):
         self.assertFalse(self.request.user.is_authenticated)
         self.assertEqual(menu, (
             '<div class="system-menu">'
-            '<ul><li><a href="/logout">Logout</a></li></ul>'
+            '<ul><li><a href="/logout" name="link-to-logout">Logout</a></li></ul>'
             '</div>'
             )
         )
@@ -193,7 +193,7 @@ class TestApps(unittest.TestCase):
         pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
-        self.assertEquals(str(app), '<a href="/Hello">Hello</a>')
+        self.assertEquals(str(app), '<a href="/Hello" name="link-to-hello">Hello</a>')
 
     def test_respond_response(self):
         content = zoom.response.JSONResponse('true')

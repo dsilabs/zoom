@@ -161,7 +161,10 @@ class TestUser(unittest.TestCase):
         zoom.system.site = zoom.utils.Bunch(url='mysite.com/app')
         self.assertEqual(user.link, 'user')
         zoom.system.user = zoom.utils.Bunch(is_admin=True)
-        self.assertEqual(user.link, '<a href="mysite.com/app/admin/users/user">user</a>')
+        self.assertEqual(
+            user.link,
+            '<a href="mysite.com/app/admin/users/user" name="link-to-user">user</a>'
+        )
 
     def test_user_activate(self):
         user = self.users.first(username='user')

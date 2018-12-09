@@ -47,7 +47,7 @@ VIEW_SINGLE_RECORD_LIST = """<div class="baselist">
 </tr></thead>
 <tbody>
 <tr id="row-1">
-<td nowrap><a href="<dz:app_url>/people/joe">Joe</a></td>
+<td nowrap><a href="<dz:app_url>/people/joe" name="link-to-joe">Joe</a></td>
 <td nowrap>123 Somewhere St</td>
 <td nowrap>40,000</td>
 </tr>
@@ -66,12 +66,12 @@ VIEW_TWO_RECORD_LIST = """<div class="baselist">
 </tr></thead>
 <tbody>
 <tr id="row-1">
-<td nowrap><a href="<dz:app_url>/people/joe">Joe</a></td>
+<td nowrap><a href="<dz:app_url>/people/joe" name="link-to-joe">Joe</a></td>
 <td nowrap>123 Somewhere St</td>
 <td nowrap>40,000</td>
 </tr>
 <tr id="row-2">
-<td nowrap><a href="<dz:app_url>/people/sally">Sally</a></td>
+<td nowrap><a href="<dz:app_url>/people/sally" name="link-to-sally">Sally</a></td>
 <td nowrap>123 Special St</td>
 <td nowrap>45,000</td>
 </tr>
@@ -90,17 +90,17 @@ VIEW_ALL_RECORDS_LIST = """<div class="baselist">
 </tr></thead>
 <tbody>
 <tr id="row-1" class="light">
-<td nowrap><a href="/noapp//myapp/jim">Jim</a></td>
+<td nowrap><a href="<dz:app_url>/people/jim" name="link-to-jim">Jim</a></td>
 <td nowrap>123 Somewhere St</td>
 <td nowrap>40,000</td>
 </tr>
 <tr id="row-2" class="dark">
-<td nowrap><a href="/noapp//myapp/joe">Joe</a></td>
+<td nowrap><a href="<dz:app_url>/people/joe" name="link-to-joe">Joe</a></td>
 <td nowrap>123 Somewhere St</td>
 <td nowrap>40,000</td>
 </tr>
 <tr id="row-3" class="light">
-<td nowrap><a href="/noapp//myapp/sally">Sally</a></td>
+<td nowrap><a href="<dz:app_url>/people/sally" name="link-to-sally">Sally</a></td>
 <td nowrap>123 Special St</td>
 <td nowrap>45,000</td>
 </tr>
@@ -119,7 +119,7 @@ VIEW_NO_JOE_LIST = """<div class="baselist">
 </tr></thead>
 <tbody>
 <tr id="row-1">
-<td nowrap><a href="<dz:app_url>/people/sally">Sally</a></td>
+<td nowrap><a href="<dz:app_url>/people/sally" name="link-to-sally">Sally</a></td>
 <td nowrap>123 Special St</td>
 <td nowrap>45,000</td>
 </tr>

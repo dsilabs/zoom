@@ -49,7 +49,7 @@ class Model(DefaultRecord):
     '/pat-smith'
 
     >>> thing.link
-    '<a href="/pat-smith">Pat Smith</a>'
+    '<a href="/pat-smith" name="link-to-pat-smith">Pat Smith</a>'
 
     >>> thing.allows('user', 'edit')
     False
@@ -133,7 +133,7 @@ class Group(Record):
     '/admin/groups/2'
 
     >>> group.link
-    '<a href="/admin/groups/2">users</a>'
+    '<a href="/admin/groups/2" name="link-to-users">users</a>'
 
     >>> group.roles
     {4}

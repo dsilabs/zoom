@@ -236,16 +236,22 @@ def link_to(label, *args, **kwargs):
     >>> zoom.system.site.url = ''
 
     >>> link_to('Company', 'http://company.com')
-    '<a href="http://company.com">Company</a>'
+    '<a href="http://company.com" name="link-to-company">Company</a>'
 
     >>> link_to('http://company.com')
-    '<a href="http://company.com">http://company.com</a>'
+    '<a href="http://company.com" name="link-to-http-company-com">http://company.com</a>'
 
     >>> link_to('http://company.com', q='test')
-    '<a href="http://company.com?q=test">http://company.com</a>'
+    '<a href="http://company.com?q=test" name="link-to-http-company-com">http://company.com</a>'
     """
     nargs = args or [label]
-    return html.tag('a', label, href=url_for(*nargs, **kwargs))
+    return html.tag(
+        'a', label,
+        href=url_for(*nargs, **kwargs),
+        name='link-to-' + zoom.utils.id_for(
+            label.replace('.', '-').replace(':', '-')
+        ),
+    )
 
 
 def link_to_page(label, *args, **kwargs):
@@ -304,7 +310,7 @@ def who(user_id):
 
     >>> zoom.system.user.is_admin = True
     >>> who(user_id)
-    '<a href="/admin/users/guest">guest</a>'
+    '<a href="/admin/users/guest" name="link-to-guest">guest</a>'
     >>> who(100)
     'unknown (100)'
 
