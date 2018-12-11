@@ -249,7 +249,7 @@ def link_to(label, *args, **kwargs):
         'a', label,
         href=url_for(*nargs, **kwargs),
         name='link-to-' + zoom.utils.id_for(
-            label.replace('.', '-').replace(':', '-')
+            str(label).replace('.', '-').replace(':', '-')
         ),
     )
 
