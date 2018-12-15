@@ -71,9 +71,12 @@ def last_day_of_the_month(any_date):
 
     >>> last_day_of_the_month(datetime.date(2016, 2, 1))
     datetime.date(2016, 2, 29)
+
+    >>> last_day_of_the_month(datetime.datetime(2016, 2, 1, 1, 1, 1))
+    datetime.date(2016, 2, 29)
     """
     next_month = any_date.replace(day=28) + datetime.timedelta(days=4)
-    return next_month - datetime.timedelta(days=next_month.day)
+    return first_day_of_the_month(next_month) - one_day
 
 
 def first_day_of_next_month(any_date):
