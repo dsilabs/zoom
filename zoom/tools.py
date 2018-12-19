@@ -572,8 +572,8 @@ def get_template(template_name='default', theme='default'):
     )
     if os.path.isfile(pathname):
         logger.debug('get_template %r', pathname)
-        with open(pathname) as reader:
-            return reader.read()
+        with open(pathname, 'rb') as reader:
+            return reader.read().decode('utf8')
     else:
         if template_name == 'default':
             logger.error(
