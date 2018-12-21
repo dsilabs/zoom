@@ -71,7 +71,7 @@ def get_supergroups(db, groups):
 def named_groups(db, group_ids):
     """Returns names for a list of group ids"""
     result = []
-    for _id, name in db('SELECT id, name FROM groups'):
+    for _id, name in db('SELECT id, name FROM `groups`'):
         if _id in group_ids:
             result.append(name)
     return result
@@ -80,7 +80,7 @@ def named_groups(db, group_ids):
 def get_subgroup_options(db, group_id):
     cmd = """
     select name, id
-    from groups
+    from `groups`
     where id <> %s and left(groups.name, 2) <> 'a_'
     """
     return list(
@@ -92,7 +92,7 @@ def get_subgroup_options(db, group_id):
 def get_role_options(db, group_id):
     cmd = """
     select name, id
-    from groups
+    from `groups`
     where id <> %s and left(groups.name, 2) <> 'a_'
     """
     return list(
