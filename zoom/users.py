@@ -118,7 +118,7 @@ def get_groups(db, user):
                     result |= get_memberships(grp, memberships, depth+1)
         return result
 
-    all_groups = dict(db('select id, name from groups'))
+    all_groups = dict(db('select id, name from `groups`'))
 
     my_groups = [
         rec[0]
@@ -347,7 +347,7 @@ class User(Record):
             if len(groups):
                 db = self.get('__store').db
                 slots = ', '.join(['%s'] * len(groups))
-                cmd = 'select id from groups where name in (%s)' % slots
+                cmd = 'select id from `groups` where name in (%s)' % slots
                 self.__user_group_ids = [i[0] for i in db(cmd, *groups)]
             else:
                 self.__user_group_ids = []

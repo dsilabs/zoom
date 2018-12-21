@@ -210,7 +210,7 @@ class Group(Record):
             for group_id, in db("""
             select distinct
                 groups.id
-                from groups, subgroups
+                from `groups`, subgroups
                 where
                     groups.id = subgroups.group_id
                     and subgroup_id = %s
