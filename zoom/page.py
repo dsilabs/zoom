@@ -196,7 +196,7 @@ class Page(object):
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
 
-        self.content = Component(self.header(), self.content).render()
+        self.content = Component(self.header(), self.content, *self.args).render()
 
         app_theme = request.app.theme if hasattr(request, 'app') else None
         site_theme = request.site.theme
