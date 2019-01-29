@@ -9,3 +9,4 @@ testsold
 __pycache__
 /*\.png
 .vscode
+docs/_build
