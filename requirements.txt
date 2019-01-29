@@ -5,5 +5,3 @@ passlib>=1.7.1
 markdown>=2.6.1
 Pillow>=1.0   # PIL fork
 faker
-m2r==0.2.1
-

@@ -10,3 +10,4 @@ __pycache__
 /*\.png
 .vscode
 docs/_build
+docs/make.bat
