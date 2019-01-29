@@ -68,7 +68,7 @@ class TestTools(unittest.TestCase):
 
     def test_load_content(self):
         content = zoom.tools.load_content(zoom.tools.zoompath('README'))
-        self.assertTrue('<h1 id="zoom">Zoom</h1>' in content)
+        self.assertTrue('README' in content)
 
     def test_load_content_missing(self):
         load = zoom.tools.load_content
