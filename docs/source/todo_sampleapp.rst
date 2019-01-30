@@ -1,5 +1,5 @@
 ==================
-Tutorial: Todo app
+Tutorial: Todo App
 ==================
 
 This tutorial will walk you through creating a new application and cover aspects from basic application structure, controllers and storage, to generating fake data and model properties. At the end you will have a functioning Todo application.
