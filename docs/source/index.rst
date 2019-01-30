@@ -1,8 +1,5 @@
-Zoom Documentation
-==================
-
-
-
+Introduction
+============
 
 What is Zoom?
 ^^^^^^^^^^^^^
