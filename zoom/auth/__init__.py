@@ -17,11 +17,15 @@ def get_context():
     context = CryptContext(
         schemes=[
             "bcrypt_sha256",
+            "mysql41",
+            "mysql323"
         ],
 
         default="bcrypt_sha256",
 
         deprecated=[
+            "mysql41",
+            "mysql323"
         ],
 
         # vary rounds parameter randomly when creating new hashes...
@@ -50,15 +54,24 @@ def validate_password(password, stored_password_hash):
     >>> validate_password('admin1', hash)
     (False, None)
 
+    >>> valid, hash = validate_password('mypass', '6f8c114b58f2ce9e')
+    >>> valid
+    True
+    >>> len(hash) == 75 and hash.startswith('$bcrypt')
+    True
+
     >>> new_hash = hash_password('adminpw')
     >>> validate_password('adminpw', new_hash)
     (True, None)
 
     Validates the supplied password to see if it matches the stored password
-    based one of the accepted algorythms and also returns a hash based on the
-    best algorythm that is currently supported.  This allows passwords stored
-    with older algorythms to be accepted while providing the ability to
-    contantly upgrade algorythms as they improve.
+    based one of the accepted algorithms and also returns a hash based on the
+    best algorithm that is currently supported.  This allows passwords stored
+    with older algorithms to be accepted while providing the ability to
+    contantly upgrade algorithms as they improve.
     """
     context = get_context()
-    return context.verify_and_update(password, stored_password_hash)
+    try:
+        return context.verify_and_update(password, stored_password_hash)
+    except ValueError:
+        return (False, None)
