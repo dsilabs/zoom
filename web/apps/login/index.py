@@ -68,7 +68,7 @@ class LoginController(Controller):
             if user:
                 if user.login(self.model, password, remember_me):
                     logger.info('user {!r} sucesfully logged in'.format(username))
-                    return redirect_to(user.default_app)
+                    return redirect_to('/')
             logger.debug('failed login attempt for user {!r}'.format(username))
             error('incorrect username or password')
         elif username:
