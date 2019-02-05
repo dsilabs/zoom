@@ -17,6 +17,7 @@ from email.mime.audio import MIMEAudio
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 
+import zoom
 from zoom.context import context
 from zoom.store import EntityStore
 from zoom.tools import ensure_listy, now
@@ -155,13 +156,15 @@ def get_plain_from_html(html):
     return parser.value()
 
 
-def compose(sender, recipients, subject, body, attachments, style, logo_url):
+def compose(sender, reply_to, recipients, subject, body, attachments, style, logo_url):
     """compose an email message"""
 
     email = MIMEMultipart()
     email['Subject'] = subject
     email['From'] = formataddr(sender)
     email['To'] = display_email_address(recipients)
+    if sender != reply_to:
+        email['Reply-To'] = formataddr(reply_to)
     email.preamble = (
         'This message is in MIME format. '
         'You will not see this in a MIME-aware mail reader.\n'
@@ -236,18 +239,20 @@ def compose(sender, recipients, subject, body, attachments, style, logo_url):
 
 def connect(site, get_server, debug=False):
     """connect to the mail server"""
-    server = get_server(site.smtp_host, site.smtp_port)
-    if debug:
-        server.set_debuglevel(1)
-    if site.smtp_user and site.smtp_passwd:
-        server.login(site.smtp_user, site.smtp_passwd)
+    if site.smtp_host and site.smtp_port:
+        server = get_server(site.smtp_host, site.smtp_port)
+        if debug:
+            server.set_debuglevel(1)
+        if site.smtp_user and site.smtp_passwd:
+            server.login(site.smtp_user, site.smtp_passwd)
 
-    return server
+        return server
 
 
 def disconnect(server):
     """disconnect from the mail server"""
-    server.quit()
+    if server:
+        server.quit()
 
 
 def deliver():
@@ -262,6 +267,7 @@ def deliver():
         for mail in mails:
 
             sender = json.loads(mail.sender)
+            reply_to = json.loads(mail.reply_to)
             recipients = json.loads(mail.recipients)
             attachments = [
                 Attachment(name, data, mimetype)
@@ -271,6 +277,7 @@ def deliver():
 
             email = compose(
                 sender,
+                reply_to,
                 recipients,
                 mail.subject,
                 mail.body,
@@ -306,7 +313,10 @@ def deliver():
 def expedite(site, sender, recipients, subject, body,
              attachments=None, style='plain'):
     """deliver this email now"""
+    logger = logging.getLogger(__name__)
+
     email = compose(
+        get_default_sender(site),
         sender,
         recipients,
         subject,
@@ -319,22 +329,23 @@ def expedite(site, sender, recipients, subject, body,
     sender_address = formataddr(sender)
 
     server = connect(site, SMTP)
-    try:
-        result = server.sendmail(
-            sender_address,
-            [r[1] for r in recipients],
-            email
-        )
-        logger = logging.getLogger(__name__)
-        if result:
-            msg = 'Unable to send email. Please contact administrator.'
-            logger.error('Unable to send email: {}'.format(result))
-            raise Exception(msg)
-        else:
-            logger.debug('mail sent successfully')
-    finally:
-        disconnect(server)
-
+    if server:
+        try:
+            result = server.sendmail(
+                sender_address,
+                [r[1] for r in recipients],
+                email
+            )
+            if result:
+                msg = 'Unable to send email. Please contact administrator.'
+                logger.error('Unable to send email: {}'.format(result))
+                raise Exception(msg)
+            else:
+                logger.debug('mail sent successfully')
+        finally:
+            disconnect(server)
+    else:
+        logger.error('unable to connect to mail server')
 
 def post(put, sender, recipients, subject,
          body, attachments=None, style='plain'):
@@ -399,10 +410,45 @@ def make_recipients_list(recipients):
     return recipients
 
 
+def as_sender_tuple(sender):
+    """build a sender tuple
+
+    >>> as_sender_tuple('joe@testco.com')
+    ('joe@testco.com', 'joe@testco.com')
+
+    >>> as_sender_tuple(('joe@testco.com', 'joe@testco.com'))
+    ('joe@testco.com', 'joe@testco.com')
+
+    >>> as_sender_tuple(['joe@testco.com', 'joe@testco.com'])
+    ('joe@testco.com', 'joe@testco.com')
+    """
+    if isinstance(sender, str):
+        return sender, sender
+    return tuple(sender)
+
+
 def send_as(sender, recipients, subject, message, attachments=None):
-    """send an email as a specific sender"""
+    """send an email as a specific sender
+
+    >>> zoom.system.site = zoom.sites.Site()
+    >>> send_as('a-user@testco.com', 'joe@testco.com', "test", "This is a test")
+
+    This function compares the sender to the default send_from information
+    configured for the site, and if they differ it includes a Reply-To header
+    in the email message.
+
+    NOTE: Some email providers may flag emails sent using the reply-to header
+    as spam or phishing emails.  To send email reliably when the domains of the
+    site send_from address differ from the reply-to address domain the system
+    must be configured properly.  There is much written on this topic so we
+    don't try to cover it here, however here is a useful place to start:
+
+    * https://blog.codinghorror.com/so-youd-like-to-send-some-email-through-code/
+
+    """
 
     site = context.site
+    sender = as_sender_tuple(sender)
     recipients = make_recipients_list(recipients)
 
     if site.mail_delivery != 'background':
@@ -420,6 +466,10 @@ def get_default_sender(site):
 
 
 def send(recipients, subject, message, attachments=None):
-    """send an email"""
+    """send an email
+
+    >>> zoom.system.site = zoom.sites.Site()
+    >>> send('joe@testco.com', "test", "This is a test")
+    """
     sender = get_default_sender(context.site)
     send_as(sender, recipients, subject, message, attachments)

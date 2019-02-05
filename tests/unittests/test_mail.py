@@ -124,6 +124,7 @@ class TestMail(unittest.TestCase):
         #  just make sure it composes without an error
         t = mail.compose(
                 ['Testco', 'sender@testco.com'],
+                ['Testco', 'sender@testco.com'],
                 'sally@testco.com',
                 'The Subject',
                 'The Body',
@@ -143,6 +144,7 @@ class TestMail(unittest.TestCase):
         #  just make sure it composes without an error
         t = mail.compose(
                 ['Testco', 'sender@testco.com'],
+                ['Testco', 'sender@testco.com'],
                 'sally@testco.com',
                 'The Subject',
                 'The Body',
@@ -156,6 +158,27 @@ class TestMail(unittest.TestCase):
         assert 'Subject: The Subject' in t
         assert 'From: Testco <sender@testco.com>' in t
         assert 'To: sally@testco.com' in t
+        assert 'https://testco.com/logo.png' in t
+
+    def test_compose_reply_to_html(self):
+        #  just make sure it composes without an error
+        t = mail.compose(
+                ['Testco', 'sender@testco.com'],
+                ['Testco User', 'user@testco.com'],
+                'sally@testco.com',
+                'The Subject',
+                'The Body',
+                [],
+                'html',
+                'https://testco.com/logo.png'
+            )
+        print(t)
+        assert t
+        assert 'MIME-Version: 1.0' in t
+        assert 'Subject: The Subject' in t
+        assert 'From: Testco <sender@testco.com>' in t
+        assert 'To: sally@testco.com' in t
+        assert 'Reply-To: Testco User <user@testco.com>' in t
         assert 'https://testco.com/logo.png' in t
 
     def test_expedite(self):

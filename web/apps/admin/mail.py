@@ -9,7 +9,7 @@ import uuid
 import zoom
 from zoom.context import context
 from zoom.mvc import View, Controller
-from zoom.mail import get_mail_store, send, Attachment
+from zoom.mail import get_mail_store, send, Attachment, send_as
 from zoom.browse import browse
 import zoom.fields as f
 from zoom.forms import Form
@@ -18,12 +18,14 @@ from zoom.tools import home
 from zoom.alerts import success
 
 mail_form = Form([
+    f.TextField('From Name', size=60, maxlength=60, default=(zoom.system.site.mail_from_name)),
+    f.TextField('From Email', size=60, maxlength=60, default=(zoom.system.site.mail_from_addr)),
     f.TextField('Recipient', size=60, maxlength=60, default=(context.user.email)),
     f.TextField('Subject', default='a subject ' + uuid.uuid4().hex),
     f.MemoField('Message', value='this is the message body\n' + uuid.uuid4().hex),
     # f.FileField('Attachment'),
     f.ButtonField('Send'),
-    ])
+])
 
 
 class MyView(View):
@@ -69,7 +71,12 @@ class MyController(Controller):
                 )
                 success('message sent with attachment')
             else:
-                send(input['recipient'], input['subject'], input['message'])
+                send_as(
+                    (input['from_name'], input['from_email']),
+                    input['recipient'],
+                    input['subject'],
+                    input['message'],
+                )
                 success('message sent')
 
             return home('mail')
