@@ -54,7 +54,7 @@ def app(request):
     skip = 'home', 'logout', 'login'
     content = h.div(
         h.ul(
-            a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title)
+            a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title.lower())
             if a.name not in skip and a.visible and request.user.can_run(a)
         ), classed='app-icons'
     )
