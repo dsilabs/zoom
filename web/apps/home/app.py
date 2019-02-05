@@ -55,7 +55,7 @@ def app(request):
     content = h.div(
         h.ul(
             a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title)
-            if a.name not in skip and request.user.can_run(a)
+            if a.name not in skip and a.visible and request.user.can_run(a)
         ), classed='app-icons'
     )
     return zoom.page(content, css=css)

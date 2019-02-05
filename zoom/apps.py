@@ -158,7 +158,7 @@ class AppProxy(object):
         self.packages = {}
 
         get = self.config.get
-        self.visible = get('visible')
+        self.visible = get('visible') not in zoom.utils.NEGATIVE
         self.enabled = get('enabled')
         self.author = get('author')
         self.version = get('version')
