@@ -43,7 +43,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'm2r',
-    'autoapi.extension',
+    'autoapi.sphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
