@@ -267,7 +267,7 @@ def deliver():
         for mail in mails:
 
             sender = json.loads(mail.sender)
-            reply_to = json.loads(mail.reply_to)
+            reply_to = json.loads(mail.reply_to) if mail.reply_to else sender
             recipients = json.loads(mail.recipients)
             attachments = [
                 Attachment(name, data, mimetype)
