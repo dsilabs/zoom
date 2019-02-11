@@ -23,8 +23,8 @@ class AppsController(zoom.Controller):
                 get_group_link(s) for g, s in subgroups if g == app_group._id
             ) if app_group else ''
             return [
-                app.name,
                 app.title,
+                app.name,
                 app.path,
                 groups,
             ]
@@ -32,10 +32,10 @@ class AppsController(zoom.Controller):
         db = zoom.system.site.db
         subgroups = list(db('select * from subgroups'))
         groups = dict((g._id, g) for g in zoom.system.site.groups)
-        data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.name)]
+        data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.title.lower())]
         content = zoom.browse(
             data,
-            labels=['App', 'Title', 'Path', 'Groups']
+            labels=['Title', 'App', 'Path', 'Groups']
         )
         return zoom.page(content, title='Apps')
 
