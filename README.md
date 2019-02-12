@@ -44,33 +44,35 @@ All set?  Okay, here we go!
     ```
 
 3. Put the zoom directory on your pythonpath. <br><br>
-There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll need to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
+    There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll need to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
     ```
     $ export PYTHONPATH=/tmp/zoom
     ```
 
 4. Add zoom command to your path. <br><br>
-Ubuntu example:
+    Ubuntu example:
     ```shell
     $ ln -s /tmp/zoom/utils/zoom/bin/zoom /usr/local/bin/zoom
     ```
 
 5. Configure the zoom database. <br><br>
-Currently, Zoom requires a MySQL comptabile database to run.  If you don't already have MySQL or MariaDB installed follow the instructions for your operating system.  Alternatively you can use a Mariadb/MySQL instance inside a docker container. In either case make sure you set the port to -p 3306:3306. 
+    Currently, Zoom requires a MySQL comptabile database to run.  If you don't already have MySQL or MariaDB installed follow the instructions for your operating system.  Alternatively you can use a Mariadb/MySQL instance inside a docker container. In either case make sure you set the port to -p 3306:3306, and ensure your `$MYSQL_ROOT_PASSWORD` is on your path.
     ```shell 
-    $ docker run --dbname zoom-mariadb -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -p 3306:3306 -d mariadb:latest
+    $ docker run --name zoom_mariadb -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -p 3306:3306 -d mariadb:latest
     ```
-Once that is installed create the database using the command:
+
+6. Once that is installed create the database using the command:
     ```shell
     $ zoom database -e mysql -u root -p $MYSQL_ROOT_PASSWORD create <dbname>
     ```
-   Next, edit the site.ini file for the localhost site using your editor like so:
+
+7. Next, edit the site.ini file for the localhost site using your editor like so:
     ```shell
     $ vi web/sites/localhost/site.ini
     ``` 
 
-   Find the database section of the config file and set the values for the
-database configuration to correspond to your database configuration. Typically:
+    Find the database section of the config file and set the values for the
+    database configuration to correspond to your database configuration. Typically:
     ```shell
     [monitoring]
     profiling=1
@@ -80,12 +82,11 @@ database configuration to correspond to your database configuration. Typically:
     [database]
     user=<username>
     password=<password>
-
     ```
 
 6. Run zoom. <br><br>
-If you are currently in the zoom directory then you don't need to tell
-zoom where to find your zoom instance or you can specify the directory and port.
+    If you are currently in the zoom directory then you don't need to tell zoom where to find your zoom instance.
+    Otherwise, you can specify the directory and port.
     ```shell
     $ zoom server -p 8080 ~/work/web
     ```
