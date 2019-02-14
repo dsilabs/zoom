@@ -192,6 +192,21 @@ class Database(object):
                 cmd = command % tuple(placeholders), args
             return cmd
 
+        elif self.paramstyle == 'named':
+            if len(args) == 1 and hasattr(args[0], 'items'):
+                # a dict-like thing
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args[0]
+            elif len(args) >= 1 and issequenceform(args[0]):
+                # a list of tuple-like things
+                placeholders = [':%d' % (n+1) for n in range(len(args[0]))]
+                cmd = command % tuple(placeholders), args[0]
+            else:
+                # just one tuple-like thing
+                placeholders = [':%d' % (n+1) for n in range(len(args))]
+                cmd = command % tuple(placeholders), args
+            return cmd
+
         else:
             params = len(args) == 1 and \
                 hasattr(args[0], 'items') and \
