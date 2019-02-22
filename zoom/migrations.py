@@ -213,5 +213,112 @@ class Migrations(object):
                 else:
                     logger.debug('skipping migration %s - %r', i, migration.__name__)
 
+    def replay(self, target=None):
+        """replay the migrations from the beginning
+
+        Replay all of the migrations from the beginning.  Reverts all
+        migrations to this point, zaps the migration record as if it
+        never happened and then runs the migrations from scratch.
+
+        Often when developing a migration strategy it's desireable to
+        rerun all of the migrations as if they had never been run before.
+        This method makes that a simple call.  Once the migration
+        strateigy is solidified this method would typically be
+        replaced by the migrate method on it's own.
+
+        >>> class AddFaxColumnToUser(Migration):
+        ...     def apply(self):
+        ...         self.db('alter table users add column fax char(30)')
+        ...     def revert(self):
+        ...         self.db('alter table users drop column fax')
+
+        >>> class CombineNames(Migration):
+        ...     def apply(self):
+        ...         cmd = \"\"\"
+        ...         alter table users
+        ...            add column `name` char(80) after `password`,
+        ...            drop column `first_name`,
+        ...            drop column `last_name`
+        ...         \"\"\"
+        ...         self.db(cmd)
+        ...     def revert(self):
+        ...         cmd = \"\"\"
+        ...         alter table users
+        ...            add column `first_name` char(40) after `password`,
+        ...            add column `last_name` char(40) after `first_name`,
+        ...            drop column `name`
+        ...         \"\"\"
+        ...         self.db(cmd)
+
+        >>> steps = [
+        ...     StartMigration,
+        ...     AddFaxColumnToUser,
+        ...     CombineNames,
+        ... ]
+
+        >>> zoom.system.site = site = zoom.sites.Site()
+        >>> site.db = zoom.database.setup_test()
+
+        >>> print(site.db('describe users'))
+        Field      Type             Null Key Default Extra
+        ---------- ---------------- ---- --- ------- --------------
+        id         int(10) unsigned NO   PRI None    auto_increment
+        username   char(50)         NO   UNI None
+        password   varchar(125)     YES      None
+        first_name char(40)         YES      None
+        last_name  char(40)         YES      None
+        email      char(60)         YES  MUL None
+        phone      char(30)         YES      None
+        created    datetime         YES      None
+        updated    datetime         YES      None
+        last_seen  datetime         YES  MUL None
+        created_by int(10) unsigned YES      None
+        updated_by int(10) unsigned YES      None
+        status     char(1)          YES      None
+
+        >>> migrations = Migrations(site.db, steps)
+
+        >>> migrations.migrate()
+        >>> print(site.db('describe users'))
+        Field      Type             Null Key Default Extra
+        ---------- ---------------- ---- --- ------- --------------
+        id         int(10) unsigned NO   PRI None    auto_increment
+        username   char(50)         NO   UNI None
+        password   varchar(125)     YES      None
+        name       char(80)         YES      None
+        email      char(60)         YES  MUL None
+        phone      char(30)         YES      None
+        created    datetime         YES      None
+        updated    datetime         YES      None
+        last_seen  datetime         YES  MUL None
+        created_by int(10) unsigned YES      None
+        updated_by int(10) unsigned YES      None
+        status     char(1)          YES      None
+        fax        char(30)         YES      None
+
+        >>> migrations.replay(1)
+        >>> print(site.db('describe users'))
+        Field      Type             Null Key Default Extra
+        ---------- ---------------- ---- --- ------- --------------
+        id         int(10) unsigned NO   PRI None    auto_increment
+        username   char(50)         NO   UNI None
+        password   varchar(125)     YES      None
+        first_name char(40)         YES      None
+        last_name  char(40)         YES      None
+        email      char(60)         YES  MUL None
+        phone      char(30)         YES      None
+        created    datetime         YES      None
+        updated    datetime         YES      None
+        last_seen  datetime         YES  MUL None
+        created_by int(10) unsigned YES      None
+        updated_by int(10) unsigned YES      None
+        status     char(1)          YES      None
+        fax        char(30)         YES      None
+
+        """
+        self.migrate(0)
+        self.revisions.zap()
+        self.migrate(target)
+
 
 
