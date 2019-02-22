@@ -170,6 +170,7 @@ class Migrations(object):
                 if i > current_version and i <= target:
 
                     migration(self.db).apply()
+                    self.db.commit()
 
                     revision += 1
                     record = SystemMigrationRecord(
@@ -180,6 +181,7 @@ class Migrations(object):
                         name=migration.__name__,
                     )
                     revisions.put(record)
+                    self.db.commit()
 
                     logger.info(
                         'migration %s - %r applied', i, migration.__name__
@@ -195,6 +197,7 @@ class Migrations(object):
                 if i <= current_version and i > target:
 
                     migration(self.db).revert()
+                    self.db.commit()
 
                     revision += 1
                     record = SystemMigrationRecord(
@@ -205,6 +208,7 @@ class Migrations(object):
                         name=migration.__name__,
                     )
                     revisions.put(record)
+                    self.db.commit()
 
                     logger.info(
                         'migration %s - %r reverted', i, migration.__name__
