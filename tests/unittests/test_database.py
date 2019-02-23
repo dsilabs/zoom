@@ -412,3 +412,11 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
 
         stats = db.get_stats()
         assert isinstance(stats, list)
+
+    def test_run(self):
+        root = os.path.dirname(__file__)
+        join = os.path.join
+        self.db.run(join(root, 'sql/mysql_run_test_start.sql'))
+        assert 'run_test_table' in self.db.get_tables()
+        self.db.run(join(root, 'sql/mysql_run_test_finish.sql'))
+        assert 'run_test_table' not in self.db.get_tables()

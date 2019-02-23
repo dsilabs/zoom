@@ -271,6 +271,30 @@ class Database(object):
     def __call__(self, command, *args):
         return self.execute(command, *args)
 
+    def run(self, filename, *args, **kwargs):
+        """Run SQL statements from a file"""
+
+        def split(statements):
+            """split the sql statements"""
+            return [s for s in statements.split(';\n') if s]
+
+        logger = logging.getLogger(__name__)
+        if os.path.isfile(filename):
+
+            with open(filename) as f:
+                statements = split(f.read())
+
+            logger.debug('running %s SQL statements from %s', len(statements), filename)
+
+            for statement in statements:
+                self(statement, *args, **kwargs)
+
+            logger.debug('ran %s SQL statements from %s', len(statements), filename)
+        else:
+            msg = 'file %s missing' % filename
+            logger.error(msg)
+            raise DatabaseException(msg)
+
     def use(self, name):
         """use another database on the same instance"""
         args = list(self.__args)
@@ -374,17 +398,10 @@ class Sqlite3Database(Database):
         return [a[0] for a in self(cmd)]
 
     def create_site_tables(self, filename=None):
-        def split(statements):
-            return [s for s in statements.split(';\n') if s]
+        """Create Sqlite3 version of site tables"""
         logger = logging.getLogger(__name__)
-
         filename = zoom.tools.zoompath('tools/zoom/sql/setup_sqlite3g.sql')
-        statements = split(open(filename).read())
-        logger.debug('%s SQL statements', len(statements))
-
-        for statement in statements:
-            self(statement)
-
+        self.run(filename)
         logger.debug('created tables from %s', filename)
 
     def create_test_tables(self):
@@ -464,21 +481,9 @@ class MySQLDatabase(Database):
 
     def create_site_tables(self):
         """create the tables for a site in a mysql server"""
-        def split(statements):
-            """split the sql statements"""
-            return [s for s in statements.split(';\n') if s]
         logger = logging.getLogger(__name__)
-
         filename = zoom.tools.zoompath('tools/zoom/sql/setup_mysql.sql')
-
-        with open(filename) as f:
-            statements = split(f.read())
-
-        logger.debug('%s SQL statements', len(statements))
-
-        for statement in statements:
-            self(statement)
-
+        self.run(filename)
         logger.debug('created tables from %s', filename)
 
     def create_test_tables(self):
