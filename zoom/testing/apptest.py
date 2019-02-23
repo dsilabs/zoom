@@ -1,8 +1,9 @@
 """
     apptest
 
-    tools for writting application integration tests
+    tools for writing application integration tests
 """
+# pragma: nocover
 
 import logging
 import os

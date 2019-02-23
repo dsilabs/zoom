@@ -8,17 +8,16 @@
 
     Note:
         Requires Python packages that are not included in the
-        main requiremen.txt file.  To run these types of tests
+        main requirements.txt file.  To run these types of tests
         you'll need to install the packages listed in
         zoom/tests/requirements.txt
 
 """
+# pragma: no cover
 
 import logging
 import os
-import time
 import unittest
-import warnings
 
 from pyvirtualdisplay import Display
 from selenium import webdriver
