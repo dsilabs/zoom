@@ -272,7 +272,18 @@ class Database(object):
         return self.execute(command, *args)
 
     def run(self, filename, *args, **kwargs):
-        """Run SQL statements from a file"""
+        """Run SQL statements from a file
+
+        >>> db = zoom.sites.Site().db
+        >>> four_weeks_ago = zoom.tools.today() - zoom.tools.one_week * 4
+        >>> response = db.run('zoom/sql/get_recent_users.sql', dict(recent=four_weeks_ago))
+        >>> print(db('select username from recent_users'))
+        username
+        --------
+        admin
+        guest
+
+        """
 
         def split(statements):
             """split the sql statements"""
@@ -406,21 +417,8 @@ class Sqlite3Database(Database):
 
     def create_test_tables(self):
         """create the extra test tables"""
-        self("""
-            create table if not exists person (
-                id integer not null primary key autoincrement,
-                name      varchar(100),
-                age       smallint,
-                kids      smallint,
-                birthdate date                )
-        """)
-        self("""
-            create table if not exists account (
-                account_id integer not null primary key autoincrement,
-                name varchar(100),
-                added date
-                )
-        """)
+        zoompath = zoom.tools.zoompath
+        self.run(zoompath('zoom/sql/create_test_tables_sqlite3.sql'))
         self.create_site_tables()
 
     def delete_test_tables(self):
