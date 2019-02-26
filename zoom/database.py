@@ -16,6 +16,20 @@ from decimal import Decimal
 
 import zoom
 
+__all__ = [
+    'Database',
+    'MySQLDatabase',
+    'MySQLDatabaseTransaction',
+    'Sqlite3Database',
+    'Sqlite3DatabaseTransaction',
+    'UnknownDatabaseException',
+    'DatabaseException',
+    'EmptyDatabaseException',
+    'Result',
+    'database',
+    'connect_database',
+]
+
 warnings.filterwarnings("ignore", "Unknown table.*")
 
 ARRAY_SIZE = 1000
@@ -273,6 +287,9 @@ class Database(object):
 
     def run(self, filename, *args, **kwargs):
         """Run SQL statements from a file
+
+        The SQL statements in the soure file must be separated by a newline
+        followed by a semicolon (i.e. '\n;').
 
         >>> db = zoom.sites.Site().db
         >>> four_weeks_ago = zoom.tools.today() - zoom.tools.one_week * 4
