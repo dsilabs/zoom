@@ -299,6 +299,7 @@ class Database(object):
         --------
         admin
         guest
+        user
 
         """
 

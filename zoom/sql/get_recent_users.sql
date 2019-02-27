@@ -9,6 +9,5 @@ create temporary table last_seen as (
 create temporary table recent_users as (
     select
         username, last_seen.timestamp
-    from users, last_seen
-    where users.id = last_seen.user_id
+    from users left join last_seen on users.id = last_seen.user_id
 );
