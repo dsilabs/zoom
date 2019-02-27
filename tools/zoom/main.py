@@ -37,8 +37,8 @@ def dispatch(args):
     if cmd in functions:
         del sys.argv[1]
         functions[cmd]()
-    elif cmd == '-V':
-        print(zoom.__version__)
+    elif cmd in ['-V', '--version']:
+        print('zoom', zoom.__version__)
     else:
         print('No such command {!r}\nUse -h for help'.format(cmd))
 
