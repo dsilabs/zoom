@@ -294,7 +294,7 @@ class Database(object):
         >>> db = zoom.sites.Site().db
         >>> four_weeks_ago = zoom.tools.today() - zoom.tools.one_week * 4
         >>> response = db.run('zoom/sql/get_recent_users.sql', dict(recent=four_weeks_ago))
-        >>> print(db('select username from recent_users'))
+        >>> print(db('select username from recent_users order by username'))
         username
         --------
         admin
