@@ -11,5 +11,5 @@ create temporary table recent_users as (
         username, last_seen.timestamp
     from users, last_seen
     where users.id = last_seen.user_id
-    order by last_seen.timestamp desc
+    order by username desc
 );
