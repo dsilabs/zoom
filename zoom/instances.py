@@ -109,7 +109,7 @@ class Instance(object):
         path = self.sites_path
         if not path:
             msg = 'The %r directory does not exist'
-            raise InstanceMissingException(msg, self.path)
+            raise InstanceMissingException(msg % self.path)
         return {
             name: get_site_proxy(path, name)
             for name in listdir(path)
