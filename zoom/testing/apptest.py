@@ -73,10 +73,12 @@ class AppTestPrimitives(unittest.TestCase):
             request_url = url
         else:
             request_url = self.url + self.base_url + (url or '/')
+
+        instance_path = os.path.dirname(os.path.dirname(self.site.path))
         request = zoom.request.build(
             request_url,
             data or {},
-            self.site.path or '.'
+            instance_path,
         )
         request.site_path = self.site.path
         request.ip_address = '127.0.0.1'
