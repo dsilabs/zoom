@@ -833,7 +833,7 @@ class RecordStore(Store):
         # return repr(self.all())
 
 
-def table_of(klass, db=None):
+def table_of(klass, db=None, name=None, key='id'):
     """Return a table of Records of the given class
 
     The klass parameter can be a subclass of zoom.Model or
@@ -851,6 +851,6 @@ def table_of(klass, db=None):
     """
     db = db or zoom.system.site.db
     if isinstance(klass, str):
-        return RecordStore(db, name=klass)
+        return RecordStore(db, name=name or klass, key=key)
     else:
-        return RecordStore(db, klass)
+        return RecordStore(db, klass, name=name, key=key)
