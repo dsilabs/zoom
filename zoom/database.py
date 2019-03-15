@@ -3,7 +3,7 @@
 """
     zoom.database
 
-    a database that does less
+    A database module that does less.
 """
 
 import collections
@@ -285,8 +285,56 @@ class Database(object):
     def __call__(self, command, *args):
         return self.execute(command, *args)
 
+    def runs(self, sql, *args, **kwargs):
+        """Run multiple SQL statements from a string
+
+        The SQL statements in the soure string must be separated by a newline
+        followed by a semicolon (i.e. '\n;').
+
+        >>> sql = \"\"\"
+        ... create temporary table last_seen as (
+        ...     select user_id, max(timestamp) as timestamp
+        ...     from log
+        ...     where timestamp >= %(recent)s
+        ...     group by 1
+        ... );
+        ...
+        ... create temporary table recent_users as (
+        ...     select
+        ...         username, last_seen.timestamp
+        ...     from users left join last_seen on users.id = last_seen.user_id
+        ... );
+        ... \"\"\"
+        >>> db = zoom.sites.Site().db
+        >>> four_weeks_ago = zoom.tools.today() - zoom.tools.one_week * 4
+        >>> response = db.runs(sql, dict(recent=four_weeks_ago))
+        >>> print(db('select username from recent_users order by username'))
+        username
+        --------
+        admin
+        guest
+        user
+
+        """
+
+        def split(statements):
+            """split the sql statements"""
+            return list(filter(bool, map(str.strip, statements.split(';\n'))))
+
+        logger = logging.getLogger(__name__)
+
+        statements = split(sql)
+
+        logger.debug('running %s SQL statements', len(statements))
+
+        for statement in statements:
+            self(statement, *args, **kwargs)
+
+        logger.debug('ran %s SQL statements', len(statements))
+
+
     def run(self, filename, *args, **kwargs):
-        """Run SQL statements from a file
+        """Run multiple SQL statements from a file
 
         The SQL statements in the soure file must be separated by a newline
         followed by a semicolon (i.e. '\n;').
@@ -303,22 +351,16 @@ class Database(object):
 
         """
 
-        def split(statements):
-            """split the sql statements"""
-            return [s for s in statements.split(';\n') if s]
-
         logger = logging.getLogger(__name__)
         if os.path.isfile(filename):
 
+            logger.debug('running SQL statements from %s', filename)
+
             with open(filename) as f:
-                statements = split(f.read())
+                return self.runs(f.read(), *args, **kwargs)
 
-            logger.debug('running %s SQL statements from %s', len(statements), filename)
+            logger.debug('ran SQL statements from %s', filename)
 
-            for statement in statements:
-                self(statement, *args, **kwargs)
-
-            logger.debug('ran %s SQL statements from %s', len(statements), filename)
         else:
             msg = 'file %s missing' % filename
             logger.error(msg)

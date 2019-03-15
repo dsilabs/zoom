@@ -14,6 +14,7 @@ import logging
 from decimal import Decimal
 from datetime import date
 
+import zoom
 from zoom.database import (
     database,
     connect_database,
@@ -419,4 +420,30 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         self.db.run(join(root, 'sql/mysql_run_test_start.sql'))
         assert 'run_test_table' in self.db.get_tables()
         self.db.run(join(root, 'sql/mysql_run_test_finish.sql'))
+        assert 'run_test_table' not in self.db.get_tables()
+
+    def test_runs(self):
+        root = os.path.dirname(__file__)
+        join = os.path.join
+
+        start = zoom.load(join(root, 'sql/mysql_run_test_start.sql'))
+        self.db.runs(start)
+        assert 'run_test_table' in self.db.get_tables()
+
+        finish = zoom.load(join(root, 'sql/mysql_run_test_finish.sql'))
+        self.db.runs(finish)
+        assert 'run_test_table' not in self.db.get_tables()
+
+    def test_runs_with_blank_lines(self):
+        root = os.path.dirname(__file__)
+        join = os.path.join
+        self.db.run(join(root, 'sql/mysql_run_test_start.sql'))
+
+        cmd = """
+        select * from run_test_table where name=%s;
+        """
+        self.db.runs(cmd, 'pat jones')
+
+        finish = zoom.load(join(root, 'sql/mysql_run_test_finish.sql'))
+        self.db.runs(finish)
         assert 'run_test_table' not in self.db.get_tables()
