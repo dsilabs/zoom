@@ -355,6 +355,15 @@ class NoApp(object):
     menu = ''
     name = 'none'
     theme = None
+    title = ''
+    description = ''
+    keywords = ''
+
+    def run(self, request):
+        status = '404 Not Found'
+        template = zoom.templates.page_not_found
+        response = zoom.page(template, status=status)
+        return response.render(request)
 
 
 def respond(content, request):
@@ -427,55 +436,63 @@ def handle(request):
 
     user = request.user
     app_name = request.route and request.route[0] or None
+    redirect_response = zoom.response.RedirectResponse
+
+    if not app_name:
+        logger.debug('no app name provided')
+        app_name = get_default_app_name(request.site, request.user)
+        if app_name:
+            logger.debug('loading default app %r', app_name)
+            app = load_app(request.site, app_name)
+
+            if not app:
+                logger.warning('unable to load default app %r', app_name)
+
+            elif not app.enabled:
+                logger.warning('default app %r deactivated', app_name)
+
+            elif not user.can_run(app):
+                msg = (
+                    '%r has insufficient privileges to run default app %s (%r), '
+                    'returning 404'
+                )
+                logger.warning(msg, user.username, app_name, app.path)
+
+            else:
+                return run_app(app)
+
+        app = NoApp()
+        return run_app(app)
+
     logger.debug('app_name is: %r', app_name)
     app = app_name and load_app(request.site, app_name)
 
     if not app:
         logger.debug('app %r not found in site.apps_paths', app_name)
         logger.debug('site.apps_paths: %r', request.site.apps_paths)
+        logger.debug('redirecting to /')
+        return redirect_response('/')
 
-    redirect_response = zoom.response.RedirectResponse
+    elif not app.enabled:
+        msg = 'app %s (%r) deactivated, redirecting to default'
+        logger.warning(msg, app_name, app.path)
+        return redirect_response('/')
 
-    if app and app.enabled and user.can_run(app):
+    elif user.can_run(app):
         logger.debug('running requested app')
         return run_app(app)
 
-    elif app and app.enabled and user.is_guest:
+    elif user.is_guest:
         logger.debug('redirecting to login')
         return redirect_response('/login')
 
-    elif app and app.enabled:
+    else:
         msg = (
             '%r has insufficient privileges to run app %s (%r), '
             'redirecting to default'
         )
         logger.warning(msg, user.username, app_name, app.path)
         return redirect_response('/')
-
-    elif app:
-        msg = 'app %s (%r) disabled, redirecting to default'
-        logger.warning(msg, app_name, app.path)
-        return redirect_response('/')
-
-    else:
-        if app_name:
-            logger.debug('unable to run requested app %r', app_name)
-        app_name = get_default_app_name(request.site, request.user)
-        app = load_app(request.site, app_name)
-        if app and app.enabled and user.can_run(app):
-            return run_app(app)
-
-        elif app and app.enabled:
-            logger.debug('user %r cannot run %r', user.username, app_name)
-
-        elif app:
-            logger.debug('app %r is disabled', app_name)
-
-        else:
-            logger.debug('unable to load app %r', app_name)
-
-    logger.debug('using NoApp()')
-    request.app = NoApp()
 
 
 def get_system_apps(request):

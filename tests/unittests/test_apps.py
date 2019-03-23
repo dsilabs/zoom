@@ -290,9 +290,9 @@ class TestApps(unittest.TestCase):
         response = self.call('admin', 'user')
         self.assertTrue(response.headers['Location'] == '/')
 
-    def test_handle_unknown(self):
+    def test_handle_missing_app(self):
         response = self.call('aaa')
-        self.assertTrue(response is None)
+        self.assertEqual(response.status, '302 Found')
 
     def test_read_config(self):
         site = zoom.system.site
