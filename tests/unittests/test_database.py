@@ -38,6 +38,17 @@ class DatabaseTests(object):
         self.db.close()
         print(self.db.report())
 
+    def assertQueryResult(self, expected, cmd, *args, **kwargs):
+        expected = '\n'.join(
+            line for line in
+            zoom.utils.trim(expected).splitlines()
+            if line
+        )
+        result = str(self.db(cmd, *args, **kwargs))
+        print(expected)
+        print(result)
+        self.assertEqual(expected, result)
+
     def test_RecordSet(self):
         db = self.db
         db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
@@ -192,6 +203,56 @@ class DatabaseTests(object):
                 ('1234', 50, Decimal('1.12'), "Hello there")
             )
 
+    def test_standardized_paramstyle(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table where amount > %s', 20
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where amount < %(amount)s', dict(amount=20)
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where notes like "%%1"'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            """,
+            'select * from test_table where notes like "%%2" and amount > %s', 20
+        )
+
 
 class TestSqlite3Database(unittest.TestCase, DatabaseTests):
 
@@ -214,6 +275,22 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
                 email char(60)
             )
         """
+        self.db("""
+            create table test_table
+            (
+                id char(10),
+                amount numeric(10,2),
+                salary decimal(10,0),
+                notes text
+            )
+        """)
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                [1, 10.20, '50.00', 'notes 1'],
+                [2, 30.20, '75.00', 'notes 2'],
+                [3, 40.10, '20.00', 'notes 3'],
+            ]
+        )
         self.db.debug = True
 
     def test_create_site_tables(self):
@@ -229,6 +306,56 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
         self.db.delete_test_tables()
         assert 'account' not in self.db.get_tables()
 
+    def test_native_paramstyle(self):
+        self.db.paramstyle = 'native'
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table where amount > ?', 20
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where amount < :amount', dict(amount=20)
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where notes like "%1"'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            """,
+            'select * from test_table where notes like "%2" and amount > ?', 20
+        )
 
 
 class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
@@ -247,7 +374,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             create table dzdb_test_table
             (
                 ID CHAR(10),
-                AMOUNT NUMERIC(10,2),
+                AMOUNT NUMERIC(10,1),
                 salary decimal(10,2),
                 NOTES TEXT
             )
@@ -261,6 +388,23 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             )
         """
         self.db('drop table if exists dzdb_test_table')
+        self.db('drop table if exists test_table')
+        self.db("""
+            create table test_table
+            (
+                id char(10),
+                amount numeric(10,1),
+                salary decimal(10,0),
+                notes text
+            )
+        """)
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                [1, 10.20, '50.00', 'notes 1'],
+                [2, 30.20, '75.00', 'notes 2'],
+                [3, 40.10, '20.00', 'notes 3'],
+            ]
+        )
         self.db.debug = True
 
     def test_get_column_names(self):
@@ -447,3 +591,103 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         finish = zoom.load(join(root, 'sql/mysql_run_test_finish.sql'))
         self.db.runs(finish)
         assert 'run_test_table' not in self.db.get_tables()
+
+    def test_native_paramstyle(self):
+        self.db.paramstyle = 'native'
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            'select * from test_table where amount > %s', 20
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where amount < %(amount)s', dict(amount=20)
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            'select * from test_table where notes like "%%1"'
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            """,
+            'select * from test_table where notes like "%%2" and amount > %s', 20
+        )
+
+
+class TestTranslate(unittest.TestCase):
+
+    def setUp(self):
+        self.db = database('sqlite3', ':memory:')
+
+    def assertTranslateResult(self, expected, cmd, *args, **kwargs):
+        result = self.db.translate(cmd, *args, **kwargs)
+        print(expected)
+        print(result)
+        self.assertEqual(expected, result)
+
+    def test_translate_to_named_paramstyle(self):
+        self.db.paramstyle = 'named'
+
+        self.assertTranslateResult(
+            ('select * from test_table where amount=:1', (50,)),
+            'select * from test_table where amount=%s', 50
+        )
+
+        self.assertTranslateResult(
+            ('select * from test_table where amount=:amount', {'amount': 50}),
+            'select * from test_table where amount=%(amount)s', dict(amount=50)
+        )
+
+        self.assertTranslateResult(
+            ('select * from test_table where notes like "%1" and amount > :1', (50,)),
+            'select * from test_table where notes like "%%1" and amount > %s', 50
+        )
+
+    def test_translate_to_qmark_paramstyle(self):
+        self.db.paramstyle = 'qmark'
+
+        self.assertTranslateResult(
+            ('select * from test_table where amount=?', (50,)),
+            'select * from test_table where amount=%s', 50
+        )
+
+        self.assertTranslateResult(
+            ('select * from test_table where amount=:amount', {'amount': 50}),
+            'select * from test_table where amount=%(amount)s', dict(amount=50)
+        )
+
+        self.assertTranslateResult(
+            ('select * from test_table where notes like "%1" and amount > ?', (50,)),
+            'select * from test_table where notes like "%%1" and amount > %s', 50
+        )
+
