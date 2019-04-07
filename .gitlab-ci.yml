@@ -6,6 +6,7 @@ stages:
 docker build:
   stage: Build Image
   script:
+  - apt-get install curl
   - "curl -X POST -F token=$TOKEN -F ref=master https://gitlab.dsilabs.ca/api/v4/projects/130/trigger/pipeline"
   tags:
   - shell
