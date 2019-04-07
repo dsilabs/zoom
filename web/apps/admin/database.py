@@ -31,12 +31,6 @@ class DatabaseView(zoom.View):
                 ('Status', zoom.system.site.db('show status')),
             ]
 
-            if db('show slave hosts'):
-                sections.extend([
-                    ('Replication Hosts', db('show slave hosts')),
-                    ('Replication Status', db('show slave status'))
-                ])
-
             content = zoom.Component(
                 *((h.h2(title), h.table(code)) for title, code in sections),
                 css="""
