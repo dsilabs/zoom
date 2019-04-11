@@ -111,24 +111,26 @@ class Session(object):
     def save(self, db, timeout=SESSION_LIFE):
         """save a session"""
         logger = logging.getLogger(__name__)
+        token = self.token
 
-        if self._token:
+        if token:
             # using __dict__ method because getattr is overridden
             timeout_in_seconds = self.__dict__.get('lifetime', timeout * 60)
 
             expiry = time.time() + timeout_in_seconds
 
             values = {}
-            for key in self.__dict__.keys():
+            for key in self.__dict__.keys(): # pylint: disable=consider-iterating-dictionary
                 if key[0] != '_':
                     values[key] = self.__dict__[key]
 
             value = pickle.dumps(values)
 
             cmd = 'update sessions set expiry=%s, value=%s where id=%s'
-            db(cmd, expiry, value, self._token)
-            logger.debug('saved session %r expires %s', self._token, time.strftime('%c', time.localtime(expiry)))
-            logger.debug('session values saved: {}'.format(values))
+            db(cmd, expiry, value, token)
+            formatted_expiry = time.strftime('%c', time.localtime(expiry))
+            logger.debug('saved session %r expires %s', token, formatted_expiry)
+            logger.debug('session values saved: %s', values)
             return timeout_in_seconds
 
     def load(self, db, token):
@@ -144,7 +146,6 @@ class Session(object):
             result = db(cmd, token, now)
             if len(result):
                 data = list(result)[0][0]
-                # print(data)
                 values = (
                     data and
                     pickle.loads(data) or
