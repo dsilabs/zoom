@@ -2165,7 +2165,7 @@ class PulldownField(TextField):
             for option in self.options:
                 if type(option) in (list, tuple) and len(option)==2:
                     label, value = option
-                    if t == value:
+                    if str(t) == str(value):
                         return label
         return t
 
