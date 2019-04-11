@@ -434,6 +434,9 @@ def get_markdown_converter():
     def url_builder(label, base, end):
         return make_page_name(label) + '.html'
 
+    markdown_logger = logging.getLogger('MARKDOWN')
+    markdown_logger.setLevel(logging.WARNING)
+
     extras = ['tables', 'def_list', 'wikilinks', 'toc']
     configs = {'wikilinks': [('build_url', url_builder)]}
     converter = Markdown(extensions=extras, extension_configs=configs)
