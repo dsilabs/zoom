@@ -45,7 +45,13 @@ class Session(object):
                 logger.debug('expired session: replaced %r with %r', old_token, token)
         self._token = token
 
+    @property
+    def token(self):
+        """return the token"""
+        return self._token
+
     def destroy(self):
+        """destroy the session"""
         logger = logging.getLogger(__name__)
         db = self._request.site.db
         old_token = self._token
@@ -183,10 +189,12 @@ class Session(object):
                 logger.warning('session not loaded')
 
 
-def handler(request, handler, *rest):
-    logger = logging.getLogger(__name__)
+def handler(request, next_handler, *rest):
+    """session handler"""
     session = request.session = Session(request)
-    request.session_token = session._token
-    response = handler(request, *rest)
-    request.session_timeout = request.profiler.time('save session', request.session.save, request.site.db)
+    request.session_token = session.token
+    response = next_handler(request, *rest)
+    request.session_timeout = request.profiler.time(
+        'save session', request.session.save, request.site.db
+    )
     return response
