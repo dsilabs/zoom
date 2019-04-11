@@ -258,6 +258,14 @@ class Group(Record):
         }
         return my_apps
 
+    @property
+    def administrators(self):
+        store = self['__store']
+        admin_group = store.get(self['admin_group_id'])
+        if admin_group:
+            return admin_group.name
+        return 'nothing'
+
 
 class Groups(RecordStore):
 
