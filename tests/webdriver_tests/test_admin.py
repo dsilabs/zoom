@@ -7,7 +7,6 @@
     test admin app functions
 """
 
-
 from zoom.testing.webtest import AdminTestCase
 
 
@@ -33,6 +32,23 @@ class SystemTests(AdminTestCase):
         self.get('/admin')
         self.get('/admin/users')
         self.click_link(username)
+        self.click('id=delete-action')
+        self.click('name=delete_button')
+
+    def add_group(self, name, description):
+        self.get('/admin/groups/new')
+        self.fill(
+            dict(
+                name=name,
+            )
+        )
+        element = self.find('//*[@id="description"]')
+        element.send_keys(description)
+        self.click('create_button')
+
+    def delete_group(self, name):
+        self.get('/admin/groups')
+        self.click_link(name)
         self.click('id=delete-action')
         self.click('name=delete_button')
 
@@ -94,4 +110,33 @@ class SystemTests(AdminTestCase):
         self.fill(dict(q='sally'))
         self.click('search-button')
         self.assertContains('no records found')
+
+    def test_change_group_admin(self):
+        self.get('/admin/groups')
+        self.assertDoesNotContain('special_group')
+
+        self.add_group('special_group', 'special test group')
+        try:
+
+            self.get('/admin/groups')
+            self.assertContains('special_group')
+
+            self.get('/admin/groups')
+            self.find('//*[@name="link-to-special_group"]').click()
+            self.find('//*[@name="link-to-administrators"]')
+
+            self.find('//*[@id="edit-action"]').click()
+            self.click("//select[@id='admin_group_id']/option[text()='users']")
+            self.click('save_button')
+            self.find('//*[@name="link-to-users"]')
+
+            self.find('//*[@id="edit-action"]').click()
+            self.click("//select[@id='admin_group_id']/option[text()='administrators']")
+            self.click('save_button')
+            self.find('//*[@name="link-to-administrators"]')
+
+        finally:
+            self.delete_group('special_group')
+            self.get('/admin/groups')
+            self.assertDoesNotContain('special_group')
 
