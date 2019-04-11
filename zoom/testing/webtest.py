@@ -164,10 +164,15 @@ class WebdriverTestPrimitives(unittest.TestCase):
         raise Exception('Don\'t know how to find %s' % target)
 
     def type(self, target, text):
-        element = self.find(target)
-        element.click()
-        element.clear()
-        element.send_keys(text)
+        try:
+            element = self.find(target)
+            element.click()
+            element.clear()
+            element.send_keys(text)
+        except:
+            test_name = unittest.TestCase.id(self)
+            self.driver.save_screenshot('%s-error_screen.png' % test_name)
+            raise
 
     def fill(self, values):
         for name, value in values.items():
