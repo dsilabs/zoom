@@ -12,10 +12,10 @@ from zoom.models import Groups
 
 
 def get_user_group_options(site):
-    groups = Groups(site.db)
+    """return options for a groups pulldown field"""
     user_groups = list(sorted(
         (group.link, group.key)
-        for group in groups.find(**{'type': 'U'})
+        for group in site.groups.find(**{'type': 'U'})
     ))
     return user_groups
 
