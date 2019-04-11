@@ -52,6 +52,7 @@ def group_fields(request):
         f.PulldownField(
             'Administrators',
             default='administrators',
+            name='admin_group_id',
             options=user_groups
         ),
     ])
