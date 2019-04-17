@@ -372,14 +372,13 @@ class JavascriptResponse(Response):
 class JSONResponse(TextResponse):
     """JSON response
 
-    >>> response = JavascriptResponse(b'myjson')
+    >>> response = JSONResponse('myjson')
     >>> expected = (
     ...     b'Status: 200 OK\\n'
-    ...     b'Content-type: application/javascript\\n'
-    ...     b'Cache-Control: max-age=86400\\n'
-    ...     b'ETag: f97258d47\\n'
-    ...     b'Content-length: 6\\n\\n'
-    ...     b'myjson'
+    ...     b'Content-type: application/json;charset=utf-8\\n'
+    ...     b'Cache-Control: no-cache\\n'
+    ...     b'Content-length: 8\\n\\n'
+    ...     b'"myjson"'
     ... )
     >>> response.render() == expected
     True
@@ -391,6 +390,7 @@ class JSONResponse(TextResponse):
             indent=4,
             sort_keys=True,
             ensure_ascii=False,
+            status='200 OK',
             **kwargs
     ):
         content = dumps(
@@ -400,7 +400,7 @@ class JSONResponse(TextResponse):
             ensure_ascii=ensure_ascii,
             **kwargs
         )
-        TextResponse.__init__(self, content)
+        TextResponse.__init__(self, content, status=status)
         self.headers['Content-type'] = 'application/json;charset=utf-8'
 
 
