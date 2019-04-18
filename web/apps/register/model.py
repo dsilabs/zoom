@@ -240,7 +240,7 @@ def confirm_registration(token):
         else:
             # good to go
             register_user(registration)
-            result = zoom.page(load('register_complete.md'))
+            result = zoom.home('thank-you')
 
         if zoom.system.request.user.is_admin:
             msg = 'registration activated for {}'.format(registration.username)

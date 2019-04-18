@@ -48,6 +48,11 @@ class MyView(zoom.mvc.View):
             content = zoom.browse(model.get_registrations(), labels=labels)
             return zoom.page(content, title='Registrations')
 
+    def thank_you(self):
+        """return a thank you page"""
+        return zoom.page(model.load('register_complete.md'))
+        # return zoom.page('wrong content')
+
     def about(self):
         app = zoom.system.request.app
         content = '{app.description}'
@@ -81,7 +86,6 @@ class MyController(zoom.mvc.Controller):
         if zoom.system.request.user.is_admin:
             return zoom.home('list')
         return result
-
 
     @zoom.authorize('administrators')
     def delete(self, token):
