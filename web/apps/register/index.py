@@ -4,7 +4,6 @@
 
 import zoom
 
-
 import model
 
 
@@ -51,7 +50,6 @@ class MyView(zoom.mvc.View):
     def thank_you(self):
         """return a thank you page"""
         return zoom.page(model.load('register_complete.md'))
-        # return zoom.page('wrong content')
 
     def about(self):
         app = zoom.system.request.app
