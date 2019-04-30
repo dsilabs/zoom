@@ -522,7 +522,8 @@ class MySQLDatabase(Database):
 
         keyword_args = dict(
             kwargs,
-            charset='utf8'
+            charset='utf8',
+            binary_prefix=True
         )
 
         Database.__init__(self, pymysql.connect, *args, **keyword_args)
