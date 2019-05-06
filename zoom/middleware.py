@@ -392,9 +392,8 @@ def serve_html(request, handler, *rest):
     True
 
     """
-    if request.path.endswith('.html'):
+    if request.path.endswith('.html') or request.path == '/sitemap':
         logger = logging.getLogger(__name__)
-        # request.path = '/content' + request.path[:-5] + '/show'
         request.path = '/content' + request.path
         request.route = request.path.split('/')[1:]
         logger.debug('calling content app (%r, %r)', request.path, request.route)
