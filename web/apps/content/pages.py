@@ -41,6 +41,10 @@ class PageCollection(zoom.collect.CollectionModel):
         """Return a link"""
         return link_to(self.name, self.url)
 
+    @property
+    def abs_path(self):
+        return zoom.helpers.url_for(zoom.system.site.abs_url, self.path)
+
 
 class PageStore(EntityStore):
     """Page EntityStore"""

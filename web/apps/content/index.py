@@ -12,7 +12,7 @@ sitemap_tpl = """<?xml version="1.0" encoding="UTF-8"?>
 {pages}</urlset>"""
 
 url_tpl = """    <url>
-        <loc>{page.path}</loc>
+        <loc>{page.abs_path}</loc>
         <changefreq>daily</changefreq>
     </url>
 """
@@ -48,7 +48,8 @@ class MyView(View):
         """Return a sitemap"""
         content = sitemap_tpl.format(
             pages='\n'.join(
-                url_tpl.format(page=page) for page in get_pages()
+                url_tpl.format(page=page)
+                for page in sorted(get_pages(), key=lambda a: a.path)
                 if not page.exclude_from_sitemap
             )
         )
