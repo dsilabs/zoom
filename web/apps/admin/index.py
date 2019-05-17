@@ -10,19 +10,12 @@ import platform
 
 import zoom
 import zoom.html as h
-# from zoom.audit import audit
-from zoom.component import component
-from zoom.context import context
-from zoom.mvc import View
-from zoom.page import page
-from zoom.browse import browse
-from zoom.tools import load_content, today, how_long_ago
-from zoom.component import Component
 from zoom.helpers import link_to, link_to_page
+from zoom.page import page
+from zoom.tools import load_content, today, how_long_ago
 from zoom.users import link_to_user
 
-from views import index_metrics_view, IndexPageLayoutView
-
+import views
 import users
 import groups
 
@@ -70,7 +63,7 @@ def log_data(db, status, n, limit, q):
         'id', 'status', 'user', 'address', 'app',
         'path', 'timestamp', 'elapsed'
     )
-    return browse(data, labels=labels)
+    return zoom.browse(data, labels=labels)
 
 
 def activity_panel(db):
@@ -106,7 +99,7 @@ def activity_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
-    return browse(rows, labels=labels, title=link_to_page('Requests'))
+    return zoom.browse(rows, labels=labels, title=link_to_page('Requests'))
 
 
 def error_panel(db):
@@ -137,7 +130,7 @@ def error_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'path', 'when'
-    return browse(rows, labels=labels, title=link_to_page('Errors'))
+    return zoom.browse(rows, labels=labels, title=link_to_page('Errors'))
 
 
 def users_panel(db):
@@ -169,7 +162,7 @@ def users_panel(db):
         rows.append(row)
 
     labels = 'user', 'last seen', 'requests'
-    return browse(rows, labels=labels, title=link_to_page('Users'))
+    return zoom.browse(rows, labels=labels, title=link_to_page('Users'))
 
 
 def callback(method, url=None, timeout=5000):
@@ -194,10 +187,10 @@ def callback(method, url=None, timeout=5000):
         initial_value=method(),
         method_name=method_name
     )
-    return component(content, js=js)
+    return zoom.Component(content, js=js)
 
 
-class MyView(View):
+class MyView(zoom.View):
 
     def index(self, q=''):
 
@@ -246,9 +239,9 @@ class MyView(View):
         self.model.site.logging = False
         db = self.model.site.db
 
-        content = Component(
-            index_metrics_view(db),
-            IndexPageLayoutView(
+        content = zoom.Component(
+            views.index_metrics_view(db),
+            views.IndexPageLayoutView(
                 feed1=activity_panel(db),
                 feed2=users_panel(db),
                 feed3=error_panel(db),
@@ -280,7 +273,7 @@ class MyView(View):
             order by id desc limit 50
             """
         )
-        return browse(data)
+        return zoom.browse(data)
 
     def audit(self):
         """view audit log"""
@@ -299,7 +292,7 @@ class MyView(View):
         )))
 
         labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When'
-        return page(browse(data, labels=labels), title='Activity')
+        return page(zoom.browse(data, labels=labels), title='Activity')
 
     def requests(self, show_all=False):
         def fmt(rec):
@@ -320,7 +313,7 @@ class MyView(View):
         labels = 'id', 'app', 'path', 'status', 'user', 'address', 'login', 'timestamp', 'elapsed'
         data = list(map(fmt, data))
         actions = () if show_all else ('Show All',)
-        return page(browse(data, labels=labels), title='Requests', actions=actions)
+        return page(zoom.browse(data, labels=labels), title='Requests', actions=actions)
 
     def performance(self, n=0, limit=50, q=''):
         db = self.model.site.db
