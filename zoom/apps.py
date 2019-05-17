@@ -6,6 +6,7 @@
 
 import configparser
 import imp
+import importlib
 import logging
 import os
 import sys
@@ -44,6 +45,7 @@ def load_module(module, filename):
         pathname = os.path.realpath(filename)
         if os.path.exists(pathname):
             logger.debug('loading module %r', pathname)
+            importlib.invalidate_caches()
             return imp.load_source(module, pathname)
         logger.warning('load_module file missing %r', pathname)
         return None
