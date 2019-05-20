@@ -2,6 +2,8 @@
     system users
 """
 
+import uuid
+
 import zoom
 from zoom.audit import audit
 from zoom.components import success
@@ -151,6 +153,8 @@ class UserCollectionView(CollectionView):
         if user:
             msg = 'Reset password for %s (%s)<br><br>' % (user.full_name, user.username)
             form = get_reset_password_form(key)
+            suggested_password = uuid.uuid4().hex[:12]
+            form.initialize(new_password=suggested_password)
             form.validate(kwargs)
             content = msg + form.edit()
         else:
