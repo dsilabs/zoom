@@ -288,16 +288,23 @@ def serve_themes(request, handler, *rest):
 
     >>> url = 'http://localhost/notthemes/default/default.html'
     >>> request = zoom.request.build(url)
+    >>> request.site = zoom.sites.Site()
     >>> serve_themes(request, lambda a: False)
     False
     """
-    if request.path.startswith('/themes/'):
-        # TODO: use site.theme_path
-        theme_path = os.path.join(
-            request.site_path,
-            request.site.themes_path,
-        )
-        return serve_response(theme_path, *request.route[1:])
+
+    path = request.path[1:]
+    site = request.site
+    existing = zoom.utils.existing
+
+    pathname = path and (
+        existing(site.theme_path, path) or
+        existing(site.default_theme_path, path)
+    )
+    if pathname:
+        return serve_response(pathname)
+    elif request.path.startswith('/themes/'):
+        return serve_response(site.themes_path, *request.route[1:])
     else:
         return handler(request, *rest)
 
