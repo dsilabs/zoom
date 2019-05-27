@@ -261,6 +261,22 @@ class GIFResponse(Response):
         self.headers['Content-type'] = 'image/gif'
 
 
+class SVGResponse(Response):
+    """
+    SVG Response
+    Returns a response as an SVG
+
+    >>> response = SVGResponse(b'pretend SVG')
+    >>> response.render()
+    b'Status: 200 OK\\nContent-type: image/svg+xml\\nContent-length: 11\\n\\npretend SVG'
+
+    """
+
+    def __init__(self, content):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = "image/svg+xml"
+
+
 class TextResponse(Response):
     """Plan text response
 
