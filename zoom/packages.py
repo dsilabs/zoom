@@ -112,6 +112,17 @@ default_packages = {
         "libs":
             ["//cdn.jsdelivr.net/npm/vue/dist/vue.js"]
     },
+    "bootstrap4": {
+        "libs": [
+            "/js/bootstrap.bundle.min.js"
+        ],
+        "styles": [
+            "/css/bootstrap.min.css"
+        ],
+        "requires": [
+            "jquery", "jquery-ui"
+        ],
+    },
     "standard-zoom-assets": {
         "styles":
             [
