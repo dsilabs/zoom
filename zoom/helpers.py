@@ -134,6 +134,10 @@ def url_for(*a, **k):
         return uri
 
 
+def requires(*packages):
+    zoom.requires(*packages)
+    return ''
+
 def url_for_page(*args, **kwargs):
     """returns a url for a page of the current app
 
