@@ -37,6 +37,7 @@ from zoom.response import (
     WOFF2Response,
     BinaryResponse,
     JSONResponse,
+    SVGResponse,
 )
 import zoom.context
 import zoom.cookies
@@ -172,6 +173,7 @@ def serve_response(*path):
         woff=WOFFResponse,
         woff2=WOFF2Response,
         map=BinaryResponse,
+        svg=SVGResponse,
     )
     pathname = os.path.realpath(os.path.join(*path))
     logger = logging.getLogger(__name__)
