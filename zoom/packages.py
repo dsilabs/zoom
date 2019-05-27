@@ -111,6 +111,23 @@ default_packages = {
     "vue": {
         "libs":
             ["//cdn.jsdelivr.net/npm/vue/dist/vue.js"]
+    },
+    "standard-zoom-assets": {
+        "styles":
+            [
+                "/css/content.css",
+                "/css/navigation.css",
+                "/css/widget.css",
+                "/css/print.css",
+                "/css/style.css",
+                "/css/social.css",
+                "/css/buttons.css",
+                "/css/components.css",
+            ],
+        "libs":
+            [
+                "/static/zoom/zoom.js",
+            ]
     }
 }
 
