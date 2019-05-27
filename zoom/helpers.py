@@ -40,6 +40,19 @@ def owner_link():
         return html.a(name, href='mailto:%s' % email)
     return name
 
+def standard_zoom_head_tags():
+    zoom.requires('standard-zoom-assets')
+    tags = 'styles', 'css', 'head', 'tracker'
+    return ''.join('{{%s}}' % tag for tag in tags)
+
+def standard_zoom_content_tags():
+    tags = 'stdout', 'alerts', 'content'
+    content = ''.join('{{%s}}' % tag for tag in tags)
+    return html.div(content, classed='content')
+
+def standard_zoom_tail_tags():
+    tags = 'libs', 'js', 'tail'
+    return ''.join('{{%s}}' % tag for tag in tags)
 
 def tag_for(name, *a, **k):
     """create a zoom tag
