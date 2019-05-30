@@ -177,7 +177,7 @@ def get_groups_collection(request):
     users = Groups(db)
     fields = group_fields(request)
     columns = 'link', 'description', 'administrators'
-    return model.AdminCollection(
+    return model.GroupsCollection(
         fields,
         model=Group,
         controller=GroupCollectionController,

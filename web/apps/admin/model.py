@@ -382,3 +382,11 @@ class AdminCollection(zoom.collect.Collection):
     """Admin app Collection"""
 
     allows = admin_crud_policy()
+
+
+class GroupsCollection(AdminCollection):
+
+    @property
+    def has_many_records(self):
+        return False
+
