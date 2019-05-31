@@ -167,6 +167,7 @@ def handler(request, handler, *rest):
     """Handle profiled requests"""
 
     if request.env.get('ZOOM_PROFILER'):
+        request.profiling = True
         return profiled(request, handler, *rest)
     else:
         return handler(request, *rest)

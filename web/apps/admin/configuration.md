@@ -7,6 +7,9 @@ Site
 CSRF Validation
 : {{request.site.csrf_validation}}
 
+Profiling
+: {{profiling}}
+
 Paths
 ----
 

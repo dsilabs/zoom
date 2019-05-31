@@ -371,6 +371,7 @@ class MyView(zoom.View):
         return page(load_content('configuration.md').format(
             request=self.model,
             packages=packages,
+            profiling=zoom.system.request.profiling,
         ))
 
     def environment(self):

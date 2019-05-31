@@ -240,6 +240,7 @@ class Request(object):
         self.referrer = get('HTTP_REFERER')
         self.node = platform.node()
         self.profiler = SystemTimer(self.start_time)
+        self.profiling = False
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]
