@@ -158,6 +158,10 @@ class Group(Record):
     """
 
     @property
+    def group_id(self):
+        return self._id
+
+    @property
     def key(self):
         return str(self._id)
 
