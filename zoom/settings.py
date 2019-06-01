@@ -9,9 +9,8 @@ from zoom.page import page
 
 
 class AppSettings(zoom.store.Entity):
-    """settings storage class"""
+    """app settings"""
     pass
-
 
 
 class SystemSettings(zoom.store.Entity):
