@@ -9,6 +9,7 @@ class AppsController(zoom.Controller):
     def index(self):
 
         def get_group_link(group_id):
+            """Return a group link"""
             group = groups.get(group_id)
             return group.link if group else zoom.html.span(
                 'missing',
@@ -16,6 +17,7 @@ class AppsController(zoom.Controller):
             )
 
         def fmt(app):
+            """Format an app record"""
             name = app.name
             group_name = 'a_' + app.name
             app_group = zoom.system.site.groups.first(name=group_name)
@@ -31,7 +33,7 @@ class AppsController(zoom.Controller):
 
         db = zoom.system.site.db
         subgroups = list(db('select * from subgroups'))
-        groups = dict((g._id, g) for g in zoom.system.site.groups)
+        groups = dict((g.group_id, g) for g in zoom.system.site.groups)
         data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.title.lower())]
         content = zoom.browse(
             data,
