@@ -149,6 +149,63 @@ def group_activity_log(group):
 
 class GroupCollectionView(zoom.collect.CollectionView):
 
+    def index(self, q='', *args, **kwargs):
+        """collection landing page"""
+
+        c = self.collection
+        user = c.user
+
+        if c.request.route[-1:] == ['index']:
+            return zoom.redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
+
+        actions = user.can('create', c) and ['New'] or []
+
+        if q:
+            title = 'Selected ' + c.title
+            records = c.search(q)
+        else:
+            title = c.title
+            records = c.store.find(type='U')
+
+        authorized = (i for i in records if user.can('read', i))
+        items = sorted(authorized, key=c.order)
+        num_items = len(items)
+
+        if num_items != 1:
+            footer_name = c.title.lower()
+        else:
+            footer_name = c.item_title.lower()
+
+        if q:
+            footer = '{:,} {} found in search of {:,} {}'.format(
+                num_items,
+                footer_name,
+                len(c.store),
+                c.title.lower(),
+            )
+        else:
+            footer = '%s %s' % (len(items), footer_name)
+
+        admin_ids = [item.admin_group_id for item in items]
+        admin_lookup = {
+            group.group_id: zoom.link_to(group.name, 'groups', group.group_id)
+            for group in zoom.system.site.groups
+            if group.group_id in admin_ids
+        }
+
+        for item in items:
+            item.administrators = admin_lookup.get(item.admin_group_id, '')
+
+        content = zoom.browse(
+            [c.model(i) for i in items],
+            labels=c.get_labels(),
+            columns=c.get_columns(),
+            footer=footer
+        )
+
+        return zoom.page(content, title=title, actions=actions, search=q)
+
+
     def show(self, key):
         page = super().show(key)
         group = zoom.system.site.groups.get(key)
@@ -170,15 +227,19 @@ class GroupCollectionController(CollectionController):
 
 
 def get_groups_collection(request):
+
     def user_group(group):
         return group.type == 'U' and not group.name.startswith('a_')
 
+    def get_fields():
+        return group_fields(request)
+
     db = request.site.db
     users = Groups(db)
-    fields = group_fields(request)
+    labels = 'Name', 'Description', 'Administrators'
     columns = 'link', 'description', 'administrators'
     return model.GroupsCollection(
-        fields,
+        get_fields,
         model=Group,
         controller=GroupCollectionController,
         view=GroupCollectionView,
@@ -187,6 +248,7 @@ def get_groups_collection(request):
         url='/admin/groups',
         filter=user_group,
         columns=columns,
+        labels=labels,
         key_name='id',
         search_engine=RawSearch
     )
