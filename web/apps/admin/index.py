@@ -364,6 +364,14 @@ class MyView(zoom.View):
         return page(content, title='Log Entry', css=css)
 
     def configuration(self):
+        if zoom.system.request.site.profiling:
+            if zoom.system.request.profiling:
+                profiling_message = 'Yes'
+            else:
+                profiling_message = 'No <span class="hint">(environment variable missing)</span>'
+        else:
+            profiling_message = 'No'
+
         items = zoom.packages.get_registered_packages()
         packages = '<dt>combined</dt><dd>{}</dd>'.format(
             zoom.html.pre(json.dumps(items, indent=4, sort_keys=True))
@@ -371,7 +379,7 @@ class MyView(zoom.View):
         return page(load_content('configuration.md').format(
             request=self.model,
             packages=packages,
-            profiling=zoom.system.request.profiling,
+            profiling=profiling_message,
         ))
 
     def environment(self):
