@@ -18,6 +18,9 @@ class BackgroundJob(object):
     def __init__(self, name, path):
         self.name = name
         self.path = path
+        self.cron = '* * * * *'
+        self.scheduled = 'never'
+        self.status = 'paused'
 
     def __repr__(self):
         return 'BackgroundJob(%r)' % self.name
