@@ -35,6 +35,15 @@ default_packages = {
             'd3',
         ]
     },
+    'cookieconsent': {
+        'libs': [
+            '/static/zoom/cookieconsent.js',
+            '//cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js'
+        ],
+        'styles': [
+            '//cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css'
+        ]
+    },
     'datatables': {
         'libs': [
             '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js',

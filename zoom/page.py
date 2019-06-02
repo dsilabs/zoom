@@ -212,6 +212,9 @@ class Page(object):
 
         template = zoom.tools.get_template(self.template, self.theme)
 
+        if zoom.system.site.settings.site.cookie_consent:
+            zoom.requires('cookieconsent')
+
         return HTMLResponse(template, status=self.status)
 
 

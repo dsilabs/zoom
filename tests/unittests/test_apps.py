@@ -24,9 +24,8 @@ class TestApps(unittest.TestCase):
         self.request.profiler = set()
         self.db = zoom.database.setup_test()
         zoom.system.site = zoom.site.Site(self.request)
+        zoom.system.site.db = self.db
         self.request.site = zoom.system.site
-        this_dir = os.path.dirname(__file__)
-        # self.apps_dir = os.path.join(this_dir, '../../web/apps')
         self.apps_dir = zoom.tools.zoompath('web', 'apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
             name='app',
