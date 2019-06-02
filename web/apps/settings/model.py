@@ -11,8 +11,6 @@ import zoom.validators as v
 
 listdir = os.listdir
 
-def get_theme_options():
-    return [''] + sorted(listdir(zoom.system.site.themes_path))
 
 theme_comment_options = [
     'name',
@@ -21,7 +19,12 @@ theme_comment_options = [
 ]
 
 
+def get_theme_options():
+    return [''] + sorted(listdir(zoom.system.site.themes_path))
+
+
 def get_site_settings_form():
+    """Creates, initializes and returns the site settings form"""
     form = zoom.forms.Form(
         f.Section('Site', [
             f.TextField('Name', v.required),
@@ -35,9 +38,10 @@ def get_site_settings_form():
     )
     form.update(zoom.system.site.settings.site)
     return form
-    
+
 
 def get_theme_settings_form():
+    """Creates, initializes and returns the theme settings form"""
     form = zoom.forms.Form(
         f.Section('Theme',[
             f.PulldownField(
@@ -78,20 +82,21 @@ def get_mail_settings_form():
 
 
 def save_site_settings(data):
+    """Save site settings"""
     site = zoom.system.site
-    print(data)
     site.settings.update('site', data)
-    print(site.settings.site)
     site.settings.save()
 
 
 def save_theme_settings(data):
+    """Save theme settings"""
     site = zoom.system.site
     site.settings.update('theme', data)
     site.settings.save()
 
 
 def save_mail_settings(data):
+    """Save mail settings"""
     site = zoom.system.site
     site.settings.update('mail', data)
     site.settings.save()
