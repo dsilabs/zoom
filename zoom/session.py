@@ -176,14 +176,8 @@ class Session(object):
         if token_is_valid:
             values = load_existing(token)
             if values:
-                logger.debug('session values loaded: {}'.format(values))
-                if values.get('ip_address', None) == self._request.ip_address:
-                    logger.debug('session ip_address matches')
-                    self.__dict__.update(values)
-                    return True
-                else:
-                    msg = 'session ip_address mismatch, exiting session load'
-                    logger.warning(msg)
+                self.__dict__.update(values)
+                return True
             elif values == {}:
                 logger.warning('session values missing')
             else:
