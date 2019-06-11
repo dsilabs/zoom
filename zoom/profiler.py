@@ -7,6 +7,7 @@ import io
 import timeit
 import logging
 import cProfile
+import os
 import sys
 
 from zoom.utils import ItemList
@@ -166,7 +167,7 @@ def profiled(request, handler, *rest):
 def handler(request, handler, *rest):
     """Handle profiled requests"""
 
-    if request.env.get('ZOOM_PROFILER'):
+    if os.environ.get('ZOOM_PROFILER'):
         request.profiling = True
         return profiled(request, handler, *rest)
     else:
