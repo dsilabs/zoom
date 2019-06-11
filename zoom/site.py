@@ -259,7 +259,7 @@ class Site(object):
     @property
     def settings(self):
         if not self.__settings:
-            self.__settings = zoom.settings.SiteSettings(self.conf)
+            self.__settings = zoom.settings.SiteSettingsManager(self.name, self.conf)
         return self.__settings
 
     @property
