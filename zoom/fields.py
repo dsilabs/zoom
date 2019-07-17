@@ -1983,6 +1983,12 @@ class RadioField(TextField):
     <span class="radio"><input class="radio" name="choice" type="radio" value="2" />Two</span>
     <BLANKLINE>
 
+    >>> r = RadioField('Choice',default='1',values=[('One','1'),('Two','2')])
+    >>> print(r.widget())
+    <span class="radio"><input checked class="radio" name="choice" type="radio" value="1" />One</span>
+    <span class="radio"><input class="radio" name="choice" type="radio" value="2" />Two</span>
+    <BLANKLINE>
+
 
     >>> r.assign('1')
     >>> r.evaluate()
@@ -2000,7 +2006,7 @@ class RadioField(TextField):
     values = []
 
     def widget(self):
-        current_value = self.value #self.display_value()
+        current_value = self.value or self.default
         result = []
         name = self.name
         for option in self.values:
