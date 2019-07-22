@@ -149,8 +149,17 @@ class AppProxy(object):
     def __init__(self, name, filename, site):
         self.name = name
         self.filename = filename
-        self.url = site.url + '/' + name
-        self.abs_url = site.abs_url + '/' + name
+
+        user = zoom.system.request.user
+
+        default_app_name = get_default_app_name(site, user)
+
+        slug = '/' + name
+        if name == default_app_name:
+            slug = '/'
+
+        self.url = site.url + slug
+        self.abs_url = site.abs_url + slug
         self.path = os.path.dirname(filename)
         self.site = site
         self.config_parser = configparser.ConfigParser()
@@ -424,7 +433,7 @@ def handle(request):
         request.app = app
         zoom.render.add_helpers(helpers(request))
 
-        saved_database_debug_setting =  Database.debug
+        saved_database_debug_setting = Database.debug
         try:
             Database.debug = request.site.monitor_app_database
             request.profiler.add('system ready')
@@ -472,7 +481,35 @@ def handle(request):
     if not app:
         logger.debug('app %r not found in site.apps_paths', app_name)
         logger.debug('site.apps_paths: %r', request.site.apps_paths)
-        logger.debug('redirecting to /')
+
+        app_name = get_default_app_name(request.site, request.user)
+        logger.debug('default app is %r', app_name)
+        request.route.insert(0, app_name)
+        logger.debug('updated route is %r', request.route)
+        if app_name:
+            logger.debug('loading default app %r', app_name)
+            app = load_app(request.site, app_name)
+
+            if not app:
+                logger.warning('unable to load default app %r', app_name)
+
+            elif not app.enabled:
+                logger.warning('default app %r deactivated', app_name)
+
+            elif not user.can_run(app):
+                msg = (
+                    '%r has insufficient privileges to run default app %s (%r), '
+                    'returning 404'
+                )
+                logger.warning(msg, user.username, app_name, app.path)
+
+            else:
+                return run_app(app)
+
+            app = NoApp()
+            return run_app(app)
+
+        logger.debug('app not found redirecting to /')
         return redirect_response('/')
 
     elif not app.enabled:
@@ -610,5 +647,8 @@ def handler(request, next_handler, *rest):
         logger.debug('adding "." to path')
         sys.path.insert(0, '.')
     response = handle(request)
-    logger.debug('app responded with type %s' % type(response))
+    if isinstance(response, zoom.response.RedirectResponse):
+        logger.debug('app redirecting to %s' % response.headers['Location'])
+    else:
+        logger.debug('app responded with type %s' % type(response))
     return response or next_handler(request, *rest)

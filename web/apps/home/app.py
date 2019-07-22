@@ -51,6 +51,9 @@ def app(request):
         }
     """
 
+    if len(request.route) > 1 or request.data:
+        return zoom.home()
+
     skip = 'home', 'logout', 'login'
     content = h.div(
         h.ul(
