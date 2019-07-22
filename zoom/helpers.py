@@ -84,8 +84,8 @@ def url_for(*a, **k):
     >>> url_for('')
     ''
 
-    # >>> url_for('/')
-    # '<dz:site_url>'
+    >>> url_for('/')
+    '/'
 
     >>> url_for('/', 'home')
     '/home'
@@ -106,7 +106,7 @@ def url_for(*a, **k):
     '/user?age=15&q=test+one'
 
     >>> url_for('/', q='test one', age=15)
-    '?age=15&q=test+one'
+    '/?age=15&q=test+one'
 
     >>> url_for(q='test one', age=15)
     '?age=15&q=test+one'
@@ -122,6 +122,8 @@ def url_for(*a, **k):
     if a and a[0] and a[0][0] == '/':
         if len(a[0]) > 1:
             uri = root + '/'.join(a)
+        elif len(a) == 1:
+            uri = '/'.join([root, ''])
         else:
             uri = '/'.join([root] + a[1:])
 
