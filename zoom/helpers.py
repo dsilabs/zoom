@@ -144,9 +144,11 @@ def url_for(*a, **k):
             '&'.join('{}={}'.format(*i) for i in sorted(k.items())),
             safe="/=&"
         )
-        return '?'.join([uri, params])
+        result = '?'.join([uri, params])
     else:
-        return uri
+        result = uri
+
+    return result
 
 
 def requires(*packages):
