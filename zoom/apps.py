@@ -156,7 +156,7 @@ class AppProxy(object):
 
         slug = '/' + name
         if name == default_app_name:
-            slug = ''
+            slug = '/'
 
         self.url = site.url + slug
         self.abs_url = site.abs_url + slug

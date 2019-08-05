@@ -155,16 +155,22 @@ def requires(*packages):
     zoom.requires(*packages)
     return ''
 
+
 def url_for_page(*args, **kwargs):
     """returns a url for a page of the current app
 
+    >>> zoom.system.request = lambda: None
+    >>> zoom.system.request.app = lambda: None
+    >>> zoom.system.request.app.url = '/home'
+
     >>> url_for_page()
-    '<dz:app_url>'
+    '/home'
 
     >>> url_for_page('page1')
-    '<dz:app_url>/page1'
+    '/home/page1'
     """
-    return url_for('<dz:app_url>', *args, **kwargs)
+    app = zoom.system.request.app
+    return url_for(app.url, *args, **kwargs)
 
 
 def url_for_item(*args, **kwargs):
