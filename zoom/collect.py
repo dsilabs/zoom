@@ -144,7 +144,7 @@ class CollectionView(View):
 
         authorized = (i for i in records if user.can('read', i))
         filtered = c.filter and filter(c.filter, authorized) or authorized
-        items = sorted(filtered, key=c.order)
+        items = sorted(filtered, key=c.order, reverse=c.is_reversed())
         items = c.sorter and c.sorter(items) or items
         num_items = len(items)
 
@@ -853,6 +853,10 @@ class Collection(object):
     def order(self, item):
         """Returns the sort key"""
         return item.name.lower()
+
+    def is_reversed(self):
+        """Sort ASC or DESC"""
+        return False
 
     def locate(self, key):
         """locate a record"""
