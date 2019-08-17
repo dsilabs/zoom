@@ -29,6 +29,9 @@ def apply_helpers(template, obj, providers):
 
     >>> apply_helpers('Hello {{other}}!', user, {})
     'Hello {{other}}!'
+
+    >>> apply_helpers('Hello {{other world}}!', user, {})
+    'Hello world!'
     """
     fill = zoom.fill.fill
 
@@ -105,6 +108,9 @@ def render(template, *providers, **helpers):
     >>> def name(): return 'Joe'
     >>> render('Hello {{name}}!', dict(name=name))
     'Hello Joe!'
+
+    >>> render('Hello {{name stranger}}!')
+    'Hello stranger!'
 
     """
     return apply_helpers(
