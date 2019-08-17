@@ -100,7 +100,8 @@ class FileBucket(object):
 
     def get(self, item_id, default=None):
         pathname = os.path.join(self.path, item_id)
-        if not os.path.exists(pathname) and default: return default
+        if not os.path.exists(pathname) and default is not None:
+            return default
         with open(os.path.join(pathname), 'rb') as f:
             return f.read()
 
