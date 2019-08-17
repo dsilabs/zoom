@@ -43,6 +43,21 @@ def get_edit_form():
 
 class ImageManager(zoom.Controller):
 
+    def __call__(self, *args, **kwargs):
+        """Overide default Controller.__call__ behaviour"""
+
+        # see if an image is being requested
+        if len(args) == 1 and not bool(kwargs):
+            images = zoom.store.store_of(Image)
+            image = images.first(image_id=args[0]) or images.first(image_name=args[0])
+            if image:
+                item_id = image.image_id
+                path = os.path.join(zoom.system.site.data_path, 'buckets')
+                bucket = Bucket(path)
+                return image_response(image.image_name, bucket.get(item_id))
+
+        return zoom.Controller.__call__(self, *args, **kwargs)
+
     def index(self):
         """Show all images"""
 
@@ -56,10 +71,11 @@ class ImageManager(zoom.Controller):
             url=zoom.helpers.url_for_page('images', 'get-image', item_id=a.image_id),
         ) for a in images]
 
+
         tpl = """
-        <a href="/content/images/get-image?item_id={image.image_id}">
-        <img class="images-thumbnail" src="/content/images/get-image?item_id={image.image_id}">
-        <a>
+        <a href="/content/images/{image.image_id}">
+          <img class="images-thumbnail" title="{image.image_name}" src="/content/images/{image.image_id}">
+        </a>
         """
 
         content = ''.join(
@@ -127,7 +143,9 @@ class ImageManager(zoom.Controller):
     def show(self, key):
         path = os.path.join(zoom.system.site.data_path, 'buckets')
         bucket = Bucket(path)
-        return image_response('house.png', bucket.get(key))
+        image = bucket.get(key, False)
+        if image:
+            return image_response('image.png', image)
 
     def add_image(self, *_, **kwargs):
         """accept uploaded images and attach them to the record"""

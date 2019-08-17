@@ -32,6 +32,15 @@ class CustomApp(App):
         elif request.path == '/content/sitemap':
             return App.__call__(self, request)
 
+        elif request.path == '/content/images' and zoom.system.user.can('edit', self):
+            # user with edit privilege is viewing the image app index
+            self.menu = menu
+            return App.__call__(self, request)
+
+        elif request.path.startswith('/content/images') and request.path != '/content/images':
+            # any user is viewing an image
+            return App.__call__(self, request)
+
         elif request.path.endswith('.html'):
             # this is a request to view a site page
             request.path = request.path + '/show'
