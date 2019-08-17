@@ -672,7 +672,6 @@ def handle(request, handlers=None):  # pragma: no cover
         serve_redirects,
         serve_favicon,
         serve_static,
-        serve_images,
         serve_html,
         reset_modules,
         capture_stdout,
