@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from cgi import FieldStorage
 
 from zoom import Page, Record, system as context, store, redirect_to, \
-	load as load_app_asset, html
+	load as load_app_asset, html, authorize
 from zoom.mvc import View, Controller
 from zoom.render import render as render_template
 from zoom.collect import Collection, CollectionModel
@@ -91,7 +91,9 @@ class StoredFile(Record):
 			''.join((
 				html.tag('a', 
 					''.join((
-						html.tag('i', classed='fa ' + icon_name_for(self.mimetype)),
+						html.tag('i', classed='fa ' + icon_name_for(
+							self.mimetype
+						)),
 						self.filename
 					)),
 					href=self.access_url,
@@ -114,9 +116,11 @@ class StoredFile(Record):
 class FileSetView(View):
 	'''The file set view.'''
 
+	@authorize('managers')
 	def index(self, *route, **req_data):
 		return render_fileset_view(edit=False, actions=('Edit',))
 	
+	@authorize('managers')
 	def edit(self, *route, **req_data):
 		if len(route) > 0 and route[-1] == 'done':
 			return redirect_to('/content/files')
@@ -158,6 +162,7 @@ class FileSetView(View):
 class FileSetController(View):
 	'''The file set controller.'''
 
+	@authorize('managers')
 	def delete(self, *route, **req_data):
 		'''Handle a file delete.'''
 		#	Read the file ID from the request, with safety.
@@ -173,6 +178,7 @@ class FileSetController(View):
 
 		return Response(status='200 OK')
 
+	@authorize('managers')
 	def upload(self, *route, **req_data):
 		'''Handle a file upload.'''
 		#	Read the FieldStorage.
