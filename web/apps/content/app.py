@@ -7,7 +7,7 @@ import logging
 import zoom
 from zoom.apps import App
 
-menu = ['Overview', 'Pages', 'Snippets', 'Images']
+menu = ['Overview', 'Pages', 'Snippets', 'Images', 'Files']
 
 
 class CustomApp(App):

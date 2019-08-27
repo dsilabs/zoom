@@ -1,0 +1,199 @@
+'''File upload and service.'''
+
+import json
+
+from uuid import UUID, uuid4
+from cgi import FieldStorage
+
+from zoom import Page, Record, system as context, store, redirect_to, \
+	load as load_app_asset, html
+from zoom.mvc import View, Controller
+from zoom.render import render as render_template
+from zoom.collect import Collection, CollectionModel
+from zoom.response import Response
+
+#	Define constants.
+ICON_NAMES = (
+	(('png', 'jpg', 'jpeg', 'tiff', 'svg'), 'fa-file-image-o'),
+	(('pdf',), 'fa-file-pdf-o'),
+	(('html', 'javascript', 'css', 'json'), 'fa-file-code-o'),
+	(('zip', 'tar'), 'fa-file-archive-o'),
+	(('mp3', 'aiff', 'ogg', 'wav'), 'fa-file-audio-o'),
+	(('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
+	(('text', 'txt'), 'fa-file-text-o')
+)
+
+#	Define helpers.
+def get_upload_form():
+	'''Return the file upload form. Note we create our own form since the stock
+	one doesn't have the DOM we want (but we still protect against CSRF).'''
+	#	Create and store CSRF token.
+	csrf_token = str(uuid4())
+	context.request.session.csrf_token = csrf_token
+
+	return html.tag('form',
+		''.join((
+			html.hidden(name='csrf_token', value=csrf_token, id='--fm-csrf'),
+			html.tag('input',
+				name='file',
+				id='--fm-upload-field',
+				type='file'
+			)
+		)),
+		action='/content/files/upload',
+		id='--fm-upload-form',
+		method='POST'
+	)
+
+def	icon_name_for(mimetype):
+	'''Return the FontAwesome icon name for the given mime-type.'''
+	for entry in ICON_NAMES:
+		types, icon = entry
+		for typ in types:
+			if typ in mimetype:
+				return icon
+		
+	return 'fa-file-o'
+
+def render_fileset_view(edit=False, **page_kwargs):
+	'''Serve the view for the file set, with edit mode on or off.'''
+	#	Load and de-template the page.
+	content_template = load_app_asset('views/file-manager.html')
+
+	return Page(render_template(content_template,
+		file_list=''.join(list(
+			stored_file.render_view(edit=edit) for stored_file \
+					in StoredFile.collection()
+		)),
+		upload_form=get_upload_form() if edit else str()
+	), title='Files', **page_kwargs)
+
+#	Define the record.
+class StoredFile(Record):
+	'''A stored file.'''
+
+	@classmethod
+	def collection(cls):
+		return store.store_of(cls)
+	
+	@property
+	def access_url(self):
+		return '/content/files/view/' + self.id
+
+	@property
+	def filename(self):
+		return self.original_name or '&lt;no name&gt;'
+
+	def render_view(self, edit=False):
+		'''Render and return the view for this stored file, optionally with
+		edit options.'''
+		return html.tag('div',
+			''.join((
+				html.tag('a', 
+					''.join((
+						html.tag('i', classed='fa ' + icon_name_for(self.mimetype)),
+						self.filename
+					)),
+					href=self.access_url,
+					target='_blank',
+					title='Click to view',
+				),
+				str() if not edit else html.tag('div',
+					html.tag('div', '(delete)', 
+						classed='--fm-delete', 
+						id=self.id, 
+						role='button'
+					),
+					classed='--fm-file-controls'
+				)
+			)),
+			classed='--fm-file-item'
+		)
+
+#	Define MVC components.
+class FileSetView(View):
+	'''The file set view.'''
+
+	def index(self, *route, **req_data):
+		return render_fileset_view(edit=False, actions=('Edit',))
+	
+	def edit(self, *route, **req_data):
+		if len(route) > 0 and route[-1] == 'done':
+			return redirect_to('/content/files')
+
+		return render_fileset_view(edit=True, actions=('Done',))
+
+	def view(self, *route, **req_data):
+		'''Serves the file with the ID given as the tail of the request path.'''
+		#	This holds the file reference we tried to serve. 
+		attempted_file = None
+
+		#	Define a 404 generation helper.
+		def no_file():
+			'''Return a 404 indicating the requested file DNE.'''
+			return Response(
+				content=bytes(
+					'%s not found'%(attempted_file or '<nothing>'), 'utf-8'
+				),
+				status='404 Not Found'
+			)
+		
+		#	Assert the route contains a tail.
+		if len(route) != 1:
+			return no_file()
+		#	Assert the tail is a valid UUID.
+		attempted_file = route[0]
+		try:
+			file_id = str(UUID(attempted_file))
+		except ValueError:
+			return no_file()
+		#	Retrieve the file with the given ID and assert it exists.
+		to_view = StoredFile.collection().first(id=file_id)
+		if not to_view:
+			return no_file()
+
+		#	Serve the file.
+		return Response(to_view.data, headers={'Content-Type': to_view.mimetype})
+
+class FileSetController(View):
+	'''The file set controller.'''
+
+	def delete(self, *route, **req_data):
+		'''Handle a file delete.'''
+		#	Read the file ID from the request, with safety.
+		try:
+			file_id = str(UUID(req_data['file_id']))
+		except ValueError:
+			return Response(status='400 Bad Request')
+		
+		#	Retrieve and delete the file.
+		stored_files = StoredFile.collection()
+		to_delete = stored_files.first(id=file_id)
+		stored_files.delete(to_delete)
+
+		return Response(status='200 OK')
+
+	def upload(self, *route, **req_data):
+		'''Handle a file upload.'''
+		#	Read the FieldStorage.
+		file_desc = req_data['file']
+		file_mimetype = req_data['mimetype']
+		if not isinstance(file_desc, FieldStorage):
+			#	Python is dangerous when the type is incorrectly assumed.
+			return Response(b'invalid request body', status='400 Bad Request')
+
+		#	Persist the file.
+		to_store = StoredFile(
+			id=str(uuid4()),
+			data=file_desc.value,
+			mimetype=file_mimetype,
+			original_name=file_desc.filename
+		)
+		StoredFile.collection().put(to_store)
+
+		#	Respond.
+		return Response(bytes(to_store.access_url, 'utf-8'), status='201 Created')
+
+#	Define main.
+view = FileSetView()
+controller = FileSetController()

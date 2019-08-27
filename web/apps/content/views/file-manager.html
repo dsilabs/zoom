@@ -1,0 +1,205 @@
+<div class="files-manager" id="files-manager">
+	<div class="--fm-files-area">
+		<div class="--fm-form-container">
+			{{upload_form}}
+		</div>
+		<div class="--fm-files-list">
+			{{file_list}}
+			<div id="--fm-drop-area" class="--fm-file-item --fm-label-container" style="display: none;">
+				<i class="fa fa-upload"></i>
+				<label id="--fm-upload-label" for="--fm-upload-field">
+					Drop or <strong>select</strong>
+				</label>
+			</div>
+		</div>
+	</div>
+
+	<!-- Component styles and logic. -->
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<style type="text/css">
+		.files-manager .--fm-files-area {
+			position: relative
+			background-color: lightblue;
+			padding: 10px;
+		}
+
+		.files-manager .--fm-file-item {
+			display: inline-block;
+			vertical-align: top;
+			width: calc(20% - 20px);
+			margin: 10px;
+			padding: 20px 10px;
+			position: relative;
+			text-align: center;
+		}
+
+		.files-manager .--fm-file-item .--fm-delete {
+			font-size: 10pt;
+			display: inline-block;
+			color: darkgray;
+			cursor: pointer;
+			margin-top: 5px;
+		}
+		.files-manager .--fm-file-item .--fm-delete:hover {
+			font-size: 10pt;
+			color: black;
+			cursor: pointer;
+			margin-top: 5px;
+		}
+
+		.files-manager .--fm-file-item i {
+			font-size: 60px;
+			display: block;
+			color: black;
+			margin-bottom: 10px;
+		}
+
+		.files-manager .--fm-label-container {
+			width: calc(20% - 24px);
+			border: 2px dashed lightgray;
+			border-radius: 5px;
+		}
+
+		.files-manager .--fm-label-container i {
+			color: grey;
+		}
+
+		.files-manager[data-fm-drag="true"] .--fm-label-container {
+			border-color: grey;
+		}
+		
+		.files-manager[data-fm-drag="true"] .--fm-label-container i {
+			border-color: grey;
+			color: black;
+		}
+
+		.files-manager #--fm-upload-form {
+			position: absolute;
+			opacity: 0;
+			top: 0px; left: 0px;
+			height: 1px; width: 1px;
+		}
+
+		.files-manager #--fm-upload-label {
+			margin: 0px;
+			text-align: center;
+			font-weight: normal;
+			cursor: pointer;
+		}
+
+		.files-manager[data-fm-drag="true"] .--fm-label-container * {
+			pointer-events: none;
+		}
+	</style>
+	<script type="text/javascript">
+		(function() {
+			var container = document.getElementById('files-manager'),
+				form = document.getElementById('--fm-upload-form');
+			if (!form) return; // Not in edit mode.
+
+			//	Define some helpers.
+			function submitForm(destination, content, success) {
+				//	Copy CSRF token.
+				content.csrf_token = document.getElementById('--fm-csrf').value;
+
+				var data = new FormData();
+				var keys = Object.keys(content);
+				for (var i = 0; i < keys.length; i++) {
+					var key = keys[i], value = content[key];
+					if (value instanceof Array) data.append(key, value[0], value[1]);
+					else data.append(key, value);
+				}
+
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST', destination);
+				xhr.addEventListener('readystatechange', () => {
+					if (xhr.readyState != 4) return;
+					if (xhr.status >= 400) return;
+					success(xhr.status);
+				});
+				xhr.send(data);
+			}
+
+			//	Set up drag and drop.
+			var area = document.getElementById('--fm-drop-area'),
+				field = document.getElementById('--fm-upload-field'),
+				label = document.getElementById('--fm-upload-label');
+
+			area.removeAttribute('style');
+			var defaultLabelValue = label.innerHTML;
+
+			function handleFileSelection(file) {
+				resetDragCosmetics();
+
+				if (!('FileReader' in window)) {
+					window.alert('Please use a newer browser');
+				}
+
+				var reader = new FileReader();
+				reader.addEventListener('load', function() {
+					submitForm(form.action, {
+						file: [new Blob([reader.result], {type: file.type}), file.name],
+						mimetype: file.type
+					}, function (status) {
+						if (status == 201) window.location.reload();
+					});
+				});
+				reader.readAsArrayBuffer(file);
+			}
+
+			function resetDragCosmetics() {
+				container.removeAttribute('data-fm-drag');
+				label.innerHTML = defaultLabelValue;
+			}
+
+			area.addEventListener('dragover', function(event) {
+				var item = event.dataTransfer.items[0];
+				if (item.kind != 'file') return;
+
+				event.preventDefault();
+				event.stopPropagation();
+			});
+
+			area.addEventListener('dragenter', function(event) {
+				event.preventDefault();
+
+				container.setAttribute('data-fm-drag', 'true');
+				label.innerHTML = '<strong>Drop to add</strong>';
+			});
+
+			area.addEventListener('dragleave', resetDragCosmetics);
+
+			area.addEventListener('drop', function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				handleFileSelection(event.dataTransfer.files[0]);
+			});
+
+			field.addEventListener('change', function() {
+				handleFileSelection(field.files[0]);
+			});
+
+			//	Setup up delete buttons.
+			function setupButton(button) {
+				button.addEventListener('click', function() {
+					submitForm('/content/files/delete', {
+						file_id: button.id,
+					}, function() {
+						var cur = button;
+						while (cur.className != '--fm-file-item') {
+							cur = cur.parentElement;
+						}
+
+						cur.setAttribute('style', 'display: none;');
+					});
+				});
+			}
+
+			var deleteButtons = document.getElementsByClassName('--fm-delete');
+			for (var i = 0; i < deleteButtons.length; i++) {
+				setupButton(deleteButtons[i]);
+			}
+		})();
+	</script>
+</div>
