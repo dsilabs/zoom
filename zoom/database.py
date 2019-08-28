@@ -757,6 +757,8 @@ def setup_test(engine=None):   # pragma: no cover
     get = os.environ.get
     engine = engine or get('ZOOM_TEST_DATABASE_ENGINE', 'mysql')
 
+    test_database_name = get('ZOOM_TEST_DATABASE_NAME', 'zoomtest')
+
     if engine == 'mysql':
         db = database(
             'mysql',
@@ -764,9 +766,9 @@ def setup_test(engine=None):   # pragma: no cover
             user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
             passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
         )
-        db('drop database if exists zoomtest')
-        db('create database zoomtest')
-        db('use zoomtest')
+        db('drop database if exists ' + test_database_name)
+        db('create database ' + test_database_name)
+        db('use ' + test_database_name)
         db.create_test_tables()
 
     elif engine == 'memory':
@@ -776,6 +778,8 @@ def setup_test(engine=None):   # pragma: no cover
         )
         db.delete_test_tables()
         db.create_test_tables()
+
     else:
         raise Exception('Invalid engine parameter: {!r}'.format(engine))
+
     return db
