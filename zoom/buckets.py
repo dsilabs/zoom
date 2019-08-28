@@ -56,7 +56,7 @@ class Bucket:
 
 	>>> bucket = Bucket(path, new_id)
 	>>> bucket.put(b'some data')
-	'id_0002'
+	id_0002'
 	>>> bucket.put(b'some more data')
 	'id_0003'
 	>>> sorted(bucket.keys())
@@ -103,6 +103,9 @@ class Bucket:
 			if not name:
 				#	Name this bucket after its owner app.
 				name = get_calling_app()
+				if not name:
+					raise ValueError('Supply a name')
+				name += '_app_bucket'
 			return DatabaseBackend(name)
 
 	def _canonicalize_blob_id(self, blob_id):
@@ -227,10 +230,10 @@ class DatabaseBackend(BucketBackend):
 		db = self._get_db()
 		db_exists = True
 		try:
-			db('select from buckets limit 1;')
+			db('select id from buckets limit 1;')
 		except DatabaseException as ex:
 			log.debug('No tables yet.')
-			log.debug(str(ex))
+			log.debug('%s', str(ex))
 			db_exists = False
 		
 		#	Create the database if it doesn't exist.
@@ -241,28 +244,32 @@ class DatabaseBackend(BucketBackend):
 				setup_sql = sql_file.read()
 
 			#	Execute the setup.
-			try:
-				db(setup_sql)
-			except DatabaseException as ex:
-				log.debug(str(ex))
-				raise DatabaseException(
-					"Can't create bucket tables (is this a permissions error)?"
-				)
+			for sql_stmt in setup_sql.split(';'):
+				try:
+					db(sql_stmt)
+				except DatabaseException as ex:
+					log.debug(str(ex))
+					raise DatabaseException(
+						"Can't create bucket tables (is this a permissions error)?"
+					)
 
 		#	Retrieve the in-database ID for this bucket.
 		existing_bucket = db('''
 			select id from buckets where name = %s;
-		''', (self.name,))
+		''', self.name,)
 		if len(existing_bucket):
-			self.bucket_id = existing_bucket.first()['id']
-			log.debug('loaded bucket: ', self.bucket_id)
+			self.bucket_id = existing_bucket.first()[0]
+			log.debug('loaded bucket: %s', self.bucket_id)
 		else:
 			#	We need to create a new bucket.
+			db('''
+				insert into buckets (name) values (%s);
+			''', self.name,)
 			created_id = db('''
-				insert into buckets (name) values (%s) returning id;
-			''', (self.name,)).first()['id']
+				select last_insert_id();
+			''').first()[0]
 
-			log.debug('created bucket: ', created_id)
+			log.debug('created bucket: %s', created_id)
 			self.bucket_id = created_id
 
 	def _get_db(self):
@@ -282,18 +289,18 @@ class DatabaseBackend(BucketBackend):
 		#	Write the blob.
 		db('''
 			insert into bucket_blobs (id, bucket_id, data) values (%s, %s, %s);
-		''', (blob_id, self.bucket_id, blob))
+		''', blob_id, self.bucket_id, blob)
 
 	def read_blob(self, blob_id):
 		"""Load and return the given blob from the database."""
-		db, blob_id = self._setup()
+		db, blob_id = self._setup(blob_id)
 
 		#	Read the blob and return its contents or None.
 		results = db('''
 			select data from bucket_blobs where id = %s and bucket_id = %s;
-		''', (blob_id, self.bucket_id))
+		''', blob_id, self.bucket_id)
 		if len(results):
-			return results.first()['data']
+			return results.first()[0]
 		return None
 
 	def delete_blob(self, blob_id):
@@ -303,7 +310,7 @@ class DatabaseBackend(BucketBackend):
 		#	Delete the blob.
 		db('''
 			delete from bucket_blobs where id = %s and bucket_id = %s;
-		''', (blob_id, self.bucket_id))
+		''', blob_id, self.bucket_id)
 
 	def blob_exists(self, blob_id):
 		"""Return whether or not the given blob exists."""
@@ -311,8 +318,8 @@ class DatabaseBackend(BucketBackend):
 
 		#	Readback the ID.
 		result = db('''
-			select id fom bucket_blobs where id = %s and bucket_id = %s;
-		''', (blob_id, self.bucket_id))
+			select id from bucket_blobs where id = %s and bucket_id = %s;
+		''', blob_id, self.bucket_id)
 		return bool(len(result))
 
 	def get_blob_ids(self, blob_id):
@@ -323,8 +330,8 @@ class DatabaseBackend(BucketBackend):
 		#	de-referenced IDs.
 		rows = db('''
 			select id from bucket_blobs where bucket_id = %s;
-		''', (self.bucket_id,))
-		return filter(lambda r: r['id'], rows)
+		''', self.bucket_id,)
+		return filter(lambda r: r[0], rows)
 
 class FileBackend(BucketBackend):
 	"""FileBackend stores directly into a folder on the drive of the web server
