@@ -12,11 +12,9 @@ from .context import context
 from . import __base_path__
 
 #	Define constants.
-POSITIONAL_PATH_DEPR_WARNING = """
-Creating a Bucket with Bucket('<path>') is deprecated, use Bucket() /
-Bucket(name='<name>') to use the new database backend, or Bucket(path='<path>')
-to use the old filesystem one.
-""".strip()
+#	pylint: disable=line-too-long
+POSITIONAL_PATH_DEPR_WARNING = "Creating a Bucket with Bucket('<path>') is deprecated, use Bucket() / Bucket(name='<name>') to use the new database backend, or Bucket(path='<path>') to use the old filesystem one."
+#	pylint: enable=line-too-long
 SETUP_SQL_REL_PATH = 'sql/create_bucket_tables.sql'
 
 #	Create a logger.
