@@ -610,45 +610,45 @@ def restore_helpers(content):
     """Restores content helpers to their usual form"""
     return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
 
-#	Define current-app-reflection machinery.
+# Define current-app-reflection machinery.
 class CallingContextException(Exception):
-	"""Raised when current app reflection is called in an invalid context."""
-	pass
+    """Raised when current app reflection is called in an invalid context."""
+    pass
 
 def get_calling_app():
-	"""Return the name of the nearest app present in the call stack or
-	`None`."""
-	from .context import context
+    """Return the name of the nearest app present in the call stack or
+    `None`."""
+    from .context import context
 
-	#	Retrieve the platform-canonical apps paths from the current site. These
-	#	paths have a directory seperator appended so they can't be confused
-	#	with files.
-	if not context.site:
-		raise CallingContextException('No site loaded.')
-	apps_paths = list(filter(
-		lambda p: os.path.realpath(p) + os.sep,
-		context.site.apps_paths
-	))
+    # Retrieve the platform-canonical apps paths from the current site. These
+    # paths have a directory seperator appended so they can't be confused
+    # with files.
+    if not context.site:
+        raise CallingContextException('No site loaded.')
+    apps_paths = list(filter(
+        lambda p: os.path.realpath(p) + os.sep,
+        context.site.apps_paths
+    ))
 
-	#	Retrieve the stack. Note we do everything beyond this point in a try
-	#	block, since we need to remove the stack reference to prevent a memory
-	#	leak in the case the GC is disabled or otherwise fails to detect the
-	#	cycle. 
-	stack = inspect.stack()
-	try:
-		#	Iterate the stack, searching for an entry rooted in an app.
-		for frame in stack:
-			source_path = os.path.realpath(os.path.abspath(frame.filename))
-			for app_path in apps_paths:
-				if source_path.startswith(app_path):
-					#	The source file path is under this app path, retrieve
-					#	the directory directly below this app path; it's the
-					#	top-level directory of that app. That's at the first
-					#	index since there's an empty entry at the beginning
-					#	of the split result.
-					return source_path[len(app_path):].split(os.sep)[1]
-	finally:
-		del stack
+    # Retrieve the stack. Note we do everything beyond this point in a try
+    # block, since we need to remove the stack reference to prevent a memory
+    # leak in the case the GC is disabled or otherwise fails to detect the
+    # cycle. 
+    stack = inspect.stack()
+    try:
+        # Iterate the stack, searching for an entry rooted in an app.
+        for frame in stack:
+            source_path = os.path.realpath(os.path.abspath(frame.filename))
+            for app_path in apps_paths:
+                if source_path.startswith(app_path):
+                    # The source file path is under this app path, retrieve
+                    # the directory directly below this app path; it's the
+                    # top-level directory of that app. That's at the first
+                    # index since there's an empty entry at the beginning
+                    # of the split result.
+                    return source_path[len(app_path):].split(os.sep)[1]
+    finally:
+        del stack
 
-	#	We didn't find one.
-	return None
+    # We didn't find one.
+    return None

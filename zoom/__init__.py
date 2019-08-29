@@ -12,10 +12,6 @@
 __version__ = "6.0"
 __license__ = "MIT"
 
-#	Compute a base path to this package to use after we change CWD.
-import os
-__base_path__ = os.path.abspath(os.path.dirname(__file__))
-
 import zoom.alerts
 import zoom.collect
 import zoom.database
