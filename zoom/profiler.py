@@ -165,7 +165,7 @@ def profiled(request, handler, *rest):
         # Transform headers to lower case because casing isn't invariant.
         headers = {k.lower(): v for k, v in headers.items()}
         # Profile if this is an HTML response.
-        if 'html' in headers.get('content-type', None):
+        if 'html' in headers.get('content-type', str()):
             send(message)
         else:
             logger.debug('ignoring profile of response type %s', type(result))
