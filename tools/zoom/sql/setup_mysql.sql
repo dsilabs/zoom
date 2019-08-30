@@ -67,7 +67,7 @@ create table if not exists `attributes` (
   `row_id` int unsigned not null,
   `attribute` varchar(100),
   `datatype` varchar(30),
-  `value` mediumtext,
+  `value` longtext,
   PRIMARY KEY (`id`),
   KEY `row_id_key` (`row_id`),
   KEY `kind_key` (`kind`),
