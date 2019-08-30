@@ -4,7 +4,7 @@ services:
   - mariadb:latest
 
 variables:
-  MYSQL_DATABASE: cdw
+  MYSQL_DATABASE: zoomtest
   MYSQL_ROOT_PASSWORD: root
 
 stages:
