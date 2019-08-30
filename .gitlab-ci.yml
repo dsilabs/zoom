@@ -12,6 +12,7 @@ test:
   variables:
     MYSQL_DATABASE: zoomtest
     MYSQL_ROOT_PASSWORD: root
+    ZOOM_TEST_DATABASE_HOST: mariadb
   script:
   - pip3.7 install -r requirements.txt
   - pip3.7 install -r tests/requirements.txt
