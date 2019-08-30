@@ -1,5 +1,6 @@
 """File upload and service."""
 
+import os
 import json
 
 from uuid import UUID, uuid4
@@ -10,7 +11,7 @@ from zoom import Page, Record, system as context, store, redirect_to, \
 from zoom.mvc import View, Controller
 from zoom.render import render as render_template
 from zoom.collect import Collection, CollectionModel
-from zoom.buckets import Bucket
+from zoom.buckets import FileBucket
 from zoom.response import Response
 
 # Define constants.
@@ -23,9 +24,6 @@ ICON_NAMES = (
     (('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
     (('text', 'txt'), 'fa-file-text-o')
 )
-
-# Create a bucket.
-bucket = Bucket()
 
 # Define helpers.
 def get_upload_form():
@@ -48,6 +46,10 @@ def get_upload_form():
         id='--fm-upload-form',
         method='POST'
     )
+
+def get_bucket():
+    """Return a bucket for file storage."""
+    return FileBucket(os.path.join(context.site.data_path, 'buckets'))
 
 def    icon_name_for(mimetype):
     """Return the FontAwesome icon name for the given mime-type."""
@@ -161,6 +163,7 @@ class FileSetView(View):
             return no_file()
 
         # Serve the file.
+        bucket = get_bucket()
         return Response(
             bucket.get(to_view.data_id),
             headers={'Content-Type': to_view.mimetype}
@@ -182,7 +185,7 @@ class FileSetController(View):
         stored_files = StoredFile.collection()
         to_delete = stored_files.first(id=file_id)
         stored_files.delete(to_delete)
-        bucket.delete(to_delete.data_id)
+        get_bucket().delete(to_delete.data_id)
 
         return Response(status='200 OK')
 
@@ -197,7 +200,7 @@ class FileSetController(View):
             return Response(b'invalid request body', status='400 Bad Request')
 
         # Persist the file.
-        data_id = bucket.put(file_desc.value)
+        data_id = get_bucket().put(file_desc.value)
         to_store = StoredFile(
             id=str(uuid4()),
             data_id=data_id,
