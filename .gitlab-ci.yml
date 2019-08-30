@@ -1,4 +1,12 @@
 
+
+services:
+  - mariadb:latest
+
+variables:
+  MYSQL_DATABASE: cdw
+  MYSQL_ROOT_PASSWORD: root
+
 stages:
   - test
   - build
