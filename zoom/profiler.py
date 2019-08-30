@@ -155,7 +155,17 @@ def profiled(request, handler, *rest):
 
         result = locals().get('result', None)
 
-        if isinstance(result, HTMLResponse):
+        # Retrieve headers from the result if it has that property.
+        headers = getattr(result, 'headers', dict())
+        if not isinstance(headers, dict):
+            # Handle the case where the response class is doing something
+            # funky with its headers object.
+            logger.debug("headers isn't a dict, won't profile")
+            headers = dict()
+        # Transform headers to lower case because casing isn't invariant.
+        headers = {k.lower(): v for k, v in headers.items()}
+        # Profile if this is an HTML response.
+        if 'html' in headers.get('content-type', None):
             send(message)
         else:
             logger.debug('ignoring profile of response type %s', type(result))
