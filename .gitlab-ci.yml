@@ -16,6 +16,7 @@ test:
   script:
   - pip3.7 install -r requirements.txt
   - pip3.7 install -r tests/requirements.txt
+  - export ZOOM_TEST_DATABASE_HOST=mariadb
   - nosetests -vx tests/unittests
 
 docker build:
