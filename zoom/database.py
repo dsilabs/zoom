@@ -436,7 +436,6 @@ class Sqlite3DatabaseTransaction(Database):
 
 class Sqlite3Database(Database):
     """Sqlite3 Database"""
-    dialect = 'sqlite3'
     paramstyle = 'qmark'
 
     def __init__(self, *args, **kwargs):
@@ -513,7 +512,6 @@ class MySQLDatabaseTransaction(Database):
 
 class MySQLDatabase(Database):
     """MySQL Database"""
-    dialect = 'mysql'
     paramstyle = 'pyformat'
 
     def __init__(self, *args, **kwargs):
