@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from cgi import FieldStorage
 
 from zoom import Page, Record, system as context, store, redirect_to, \
-    load as load_app_asset, html, authorize
+    load as load_app_asset, html, authorize, dispatch
 from zoom.mvc import View, Controller
 from zoom.render import render as render_template
 from zoom.collect import Collection, CollectionModel
@@ -24,6 +24,9 @@ ICON_NAMES = (
     (('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
     (('text', 'txt'), 'fa-file-text-o')
 )
+# pylint: disable=line-too-long
+FONT_AWESOME_CDN = '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+# pylint: enable=line-too-long
 
 # Define helpers.
 def get_upload_form():
@@ -51,7 +54,7 @@ def get_bucket():
     """Return a bucket for file storage."""
     return FileBucket(os.path.join(context.site.data_path, 'buckets'))
 
-def    icon_name_for(mimetype):
+def icon_name_for(mimetype):
     """Return the FontAwesome icon name for the given mime-type."""
     for entry in ICON_NAMES:
         types, icon = entry
@@ -65,14 +68,20 @@ def render_fileset_view(edit=False, **page_kwargs):
     """Serve the view for the file set, with edit mode on or off."""
     # Load and de-template the page.
     content_template = load_app_asset('views/file-manager.html')
-
-    return Page(render_template(content_template,
+    content = render_template(content_template,
         file_list=''.join(list(
             stored_file.render_view(edit=edit) for stored_file \
                     in StoredFile.collection()
         )),
         upload_form=get_upload_form() if edit else str()
-    ), title='Files', **page_kwargs)
+    )
+
+    return Page(
+        content, title='Files',
+        styles=(FONT_AWESOME_CDN, '/content/static/file-manager.css'),
+        libs=('/content/static/file-manager.js',),
+        **page_kwargs
+    )
 
 # Define the record.
 class StoredFile(Record):
@@ -213,5 +222,4 @@ class FileSetController(View):
         return Response(bytes(to_store.access_url, 'utf-8'), status='201 Created')
 
 # Define main.
-view = FileSetView()
-controller = FileSetController()
+main = dispatch(FileSetView, FileSetController)
