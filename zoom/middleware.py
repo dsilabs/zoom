@@ -426,14 +426,10 @@ def get_csrf_token(session):
     True
     """
     def _get_token():
-        # if not hasattr(session, 'csrf_token'):
-        # logger = logging.getLogger(__name__)
-        # session.csrf_token = uuid.uuid4().hex
-        # logger.debug('generated new token %s', session.csrf_token)
-        # logger.debug('zoom token %s', zoom.system.request.session.csrf_token)
+        if not hasattr(session, 'csrf_token'):
+            session.csrf_token = uuid.uuid4().hex
         return session.csrf_token
     return _get_token
-
 
 def check_csrf(request, handler, *rest):
     """Check csrf token
