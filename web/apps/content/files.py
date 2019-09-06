@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from cgi import FieldStorage
 
 from zoom import Page, Record, system as context, store, redirect_to, \
-    load as load_app_asset, html, authorize, dispatch
+    html, authorize, dispatch, load as load_app_asset, requires as requires_lib
 from zoom.mvc import View, Controller
 from zoom.render import render as render_template
 from zoom.collect import Collection, CollectionModel
@@ -24,32 +24,8 @@ ICON_NAMES = (
     (('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
     (('text', 'txt'), 'fa-file-text-o')
 )
-# pylint: disable=line-too-long
-FONT_AWESOME_CDN = '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
-# pylint: enable=line-too-long
 
 # Define helpers.
-def get_upload_form():
-    """Return the file upload form. Note we create our own form since the stock
-    one doesn't have the DOM we want (but we still protect against CSRF)."""
-    # Create and store CSRF token.
-    csrf_token = str(uuid4())
-    context.request.session.csrf_token = csrf_token
-
-    return html.tag('form',
-        ''.join((
-            html.hidden(name='csrf_token', value=csrf_token, id='--fm-csrf'),
-            html.tag('input',
-                name='file',
-                id='--fm-upload-field',
-                type='file'
-            )
-        )),
-        action='/content/files/upload',
-        id='--fm-upload-form',
-        method='POST'
-    )
-
 def get_bucket():
     """Return a bucket for file storage."""
     return FileBucket(os.path.join(context.site.data_path, 'buckets'))
@@ -67,18 +43,21 @@ def icon_name_for(mimetype):
 def render_fileset_view(edit=False, **page_kwargs):
     """Serve the view for the file set, with edit mode on or off."""
     # Load and de-template the page.
-    content_template = load_app_asset('views/file-manager.html')
-    content = render_template(content_template,
+    template = load_app_asset('views/file-manager.html')
+    content = render_template(
+        template,
         file_list=''.join(list(
             stored_file.render_view(edit=edit) for stored_file \
                     in StoredFile.collection()
         )),
-        upload_form=get_upload_form() if edit else str()
+        mode='edit' if edit else 'view'
     )
 
+    # Add the library dependency of Font Awesome and respond.
+    requires_lib('fontawesome4')
     return Page(
         content, title='Files',
-        styles=(FONT_AWESOME_CDN, '/content/static/file-manager.css'),
+        styles=('/content/static/file-manager.css'),
         libs=('/content/static/file-manager.js',),
         **page_kwargs
     )
@@ -163,7 +142,7 @@ class FileSetView(View):
         # Assert the tail is a valid UUID.
         attempted_file = route[0]
         try:
-            file_id = str(UUID(attempted_file))
+            file_id = UUID(attempted_file).hex
         except ValueError:
             return no_file()
         # Retrieve the file with the given ID and assert it exists.
@@ -186,7 +165,7 @@ class FileSetController(View):
         """Handle a file delete."""
         # Read the file ID from the request, with safety.
         try:
-            file_id = str(UUID(req_data['file_id']))
+            file_id = UUID(req_data['file_id']).id
         except ValueError:
             return Response(status='400 Bad Request')
         
@@ -211,7 +190,7 @@ class FileSetController(View):
         # Persist the file.
         data_id = get_bucket().put(file_desc.value)
         to_store = StoredFile(
-            id=str(uuid4()),
+            id=uuid4().hex,
             data_id=data_id,
             mimetype=file_mimetype,
             original_name=file_desc.filename
@@ -222,4 +201,4 @@ class FileSetController(View):
         return Response(bytes(to_store.access_url, 'utf-8'), status='201 Created')
 
 # Define main.
-main = dispatch(FileSetView, FileSetController)
+main = dispatch(FileSetController, FileSetView)
