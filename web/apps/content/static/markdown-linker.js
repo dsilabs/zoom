@@ -3,12 +3,12 @@ window.addEventListener('load', function() {
         body = document.getElementsByTagName('body')[0];
 
     function setupTarget(el) {
-        var mdLink = '[' + 
+        var mdLink = '(' + 
             location.protocol + '//' + window.location.hostname + 
             el.getAttribute('data-link') + 
-        '](' +
+        ')[' +
             el.getAttribute('data-link-name') + 
-        ')';
+        ']';
         var defaultCls = el.className, clsResetLock = 0, 
             defaultTitle = el.getAttribute('title');
         
