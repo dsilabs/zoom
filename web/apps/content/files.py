@@ -165,7 +165,7 @@ class FileSetController(View):
         """Handle a file delete."""
         # Read the file ID from the request, with safety.
         try:
-            file_id = UUID(req_data['file_id']).id
+            file_id = UUID(req_data['file_id']).hex
         except ValueError:
             return Response(status='400 Bad Request')
         
