@@ -99,6 +99,9 @@ window.addEventListener('load', function() {
         label.click();
     });
 
+    //  Don't bubble to the area click listener.
+    label.addEventListener('click', function(event) { event.stopPropagation(); });
+
     //  Accept drag events containing files.
     area.addEventListener('dragover', function(event) {
         var item = event.dataTransfer.items[0];
