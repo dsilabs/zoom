@@ -143,20 +143,26 @@ class FileSetView(View):
             return no_file()
         # Assert the tail is a valid UUID.
         attempted_file = route[0]
+        query = dict()
         try:
-            file_id = UUID(attempted_file).hex
+            query['id'] = UUID(attempted_file).hex
         except ValueError:
-            return no_file()
+            query['original_name'] = attempted_file
         # Retrieve the file with the given ID and assert it exists.
-        to_view = StoredFile.collection().first(id=file_id)
+        to_view = StoredFile.collection().first(**query)
         if not to_view:
             return no_file()
 
         # Serve the file.
+        headers = {'Content-Type': to_view.mimetype}
+        if 'download' in req_data:
+            headers['Content-Disposition'] = 'attachment; filename=%s'%(
+                to_view.original_name
+            )
         bucket = get_bucket()
         return Response(
             bucket.get(to_view.data_id),
-            headers={'Content-Type': to_view.mimetype}
+            headers=headers
         )
 
 class FileSetController(View):
