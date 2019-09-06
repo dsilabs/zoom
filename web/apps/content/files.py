@@ -24,6 +24,7 @@ ICON_NAMES = (
     (('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
     (('text', 'txt'), 'fa-file-text-o')
 )
+EDIT_FOOTER = '<a class="button" href="/content/files">Done</a>'
 
 # Define helpers.
 def get_bucket():
@@ -50,7 +51,8 @@ def render_fileset_view(edit=False, **page_kwargs):
             stored_file.render_view(edit=edit) for stored_file \
                     in StoredFile.collection()
         )),
-        mode='edit' if edit else 'view'
+        mode='edit' if edit else 'view',
+        footer=EDIT_FOOTER if edit else str()
     )
 
     # Add the library dependency of Font Awesome and respond.
@@ -119,7 +121,7 @@ class FileSetView(View):
         if len(route) > 0 and route[-1] == 'done':
             return redirect_to('/content/files')
 
-        return render_fileset_view(edit=True, actions=('Done',))
+        return render_fileset_view(edit=True)
 
     def view(self, *route, **req_data):
         """Serves the file with the ID given as the tail of the request path."""
