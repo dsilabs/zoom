@@ -3,11 +3,11 @@ window.addEventListener('load', function() {
         body = document.getElementsByTagName('body')[0];
 
     function setupTarget(el) {
-        var mdLink = '(' + 
-            el.getAttribute('data-link') + 
-        ')[' +
+        var mdLink = '[' + 
             el.getAttribute('data-link-name') + 
-        ']';
+        '](' +
+            el.getAttribute('data-link') + 
+        ')';
         var defaultCls = el.className, clsResetLock = 0, 
             defaultTitle = el.getAttribute('title');
         
