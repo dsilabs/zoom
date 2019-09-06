@@ -57,7 +57,7 @@ def render_fileset_view(edit=False, **page_kwargs):
     requires_lib('fontawesome4')
     return Page(
         content, title='Files',
-        styles=('/content/static/file-manager.css'),
+        styles=('/content/static/file-manager.css',),
         libs=('/content/static/file-manager.js',),
         **page_kwargs
     )
