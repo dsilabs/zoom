@@ -24,6 +24,7 @@ ICON_NAMES = (
     (('mp4', 'flv', 'wmv'), 'fa-file-video-o'),
     (('text', 'txt'), 'fa-file-text-o')
 )
+VIEW_IN_BROWSER = ('png', 'jpg', 'jpeg', 'tiff', 'svg', 'pdf')
 EDIT_FOOTER = '<a class="button" href="/content/files">Done</a>'
 
 # Define helpers.
@@ -60,7 +61,10 @@ def render_fileset_view(edit=False, **page_kwargs):
     return Page(
         content, title='Files',
         styles=('/content/static/file-manager.css',),
-        libs=('/content/static/file-manager.js',),
+        libs=(
+            '/content/static/file-manager.js',
+            '/content/static/markdown-linker.js'
+        ),
         **page_kwargs
     )
 
@@ -74,11 +78,11 @@ class StoredFile(Record):
     
     @property
     def access_url(self):
-        return '/content/files/view/' + self.id
+        return '/content/files/' + self.id
 
     @property
     def filename(self):
-        return self.original_name or '&lt;no name&gt;'
+        return self.original_name or '[no name]'
 
     def render_view(self, edit=False):
         """Render and return the view for this stored file, optionally with
@@ -95,6 +99,15 @@ class StoredFile(Record):
                     href=self.access_url,
                     target='_blank',
                     title='Click to view',
+                ),
+                html.tag('i',
+                    str(),
+                    classed='fa fa-link markdown-linker --fm-link-host',
+                    title='Copy markdown link',
+                    **{
+                        'data-link': self.access_url,
+                        'data-link-name': self.filename
+                    }
                 ),
                 str() if not edit else html.tag('div',
                     html.tag('div', '(delete)', 
@@ -123,7 +136,7 @@ class FileSetView(View):
 
         return render_fileset_view(edit=True)
 
-    def view(self, *route, **req_data):
+    def show(self, *route, **req_data):
         """Serves the file with the ID given as the tail of the request path."""
         # This holds the file reference we tried to serve. 
         attempted_file = None
@@ -153,16 +166,30 @@ class FileSetView(View):
         if not to_view:
             return no_file()
 
-        # Serve the file.
-        headers = {'Content-Type': to_view.mimetype}
+        # Decide whether or not to download.
+        should_download = False
         if 'download' in req_data:
-            headers['Content-Disposition'] = 'attachment; filename=%s'%(
-                to_view.original_name
-            )
+            should_download = True
+        else:
+            should_download = True
+
+            for typ in VIEW_IN_BROWSER:
+                if not should_download:
+                    continue
+                if typ in to_view.mimetype:
+                    should_download = False
+
+        # Serve the file.
+        disposition = 'attachment' if should_download else 'inline'
         bucket = get_bucket()
         return Response(
             bucket.get(to_view.data_id),
-            headers=headers
+            headers={
+                'Content-Type': to_view.mimetype,
+                'Content-Disposition': '%s; filename=%s'%(
+                    disposition, to_view.filename
+                )
+            }
         )
 
 class FileSetController(View):

@@ -28,7 +28,7 @@
     margin-top: 5px;
 }
 
-.files-manager .--fm-file-item i {
+.files-manager .--fm-file-item a i {
     font-size: 60px;
     display: block;
     color: black;
@@ -81,4 +81,10 @@
     padding-top: 8px;
     padding-bottom: 8px;
     line-height: 1;
+}
+
+.files-manager .--fm-link-host {
+    margin-left: 5px;
+    font-size: 10pt;
+    cursor: pointer;
 }
