@@ -75,3 +75,10 @@
 .files-manager[data-fm-drag="true"] .--fm-label-container * {
     pointer-events: none;
 }
+
+.files-manager .--fm-footer a {
+    display: inline-block;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1;
+}
