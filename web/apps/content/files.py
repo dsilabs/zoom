@@ -11,6 +11,7 @@ from zoom import Page, Record, system as context, store, redirect_to, \
 from zoom.mvc import View, Controller
 from zoom.render import render as render_template
 from zoom.collect import Collection, CollectionModel
+from zoom.helpers import abs_url_for
 from zoom.buckets import FileBucket
 from zoom.response import Response
 
@@ -105,7 +106,7 @@ class StoredFile(Record):
                     classed='fa fa-link markdown-linker --fm-link-host',
                     title='Copy markdown link',
                     **{
-                        'data-link': self.access_url,
+                        'data-link': abs_url_for(self.access_url),
                         'data-link-name': self.filename
                     }
                 ),

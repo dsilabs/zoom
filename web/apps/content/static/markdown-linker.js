@@ -4,7 +4,6 @@ window.addEventListener('load', function() {
 
     function setupTarget(el) {
         var mdLink = '(' + 
-            location.protocol + '//' + window.location.hostname + 
             el.getAttribute('data-link') + 
         ')[' +
             el.getAttribute('data-link-name') + 
