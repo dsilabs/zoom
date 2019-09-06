@@ -2,11 +2,10 @@
     zoom.forms
 """
 
-import uuid
-
 import zoom
 from zoom.helpers import tag_for, url_for
 from zoom.fields import Fields, MarkdownText, Hidden, Button
+from zoom.utils import create_csrf_token
 import zoom.html as html
 
 
@@ -33,7 +32,7 @@ def form_for(*args, **kwargs):
     if method == 'POST':
         request = zoom.system.request
         if hasattr(request, 'session'):
-            request.session.csrf_token = uuid.uuid4().hex
+            request.session.csrf_token = create_csrf_token()
         t.append(
             html.hidden(name='csrf_token', value='<dz:csrf_token>')
         )
