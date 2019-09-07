@@ -43,6 +43,10 @@ class CustomApp(App):
             # any user is viewing an image
             return App.__call__(self, request)
 
+        elif request.path.startswith('/content/files') and request.path != '/content/files':
+            # any user is viewing a file
+            return App.__call__(self, request)
+
         elif request.path.endswith('.html'):
             # this is a request to view a site page
             request.path = request.path + '/show'
