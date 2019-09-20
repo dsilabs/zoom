@@ -95,7 +95,12 @@ class ImageManager(zoom.Controller):
 
         css = """
         .images-thumbnail { height: 150px; padding: 0; margin: 0; }
-        .image-item-container { position: relative; }
+        .image-item-container { 
+            display: inline-block;
+            vertical-align: top;
+            position: relative; 
+            margin: 10px;
+        }
         .images-linker-container {
             background-color: white;
             position: absolute;

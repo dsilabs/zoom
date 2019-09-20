@@ -236,6 +236,7 @@ class FileSetController(View):
             id=uuid4().hex,
             data_id=data_id,
             mimetype=file_mimetype,
+            content_length=len(file_desc.value),
             original_name=file_desc.filename
         )
         StoredFile.collection().put(to_store)

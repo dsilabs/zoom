@@ -72,6 +72,12 @@
     cursor: pointer;
 }
 
+.files-manager #--fm-drop-area i {
+    font-size: 20pt;
+    display: block;
+    margin-bottom: 10px;
+}
+
 .files-manager[data-fm-drag="true"] .--fm-label-container * {
     pointer-events: none;
 }
