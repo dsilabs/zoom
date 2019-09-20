@@ -8,10 +8,14 @@ window.addEventListener('load', function() {
         '](' +
             el.getAttribute('data-link') + 
         ')';
+        if (el.className.indexOf('link-image')) mdLink = '!' + mdLink;
         var defaultCls = el.className, clsResetLock = 0, 
             defaultTitle = el.getAttribute('title');
         
-        el.addEventListener('click', function() {
+        el.addEventListener('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+
             var host = document.createElement('textarea');
             host.setAttribute('style', 'width: 0.1px; height: 0.1px; position: absolute; top: 0px; left: 0px;');
             host.textContent = mdLink;

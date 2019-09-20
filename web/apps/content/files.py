@@ -43,6 +43,19 @@ def icon_name_for(mimetype):
         
     return 'fa-file-o'
 
+def get_markdown_linker(access_url, link_name, classed=None):
+    """Return the markup for a markdown linker that corresponds to the logic in
+    markdown-linker.js."""
+    return html.tag('i',
+        str(),
+        classed='fa fa-link markdown-linker %s'%(classed or str()),
+        title='Copy markdown link',
+        **{
+            'data-link': abs_url_for(access_url),
+            'data-link-name': link_name
+        }
+    )
+
 def render_fileset_view(edit=False, **page_kwargs):
     """Serve the view for the file set, with edit mode on or off."""
     # Load and de-template the page.
@@ -101,14 +114,8 @@ class StoredFile(Record):
                     target='_blank',
                     title='Click to view',
                 ),
-                html.tag('i',
-                    str(),
-                    classed='fa fa-link markdown-linker --fm-link-host',
-                    title='Copy markdown link',
-                    **{
-                        'data-link': abs_url_for(self.access_url),
-                        'data-link-name': self.filename
-                    }
+                get_markdown_linker(
+                    self.access_url, self.filename, '--fm-link-host'
                 ),
                 str() if not edit else html.tag('div',
                     html.tag('div', '(delete)', 

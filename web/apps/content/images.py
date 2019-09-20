@@ -8,13 +8,20 @@ import os
 import zoom
 from zoom.buckets import Bucket
 
+from files import get_markdown_linker
 
 css = zoom.load('views/images.css')
 
 
 class SystemImage(zoom.Record):
-    pass
+    
+    @property
+    def access_url(self):
+        return '/content/images/%s'%self.image_id
 
+    @property
+    def markdown_linker(self):
+        return get_markdown_linker(self.access_url, 'Image', 'link-image')
 
 Image = SystemImage
 
@@ -73,8 +80,11 @@ class ImageManager(zoom.Controller):
 
 
         tpl = """
-        <a href="/content/images/{image.image_id}">
+        <a href="{image.access_url}">
           <img class="images-thumbnail" title="{image.image_name}" src="/content/images/{image.image_id}">
+          <div class="images-linker-container">
+            {image.markdown_linker}
+          </div>
         </a>
         """
 
@@ -87,12 +97,14 @@ class ImageManager(zoom.Controller):
         .images-thumbnail { height: 150px; padding: 0; margin: 0; }
         """
 
+        zoom.requires('fontawesome4')
         return zoom.page(
             content,
             title='Images',
             subtitle='Click image to view and copy URL',
             actions=actions,
             css=css,
+            libs=('/content/static/markdown-linker.js',)
         )
 
     def edit(self):
