@@ -80,7 +80,7 @@ class ImageManager(zoom.Controller):
 
 
         tpl = """
-        <a href="{image.access_url}">
+        <a href="{image.access_url}" class="image-item-container">
           <img class="images-thumbnail" title="{image.image_name}" src="/content/images/{image.image_id}">
           <div class="images-linker-container">
             {image.markdown_linker}
@@ -95,6 +95,15 @@ class ImageManager(zoom.Controller):
 
         css = """
         .images-thumbnail { height: 150px; padding: 0; margin: 0; }
+        .image-item-container { position: relative; }
+        .images-linker-container {
+            background-color: white;
+            position: absolute;
+            bottom: 0px;
+            right: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
         """
 
         zoom.requires('fontawesome4')
