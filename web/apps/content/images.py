@@ -6,7 +6,9 @@ import io
 import os
 
 import zoom
+from zoom import html
 from zoom.buckets import Bucket
+from zoom.logging import log_activity
 
 from files import get_markdown_linker
 
@@ -18,6 +20,10 @@ class SystemImage(zoom.Record):
     @property
     def access_url(self):
         return '/content/images/%s'%self.image_id
+
+    @property
+    def access_link(self):
+        return html.tag('a', self.image_name, href=self.access_url)
 
     @property
     def markdown_linker(self):
@@ -199,6 +205,10 @@ class ImageManager(zoom.Controller):
         images = zoom.store.store_of(Image)
         images.put(image)
 
+        log_activity('%s uploaded image %s'%(
+            zoom.system.user.link, image.access_link
+        ))
+
         return item_id
 
     def remove_image(self, *_, **kwargs):
@@ -210,6 +220,9 @@ class ImageManager(zoom.Controller):
         if item_id:
             images = zoom.store.store_of(Image)
             key = images.first(image_id=item_id)
+            log_activity('%s deleted image %s'%(
+                zoom.system.user.link, key.image_name
+            ))
             if key:
                 images.delete(key)
 

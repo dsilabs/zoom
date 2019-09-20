@@ -14,6 +14,7 @@ from zoom.collect import Collection, CollectionModel
 from zoom.helpers import abs_url_for
 from zoom.buckets import FileBucket
 from zoom.response import Response
+from zoom.logging import log_activity
 
 # Define constants.
 ICON_NAMES = (
@@ -93,6 +94,10 @@ class StoredFile(Record):
     @property
     def access_url(self):
         return '/content/files/' + self.id
+
+    @property
+    def access_link(self):
+        return html.tag('a', self.filename, href=self.access_url)
 
     @property
     def filename(self):
@@ -215,6 +220,11 @@ class FileSetController(View):
         # Retrieve and delete the file.
         stored_files = StoredFile.collection()
         to_delete = stored_files.first(id=file_id)
+
+        log_activity('%s deleted file %s'%(
+            context.user.link, to_delete.filename
+        ))
+
         stored_files.delete(to_delete)
         get_bucket().delete(to_delete.data_id)
 
@@ -240,6 +250,10 @@ class FileSetController(View):
             original_name=file_desc.filename
         )
         StoredFile.collection().put(to_store)
+
+        log_activity('%s uploaded file %s'%(
+            context.user.link, to_store.access_link
+        ))
 
         # Respond.
         return Response(bytes(to_store.access_url, 'utf-8'), status='201 Created')
