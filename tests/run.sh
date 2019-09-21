@@ -34,4 +34,4 @@ python3.7 bin/zoom server -p 8000 web &
 
 cat web/sites/localhost/site.ini
 
-nosetests --with-coverage --cover-package=zoom -vx tests/webdriver_tests
+nosetests --with-coverage --cover-package=zoom -vx
