@@ -29,6 +29,9 @@ unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 # set display port to avoid crash
 export DISPLAY=:99
 
+# set locale
+export LC_ALL=C
+
 # run zoom server
 python3.7 bin/zoom server -p 8000 web &
 
