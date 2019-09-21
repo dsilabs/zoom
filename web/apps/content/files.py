@@ -1,16 +1,14 @@
 """File upload and service."""
 
 import os
-import json
 
 from uuid import UUID, uuid4
 from cgi import FieldStorage
 
 from zoom import Page, Record, system as context, store, redirect_to, \
     html, authorize, dispatch, load as load_app_asset, requires as requires_lib
-from zoom.mvc import View, Controller
+from zoom.mvc import View
 from zoom.render import render as render_template
-from zoom.collect import Collection, CollectionModel
 from zoom.helpers import abs_url_for
 from zoom.buckets import FileBucket
 from zoom.response import Response
@@ -27,7 +25,11 @@ ICON_NAMES = (
     (('text', 'txt'), 'fa-file-text-o')
 )
 VIEW_IN_BROWSER = ('png', 'jpg', 'jpeg', 'tiff', 'svg', 'pdf')
-EDIT_FOOTER = '<a class="button" href="/content/files">Done</a>'
+EDIT_FOOTER = """
+    <div class="field_edit">
+        <a class="button" href="/content/files">Done</a>
+    </div>
+"""
 
 # Define helpers.
 def get_bucket():
@@ -41,13 +43,14 @@ def icon_name_for(mimetype):
         for typ in types:
             if typ in mimetype:
                 return icon
-        
+
     return 'fa-file-o'
 
 def get_markdown_linker(access_url, link_name, classed=None):
     """Return the markup for a markdown linker that corresponds to the logic in
     markdown-linker.js."""
-    return html.tag('i',
+    return html.tag(
+        'i',
         str(),
         classed='fa fa-link markdown-linker %s'%(classed or str()),
         title='Copy markdown link',
@@ -90,7 +93,7 @@ class StoredFile(Record):
     @classmethod
     def collection(cls):
         return store.store_of(cls)
-    
+
     @property
     def access_url(self):
         return '/content/files/' + self.id
@@ -106,9 +109,11 @@ class StoredFile(Record):
     def render_view(self, edit=False):
         """Render and return the view for this stored file, optionally with
         edit options."""
-        return html.tag('div',
+        return html.tag(
+            'div',
             ''.join((
-                html.tag('a', 
+                html.tag(
+                    'a',
                     ''.join((
                         html.tag('i', classed='fa ' + icon_name_for(
                             self.mimetype
@@ -122,10 +127,13 @@ class StoredFile(Record):
                 get_markdown_linker(
                     self.access_url, self.filename, '--fm-link-host'
                 ),
-                str() if not edit else html.tag('div',
-                    html.tag('div', '(delete)', 
-                        classed='--fm-delete', 
-                        id=self.id, 
+                str() if not edit else html.tag(
+                    'div',
+                    html.tag(
+                        'div',
+                        '(delete)',
+                        classed='--fm-delete',
+                        id=self.id,
                         role='button'
                     ),
                     classed='--fm-file-controls'
@@ -141,17 +149,17 @@ class FileSetView(View):
     @authorize('managers')
     def index(self, *route, **req_data):
         return render_fileset_view(edit=False, actions=('Edit',))
-    
+
     @authorize('managers')
     def edit(self, *route, **req_data):
-        if len(route) > 0 and route[-1] == 'done':
+        if route and route[-1] == 'done':
             return redirect_to('/content/files')
 
         return render_fileset_view(edit=True)
 
     def show(self, *route, **req_data):
         """Serves the file with the ID given as the tail of the request path."""
-        # This holds the file reference we tried to serve. 
+        # This holds the file reference we tried to serve.
         attempted_file = None
 
         # Define a 404 generation helper.
@@ -163,7 +171,7 @@ class FileSetView(View):
                 ),
                 status='404 Not Found'
             )
-        
+
         # Assert the route contains a tail.
         if len(route) != 1:
             return no_file()
@@ -216,7 +224,7 @@ class FileSetController(View):
             file_id = UUID(req_data['file_id']).hex
         except ValueError:
             return Response(status='400 Bad Request')
-        
+
         # Retrieve and delete the file.
         stored_files = StoredFile.collection()
         to_delete = stored_files.first(id=file_id)
@@ -256,7 +264,10 @@ class FileSetController(View):
         ))
 
         # Respond.
-        return Response(bytes(to_store.access_url, 'utf-8'), status='201 Created')
+        return Response(
+            bytes(to_store.access_url, 'utf-8'),
+            status='201 Created'
+        )
 
 # Define main.
 main = dispatch(FileSetController, FileSetView)

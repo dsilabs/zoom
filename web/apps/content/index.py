@@ -25,9 +25,9 @@ class MyView(View):
     def index():
         """app index"""
         event_log = list(zoom.system.site.db('''
-            select 
+            select
                 log.message, log.timestamp
-            from 
+            from
                 log join users on log.user_id = users.id
             where log.app = "content" and log.status = 'A'
             order by log.timestamp desc
@@ -40,11 +40,10 @@ class MyView(View):
             ))
 
         parsed_log.insert(0, ('Event', 'When'))
-        content = zoom.browse(parsed_log)
+        content = zoom.browse(parsed_log, title='Recent Activity')
         return zoom.page(
-            'View recent activity<br/><br/>',
             content,
-            title='Overview'
+            title='Overview',
         )
 
     def show(self, *args, **kwargs):

@@ -16,7 +16,7 @@ css = zoom.load('views/images.css')
 
 
 class SystemImage(zoom.Record):
-    
+
     @property
     def access_url(self):
         return '/content/images/%s'%self.image_id
@@ -74,16 +74,7 @@ class ImageManager(zoom.Controller):
     def index(self):
         """Show all images"""
 
-        actions = 'edit',
-
-        images = zoom.store.store_of(Image)
-        t = [dict(
-            name=a.image_name,
-            size=a.image_size,
-            item_id=a.image_id,
-            url=zoom.helpers.url_for_page('images', 'get-image', item_id=a.image_id),
-        ) for a in images]
-
+        actions = 'Edit',
 
         tpl = """
         <a href="{image.access_url}" class="image-item-container">
@@ -96,32 +87,13 @@ class ImageManager(zoom.Controller):
 
         content = ''.join(
             tpl.format(image=image)
-            for image in images
+            for image in zoom.store_of(Image)
         )
-
-        css = """
-        .images-thumbnail { height: 150px; padding: 0; margin: 0; }
-        .image-item-container { 
-            display: inline-block;
-            vertical-align: top;
-            position: relative; 
-            margin: 10px;
-        }
-        .images-linker-container {
-            background-color: white;
-            position: absolute;
-            bottom: 0px;
-            right: 5px;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        """
 
         zoom.requires('fontawesome4')
         return zoom.page(
             content,
             title='Images',
-            subtitle='Click image to view and copy URL',
             actions=actions,
             css=css,
             libs=('/content/static/markdown-linker.js',)
@@ -137,10 +109,6 @@ class ImageManager(zoom.Controller):
         """
         content = zoom.forms.form_for(get_fields())
         return zoom.page(content, title='Edit Images', css=css)
-
-    # def show(self):
-    #     content = zoom.forms.Form(get_fields()).display_value()
-    #     return zoom.page(content, title='Images')
 
     def cancel(self):
         return zoom.home()
