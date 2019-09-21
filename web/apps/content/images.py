@@ -110,10 +110,6 @@ class ImageManager(zoom.Controller):
         content = zoom.forms.form_for(get_fields())
         return zoom.page(content, title='Edit Images', css=css)
 
-    # def show(self):
-    #     content = zoom.forms.Form(get_fields()).display_value()
-    #     return zoom.page(content, title='Images')
-
     def cancel(self):
         return zoom.home()
 
