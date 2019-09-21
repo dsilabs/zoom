@@ -15,9 +15,6 @@ echo "host=mariadb" >> web/sites/localhost/site.ini
 echo "user=root" >> web/sites/localhost/site.ini
 echo "password=root" >> web/sites/localhost/site.ini
 
-# install xvfb
-apt-get install xvfb
-
 # install google chrome
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
