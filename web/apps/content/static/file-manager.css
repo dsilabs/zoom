@@ -1,6 +1,5 @@
 .files-manager .--fm-files-area {
-    position: relative
-    background-color: lightblue;
+    position: relative;
     padding: 10px;
 }
 
