@@ -7,9 +7,10 @@ stages:
 
 whitespace:
   stage: lint
-  image: "alpine/git"
+  image: "python:3.7"
   script:
-    - --no-pager diff --check
+    - which git || (apt-get update -y && apt-get install -y git)
+    - git --no-pager diff --check
 
 tests:
   stage: test
