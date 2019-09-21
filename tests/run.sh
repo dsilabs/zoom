@@ -30,7 +30,7 @@ unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 export DISPLAY=:99
 
 # run zoom server
-zoom server -p 8000 web &
+python3.7 bin/zoom server -p 8000 web &
 
 cat web/sites/localhost/site.ini
 nosetests --with-coverage --cover-package=zoom -vx tests/webdriver_tests
