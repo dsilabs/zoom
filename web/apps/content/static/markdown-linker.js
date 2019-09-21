@@ -3,15 +3,15 @@ window.addEventListener('load', function() {
         body = document.getElementsByTagName('body')[0];
 
     function setupTarget(el) {
-        var mdLink = '[' + 
-            el.getAttribute('data-link-name') + 
+        var mdLink = '[' +
+            el.getAttribute('data-link-name') +
         '](' +
-            el.getAttribute('data-link') + 
+            el.getAttribute('data-link') +
         ')';
-        if (el.className.indexOf('link-image')) mdLink = '!' + mdLink;
-        var defaultCls = el.className, clsResetLock = 0, 
+        if (el.className.indexOf('link-image') >= 0) mdLink = '!' + mdLink;
+        var defaultCls = el.className, clsResetLock = 0,
             defaultTitle = el.getAttribute('title');
-        
+
         el.addEventListener('click', function(event) {
             event.stopPropagation();
             event.preventDefault();
@@ -21,7 +21,7 @@ window.addEventListener('load', function() {
             host.textContent = mdLink;
 
             body.appendChild(host);
-            
+
             host.select();
             host.setSelectionRange(0, 999999);
             document.execCommand('copy');
