@@ -24,6 +24,7 @@ class CustomApp(App):
         )
 
         images_paths = ['/content/images', '/content/images/edit']
+        files_paths = ['/content/files', '/content/files/edit']
 
         if request.path == '/':
             # this is a request to view the site index page
@@ -35,7 +36,12 @@ class CustomApp(App):
             return App.__call__(self, request)
 
         elif request.path in images_paths and zoom.system.user.can('edit', self):
-            # user with edit privilege is viewing the image app index
+            # user with edit privilege is viewing the image manager index
+            self.menu = menu
+            return App.__call__(self, request)
+
+        elif request.path in files_paths and zoom.system.user.can('edit', self):
+            # user with edit privilege is viewing the file manager index
             self.menu = menu
             return App.__call__(self, request)
 
