@@ -1,8 +1,14 @@
 
 
 stages:
+  - lint
   - test
   - build
+
+whitespace:
+  stage: lint
+  script:
+    - git --no-pager diff --check
 
 tests:
   stage: test
