@@ -29,5 +29,8 @@ unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 # set display port to avoid crash
 ENV DISPLAY=:99
 
+# run zoom server
+zoom server -p 8000 web &
+
 cat web/sites/localhost/site.ini
-nosetests --with-coverage --cover-package=zoom -vx zoom tests/unittests --exclude-dir=zoom/
+nosetests --with-coverage --cover-package=zoom -vx tests/webdriver_tests
