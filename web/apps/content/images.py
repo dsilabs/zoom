@@ -6,15 +6,28 @@ import io
 import os
 
 import zoom
+from zoom import html
 from zoom.buckets import Bucket
+from zoom.logging import log_activity
 
+from files import get_markdown_linker
 
 css = zoom.load('views/images.css')
 
 
 class SystemImage(zoom.Record):
-    pass
 
+    @property
+    def access_url(self):
+        return '/content/images/%s'%self.image_id
+
+    @property
+    def access_link(self):
+        return html.tag('a', self.image_name, href=self.access_url)
+
+    @property
+    def markdown_linker(self):
+        return get_markdown_linker(self.access_url, 'Image', 'link-image')
 
 Image = SystemImage
 
@@ -61,38 +74,29 @@ class ImageManager(zoom.Controller):
     def index(self):
         """Show all images"""
 
-        actions = 'edit',
-
-        images = zoom.store.store_of(Image)
-        t = [dict(
-            name=a.image_name,
-            size=a.image_size,
-            item_id=a.image_id,
-            url=zoom.helpers.url_for_page('images', 'get-image', item_id=a.image_id),
-        ) for a in images]
-
+        actions = 'Edit',
 
         tpl = """
-        <a href="/content/images/{image.image_id}">
+        <a href="{image.access_url}" class="image-item-container">
           <img class="images-thumbnail" title="{image.image_name}" src="/content/images/{image.image_id}">
+          <div class="images-linker-container">
+            {image.markdown_linker}
+          </div>
         </a>
         """
 
         content = ''.join(
             tpl.format(image=image)
-            for image in images
+            for image in zoom.store_of(Image)
         )
 
-        css = """
-        .images-thumbnail { height: 150px; padding: 0; margin: 0; }
-        """
-
+        zoom.requires('fontawesome4')
         return zoom.page(
             content,
             title='Images',
-            subtitle='Click image to view and copy URL',
             actions=actions,
             css=css,
+            libs=('/content/static/markdown-linker.js',)
         )
 
     def edit(self):
@@ -105,10 +109,6 @@ class ImageManager(zoom.Controller):
         """
         content = zoom.forms.form_for(get_fields())
         return zoom.page(content, title='Edit Images', css=css)
-
-    # def show(self):
-    #     content = zoom.forms.Form(get_fields()).display_value()
-    #     return zoom.page(content, title='Images')
 
     def cancel(self):
         return zoom.home()
@@ -173,6 +173,10 @@ class ImageManager(zoom.Controller):
         images = zoom.store.store_of(Image)
         images.put(image)
 
+        log_activity('%s uploaded image %s'%(
+            zoom.system.user.link, image.access_link
+        ))
+
         return item_id
 
     def remove_image(self, *_, **kwargs):
@@ -184,6 +188,9 @@ class ImageManager(zoom.Controller):
         if item_id:
             images = zoom.store.store_of(Image)
             key = images.first(image_id=item_id)
+            log_activity('%s deleted image %s'%(
+                zoom.system.user.link, key.image_name
+            ))
             if key:
                 images.delete(key)
 

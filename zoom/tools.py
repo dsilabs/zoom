@@ -608,4 +608,3 @@ def hide_helpers(content):
 def restore_helpers(content):
     """Restores content helpers to their usual form"""
     return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
-

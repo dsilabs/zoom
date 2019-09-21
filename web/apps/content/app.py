@@ -7,7 +7,7 @@ import logging
 import zoom
 from zoom.apps import App
 
-menu = ['Overview', 'Pages', 'Snippets', 'Images']
+menu = ['Overview', 'Pages', 'Snippets', 'Images', 'Files']
 
 
 class CustomApp(App):
@@ -23,6 +23,9 @@ class CustomApp(App):
             'called content app with (%r) (%r)', request.route, request.path
         )
 
+        images_paths = ['/content/images', '/content/images/edit']
+        files_paths = ['/content/files', '/content/files/edit']
+
         if request.path == '/':
             # this is a request to view the site index page
             request.path = '/show'
@@ -32,13 +35,22 @@ class CustomApp(App):
         elif request.path == '/content/sitemap':
             return App.__call__(self, request)
 
-        elif request.path == '/content/images' and zoom.system.user.can('edit', self):
-            # user with edit privilege is viewing the image app index
+        elif request.path in images_paths and zoom.system.user.can('edit', self):
+            # user with edit privilege is viewing the image manager index
+            self.menu = menu
+            return App.__call__(self, request)
+
+        elif request.path in files_paths and zoom.system.user.can('edit', self):
+            # user with edit privilege is viewing the file manager index
             self.menu = menu
             return App.__call__(self, request)
 
         elif request.path.startswith('/content/images') and request.path != '/content/images':
             # any user is viewing an image
+            return App.__call__(self, request)
+
+        elif request.path.startswith('/content/files') and request.path != '/content/files':
+            # any user is viewing a file
             return App.__call__(self, request)
 
         elif request.path.endswith('.html'):

@@ -4,6 +4,7 @@
 
 import zoom
 from zoom.mvc import View
+from zoom.tools import how_long_ago
 
 from pages import load_page, get_pages
 
@@ -23,9 +24,26 @@ class MyView(View):
     @staticmethod
     def index():
         """app index"""
+        event_log = list(zoom.system.site.db('''
+            select
+                log.message, log.timestamp
+            from
+                log join users on log.user_id = users.id
+            where log.app = "content" and log.status = 'A'
+            order by log.timestamp desc
+            limit 10;
+        '''))
+        parsed_log = list()
+        for row in event_log:
+            parsed_log.append((
+                row[0], how_long_ago(row[1])
+            ))
+
+        parsed_log.insert(0, ('Event', 'When'))
+        content = zoom.browse(parsed_log, title='Recent Activity')
         return zoom.page(
-            'Metrics and activity log and statistics will go here.',
-            title='Overview'
+            content,
+            title='Overview',
         )
 
     def show(self, *args, **kwargs):
