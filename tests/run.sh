@@ -27,7 +27,7 @@ wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -
 unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
 # set display port to avoid crash
-ENV DISPLAY=:99
+export DISPLAY=:99
 
 # run zoom server
 zoom server -p 8000 web &
