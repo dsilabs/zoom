@@ -9,7 +9,7 @@ whitespace:
   stage: lint
   image: "alpine/git"
   script:
-    - git --no-pager diff --check
+    - --no-pager diff --check
 
 tests:
   stage: test
