@@ -94,7 +94,6 @@ class ImageManager(zoom.Controller):
         return zoom.page(
             content,
             title='Images',
-            subtitle='Click image to view and copy URL',
             actions=actions,
             css=css,
             libs=('/content/static/markdown-linker.js',)
