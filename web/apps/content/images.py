@@ -16,7 +16,7 @@ css = zoom.load('views/images.css')
 
 
 class SystemImage(zoom.Record):
-    
+
     @property
     def access_url(self):
         return '/content/images/%s'%self.image_id
@@ -74,7 +74,7 @@ class ImageManager(zoom.Controller):
     def index(self):
         """Show all images"""
 
-        actions = 'edit',
+        actions = 'Edit',
 
         images = zoom.store.store_of(Image)
         t = [dict(
@@ -101,10 +101,10 @@ class ImageManager(zoom.Controller):
 
         css = """
         .images-thumbnail { height: 150px; padding: 0; margin: 0; }
-        .image-item-container { 
+        .image-item-container {
             display: inline-block;
             vertical-align: top;
-            position: relative; 
+            position: relative;
             margin: 10px;
         }
         .images-linker-container {
