@@ -19,7 +19,6 @@ import os
 import sys
 import traceback
 import logging
-import uuid
 
 import zoom
 import zoom.apps
@@ -55,6 +54,7 @@ import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.tools import websafe
+from zoom.utils import create_csrf_token
 
 
 def debug(request):  # pragma: no cover
@@ -426,14 +426,10 @@ def get_csrf_token(session):
     True
     """
     def _get_token():
-        # if not hasattr(session, 'csrf_token'):
-        # logger = logging.getLogger(__name__)
-        # session.csrf_token = uuid.uuid4().hex
-        # logger.debug('generated new token %s', session.csrf_token)
-        # logger.debug('zoom token %s', zoom.system.request.session.csrf_token)
+        if not hasattr(session, 'csrf_token'):
+            session.csrf_token = create_csrf_token()
         return session.csrf_token
     return _get_token
-
 
 def check_csrf(request, handler, *rest):
     """Check csrf token
