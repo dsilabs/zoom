@@ -34,4 +34,4 @@ python3.7 bin/zoom server -p 8000 web &
 
 cat web/sites/localhost/site.ini
 
-nosetests --with-coverage --cover-package=zoom -vx
+nosetests --with-coverage --cover-package=zoom -vx zoom tests/unittests --exclude-dir=zoom/testing

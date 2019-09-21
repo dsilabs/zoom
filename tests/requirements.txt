@@ -1,3 +1,4 @@
 selenium
 nose
+coverage
 nose-exclude
