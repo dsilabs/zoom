@@ -76,15 +76,6 @@ class ImageManager(zoom.Controller):
 
         actions = 'Edit',
 
-        images = zoom.store.store_of(Image)
-        t = [dict(
-            name=a.image_name,
-            size=a.image_size,
-            item_id=a.image_id,
-            url=zoom.helpers.url_for_page('images', 'get-image', item_id=a.image_id),
-        ) for a in images]
-
-
         tpl = """
         <a href="{image.access_url}" class="image-item-container">
           <img class="images-thumbnail" title="{image.image_name}" src="/content/images/{image.image_id}">
@@ -96,26 +87,8 @@ class ImageManager(zoom.Controller):
 
         content = ''.join(
             tpl.format(image=image)
-            for image in images
+            for image in zoom.store_of(Image)
         )
-
-        css = """
-        .images-thumbnail { height: 150px; padding: 0; margin: 0; }
-        .image-item-container {
-            display: inline-block;
-            vertical-align: top;
-            position: relative;
-            margin: 10px;
-        }
-        .images-linker-container {
-            background-color: white;
-            position: absolute;
-            bottom: 0px;
-            right: 5px;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        """
 
         zoom.requires('fontawesome4')
         return zoom.page(

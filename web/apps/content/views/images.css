@@ -12,3 +12,18 @@
     background: #ddd; border-radius: 10px;
 }
 .content .field_edit table td .dz-image { border-radius: 10px; }
+.images-thumbnail { height: 150px; padding: 0; margin: 0; }
+.image-item-container {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    margin: 10px;
+}
+.images-linker-container {
+    background-color: white;
+    position: absolute;
+    bottom: 0px;
+    right: 5px;
+    padding: 5px;
+    border-radius: 3px;
+}
