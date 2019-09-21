@@ -67,9 +67,6 @@ class WebdriverTestPrimitives(unittest.TestCase):
             if self.headless:
                 chrome_options.add_argument('--headless')
                 chrome_options.add_argument('--no-sandbox')
-            # chrome_location = os.environ.get('ZOOM_CHROME_LOCATION', '')
-            # if chrome_location:
-            #     chrome_options.binary_location = chrome_location
             chrome_options.add_experimental_option('prefs', {
                 'credentials_enable_service': False,
                 'profile': {
