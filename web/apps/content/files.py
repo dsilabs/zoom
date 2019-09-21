@@ -25,7 +25,11 @@ ICON_NAMES = (
     (('text', 'txt'), 'fa-file-text-o')
 )
 VIEW_IN_BROWSER = ('png', 'jpg', 'jpeg', 'tiff', 'svg', 'pdf')
-EDIT_FOOTER = '<a class="button" href="/content/files">Done</a>'
+EDIT_FOOTER = """
+    <div class="field_edit">
+        <a class="button" href="/content/files">Done</a>
+    </div>
+"""
 
 # Define helpers.
 def get_bucket():
