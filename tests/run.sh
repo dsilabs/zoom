@@ -29,6 +29,11 @@ unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 # set display port to avoid crash
 export DISPLAY=:99
 
+# get locales not included in base Python image
+apt-get update && apt-get install -y --no-install-recommends \
+    locales \
+    locales-all
+
 # set locale
 export LC_ALL=C
 
