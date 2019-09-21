@@ -42,4 +42,5 @@ python3.7 bin/zoom server -p 8000 web &
 
 cat web/sites/localhost/site.ini
 
-nosetests --with-doctest --with-coverage --cover-package=zoom -vx --exclude-dir=zoom/testing --exclude-dir=tests/sidetests
+# nosetests --with-doctest --with-coverage --cover-package=zoom -vx --exclude-dir=zoom/testing --exclude-dir=tests/sidetests
+nosetests --with-doctest -vx zoom/fields.py
