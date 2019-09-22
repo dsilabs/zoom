@@ -19,10 +19,10 @@ import logging
 import os
 import unittest
 
-from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
 
 LOGGER.setLevel(logging.WARNING)
@@ -45,19 +45,10 @@ class WebdriverTestPrimitives(unittest.TestCase):
         easyprocess_logger.setLevel(logging.WARNING)
         urllib3_logger = logging.getLogger('urllib3')
         urllib3_logger.setLevel(logging.WARNING)
-        if self.headless:
-            self.logger.info('running headless')
-            self.display = Display(visible=0, size=self.size)
-            self.display.start()
-        else:
-            self.logger.info('not running headless')
 
         self.driver = self.get_driver()
 
     def tearDown(self):
-        if self.headless:
-            self.display.stop()
-
         if self.driver_name == 'phantomjs':
             del self.driver
         else:
@@ -73,6 +64,9 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         if driver_name == 'chrome':
             chrome_options = Options()
+            if self.headless:
+                chrome_options.add_argument('--headless')
+                chrome_options.add_argument('--no-sandbox')
             chrome_options.add_experimental_option('prefs', {
                 'credentials_enable_service': False,
                 'profile': {
@@ -84,7 +78,10 @@ class WebdriverTestPrimitives(unittest.TestCase):
             driver.implicitly_wait(10)
 
         elif driver_name == 'firefox':
-            driver = webdriver.Firefox()
+            firefox_options = FirefoxOptions()
+            if self.headless:
+                firefox_options.headless = True
+            driver = webdriver.Firefox(options=firefox_options)
             driver.set_window_size(*self.size)
             driver.implicitly_wait(10)
 
