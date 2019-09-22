@@ -21,7 +21,7 @@ tests:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
   script:
-    - /bin/bash tests/run.sh
+    - /bin/bash tests/run_in_gitlab_ci.sh
 
 docker build:
   stage: build
