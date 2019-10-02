@@ -2,6 +2,7 @@
     sample components
 """
 
+import decimal
 import uuid
 
 import zoom
@@ -14,7 +15,21 @@ def view():
 
     hr = '<hr>\n'
 
+    data = [
+        ('String', 'Integer', 'Decimal'),
+        ('One', 1, decimal.Decimal(1234)),
+        ('Two', 2, decimal.Decimal(2345))
+    ]
+
     content = zoom.Component(
+
+        'zoom.browse',
+        zoom.browse(
+            data,
+            title='Sample Header',
+            footer='sample footer'
+        ),
+        hr,
 
         'zoom.components.HeaderBar',
         c.HeaderBar(
@@ -30,6 +45,7 @@ def view():
         'zoom.components.dropzone',
         c.dropzone('/sample/components'),
         hr,
+
     )
 
     return zoom.page(content, title='Components')
