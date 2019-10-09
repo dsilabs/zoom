@@ -371,9 +371,10 @@ def serve_favicon(request, handler, *rest):
     'nuthin'
     """
     if request.path == '/favicon.ico':
-        libpath = os.path.dirname(__file__)
-        return serve_response(libpath, '..', 'web', 'themes', 'default',
-                              'images', request.path[1:])
+        pathname = zoom.tools.zoompath(
+            'web', 'themes', 'default', 'images', 'favicon.ico'
+        )
+        return serve_response(pathname)
     else:
         return handler(request, *rest)
 
