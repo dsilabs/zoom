@@ -112,9 +112,30 @@ class AppTestPrimitives(unittest.TestCase):
         return self.response
 
     def save_content(self, filename=None):
+        """Save page content to a file
+
+        If filename is provided, the page content will be saved to that
+        locatino.  If not the content will be saved to the tests/output
+        directory in a filename starting with "content-", followed by
+        the test name, followed by a ".html" extension.
+
+        This function can be called anytime you wish to see the content
+        of the current page.  It is called automatically whenever a
+        test fails due to missing content.
+        """
         if filename is None:
+
+            join = os.path.join
+            test_output_directory = join('tests', 'output')
+            if not os.path.isdir(test_output_directory):
+                os.mkdir(test_output_directory)
+
             test_name = unittest.TestCase.id(self)
-            filename = 'content-%s.txt' % test_name
+            filename = join(
+                test_output_directory,
+                'content-%s.html' % test_name
+            )
+
         print('saving content to %s' % filename)
         with open(filename, 'w') as f:
             f.write(str(self.response.content))
