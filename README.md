@@ -52,21 +52,20 @@ All set?  Okay, here we go!
 4. Add zoom command to your path. <br><br>
     Ubuntu example:
     ```shell
-    $ ln -s /tmp/zoom/utils/zoom/bin/zoom /usr/local/bin/zoom
+    $ ln -s /tmp/zoom/bin/zoom /usr/local/bin/zoom
     ```
 
 5. Configure the zoom database. <br><br>
-    Currently, Zoom requires a MySQL comptabile database to run.  If you don't already have MySQL or MariaDB installed follow the instructions for your operating system.  Alternatively you can use a Mariadb/MySQL instance inside a docker container. In either case make sure you set the port to -p 3306:3306, and ensure your `$MYSQL_ROOT_PASSWORD` is on your path.
-    ```shell 
-    $ docker run --name zoom_mariadb -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -p 3306:3306 -d mariadb:latest
-    ```
+    Currently, Zoom requires a MySQL comptabile database to run.  If you don't
+    already have MySQL or MariaDB installed follow the instructions for your
+    operating system to install it, and then create the database.
 
-6. Once that is installed create the database using the command:
     ```shell
-    $ zoom database -e mysql -u root -p $MYSQL_ROOT_PASSWORD create <dbname>
+    $ mysql -e 'create zoomdata'
+    $ mysql zoomdata < /tmp/zoom/tools/zoom/sql/setup_mysql.sql
     ```
 
-7. Next, edit the site.ini file for the localhost site using your editor like so:
+6. Next, edit the site.ini file for the localhost site using your editor like so:
     ```shell
     $ vi web/sites/localhost/site.ini
     ``` 
@@ -80,11 +79,11 @@ All set?  Okay, here we go!
     app_database=1
 
     [database]
-    user=<username>
-    password=<password>
+    user=zoomuser
+    password=zoompass
     ```
 
-6. Run zoom. <br><br>
+7. Run zoom. <br><br>
     If you are currently in the zoom directory then you don't need to tell zoom where to find your zoom instance.
     Otherwise, you can specify the directory and port.
     ```shell
