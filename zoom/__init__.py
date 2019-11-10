@@ -9,7 +9,7 @@
     Zoom Web Framework
 """
 
-__version__ = "6.0"
+from .__version__ import __version__
 __license__ = "MIT"
 
 import zoom.alerts
