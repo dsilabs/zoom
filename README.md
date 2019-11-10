@@ -4,83 +4,58 @@
 [![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Zoom is a dynamic Python Web framework written specifically for Python 3 that
+ZoomFoundry is a dynamic Python Web framework written specifically for Python 3 that
 promotes modularity and rapid prototyping for building and maintaining useful
 web sites quickly and easily.
 
 
 ## Requirements
-Zoom requires Python 3 and MySQL to run, along with a host of other 3rd party library requirements which are listed in the `requirements.txt` file.  It is currently tested and used on various flavours of GNU/Linux, Mac and Windows.
+ZoomFoundry requires Python 3 and MySQL to run, along with a host of other
+3rd party library requirements listed in the requirements.txt file.  It is
+currently tested and used on various flavours of GNU/Linux, Mac and Windows.
 
 
-## Getting started with Zoom
-The best way to get started with Zoom is to try it.  By following along with
-this guide step by step you'll create a simple blog Zoom app.
-Before you can start building the app, you need to make sure that you have Zoom
-installed.
+## Getting started with ZoomFoundry
+The best way to get started with ZoomFoundry is to try it.  By following along with
+this guide step by step you'll create a simple blog ZoomFoundry app.  Before you can
+start building the app, you need to make sure that you have ZoomFoundry installed.
 
 
-### Installing Zoom
+### Installing ZoomFoundry
 Open up a terminal window and follow along with the following steps.  The
 dollar sign $ in the following examples is the command prompt.
 
-Zoom is a Python 3 framework so you'll need to have Python 3 installed to run it.  We
+ZoomFoundry is a Python 3 framework so you'll need to have Python 3 installed to run it.  We
 recommend the latest version which you can download from [python.org](https://www.python.org/downloads/).
-
-Zoom is currently available only on GitHub.  The best way to get Zoom is to
-clone it from here.  To do this you'll need git installed on
-your system.
 
 All set?  Okay, here we go!
 
-1. Clone zoom
+1. Install ZoomFoundry
     ```shell
-    $ git clone https://github.com/dsilabs/zoom.git
+    $ pip install ZoomFoundry
     ```
 
-2. Install dependancies.
+    This will install a new python package called zoom, and a new CLI command
+    also called zoom.
+
+1. Once that is installed create the database using the newly installed zoom command:
     ```shell
-    $ pip3 install -r zoom/requirements.txt
+    $ zoom database create zoomdata
     ```
 
-3. Put the zoom directory on your pythonpath. <br><br>
-    There are several ways to do this, but the simplest is probably to add the zoom directory to your PYTHONPATH.  Inside the zoom repository you'll see the zoom library directory.  That's the directory that you'll need to add to your PYTHONPATH.  So, if you cloned zoom into /tmp/zoom then you'll set your PYTHONPATH like so:
-    ```
-    $ export PYTHONPATH=/tmp/zoom
-    ```
+    This assumes you have access to a MySQL server using your default username.  See
+    `zoom database --help` to adjust for your environment.
 
-4. Add zoom command to your path. <br><br>
-    Ubuntu example:
-    ```shell
-    $ ln -s /tmp/zoom/bin/zoom /usr/local/bin/zoom
-    ```
-
-5. Configure the zoom database. <br><br>
-    Currently, Zoom requires a MySQL comptabile database to run.  If you don't
-    already have MySQL or MariaDB installed follow the instructions for your
-    operating system to install it, and then create the database.
-
-    ```shell
-    $ mysql -e 'create zoomdata'
-    $ mysql zoomdata < /tmp/zoom/tools/zoom/sql/setup_mysql.sql
-    ```
-
-6. Next, edit the site.ini file for the localhost site using your editor like so:
+1. Next, edit the site.ini file for the localhost site using your editor like so:
     ```shell
     $ vi web/sites/localhost/site.ini
-    ``` 
+    ```
 
     Find the database section of the config file and set the values for the
     database configuration to correspond to your database configuration. Typically:
     ```shell
-    [monitoring]
-    profiling=1
-    logging=1
-    app_database=1
-
     [database]
-    user=zoomuser
-    password=zoompass
+    name=zoomdata
     ```
 
 7. Run zoom. <br><br>
@@ -96,7 +71,7 @@ First, you'll need a place to build your apps.  Make an apps directory and cd in
 $ mkdir apps && cd apps
 ```
 
-To let Zoom know where to find this apps directory add it to the `site.ini` file. In your `site.ini` file, which you'll find in the web/sites/localhost directory look for the path setting in the [apps] section of the and add the path to your apps directory.
+To let the zoom command know where to find this apps directory add it to the `site.ini` file. In your `site.ini` file, which you'll find in the web/sites/localhost directory look for the path setting in the [apps] section of the and add the path to your apps directory.
 
 Next, let's create the blog app.  Start by creating a blog directory in your apps.
 
@@ -117,7 +92,7 @@ def hello(request):
     return zoom.page('Hello, World!', title='Hello!')
 ```
 
-Go to your Zoom instance (localhost) in your browser and you should see your new app.
+Go to your zoom instance (localhost) in your browser and you should see your new app.
 
 This is the most basic app, which basically takes a request object as the sole parameter and returns a response, in this case, a page response.
 
