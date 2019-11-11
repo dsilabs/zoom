@@ -4,6 +4,6 @@
     Unix style CLI launcher
 """
 
-import zoom_cli
+from zoom.cli.main import main
 
-zoom_cli.main()
+main()
