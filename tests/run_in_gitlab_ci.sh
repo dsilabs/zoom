@@ -3,6 +3,8 @@
 pip3.7 install -r requirements.txt
 pip3.7 install -r tests/requirements.txt
 
+export PYTHONPATH=$(pwd)
+
 bin/zoom database -e mysql -H mariadb -u root -p root create zoomdata
 bin/zoom database -e mysql -H mariadb -u root -p root create zoomtest
 
