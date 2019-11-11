@@ -9,11 +9,14 @@
 import os
 import sys
 import inspect
-import commands
 from argparse import ArgumentParser
 
 import zoom
 from zoom.utils import ItemList
+from zoom.cli.setup import setup
+from zoom.cli.database import database
+from zoom.cli.new import new
+from zoom.cli.server import server
 
 
 class SimpleException(Exception):
@@ -24,8 +27,10 @@ class SimpleException(Exception):
 def get_functions():
     """get a dictionary containing the valid command functions"""
     functions = {
-        command: getattr(commands, command) for
-        command in dir(commands) if command in commands.__all__
+        'server': server,
+        'database': database,
+        'new': new,
+        'setup': setup,
     }
     return functions
 
