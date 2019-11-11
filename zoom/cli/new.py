@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    zoom CLI new command
+    zoom new cli
 """
 
 # pylint: disable=unused-argument
