@@ -11,12 +11,11 @@
 import logging
 import os
 import sys
-import shutil
 from argparse import ArgumentParser
 
 from zoom.cli.setup import setup
 from database import database
-from new import new
+from zoom.cli.new import new
 
 __all__ = [
     'server',
