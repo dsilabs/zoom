@@ -471,7 +471,7 @@ class Sqlite3Database(Database):
     def create_site_tables(self, filename=None):
         """Create Sqlite3 version of site tables"""
         logger = logging.getLogger(__name__)
-        filename = zoom.tools.zoompath('tools/zoom/sql/setup_sqlite3g.sql')
+        filename = zoom.tools.zoompath('zoom/sql/setup_sqlite3g.sql')
         self.run(filename)
         logger.debug('created tables from %s', filename)
 
@@ -541,7 +541,7 @@ class MySQLDatabase(Database):
     def create_site_tables(self):
         """create the tables for a site in a mysql server"""
         logger = logging.getLogger(__name__)
-        filename = zoom.tools.zoompath('tools/zoom/sql/setup_mysql.sql')
+        filename = zoom.tools.zoompath('zoom/sql/setup_mysql.sql')
         self.run(filename)
         logger.debug('created tables from %s', filename)
 
