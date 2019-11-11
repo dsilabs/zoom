@@ -8,8 +8,7 @@ requires = [
     'passlib>=1.7.1',
     'markdown>=2.6.1',
     'Pillow>=1.0',
-    'faker',
-    'markdown>=2.6.1'
+    'faker'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
