@@ -33,7 +33,7 @@ setuptools.setup(
     install_requires=requires,
     entry_points={
         'console_scripts': [
-            'zoom = zoom.cli.main:main'
+            'zoom = zoom:__main__:run_cli'
         ]
     },
     classifiers=[

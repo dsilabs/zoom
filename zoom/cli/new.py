@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
     zoom new cli
 """
@@ -12,6 +11,26 @@ from argparse import ArgumentParser
 
 import zoom
 
+from zoom.cli.command import Command, CommandFailure
+
+class NewCommand(Command):
+    arguments = (
+        ('which', 'What to create; "site", "app", or "instance".'),
+        ('path', 'The destination path for the created item.')
+    )
+
+    def run(self):
+        which = self.get_argument('which')
+        if which != 'app':
+            raise CommandFailure('Invalid value for "which"')
+        path = self.get_argument('path')
+
+        try:
+            make_app(path, 'basic')
+        except FileExistsError:
+            raise CommandFailure('%s at "%s" already exists'%(which, path))
+
+        print('Created %s at "%s".'%(which, path))
 
 def make_app(pathname, template):
     """Make an app from an app template"""
@@ -20,27 +39,3 @@ def make_app(pathname, template):
         shutil.copytree(template_dir, pathname)
     else:
         print('no template called {!r} {!r}'.format(template, template_dir))
-
-
-def new(name=None):
-    """Create a new app"""
-
-    parser = ArgumentParser(
-        description='create a new app',
-        usage='zoom new [options] name'
-    )
-
-    parser.add_argument("-v", "--verbose", action='store_true',
-                        help='verbose console logging')
-    parser.add_argument('name', nargs='?', default=None)
-    args = parser.parse_args()
-
-    pathname = args.name
-    if pathname:
-        try:
-            make_app(pathname, 'basic')
-        except FileExistsError as e:
-            print('App exists:', pathname)
-            sys.exit(1)
-    else:
-        print('missing app name (-h for help)')

@@ -7,72 +7,72 @@ import os
 import sys
 from argparse import ArgumentParser
 
+from zoom.cli.command import Command, CommandFailure
 
-def server(instance='.'):
-    """run an instance using Python's builtin HTTP server"""
+def setup_logging(filter_, verbose):
+    fmt = (
+        '%(asctime)s %(levelname)-8s %(name)-20s '
+        '%(lineno)-4s %(message)s'
+    )
+    con_formatter = logging.Formatter(fmt)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.WARNING)
+    console_handler.setFormatter(con_formatter)
 
-    parser = ArgumentParser(
-        description='run a built-in zoom http server',
-        usage='zoom server [options] instance'
-        )
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(console_handler)
 
-    parser.add_argument("-p", "--port", type=int, default=80,
-                        help='http service port')
-    parser.add_argument("-n", "--noop", action='store_true',
-                        help='use special debugging middleware stack')
-    parser.add_argument("-u", "--user", type=str, default=None,
-                        help='run site as specified user')
-    parser.add_argument("-v", "--verbose", action='store_true',
-                        help='verbose console logging')
-    parser.add_argument("-f", "--filter", type=str, default=None,
-                        help='log filter')
-    parser.add_argument('instance', nargs='?', default=None)
-    args = parser.parse_args()
+    if filter_:
+        console_handler.addFilter(logging.Filter(name=filter_))
+    
+    if verbose:
+        console_handler.setLevel(logging.DEBUG)
+    else:
+        console_handler.setLevel(logging.INFO)
 
-    from zoom.server import run as runweb
-    import zoom.middleware
-    try:
-        if args.instance and not os.path.exists(args.instance):
-            print('{!r} is not a valid directory'.format(args.instance))
-        else:
-            instance = args.instance
-            fmt = (
-                '%(asctime)s %(levelname)-8s %(name)-20s '
-                '%(lineno)-4s %(message)s'
+    for handler in root_logger.handlers:
+        handler.setFormatter(con_formatter)
+
+class ServerCommand(Command):
+    arguments = (
+        ('instance', 'The Zoom instance directory to serve; defaults to legacy directory.'),
+    )
+    options = (
+        ('port', 'p', 'The port to serve from.'),
+        ('noop', 'n', 'Use special debugging middleware stack.'),
+        ('user', 'u', 'The user to use for runtime.'),
+        ('filter', 'f', 'The log filter.')
+    )
+
+    def run(self):
+        from zoom import middleware
+        from zoom.server import run as runweb
+        
+        instance = self.get_argument('instance', take_input=False)
+        if instance and not os.path.exists(instance):
+            raise CommandFailure('%s is not a valid directory'%instance)
+
+        setup_logging(self.get_option('filter', typ=str), self.verbose)
+
+        handlers = None
+        if self.get_option('noop'):
+            handlers = middleware.DEBUGGING_HANDLERS
+        user = self.get_option('user')
+
+        port = self.get_option('port', default=80)
+        try:
+            port = int(port)
+        except ValueError:
+            raise CommandFailure('Invalid port %s')
+
+        try:
+            runweb(
+                port=port, instance=instance, 
+                handlers=handlers, username=user
             )
-            con_formatter = logging.Formatter(fmt)
-            console_handler = logging.StreamHandler(sys.stdout)
-            console_handler.setLevel(logging.WARNING)
-            console_handler.setFormatter(con_formatter)
-
-            root_logger = logging.getLogger()
-            root_logger.setLevel(logging.DEBUG)
-            root_logger.addHandler(console_handler)
-
-            if args.filter:
-                console_handler.addFilter(logging.Filter(name=args.filter))
-
-            if args.verbose:
-                console_handler.setLevel(logging.DEBUG)
-            else:
-                console_handler.setLevel(logging.INFO)
-
-            for handler in root_logger.handlers:
-                handler.setFormatter(con_formatter)
-
-            if args.noop:
-                handlers = zoom.middleware.DEBUGGING_HANDLERS
-                runweb(port=args.port, instance=instance, handlers=handlers)
-            else:
-                runweb(port=args.port, instance=instance, username=args.user)
-
-            print('\rstopped')
-
-    except PermissionError:
-        print('PermissionError: is port {} in use?\n'
-              'use -p <port> to choose a different port'.format(args.port))
-
-    except OSError:
-        print('OSError: is port {} in use?\n'
-              'use -p <port> to choose a different port'.format(args.port))
-
+        except (PermissionError, OSError) as err:
+            raise CommandFailure((
+                '%s: is port %s in use?\n'
+                'Use -p or --port to specify another port'
+            )%(err.__class__.__name__, port))

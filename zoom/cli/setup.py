@@ -9,7 +9,7 @@ import sys
 
 import zoom
 
-def setup(name=None):
+def setup(name=None, args=None):
     """set up a new Zoom instance"""
 
     join = os.path.join
@@ -20,7 +20,7 @@ def setup(name=None):
     )
 
     parser.add_argument('directory', nargs=1)
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     dst = args.directory[0]
     src = zoom.tools.zoompath('web')
