@@ -5,7 +5,6 @@ Usage: zoom server [options] [<instance>]
 Options:
   -h, --help              Show this message and exit.
   -v, --verbose           Run in verbose mode.
-  -V, --version           Show the Zoom version and exit.
   -p, --port <port>       The port to serve from.
   -n, --noop              Use special debugging middleware stack.
   -u, --user <username>   The user to run as.
@@ -55,7 +54,7 @@ def server():
 
     instance = arguments['<instance>']
     if instance and not os.path.exists(instance):
-        finish(True, '%s is not a valid directory.'%instance)
+        finish(True, '"%s" is not a valid directory.'%instance)
 
     setup_logging(arguments['--filter'], arguments['--verbose'])
 
@@ -67,7 +66,7 @@ def server():
     try:
         port = int(port)
     except ValueError:
-        finish(True, 'Invalid port %s')
+        finish(True, 'Invalid port %s'%port)
 
     try:
         runweb(

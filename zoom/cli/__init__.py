@@ -12,7 +12,6 @@ Legacy commands (deprecated):
 Options:
   -h, --help    Show this message and exit. If used in conjunction with a
                 command, show the usage for that command instead.
-  -v, --verbose Run in verbose mode.
   -V, --version Show the Zoom version and exit."""
 
 import os
