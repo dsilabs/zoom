@@ -1,13 +1,26 @@
-"""
-    zoom server cli
-"""
+"""server: Serve an instance for development.
+
+Usage: zoom server [options] [<instance>]
+
+Options:
+  -h, --help              Show this message and exit.
+  -v, --verbose           Run in verbose mode.
+  -V, --version           Show the Zoom version and exit.
+  -p, --port <port>       The port to serve from.
+  -n, --noop              Use special debugging middleware stack.
+  -u, --user <username>   The user to run as.
+  -f, --filter <filter>   The log filter.
+
+Parameters:
+  instance      The Zoom instance directory."""
 
 import logging
 import os
 import sys
-from argparse import ArgumentParser
 
-from zoom.cli.command import Command, CommandFailure
+from docopt import docopt
+
+from zoom.cli import finish
 
 def setup_logging(filter_, verbose):
     fmt = (
@@ -34,45 +47,36 @@ def setup_logging(filter_, verbose):
     for handler in root_logger.handlers:
         handler.setFormatter(con_formatter)
 
-class ServerCommand(Command):
-    arguments = (
-        ('instance', 'The Zoom instance directory to serve; defaults to legacy directory.'),
-    )
-    options = (
-        ('port', 'p', 'The port to serve from.'),
-        ('noop', 'n', 'Use special debugging middleware stack.'),
-        ('user', 'u', 'The user to use for runtime.'),
-        ('filter', 'f', 'The log filter.')
-    )
+def server():
+    from zoom import middleware
+    from zoom.server import run as runweb
 
-    def run(self):
-        from zoom import middleware
-        from zoom.server import run as runweb
-        
-        instance = self.get_argument('instance', take_input=False)
-        if instance and not os.path.exists(instance):
-            raise CommandFailure('%s is not a valid directory'%instance)
+    arguments = docopt(__doc__)
 
-        setup_logging(self.get_option('filter', typ=str), self.verbose)
+    instance = arguments['<instance>']
+    if instance and not os.path.exists(instance):
+        finish(True, '%s is not a valid directory.'%instance)
 
-        handlers = None
-        if self.get_option('noop'):
-            handlers = middleware.DEBUGGING_HANDLERS
-        user = self.get_option('user')
+    setup_logging(arguments['--filter'], arguments['--verbose'])
 
-        port = self.get_option('port', default=80)
-        try:
-            port = int(port)
-        except ValueError:
-            raise CommandFailure('Invalid port %s')
+    handlers = None
+    if arguments['--noop']:
+        handlers = middleware.DEBUGGING_HANDLERS
+    user = arguments['--user']
+    port = arguments['--port'] or 80
+    try:
+        port = int(port)
+    except ValueError:
+        finish(True, 'Invalid port %s')
 
-        try:
-            runweb(
-                port=port, instance=instance, 
-                handlers=handlers, username=user
-            )
-        except (PermissionError, OSError) as err:
-            raise CommandFailure((
-                '%s: is port %s in use?\n'
-                'Use -p or --port to specify another port'
-            )%(err.__class__.__name__, port))
+    try:
+        runweb(
+            port=port, instance=instance, 
+            handlers=handlers, username=user
+        )
+    except (PermissionError, OSError) as err:
+        raise finish(True, (
+            '%s: is port %s in use?\n'
+            'Use -p or --port to specify another port'
+        )%(err.__class__.__name__, port))
+server.__doc__ = __doc__

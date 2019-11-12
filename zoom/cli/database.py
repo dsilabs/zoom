@@ -12,7 +12,7 @@ import warnings
 import zoom
 
 
-def get_args(args):
+def get_args(_argv=None):
     """Get command line arguments passed by user"""
     parser = argparse.ArgumentParser(
         description='manage the database',
@@ -38,7 +38,7 @@ def get_args(args):
 
     parser.add_argument('command', nargs=1, default=None, help='create, drop')
     parser.add_argument('args', nargs='*', default=None, help='database_name')
-    return parser.parse_args(args)
+    return parser.parse_args(_argv)
 
 
 def connect(engine, **kwargs):
