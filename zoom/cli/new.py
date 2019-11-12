@@ -39,14 +39,14 @@ def new():
 
     path = arguments['<path>']
     if not path:
-        path = input('path (The path to the directory to create): ')
+        path = input('path (the path to the directory to create): ')
     if os.path.isdir(path):
-        finish(True, "%s already exists."%path)
+        finish(True, '%s already exists.'%path)
 
     if arguments['app']:
         make_app(path, 'basic')
     else:
         raise NotImplementedError()
 
-    print('Created %s.'%path)
+    print('Created "%s".'%path)
 new.__doc__ = __doc__
