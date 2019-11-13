@@ -12,7 +12,7 @@ import warnings
 import zoom
 
 
-def get_args(_argv=None):
+def get_args():
     """Get command line arguments passed by user"""
     parser = argparse.ArgumentParser(
         description='manage the database',
@@ -38,7 +38,7 @@ def get_args(_argv=None):
 
     parser.add_argument('command', nargs=1, default=None, help='create, drop')
     parser.add_argument('args', nargs='*', default=None, help='database_name')
-    return parser.parse_args(_argv)
+    return parser.parse_args(sys.argv[2:])
 
 
 def connect(engine, **kwargs):
@@ -204,10 +204,10 @@ def setup_site(args, site_name, parameters):
     create_site_database(args, site_name)
 
 
-def database(args):
+def database():
     """manage the database"""
 
-    args = get_args(args)
+    args = get_args()
     if args.engine not in ['sqlite3', 'mysql']:
         print('{!r} is not a valid engine'.format(args.engine))
         sys.exit(-1)
