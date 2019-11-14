@@ -25,8 +25,8 @@ from zoom.utils import ItemList
 
 def finish(failure=False, *messages):
     for message in messages:
-        print(message, file=sys.stderr)
-    sys.exit(1)
+        print(message, file=sys.stderr if failure else sys.stdout)
+    sys.exit(1 if failure else 0)
 
 # Legacy commands.
 from zoom.cli.setup import setup
@@ -58,7 +58,7 @@ def run_cli():
 
         handler = COMMANDS[command]
         if show_help:
-            finish(True, handler.__doc__)
+            finish(False, handler.__doc__)
 
         handler()
     else:
