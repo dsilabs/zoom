@@ -2,4 +2,3 @@ selenium
 nose
 coverage
 nose-exclude
-requests
