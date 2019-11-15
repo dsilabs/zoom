@@ -9,7 +9,7 @@ import unittest
 
 from subprocess import Popen, PIPE
 
-from zoom.cli import __doc__ as MAIN_USAGE
+from zoom.cli.main import __doc__ as MAIN_USAGE
 from zoom.cli.new import new as new_handler
 
 TEST_DIR = os.path.abspath('./_testdata')

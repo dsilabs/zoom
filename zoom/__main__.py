@@ -29,8 +29,8 @@ import html
 # properly now.
 sys.path.insert(0, os.path.abspath('.'))
 
-from zoom.cli import run_cli
+from zoom.cli.main import main
 
 # Run the CLI.
 if __name__ == '__main__':
-    run_cli()
+    main()
