@@ -1,12 +1,12 @@
 #!/bin/bash
 
-pip3.7 install -r requirements.txt
-pip3.7 install -r tests/requirements.txt
+pip install .
+pip install -r tests/requirements.txt
 
 export PYTHONPATH=$(pwd)
 
-bin/zoom database -e mysql -H mariadb -u root -p root create zoomdata
-bin/zoom database -e mysql -H mariadb -u root -p root create zoomtest
+zoom database -e mysql -H mariadb -u root -p root create zoomdata
+zoom database -e mysql -H mariadb -u root -p root create zoomtest
 
 export ZOOM_TEST_DATABASE_HOST=mariadb
 export ZOOM_TEST_DATABASE_USER=root
@@ -40,9 +40,8 @@ apt-get update && apt-get install -y --no-install-recommends \
 export LC_ALL=C
 
 # run zoom server
-python3.7 bin/zoom server -p 8000 web &
+zoom server -p 8000 web &
 
 cat web/sites/localhost/site.ini
 
-# nosetests --with-doctest --with-coverage --cover-package=zoom -vx  --exclude-dir=tests/sidetests
 nosetests --with-doctest --with-coverage --cover-package=zoom -vx zoom tests/unittests tests/apptests tests/webtests --exclude-dir=zoom/testing --exclude-dir=zoom/cli
