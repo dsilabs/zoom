@@ -8,7 +8,8 @@ requires = [
     'passlib>=1.7.1',
     'markdown>=2.6.1',
     'Pillow>=1.0',
-    'faker'
+    'faker',
+    'docopt'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +34,7 @@ setuptools.setup(
     install_requires=requires,
     entry_points={
         'console_scripts': [
-            'zoom = zoom.cli.main:main'
+            'zoom = zoom.__main__:main'
         ]
     },
     classifiers=[

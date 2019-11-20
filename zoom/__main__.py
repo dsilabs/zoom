@@ -27,9 +27,10 @@ import html
 # Re-insert this package path into sys.path. Since conflicting symbols have
 # already been resolved to the external libraries, everything will work
 # properly now.
-sys.path.insert(0, '.')
+sys.path.insert(0, os.path.abspath('.'))
 
-from zoom.cli.main import main as cli_main
+from zoom.cli.main import main
 
 # Run the CLI.
-cli_main()
+if __name__ == '__main__':
+    main()

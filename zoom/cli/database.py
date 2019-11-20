@@ -38,7 +38,7 @@ def get_args():
 
     parser.add_argument('command', nargs=1, default=None, help='create, drop')
     parser.add_argument('args', nargs='*', default=None, help='database_name')
-    return parser.parse_args()
+    return parser.parse_args(sys.argv[2:])
 
 
 def connect(engine, **kwargs):

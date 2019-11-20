@@ -20,7 +20,7 @@ def setup(name=None):
     )
 
     parser.add_argument('directory', nargs=1)
-    args = parser.parse_args()
+    args = parser.parse_args(sys.argv[2:])
 
     dst = args.directory[0]
     src = zoom.tools.zoompath('web')

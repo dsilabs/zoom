@@ -1,94 +1,63 @@
-# -*- coding: utf-8 -*-
+"""Usage: zoom [options] [<command>] [<command-arg>...]
 
-"""
-    zoom
+Commands:
+  new           Create a new app, theme, or instance.
+  server        Serve a Zoom instance for development.
 
-    Zoom command line utility
-"""
+Legacy commands (deprecated):
+  database      Manage a database.
+  setup         Set up a new Zoom instance.
+
+Options:
+  -h, --help    Show this message and exit. If used in conjunction with a
+                command, show the usage for that command instead.
+  -V, --version Show the Zoom version and exit."""
 
 import os
 import sys
-import inspect
-from argparse import ArgumentParser
 
-import zoom
+from docopt import docopt
+
+from zoom.__version__ import __version__
 from zoom.utils import ItemList
+
+from zoom.cli import finish
+
+# Legacy commands.
 from zoom.cli.setup import setup
 from zoom.cli.database import database
+# Modern commands.
 from zoom.cli.new import new
 from zoom.cli.server import server
 
-
-class SimpleException(Exception):
-    """an exception that traps everything"""
-    pass
-
-
-def get_functions():
-    """get a dictionary containing the valid command functions"""
-    functions = {
-        'server': server,
-        'database': database,
-        'new': new,
-        'setup': setup,
-    }
-    return functions
-
-
-def dispatch(args):
-    """dispatch a command for running"""
-    functions = get_functions()
-    cmd = args[1]
-    if cmd in functions:
-        del sys.argv[1]
-        functions[cmd]()
-    elif cmd in ['-V', '--version']:
-        print('zoom', zoom.__version__)
-    else:
-        print('No such command {!r}\nUse -h for help'.format(cmd))
-
-
-def list_commands():
-    """print lits of valid commands to stdout"""
-    result = ItemList([('command', 'purpose', 'usage')])
-    installed_name = os.path.split(sys.argv[0])[-1]
-    for name, function in sorted(get_functions().items()):
-        if not name.startswith('_'):
-            doc = function.__doc__
-            text = ['{} {} [<options>]'.format(installed_name, name)]
-            parameters = inspect.signature(function).parameters.values()
-            for parameter in parameters:
-                if parameter.kind == parameter.POSITIONAL_OR_KEYWORD:
-                    text.append('[{}]'.format(parameter.name))
-            result.append([name, doc, ' '.join(text)])
-    print('\nZoom CLI\n\n{}\n'.format(result))
-
+COMMANDS = {
+    'new': new,
+    'setup': setup,
+    'database': database,
+    'server': server
+}
 
 def main():
-    """main program
+    """The CLI entry point callable."""
+    version_string = ' '.join(('zoom', __version__))
+    arguments = docopt(
+        __doc__, version=version_string, options_first=True,
+        help=False
+    )
 
-    Calls the appropriate method corresponding to the command line args.
-    """
-    if len(sys.argv) == 2 and sys.argv[-1] in ['-h', '--help']:
-        installed_name = os.path.split(sys.argv[0])[-1]
-        parser = ArgumentParser(
-            description='{name} command line utility'.format(
-                name=installed_name
-            ),
-        )
-        parser.add_argument('command', nargs='?')
-        parser.add_argument('-V', '--version', type=str)
-        parser.parse_args()
+    show_help = arguments['--help']
+    command = arguments['<command>']
+    if command:
+        if command not in COMMANDS:
+            finish(True, 'Invalid command: %s.\n'%command, __doc__)
 
-    try:
-        if len(sys.argv) > 1:
-            dispatch(sys.argv)
+        handler = COMMANDS[command]
+        if show_help:
+            finish(False, handler.__doc__)
+
+        handler()
+    else:
+        if show_help:
+            finish(False, __doc__)
         else:
-            list_commands()
-
-    except SimpleException as msg:
-        print('fatal: %s' % msg)
-
-
-if __name__ == '__main__':
-    main()
+            finish(True, 'No command specified (nothing to do).\n', __doc__)
