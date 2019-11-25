@@ -35,64 +35,46 @@ All set?  Okay, here we go!
     $ pip install ZoomFoundry
     ```
 
-    This will install a new python package called zoom, and a new CLI command
-    also called zoom.
+    This will install a new Python package and corresponding CLI command; `zoom`.
 
-1. Once that is installed create the database using the newly installed zoom command:
+1. Once you have ZoomFoundry installed, you'll first want to create and populate a
+    Zoom *instance directory*.<br><br> Zoom is multi-tenant, meaning it can serve 
+    multiple sites at the same time; an instance directory contains a set of Zoom 
+    *sites* and resources shared between them. Run:
     ```shell
-    $ zoom database create zoomdata
+    $ zoom init ~/my-zoom-instance
     ```
 
-    This assumes you have access to a MySQL server using your default username.  See
-    `zoom database --help` to adjust for your environment.
+    This will walk you through setting up your instance, including creating a
+    default site and database.
 
-1. Next, edit the site.ini file for the localhost site using your editor like so:
-    ```shell
-    $ vi web/sites/localhost/site.ini
-    ```
+    *Don't like wizards?* Every option Zoom commands prompt you with have a
+    corresponding command line option: see the help with `zoom -h`.
 
-    Find the database section of the config file and set the values for the
-    database configuration to correspond to your database configuration. Typically:
+1. Serve the created instance. <br><br>
+    Run the following to start the built-in server, pointed at the instance you just
+    created.
     ```shell
-    [database]
-    name=zoomdata
-    ```
-
-7. Run zoom. <br><br>
-    If you are currently in the zoom directory then you don't need to tell zoom where to find your zoom instance.
-    Otherwise, you can specify the directory and port.
-    ```shell
-    $ zoom server -p 8080 ~/work/web
+    $ zoom serve -p 80 ~/my-zoom-instance
     ```
 
 ### Creating the Blog App
-First, you'll need a place to build your apps.  Make an apps directory and cd into it.
+To create a new app with Zoom, just run:
 ```shell
-$ mkdir apps && cd apps
+zoom new app blog ~/my-zoom-instance
 ```
 
-To let the zoom command know where to find this apps directory add it to the `site.ini` file. In your `site.ini` file, which you'll find in the web/sites/localhost directory look for the path setting in the [apps] section of the and add the path to your apps directory.
-
-Next, let's create the blog app.  Start by creating a blog directory in your apps.
-
+*Don't mind a `cd`?* Zoom commands only require you to specify the path to an instance
+directory if you aren't already inside one. You could replace the above with:
 ```shell
-$ mkdir blog && cd blog
+cd ~/my-zoom-instance && zoom new app blog
 ```
 
-Now we'll create a very simple hello world app, just to make sure it's all working correctly.  Create a file called `app.py` that contains this:
-
-```python
-"""
-    zoom app v 0.1
-"""
-
-import zoom
-
-def hello(request):
-    return zoom.page('Hello, World!', title='Hello!')
+You've just created an app called `blog` at `~/my-zoom-instance/apps/blog`. Take a second to check it out.
+To see the app in action, check out `http://localhost/blog` after running:
+```shell
+zoom serve -p 80 ~/my-zoom-instance
 ```
-
-Go to your zoom instance (localhost) in your browser and you should see your new app.
 
 This is the most basic app, which basically takes a request object as the sole parameter and returns a response, in this case, a page response.
 

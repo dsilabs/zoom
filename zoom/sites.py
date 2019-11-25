@@ -13,6 +13,11 @@ import logging
 import zoom
 from zoom.site import Site as BasicSite
 
+# The default path for sites is configurable based on an environment variable,
+# which we read eagerly here to ensure we don't provide app code an opportunity
+# to modify the environment first.
+default_site_path = os.environ.get('ZOOM_DEFAULT_SITE')
+
 class BackgroundJob(object):
     """Background Job"""
     def __init__(self, name, path):
@@ -50,11 +55,14 @@ class Site(BasicSite):
     """
 
     def __init__(self, path=None):
-
-        # prepare a fake request adapter to satisfy the legacy api
-        path = path or zoom.tools.zoompath('web', 'sites', 'localhost')
+        # Resolve the site path from a parameter, environment variable, or
+        # logical default.
+        path = path or default_site_path or \
+                zoom.tools.zoompath('web', 'sites', 'localhost')
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
+        
+        # prepare a fake request adapter to satisfy the legacy api
         rest, name = os.path.split(path)
         instance, _ = os.path.split(rest)
         fake_request_adapter = zoom.utils.Bunch(
@@ -106,12 +114,6 @@ class SiteProxy(object):
 
         Iterates through the apps in the site and calls
         run_background_jobs on each one.
-
-        >>> import zoom
-        >>> site_directory = zoom.tools.zoompath('web/sites/localhost')
-        >>> site = SiteProxy(site_directory)
-        >>> site.run_background_jobs()
-        localhost
         """
         logger = logging.getLogger(__name__)
         logger.info('running background jobs for site %r', self.name)
@@ -125,4 +127,3 @@ class SiteProxy(object):
 
     def __repr__(self):
         return 'Site(%r)' % (self.name)
-

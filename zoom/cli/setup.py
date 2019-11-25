@@ -9,6 +9,8 @@ import sys
 
 import zoom
 
+from zoom.cli.utils import legacy_command_argv
+
 def setup(name=None):
     """set up a new Zoom instance"""
 
@@ -20,7 +22,7 @@ def setup(name=None):
     )
 
     parser.add_argument('directory', nargs=1)
-    args = parser.parse_args(sys.argv[2:])
+    args = parser.parse_args(legacy_command_argv('setup'))
 
     dst = args.directory[0]
     src = zoom.tools.zoompath('web')

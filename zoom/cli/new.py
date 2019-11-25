@@ -1,52 +1,104 @@
 # -*- coding: utf-8 -*-
-"""new: Create a new app, site, or instance.
+"""new: Create a new app, theme, or site.
 
 Usage:
-  zoom [options] new app [<path>]
-  zoom [options] new site [<path>]
-  zoom [options] new instance [<path>]
+  zoom new app [options] <name> [<path>]
+  zoom new site [options] <name> [<path>]
+  zoom new theme [options] <name> [<path>]
+  zoom new database [options] <name>
 
 Options:
-  -h, --help    Show this message and exit.
-  -v, --verbose Run in verbose mode.
-  -V, --version Show the Zoom version and exit.
+  -v, --verbose               Run in verbose mode.
+
+App specific options:
+  --title=<val>               The title for the created app. Defaults to the
+                              name.
+  --icon=<val>                The icon name for the created app.
+
+Site specific options:
+%s
+
+Database specific options:
+%s
 
 Parameters:
-  path          The directory path in which to create the app, site, or
-                instance."""
+  path                        The directory path in which to create the app,
+                              theme, or site."""
 
-# pylint: disable=unused-argument
 import os
-import shutil
-import sys
 
 from docopt import docopt
 
-import zoom
+from zoom.cli.common import DB_CREATION_OPTIONS, SITE_CREATION_OPTIONS,\
+    do_database_creation, do_site_creation
+from zoom.cli.utils import describe_options, copy_boilerplate,\
+    resolve_path_with_context, finish, which_argument
 
-from zoom.cli import finish
+COMMAND_PATH_CONTEXTS = {
+    'app': ('apps', {'instance': True, 'site': True}),
+    'theme': ('themes', {'instance': True, 'site': True}),
+    'site': ('sites', {'instance': True}),
+}
 
-def make_app(pathname, template):
-    """Make an app from an app template"""
-    template_dir = zoom.tools.zoompath('zoom', 'templates', 'apps', template)
-    if os.path.isdir(template_dir):
-        shutil.copytree(template_dir, pathname)
+def new_filesystem_resource(arguments, command, name):
+    path = arguments['<path>'] or '.'
+
+    context_options = COMMAND_PATH_CONTEXTS[command]
+    path = os.path.join(resolve_path_with_context(
+        path, context_options[0], **context_options[1]
+    ), name)
+
+    if os.path.exists(path):
+        is_empty_dir = os.path.isdir(path) and not len(os.listdir(path))
+        if not is_empty_dir:
+            finish(True, (
+                'Can\'t create "%s" (already exists as a non-empty directory)'
+            )%path)
     else:
-        print('no template called {!r} {!r}'.format(template, template_dir))
+        try:
+            os.mkdir(path)
+        except BaseException as ex:
+            finish(True, 'Can\'t create "%s" (%s)'%(path, str(ex)))
 
-def new():    
-    arguments = docopt(__doc__, options_first=True)
+    if command == 'app':
+        configuration = {
+            'title': arguments.get('--title') or name,
+            'icon': arguments.get('--icon') or 'cube'
+        }
+    
+        copy_boilerplate('apps/basic', path)
 
-    path = arguments['<path>']
-    if not path:
-        path = input('path (the path to the directory to create): ')
-    if os.path.isdir(path):
-        finish(True, '%s already exists.'%path)
+        with open(os.path.join(path, 'config.ini'), 'r') as app_ini_file:
+            app_ini = app_ini_file.read()
 
-    if arguments['app']:
-        make_app(path, 'basic')
+        for key, value in configuration.items():
+            app_ini = app_ini.replace('{{%s}}'%key, value)
+        
+        with open(os.path.join(path, 'config.ini'), 'w') as app_ini_file:
+            app_ini_file.write(app_ini)
+    elif command == 'theme':
+        copy_boilerplate('themes/basic', path)
+    elif command == 'site':
+        do_site_creation(path, name, arguments)
     else:
         raise NotImplementedError()
 
-    print('Created "%s".'%path)
-new.__doc__ = __doc__
+    print('Created "%s"'%path)
+
+def new():    
+    arguments = docopt(new.__doc__)
+
+    name = arguments['<name>']
+
+    command = which_argument(arguments, (
+        'site', 'database', 'theme', 'app'
+    ))
+
+    if command == 'database':
+        do_database_creation(arguments, collected={'database': name})
+    else:
+        new_filesystem_resource(arguments, command, name)
+new.__doc__ = __doc__%(
+    describe_options(SITE_CREATION_OPTIONS),
+    describe_options(DB_CREATION_OPTIONS)
+)
