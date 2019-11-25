@@ -1,4 +1,6 @@
 """
+    DEPRECATED
+
     zoom database command
 """
 
@@ -11,6 +13,7 @@ import warnings
 
 import zoom
 
+from zoom.cli.utils import legacy_command_argv
 
 def get_args():
     """Get command line arguments passed by user"""
@@ -38,8 +41,8 @@ def get_args():
 
     parser.add_argument('command', nargs=1, default=None, help='create, drop')
     parser.add_argument('args', nargs='*', default=None, help='database_name')
-    return parser.parse_args(sys.argv[2:])
 
+    return parser.parse_args(legacy_command_argv('database'))
 
 def connect(engine, **kwargs):
     """Connect to the database specified"""

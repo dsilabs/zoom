@@ -5,6 +5,7 @@
 import os
 import re
 import shutil
+import logging
 import unittest
 
 from subprocess import Popen, PIPE
@@ -13,6 +14,8 @@ from zoom.cli.main import __doc__ as MAIN_USAGE
 from zoom.cli.new import new as new_handler
 
 TEST_DIR = os.path.abspath('./_testdata')
+
+log = logging.getLogger('tests.unittests.test_cli')
 
 def deformat_str(string):
     """Remove whitespace from the given string so it can be compared with or
@@ -25,14 +28,24 @@ def agnostic_contains(source, content):
     return deformat_str(content) in deformat_str(source)
 
 def invoke(*args, stdin=str(), return_proc=False, **kwargs):
+    python_alias = 'python' if os.name == 'nt' else 'python3'
+    log.debug('run: %s', args)
     process = Popen(
-        ' '.join(('python3', *args)), 
+        ' '.join((python_alias, *args)), 
         shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, 
         **kwargs
     )
     if return_proc:
+        log.debug('\tretv process')
         return process
-    out, err = process.communicate(stdin)
+    out, err = process.communicate(stdin.encode('utf-8'))
+    log.debug('\n'.join((
+        '\n===================',
+        'exit code: %d',
+        'stdout: ----%s----',
+        'stderr: ----%s----',
+        '==================='
+    ))%(process.returncode, out.decode(), err.decode()))
 
     return process.returncode, out.decode(), err.decode()
 
@@ -87,6 +100,15 @@ class TestCLI(unittest.TestCase):
             os.path.isfile(path0 + '/app.py'), 'Files created'
         )
 
+    def test_basic_init(self):
+        path = os.path.join(TEST_DIR, 'web0')
+        code, out, err = invoke('zoom init -E -U "%s"'%path)
+        self.assertTrue(not code, 'Process succeeds')
+        dirs_created = (os.path.isdir(os.path.join(path, p)) for p in (
+            '.', 'sites', 'themes', 'apps'
+        ))
+        self.assertTrue(False not in dirs_created, 'Directories created')
+        
     def test_pip_install(self):
         lib_path = os.path.join(TEST_DIR, 'libs')
         cwd = os.path.abspath('.')
@@ -122,3 +144,8 @@ class TestCLI(unittest.TestCase):
             not code and agnostic_contains(out, MAIN_USAGE), 
             'Module-style invocation works'
         )
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    log.setLevel(logging.DEBUG)
+    unittest.main()

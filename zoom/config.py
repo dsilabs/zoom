@@ -18,7 +18,6 @@ def get_config(pathname):
         config.read(pathname)
         return config
 
-
 class Config(object):
     """Config file parser
 
@@ -110,6 +109,9 @@ class Config(object):
 
         return str(result)
 
+    def set(self, section, option, value):
+        self.config[section][option] = value
+
     def has_option(self, section, option):
         return (
             self.config and self.config.has_option(section, option)
@@ -128,6 +130,10 @@ class Config(object):
         if self.config and section in self.config.sections():
             result.update(self.config.items(section))
         return list(result.items())
+
+    def write(self):
+        with open(self.config_pathname, 'w') as dest_file:
+            self.config.write(dest_file)
 
     def __str__(self):    # pragma: no cover
         return '<Config: %s>' % repr([

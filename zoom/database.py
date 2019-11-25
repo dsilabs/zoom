@@ -14,6 +14,8 @@ import timeit
 import warnings
 from decimal import Decimal
 
+from pymysql.err import OperationalError
+
 import zoom
 
 __all__ = [
@@ -598,12 +600,14 @@ class MySQLDatabase(Database):
         return MySQLDatabaseTransaction(self)
 
     def __del__(self):
-        if self.open:
+        try:
             logger = logging.getLogger(__name__)
-            logger.debug('closing %s connection with del',
-                self.__class__.__name__)
-            self.close()
-
+            if self.open:
+                logger.debug('closing %s connection with del',
+                    self.__class__.__name__)
+                self.close()
+        except OperationalError:
+            pass
 
 class MySQLdbDatabase(Database):   # pragma: no cover
     """MySQLdb Database

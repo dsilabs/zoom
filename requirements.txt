@@ -6,3 +6,4 @@ markdown>=2.6.1
 Pillow>=1.0
 faker
 docopt
+werkzeug

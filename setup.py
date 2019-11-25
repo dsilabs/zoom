@@ -9,7 +9,8 @@ requires = [
     'markdown>=2.6.1',
     'Pillow>=1.0',
     'faker',
-    'docopt'
+    'docopt',
+    'werkzeug'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))

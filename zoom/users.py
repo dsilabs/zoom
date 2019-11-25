@@ -457,6 +457,8 @@ class Users(RecordStore):
     >>> user.created = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> user.updated = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> user.now = datetime.datetime(2017, 4, 30, 17, 23, 43)
+    >>> import zoom
+    >>> zoom.system.site = zoom.sites.Site()
     >>> print(user)
     User
       user_id .............: 3

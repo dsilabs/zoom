@@ -12,6 +12,10 @@ import os
 import zoom
 from zoom.sites import SiteProxy
 
+# The default path for instances is configurable based on an environment
+# variable, which we read eagerly here to ensure we don't provide app code an
+# opportunity to modify the environment first.
+default_instance_path = os.environ.get('ZOOM_DEFAULT_INSTANCE')
 
 class InstanceExistsException(Exception):
     """Instance directory exists"""
@@ -49,7 +53,10 @@ class Instance(object):
     """
 
     def __init__(self, path=None):
-        self.path = path or zoom.tools.zoompath('web')
+        # Use the provided path, the default path specified in the environment,
+        # or the internal instance path.
+        self.path = path or default_instance_path or \
+                zoom.tools.zoompath('web')
 
     def create(self):
         """Create a new instance"""
