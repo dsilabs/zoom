@@ -1,0 +1,16 @@
+
+.index-layout .baselist {
+  overflow-y: auto;
+  max-height: 600px;
+  margin-top: 10px;
+}
+
+.index-layout .baselist .title {
+  font-size: 0.9em;
+}
+
+.index-layout .baselist tr,
+.index-layout .baselist th {
+  font-size: 0.8em;
+  line-height: 20px;
+}
