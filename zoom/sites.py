@@ -89,8 +89,6 @@ class Site(BasicSite):
         >>> site = Site()
         >>> site.name
         'localhost'
-        >>> site.get_background_jobs()
-        [BackgroundJob('hello')]
         """
         result = []
         for path in self.apps_paths:

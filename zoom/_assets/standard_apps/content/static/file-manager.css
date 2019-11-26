@@ -1,0 +1,95 @@
+.files-manager .--fm-files-area {
+    position: relative;
+    padding: 10px;
+}
+
+.files-manager .--fm-file-item {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(20% - 20px);
+    margin: 10px;
+    padding: 20px 10px;
+    position: relative;
+    text-align: center;
+}
+
+.files-manager .--fm-file-item .--fm-delete {
+    font-size: 10pt;
+    display: inline-block;
+    color: darkgray;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.files-manager .--fm-file-item .--fm-delete:hover {
+    font-size: 10pt;
+    color: black;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.files-manager .--fm-file-item a i {
+    font-size: 60px;
+    display: block;
+    color: black;
+    margin-bottom: 10px;
+}
+
+.files-manager .--fm-label-container {
+    width: calc(20% - 24px);
+    border: 2px dashed lightgray;
+    border-radius: 5px;
+}
+
+.files-manager .--fm-label-container i {
+    color: grey;
+}
+
+.files-manager[data-fm-drag="true"] .--fm-label-container {
+    border-color: grey;
+}
+
+.files-manager[data-fm-drag="true"] .--fm-label-container i {
+    border-color: grey;
+    color: black;
+}
+
+.files-manager #--fm-upload-form {
+    position: absolute;
+    opacity: 0;
+    top: 0px; left: 0px;
+    height: 1px; width: 1px;
+}
+
+.files-manager #--fm-upload-label {
+    margin: 0px;
+    text-align: center;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.files-manager #--fm-drop-area {
+    cursor: pointer;
+}
+
+.files-manager #--fm-drop-area i {
+    font-size: 20pt;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.files-manager[data-fm-drag="true"] .--fm-label-container * {
+    pointer-events: none;
+}
+
+.files-manager .--fm-footer a {
+    display: inline-block;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1;
+}
+
+.files-manager .--fm-link-host {
+    margin-left: 5px;
+    font-size: 10pt;
+    cursor: pointer;
+}
