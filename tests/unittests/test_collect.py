@@ -20,7 +20,7 @@ from zoom.users import Users
 from zoom.validators import required
 
 fake = faker.Faker()
-fake.seed(4321)
+faker.Faker.seed(4321)
 
 VIEW_EMPTY_LIST = """<div class="baselist">
 
