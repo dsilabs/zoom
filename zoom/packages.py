@@ -137,6 +137,7 @@ default_packages = {
             [
                 "/css/content.css",
                 "/css/navigation.css",
+                "/css/containers.css",
                 "/css/widget.css",
                 "/css/print.css",
                 "/css/style.css",
