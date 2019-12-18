@@ -13,7 +13,7 @@ Legacy commands (deprecated):
   server                      Serve a Zoom instance for development.
 
 Options:
-  -h, --help                  Show this message and exit. If used in 
+  -h, --help                  Show this message and exit. If used in
                               conjunction with a command, show the usage for
                               that command instead.
   -V, --version               Show the Zoom version and exit."""
@@ -28,7 +28,7 @@ from zoom.utils import ItemList
 
 from zoom.cli.utils import finish
 
-from zoom.cli.setup import setup
+from zoom.cli.setups import setup
 from zoom.cli.database import database
 from zoom.cli.new import new
 from zoom.cli.serve import serve, server
@@ -56,7 +56,7 @@ def main():
         __doc__, version=version_string, options_first=True,
         help=False
     )
-    
+
     show_help = arguments['--help']
     command = arguments['<command>']
     if command:

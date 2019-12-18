@@ -1,5 +1,5 @@
 """
-    zoom setup cli
+    zoom setups cli
 """
 
 from argparse import ArgumentParser
