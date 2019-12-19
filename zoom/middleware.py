@@ -659,6 +659,7 @@ def _handle(request, handler, *rest):  # pragma: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
+from zoom.components.flags import flag_trap_middleware
 
 def handle(request, handlers=None):  # pragma: no cover
     """handle a request"""
@@ -685,6 +686,7 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.render.handler,
         display_errors,
         check_csrf,
+        flag_trap_middleware,
         zoom.apps.handler,
         not_found,
     )

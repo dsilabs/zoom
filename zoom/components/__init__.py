@@ -11,7 +11,7 @@ from zoom.utils import id_for
 from zoom.helpers import url_for, tag_for
 from zoom.html import a, div, ul, tag, li
 from zoom.component import compose
-
+from .flags import TextFlag, CheckboxFlag, IconFlag
 
 def as_actions(items):
     """returns actions
