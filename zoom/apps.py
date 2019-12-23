@@ -16,7 +16,8 @@ from zoom.components import as_links
 from zoom.database import Database
 import zoom.html as html
 from zoom.utils import existing
-
+from zoom.users import Users
+from zoom.background import load_app_background_jobs
 
 DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
 DEFAULT_MAIN_APPS = ['home', 'admin', 'apps', 'info']
@@ -150,7 +151,11 @@ class AppProxy(object):
         self.name = name
         self.filename = filename
 
-        user = zoom.system.request.user
+        request = getattr(zoom.system, 'request')
+        if request:
+            user = zoom.system.request.user
+        else:
+            user = Users(site.db).first(username='guest')
 
         default_app_name = get_default_app_name(site, user)
 
@@ -239,6 +244,10 @@ class AppProxy(object):
         """Returns the app keywords"""
         return self.config.get('keywords') or ', '.join(self.description.split())
 
+    @property
+    def background_jobs(self):
+        return load_app_background_jobs(self)
+
     def run(self, request):
         """run the app"""
         logger = logging.getLogger(__name__)
@@ -255,9 +264,6 @@ class AppProxy(object):
             logger.debug('chdir back to %r', save_dir)
             os.chdir(save_dir)
         return result
-
-    def run_background_jobs(self):
-        pass
 
     def menu(self):
         """generate an app menu"""

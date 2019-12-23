@@ -35,6 +35,7 @@ from zoom.cli.serve import serve, server
 from zoom.cli.init import init
 from zoom.cli.assign import assign
 from zoom.cli.describe import describe
+from zoom.cli.run import run
 
 COMMANDS = {
     'new': new,
@@ -44,7 +45,8 @@ COMMANDS = {
     'serve': serve,
     'init': init,
     'assign': assign,
-    'describe': describe
+    'describe': describe,
+    'run': run
 }
 DEPRECATED_COMMANDS = ('database', 'setup', 'server')
 

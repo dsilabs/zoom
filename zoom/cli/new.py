@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""new: Create a new app, theme, or site.
+"""new: Create Zoom resources.
 
 Usage:
   zoom new app [options] <name> [<path>]

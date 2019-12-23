@@ -1,10 +1,10 @@
-"""server: Serve an instance for development.
+"""serve: Serve an instance for development.
 
 Usage: zoom serve [options] [<instance>]
 
 Options:
   -h, --help                  Show this message and exit.
-  -v, --verbose               Run in verbose mode.
+%s
   -p, --port=<val>            The port to serve from.
   -n, --noop                  Use special debugging middleware stack.
   -u, --user=<val>            The user to run as.
@@ -24,37 +24,12 @@ from docopt import docopt
 
 from zoom import middleware
 from zoom.server import WSGIApplication
-from zoom.cli.utils import resolve_path_with_context, is_instance_dir, finish
-
-def setup_logging(filter_, verbose):
-    """Configure logging for this service runtime using the given filter and
-    verbose flag value."""
-    fmt = (
-        '%(asctime)s %(levelname)-8s %(name)-20s '
-        '%(lineno)-4s %(message)s'
-    )
-    con_formatter = logging.Formatter(fmt)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.WARNING)
-    console_handler.setFormatter(con_formatter)
-
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
-    root_logger.addHandler(console_handler)
-
-    if filter_:
-        console_handler.addFilter(logging.Filter(name=filter_))
-    
-    if verbose:
-        console_handler.setLevel(logging.DEBUG)
-    else:
-        console_handler.setLevel(logging.INFO)
-
-    for handler in root_logger.handlers:
-        handler.setFormatter(con_formatter)
+from zoom.cli.common import LOGGING_OPTIONS, setup_logging
+from zoom.cli.utils import resolve_path_with_context, is_instance_dir, \
+    describe_options, finish
 
 def serve(_arguments=None):
-    arguments = _arguments or docopt(__doc__)
+    arguments = _arguments or docopt(serve.__doc__)
 
     # Resolve the instance directory.
     instance = resolve_path_with_context(
@@ -66,7 +41,7 @@ def serve(_arguments=None):
         finish(True, '"%s" is not a valid directory'%instance)
 
     # Set up logging.
-    setup_logging(arguments['--filter'], arguments['--verbose'])
+    setup_logging(arguments)
 
     # Comprehend options.
     handlers = None
@@ -74,7 +49,7 @@ def serve(_arguments=None):
         handlers = middleware.DEBUGGING_HANDLERS
     user = arguments['--user']
     reloader = arguments['--reloader']
-    port = arguments['--port'] or 80
+    port = arguments.get('--port') or 80
     try:
         port = int(port)
     except ValueError:
@@ -91,9 +66,10 @@ def serve(_arguments=None):
             '%s: is port %s in use?\n'
             'Use -p or --port to specify another port'
         )%(err.__class__.__name__, port))
-serve.__doc__ = __doc__
+serve.__doc__ = __doc__%describe_options(LOGGING_OPTIONS)
 
 # Legacy alias.
 def server():
     serve(docopt(server.__doc__))
-server.__doc__ = serve.__doc__.replace('zoom serve', 'zoom server')
+server.__doc__ = serve.__doc__.replace('zoom serve', 'zoom server')\
+        .replace('serve:', 'server:')

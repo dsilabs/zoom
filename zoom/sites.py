@@ -18,18 +18,6 @@ from zoom.site import Site as BasicSite
 # to modify the environment first.
 default_site_path = os.environ.get('ZOOM_DEFAULT_SITE')
 
-class BackgroundJob(object):
-    """Background Job"""
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-        self.cron = '* * * * *'
-        self.scheduled = 'never'
-        self.status = 'paused'
-
-    def __repr__(self):
-        return 'BackgroundJob(%r)' % self.name
-
 class Site(BasicSite):
     """a Zoom site
 
@@ -83,45 +71,14 @@ class Site(BasicSite):
         self.groups = zoom.models.Groups(db)
         self.users = zoom.models.Users(db)
 
-    def get_background_jobs(self):
-        """Returns a dict of background jobs
-
-        >>> site = Site()
-        >>> site.name
-        'localhost'
-        """
-        result = []
-        for path in self.apps_paths:
-            app_path = os.path.realpath(os.path.join(self.path, path))
-            for app_name in os.listdir(app_path):
-                pathname = os.path.join(app_path, app_name, 'background.py')
-                if os.path.isfile(pathname):
-                    result.append(BackgroundJob(app_name, pathname))
+    @property
+    def background_jobs(self):
+        """All background jobs for this site. Value is a list."""
+        result = list()
+        for app in self.apps:
+            result.extend(app.background_jobs)
         return result
 
-
-class SiteProxy(object):
-    """Site proxy"""
-
-    def __init__(self, path):
-        self.name = os.path.split(path)[-1]
-        self.path = path
-
-    def run_background_jobs(self):
-        """Run background jobs
-
-        Iterates through the apps in the site and calls
-        run_background_jobs on each one.
-        """
-        logger = logging.getLogger(__name__)
-        logger.info('running background jobs for site %r', self.name)
-
-        # create a concrete site object
-        site = Site(self.path)
-
-        print(self.name)
-
-        logger.info('finished background jobs for site %r',self.name)
-
-    def __repr__(self):
-        return 'Site(%r)' % (self.name)
+    def activate(self):
+        """Activate this site in Zoom's thread-local context."""
+        zoom.system.site = self
