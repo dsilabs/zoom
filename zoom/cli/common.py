@@ -2,7 +2,9 @@
 
 import re
 import os
+import sys
 import uuid
+import logging
 
 from pymysql.err import OperationalError
 
@@ -55,6 +57,41 @@ SITE_CREATION_OPTIONS = (
     ),
     ('S', 'skip-db', 'skip database initialization', False)
 )
+# Options for logging configuration.
+LOGGING_OPTIONS = (
+    ('v', 'verbose', 'whether to use verbose logging', False),
+    ('f', 'filter', 'the log filter to use')
+)
+
+def setup_logging(arguments):
+    """Configure logging for this runtime using the given docopt-generated
+    arguments including logging options."""
+    filter_str = arguments.get('--filter')
+    verbose = arguments.get('--verbose')
+
+    fmt = (
+        '%(asctime)s %(levelname)-8s %(name)-20s '
+        '%(lineno)-4s %(message)s'
+    )
+    con_formatter = logging.Formatter(fmt)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.WARNING)
+    console_handler.setFormatter(con_formatter)
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(console_handler)
+
+    if filter_str:
+        console_handler.addFilter(logging.Filter(name=filter_str))
+    
+    if verbose:
+        console_handler.setLevel(logging.DEBUG)
+    else:
+        console_handler.setLevel(logging.INFO)
+
+    for handler in root_logger.handlers:
+        handler.setFormatter(con_formatter)
 
 def do_database_creation(argument_source, collected=dict()):
     """Perform a database creation, including wizarding for required values not

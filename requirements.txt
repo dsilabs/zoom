@@ -7,3 +7,4 @@ Pillow>=1.0
 faker
 docopt
 werkzeug
+croniter

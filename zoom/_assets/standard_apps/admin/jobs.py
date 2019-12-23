@@ -2,6 +2,8 @@
     administer background jobs
 """
 
+from datetime import datetime
+
 import zoom
 
 class BackgroundController(zoom.Controller):
@@ -9,17 +11,22 @@ class BackgroundController(zoom.Controller):
     def index(self):
         """Returns a list of background jobs"""
 
-        jobs = zoom.sites.Site(zoom.system.site.path).get_background_jobs()
+        jobs = zoom.sites.Site(zoom.system.site.path).background_jobs
 
-        labels = 'Name', 'Path', 'Cron', 'Scheduled', 'Status'
+        def describe_last_run(job):
+            run = job.get_last_runtime()
+            if not run:
+                return 'Hasn\'t run yet'
+            
+            return run.describe(as_html=True)
+        labels = 'Name', 'Cron', 'Next Scheduled Run', 'Last Run'
         content = zoom.browse(
             (
                 (
-                    job.name,
-                    job.path,
-                    job.cron,
-                    job.scheduled,
-                    job.status,
+                    job.qualified_name,
+                    job.schedule or 'No schedule (always runs)',
+                    'In ' + zoom.tools.how_long(datetime.now(), job.next_run_schedule),
+                    describe_last_run(job)
                 )
                 for job in jobs
             ),

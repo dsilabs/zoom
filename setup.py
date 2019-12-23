@@ -10,7 +10,8 @@ requires = [
     'Pillow>=1.0',
     'faker',
     'docopt',
-    'werkzeug'
+    'werkzeug',
+    'croniter'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
