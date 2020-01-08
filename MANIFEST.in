@@ -1,2 +1,2 @@
 include README.md LICENSE CHANGELOG.md requirements.txt
-recursive-include zoom *.py *.html *.sql
+recursive-include zoom *.py *.html *.sql *.ini *.js *.css *.gitinclude *.md *.json *.wsgi *.eot *.svg *.ttf *.woff *.woff2 *.png *.ico *.map *.gif LICENSE
