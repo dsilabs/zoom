@@ -2,17 +2,13 @@
     system users
 """
 
-import logging
-
 import zoom
-from zoom.collect import Collection, CollectionController, RawSearch
+from zoom.collect import CollectionController, RawSearch
 from zoom.models import Group, Groups
-from zoom.tools import now, ensure_listy, is_listy
+from zoom.tools import ensure_listy, is_listy
 import zoom.validators as v
 import zoom.fields as f
 
-
-# from model import update_group_members
 import model
 
 
@@ -72,7 +68,7 @@ def group_fields(request):
 
     access_fields = f.Section('Accesses',[
         SelectionField('Roles', options=admin.get_role_options(group_id)),
-        SelectionField('Apps', options=admin.get_app_options(group_id)),
+        SelectionField('Apps', options=admin.get_app_options()),
     ])
 
     return f.Fields(fields, include_fields, access_fields)

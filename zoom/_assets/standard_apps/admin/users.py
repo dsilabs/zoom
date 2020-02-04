@@ -5,13 +5,12 @@
 import uuid
 
 import zoom
-from zoom.audit import audit
 from zoom.components import success
-from zoom.collect import Collection, CollectionView, CollectionController, RawSearch
+from zoom.collect import CollectionView, CollectionController, RawSearch
 from zoom.context import context
 from zoom.forms import Form
 from zoom.users import User, Users
-from zoom.tools import home, now
+from zoom.tools import home
 import zoom.validators as v
 import zoom.fields as f
 
@@ -70,11 +69,10 @@ def user_activity_logs(user, weeks=12):
     thus changes in authorizations affect all hosts
     using that database.
     """
-    recent_weeks = weeks
+
     max_len = 50
     websafe = zoom.tools.websafe
-    today = zoom.tools.today()
-    one_week = zoom.tools.one_week
+
     db = zoom.system.site.db
     when = zoom.helpers.when
     who = zoom.helpers.who

@@ -113,27 +113,27 @@ class AdminModel(object):
 
     def get_user_options(self):
         return sorted(
-            (user.link, user._id) for user in Users(self.db)
+            (user.link, user.user_id) for user in Users(self.db)
         )
 
     def get_subgroup_options(self, group_id):
         return sorted(
-            (group.link, group._id)
+            (group.link, group.group_id)
             for group in self.groups.find(**{'type': 'U'})
-            if group._id != group_id
+            if group.group_id != group_id
         )
 
     def get_role_options(self, group_id):
         return sorted(
-            (group.link, group._id)
+            (group.link, group.group_id)
             for group in self.groups.find(**{'type': 'U'})
-            if group._id != group_id
+            if group.group_id != group_id
         )
 
-    def get_app_options(self, group_id):
+    def get_app_options(self):
         groups_lookup = {
-            g.name: g._id
-            for g in zoom.system.site.groups.find(type='A')
+            group.name: group.group_id
+            for group in zoom.system.site.groups.find(type='A')
         }
         return sorted([
             (
