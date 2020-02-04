@@ -175,9 +175,6 @@ class UserCollectionView(CollectionView):
 
 class UserCollectionController(CollectionController):
 
-    def before_update(self, record):
-        record['status'] = 'A'
-
     def after_update(self, record):
         model.update_user_groups(record)
 
