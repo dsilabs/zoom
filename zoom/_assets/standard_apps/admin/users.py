@@ -79,17 +79,14 @@ def user_activity_logs(user, weeks=12):
     when = zoom.helpers.when
     who = zoom.helpers.who
 
-    recently = today - recent_weeks * one_week
-
     auth_data = db("""
     select *
     from audit_log
     where
-        (subject1=%s or subject2=%s) and
-        timestamp>=%s
+        (subject1=%s or subject2=%s)
     order by timestamp desc
     limit 20
-    """, user.username, user.username, recently)
+    """, user.username, user.username)
     labels = 'App', 'User', 'Activity', 'Subject1', 'Subject2', 'When'
     auth_activity = zoom.browse([
         (a[1],who(a[2]),a[3],a[4],a[5],when(a[6])
@@ -102,13 +99,11 @@ def user_activity_logs(user, weeks=12):
         where
             user_id=%s
             and server=%s
-            and timestamp>=%s
         order by timestamp desc
         limit 50
     """,
         user.user_id,
-        zoom.system.request.host,
-        recently
+        zoom.system.request.host
     )
     labels = (
         'id', 'Path', 'Status', 'Address',
@@ -126,9 +121,9 @@ def user_activity_logs(user, weeks=12):
     ) for a in activity_data], labels=labels)
 
     return """
-    <h2>Recent Authorizations Activity</h2>
+    <h2>Most Recent Authorizations Activity</h2>
     %s
-    <h2>Recent User Activity</h2>
+    <h2>Most Recent User Activity</h2>
     %s
     """ % (auth_activity, activity)
 
