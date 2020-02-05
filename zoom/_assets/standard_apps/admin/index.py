@@ -385,16 +385,18 @@ class MyView(zoom.View):
     def environment(self):
         return page(
             zoom.Component(
+                h.h2('Zoom'),
+                zoom.html.table([
+                    ('Version', zoom.__version__ + ' Community Edition'),
+                ]),
                 h.h2('Python'),
                 zoom.html.table([
-                    ('Version', sys.version),
-                    ('PYTHONPATH', '<br>'.join(sys.path)),
-                    ('PATH', '<br>'.join(os.environ.get('PATH').split(':')))
+                    ('sys.version', sys.version),
+                    ('sys.path', '<br>'.join(sys.path)),
                 ]),
                 h.h2('Operating System'),
                 zoom.html.table([
                     ('Name', os.name),
-                    ('PYTHONPATH', '<br>'.join(sys.path)),
                     ('PATH', '<br>'.join(os.environ.get('PATH').split(':')))
                 ]),
                 h.h2('Platform'),
@@ -410,7 +412,8 @@ class MyView(zoom.View):
                 ),
                 css = """
                     .content table { width: 100%; }
-                    .content table td { vertical-align: top; }
+                    .content table td { vertical-align: top; width: 70%; }
+                    .content table td:first-child { width: 25%; }
                 """
             ),
             title='Environment'
