@@ -29,6 +29,7 @@ class AppsController(zoom.Controller):
                 app.name,
                 app.path,
                 groups,
+                (bool(app.in_development) and 'development' or '')
             ]
 
         db = zoom.system.site.db
@@ -37,7 +38,7 @@ class AppsController(zoom.Controller):
         data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.title.lower())]
         content = zoom.browse(
             data,
-            labels=['Title', 'App', 'Path', 'Groups']
+            labels=['Title', 'App', 'Path', 'Groups', 'Status']
         )
         return zoom.page(content, title='Apps')
 
