@@ -1,6 +1,6 @@
 language: python
 sudo: false
-dist: trusty
+dist: xenial
 
 addons:
   mariadb: '10.2'
@@ -8,27 +8,9 @@ addons:
     - database
 
 python:
-  - '3.4'
   - '3.5'
   - '3.6'
-
-matrix:
-  include:
-    - python: '3.6'
-      addons:
-        mariadb: '5.5'
-        hosts:
-        - database
-    - python: '3.6'
-      addons:
-        mariadb: '10.0'
-        hosts:
-        - database
-    - python: '3.6'
-      addons:
-        mariadb: '10.1'
-        hosts:
-        - database
+  - '3.7'
 
 install:
   - pip install coveralls
@@ -38,16 +20,16 @@ install:
 before_script:
   - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest;'
   - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomtest2;'
-  - mysql -uroot zoomtest < tools/zoom/sql/setup_mysql.sql
-  - mysql -uroot < tools/zoom/sql/create_testuser.sql
+  - mysql -uroot zoomtest < zoom/sql/setup_mysql.sql
+  - mysql -uroot < zoom/sql/create_testuser.sql
   - mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS zoomdata;'
-  - mysql -uroot zoomdata < tools/zoom/sql/setup_mysql.sql
-  - mysql -uroot < tools/zoom/sql/create_zoomuser.sql
+  - mysql -uroot zoomdata < zoom/sql/setup_mysql.sql
+  - mysql -uroot < zoom/sql/create_zoomuser.sql
 script:
-  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing
+  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing --exclude-dir=zoom/cli
 
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.7' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
 
 notifications:
   email:

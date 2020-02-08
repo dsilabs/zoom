@@ -9,6 +9,7 @@
 import unittest
 
 import zoom
+import zoom.request
 
 
 class TestTools(unittest.TestCase):
@@ -18,8 +19,9 @@ class TestTools(unittest.TestCase):
         zoom.system.site = zoom.sites.Site()
         zoom.system.request = zoom.utils.Bunch(
             site=zoom.system.site,
-            app=zoom.utils.Bunch(templates_paths=[])
+            app=zoom.utils.Bunch(templates_paths=[], url='/app1')
         )
+        zoom.system.providers = [{}]
 
     def test_load_template(self):
         load = zoom.tools.load_template
@@ -118,4 +120,91 @@ class TestTools(unittest.TestCase):
         self.assertEqual(
             zoom.tools.restore_helpers(zoom.tools.htmlquote(content)),
             'send a message to &lt;info@{{site_name}}&gt; for assistance'
+        )
+
+    def test_redirect_nowhere(self):
+        zoom.system.providers = [{}]
+        request = zoom.request.Request({})
+        response = zoom.redirect_to().render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url><dz:request_path>'
+        )
+
+    def test_redirect_path(self):
+        request = zoom.request.Request({})
+        response = zoom.redirect_to('/test').render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/test'
+        )
+
+    def test_redirect_params(self):
+        request = zoom.request.Request({})
+        response = zoom.redirect_to(one=1, two=2).render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url><dz:request_path>/?one=1&two=2'
+        )
+
+    def test_redirect_path_and_params(self):
+        request = zoom.request.Request({})
+        response = zoom.redirect_to('/test', one=1, two=2).render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/test?one=1&two=2'
+        )
+
+    def test_redirect_root(self):
+        request = zoom.request.Request({})
+        response = zoom.redirect_to('/').render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>'
+        )
+
+    def test_redirect_root_with_params(self):
+        request = zoom.request.Request({})
+        response = zoom.redirect_to('/', one=1, two=2).render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/?one=1&two=2'
+        )
+
+    def test_home(self):
+        request = zoom.request.build('http://localhost/app1')
+
+        self.assertEqual(zoom.system.site.url, '')
+        self.assertEqual(request.path, '/app1')
+        self.assertEqual(zoom.system.request.app.url, '/app1')
+
+        response = zoom.home().render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/app1'
+        )
+
+        response = zoom.home('page1').render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/app1/page1'
+        )
+
+    def test_home_default(self):
+        request = zoom.request.build('http://localhost/test')
+        zoom.system.request.app.url = '/'
+
+        self.assertEqual(zoom.system.site.url, '')
+        self.assertEqual(request.path, '/test')
+
+        response = zoom.home().render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>'
+        )
+
+        response = zoom.home('page1').render(request)
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/page1'
         )

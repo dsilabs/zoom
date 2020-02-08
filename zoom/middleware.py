@@ -19,7 +19,6 @@ import os
 import sys
 import traceback
 import logging
-import uuid
 
 import zoom
 import zoom.apps
@@ -55,6 +54,7 @@ import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.tools import websafe
+from zoom.utils import create_csrf_token
 
 
 def debug(request):  # pragma: no cover
@@ -261,7 +261,7 @@ def serve_static(request, handler, *rest):
             join(request.instance, 'static'),
             join(request.instance, 'www', 'static'),
             join(request.instance, '..', 'static'),
-            zoom.tools.zoompath('web', 'www', 'static'),
+            zoom.tools.zoompath('zoom', '_assets', 'www', 'static'),
         ]))
         for location in locations:
             pathname = join(location, *request.route[1:])
@@ -371,9 +371,10 @@ def serve_favicon(request, handler, *rest):
     'nuthin'
     """
     if request.path == '/favicon.ico':
-        libpath = os.path.dirname(__file__)
-        return serve_response(libpath, '..', 'web', 'themes', 'default',
-                              'images', request.path[1:])
+        pathname = zoom.tools.zoompath(
+            'web', 'themes', 'default', 'images', 'favicon.ico'
+        )
+        return serve_response(pathname)
     else:
         return handler(request, *rest)
 
@@ -426,14 +427,10 @@ def get_csrf_token(session):
     True
     """
     def _get_token():
-        # if not hasattr(session, 'csrf_token'):
-        # logger = logging.getLogger(__name__)
-        # session.csrf_token = uuid.uuid4().hex
-        # logger.debug('generated new token %s', session.csrf_token)
-        # logger.debug('zoom token %s', zoom.system.request.session.csrf_token)
+        if not hasattr(session, 'csrf_token'):
+            session.csrf_token = create_csrf_token()
         return session.csrf_token
     return _get_token
-
 
 def check_csrf(request, handler, *rest):
     """Check csrf token
@@ -662,6 +659,7 @@ def _handle(request, handler, *rest):  # pragma: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
+from zoom.components.flags import flag_trap_middleware
 
 def handle(request, handlers=None):  # pragma: no cover
     """handle a request"""
@@ -672,7 +670,6 @@ def handle(request, handlers=None):  # pragma: no cover
         serve_redirects,
         serve_favicon,
         serve_static,
-        serve_images,
         serve_html,
         reset_modules,
         capture_stdout,
@@ -689,6 +686,7 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.render.handler,
         display_errors,
         check_csrf,
+        flag_trap_middleware,
         zoom.apps.handler,
         not_found,
     )

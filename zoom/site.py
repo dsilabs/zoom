@@ -14,6 +14,7 @@ from zoom.context import context
 import zoom.helpers
 from zoom.helpers import link_to, mail_to
 from zoom.utils import dedup, existing
+from zoom.tools import zoompath
 
 
 isdir = os.path.isdir
@@ -229,7 +230,7 @@ class Site(object):
                 for p in str(get('apps', 'path')).split(';')
                 if exists(realpath(join(self.path, p)))
             ]
-            basic_apps = realpath(join(dirname(__file__), '..', 'web', 'apps'))
+            basic_apps = zoompath('zoom', '_assets', 'standard_apps')
 
             positive = zoom.utils.POSITIVE
             if self.conf.section('apps').get('include_basics') in positive and basic_apps not in self.apps_paths:
@@ -259,7 +260,7 @@ class Site(object):
     @property
     def settings(self):
         if not self.__settings:
-            self.__settings = zoom.settings.SiteSettings(self.conf)
+            self.__settings = zoom.settings.SiteSettingsManager(self.name, self.conf)
         return self.__settings
 
     @property

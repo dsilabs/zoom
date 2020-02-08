@@ -7,11 +7,16 @@
 """
 
 import logging
+import traceback
 import os
 
 import zoom
-from zoom.sites import SiteProxy
+from zoom.sites import Site
 
+# The default path for instances is configurable based on an environment
+# variable, which we read eagerly here to ensure we don't provide app code an
+# opportunity to modify the environment first.
+default_instance_path = os.environ.get('ZOOM_DEFAULT_INSTANCE')
 
 class InstanceExistsException(Exception):
     """Instance directory exists"""
@@ -24,6 +29,8 @@ class InstanceMissingException(Exception):
 
 
 subdirs = ['sites', 'apps', 'themes']
+
+logger = logging.getLogger(__name__)
 
 
 class Instance(object):
@@ -49,7 +56,10 @@ class Instance(object):
     """
 
     def __init__(self, path=None):
-        self.path = path or zoom.tools.zoompath('web')
+        # Use the provided path, the default path specified in the environment,
+        # or the internal instance path.
+        self.path = path or default_instance_path or \
+                zoom.tools.zoompath('web')
 
     def create(self):
         """Create a new instance"""
@@ -85,10 +95,11 @@ class Instance(object):
     def sites(self):
         """a dict of sites for the instance
 
+        >>> import zoom
         >>> instance = Instance()
-        >>> print(instance.sites)
-        {'localhost': Site('localhost')}
-
+        >>> site_objs = instance.sites.values()
+        >>> False not in (isinstance(s, zoom.sites.Site) for s in site_objs)
+        True
         >>> import tempfile
         >>> instance_path = os.path.join(tempfile.gettempdir(), 'fakeinstance')
         >>> instance = Instance(instance_path)
@@ -100,9 +111,12 @@ class Instance(object):
         >>> got_it
         True
         """
-        def get_site_proxy(path, name):
-            return SiteProxy(os.path.join(path, name))
+        return self.get_sites()
 
+    def get_sites(self, skip_fails=False):
+        """Return a dict of sites for the instance. If skip_fails is true,
+        exclude sites that fail to initialize instead of dying.
+        """
         listdir = os.listdir
         isdir = os.path.isdir
         join = os.path.join
@@ -110,28 +124,23 @@ class Instance(object):
         if not path:
             msg = 'The %r directory does not exist'
             raise InstanceMissingException(msg % self.path)
-        return {
-            name: get_site_proxy(path, name)
-            for name in listdir(path)
-            if name != 'default' and isdir(join(path, name))
-        }
 
-    def run_background_jobs(self):
-        """Run background jobs
-
-        Iterates through the sites in the instance and calls
-        run_background_jobs on each one.
-
-        >>> instance = Instance()
-        >>> instance.run_background_jobs()
-        localhost
-        """
-        logger = logging.getLogger(__name__)
-        logger.info('running background jobs for %r',self.path)
-        for name, site in sorted(self.sites.items()):
-            if name != 'default':
-                site.run_background_jobs()
-        logger.info('finished background jobs for %r',self.path)
+        result = dict()
+        for name in listdir(path):
+            if name == 'default' or not isdir(join(path, name)):
+                continue
+            try:
+                result[name] = Site(os.path.join(path, name))
+            except BaseException as ex:
+                if not skip_fails:
+                    raise ex
+                logger.critical(
+                    'Failed to load site %s: %s', name,
+                    ''.join(traceback.format_exception(
+                        ex.__class__, ex, ex.__traceback__
+                    ))
+                )
+        return result
 
     def __str__(self):  # pragma: nocover
         return 'Instance %r contains %s sites:\n%s' % (

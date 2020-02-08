@@ -7,6 +7,7 @@ import io
 import timeit
 import logging
 import cProfile
+import os
 import sys
 
 from zoom.utils import ItemList
@@ -154,7 +155,17 @@ def profiled(request, handler, *rest):
 
         result = locals().get('result', None)
 
-        if isinstance(result, HTMLResponse):
+        # Retrieve headers from the result if it has that property.
+        headers = getattr(result, 'headers', dict())
+        if not isinstance(headers, dict):
+            # Handle the case where the response class is doing something
+            # funky with its headers object.
+            logger.debug("headers isn't a dict, won't profile")
+            headers = dict()
+        # Transform headers to lower case because casing isn't invariant.
+        headers = {k.lower(): v for k, v in headers.items()}
+        # Profile if this is an HTML response.
+        if 'html' in headers.get('content-type', str()):
             send(message)
         else:
             logger.debug('ignoring profile of response type %s', type(result))
@@ -166,7 +177,7 @@ def profiled(request, handler, *rest):
 def handler(request, handler, *rest):
     """Handle profiled requests"""
 
-    if request.env.get('ZOOM_PROFILER'):
+    if os.environ.get('ZOOM_PROFILER'):
         request.profiling = True
         return profiled(request, handler, *rest)
     else:

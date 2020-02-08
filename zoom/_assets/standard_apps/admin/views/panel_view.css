@@ -1,0 +1,30 @@
+.panel {
+  position: relative;
+  margin: 5px 0px;
+  border-radius: 3px;
+}
+
+.panel h3 {
+  display: block;
+  padding: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 17px;
+  background-color: #f5f5f5;
+  border: 1px solid #d8d8d8;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+}
+
+.panel-inner {
+  color: #666;
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+  padding: 0;
+}
+
+.panel-inner th {
+  color: #444;
+}

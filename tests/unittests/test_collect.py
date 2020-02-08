@@ -20,7 +20,7 @@ from zoom.users import Users
 from zoom.validators import required
 
 fake = faker.Faker()
-fake.seed(4321)
+faker.Faker.seed(4321)
 
 VIEW_EMPTY_LIST = """<div class="baselist">
 
@@ -193,6 +193,11 @@ class FakeSite(object):
         self.__dict__.update(kwargs)
 
 
+class FakeApp(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 class TestCollect(unittest.TestCase):
 
     def setUp(self):
@@ -216,6 +221,7 @@ class TestCollect(unittest.TestCase):
             host='localhost',
             data={},
         )
+        self.request.app = FakeApp(url='<dz:app_url>')
 
         # create the test collection
         self.collection = Collection(

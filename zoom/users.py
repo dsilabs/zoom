@@ -200,7 +200,11 @@ class User(Record):
             logger.debug('user is an administrator')
 
         logger.debug('%r is a member of %s groups', self.username, len(self.groups))
-        logger.debug('%r can access %s apps', self.username, len(self.apps))
+
+        if self.is_active:
+            logger.debug('%r can access %s apps', self.username, len(self.apps))
+        else:
+            logger.debug('%r is deactivated', self.username)
 
     @property
     def is_active(self):
@@ -241,7 +245,7 @@ class User(Record):
     def authenticate(self, password):
         """authenticate user credentials"""
         if self.is_active:
-            match, phash = validate_password(password, self.password)
+            match, _ = validate_password(password, self.password)
             return match
 
     def update_last_seen(self):
@@ -283,7 +287,7 @@ class User(Record):
             self.request.session.destroy()
             logger.debug('user authenticated')
         else:
-            logger.debug('cannot logout %r' % self.username)
+            logger.debug('cannot logout %r', self.username)
 
     @property
     def default_app(self):
@@ -362,14 +366,14 @@ class User(Record):
 
     def can_run(self, app):
         """test if user can run an app"""
-        return app and (app.name in self.apps or app.in_development and (self.is_developer or self.is_admin))
+        return app and self.is_active and (app.name in self.apps or app.in_development and (self.is_developer or self.is_admin))
 
     def can(self, action, thing):
         """test to see if user can action a thing object.
 
         Object thing must provide allows(user, action) method.
         """
-        return bool(thing and thing.allows(self, action))
+        return self.is_active and bool(thing and thing.allows(self, action))
 
     def authorize(self, action, thing):
         """authorize a user to perform an action on thing
@@ -377,7 +381,7 @@ class User(Record):
         If user is not allowed to perform the action an exception is raised.
         Object thing must provide allows(user, action) method.
         """
-        if not thing.allows(self, action):
+        if not (self.is_active and thing.allows(self, action)):
             raise UnauthorizedException('Unauthorized')
 
     def helpers(self):
@@ -457,6 +461,8 @@ class Users(RecordStore):
     >>> user.created = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> user.updated = datetime.datetime(2017, 3, 30, 17, 23, 43)
     >>> user.now = datetime.datetime(2017, 4, 30, 17, 23, 43)
+    >>> import zoom
+    >>> zoom.system.site = zoom.sites.Site()
     >>> print(user)
     User
       user_id .............: 3
@@ -543,11 +549,12 @@ def authorize(*roles):
         def authorize_and_call(*args, **kwargs):
             """checks authorization and calls function if authorized"""
             user = context.request.user
-            if user.is_administrator:
-                return func(*args, **kwargs)
-            for role in roles:
-                if role in user.groups:
+            if user.is_active:
+                if user.is_administrator:
                     return func(*args, **kwargs)
+                for role in roles:
+                    if role in user.groups:
+                        return func(*args, **kwargs)
             raise zoom.exceptions.UnauthorizedException('Unauthorized')
         return authorize_and_call
     return wrapper

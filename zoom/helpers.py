@@ -84,8 +84,8 @@ def url_for(*a, **k):
     >>> url_for('')
     ''
 
-    # >>> url_for('/')
-    # '<dz:site_url>'
+    >>> url_for('/')
+    '/'
 
     >>> url_for('/', 'home')
     '/home'
@@ -106,7 +106,7 @@ def url_for(*a, **k):
     '/user?age=15&q=test+one'
 
     >>> url_for('/', q='test one', age=15)
-    '?age=15&q=test+one'
+    '/?age=15&q=test+one'
 
     >>> url_for(q='test one', age=15)
     '?age=15&q=test+one'
@@ -122,6 +122,8 @@ def url_for(*a, **k):
     if a and a[0] and a[0][0] == '/':
         if len(a[0]) > 1:
             uri = root + '/'.join(a)
+        elif len(a) == 1:
+            uri = '/'.join([root, ''])
         else:
             uri = '/'.join([root] + a[1:])
 
@@ -142,25 +144,33 @@ def url_for(*a, **k):
             '&'.join('{}={}'.format(*i) for i in sorted(k.items())),
             safe="/=&"
         )
-        return '?'.join([uri, params])
+        result = '?'.join([uri, params])
     else:
-        return uri
+        result = uri
+
+    return result
 
 
 def requires(*packages):
     zoom.requires(*packages)
     return ''
 
+
 def url_for_page(*args, **kwargs):
     """returns a url for a page of the current app
 
+    >>> zoom.system.request = lambda: None
+    >>> zoom.system.request.app = lambda: None
+    >>> zoom.system.request.app.url = '/home'
+
     >>> url_for_page()
-    '<dz:app_url>'
+    '/home'
 
     >>> url_for_page('page1')
-    '<dz:app_url>/page1'
+    '/home/page1'
     """
-    return url_for('<dz:app_url>', *args, **kwargs)
+    app = zoom.system.request.app
+    return url_for(app.url, *args, **kwargs)
 
 
 def url_for_item(*args, **kwargs):
@@ -292,7 +302,7 @@ def mail_to(name, *args, **kwargs):
 
 def lorem():
     """Returns some sample latin text to use for prototyping."""
-    return """
+    return zoom.utils.trim("""
         Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
         eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
         enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -300,7 +310,7 @@ def lorem():
         in reprehenderit in voluptate velit esse cillum dolore eu fugiat
         nulla pariatur. Excepteur sint occaecat cupidatat non proident,
         sunt in culpa qui officia deserunt mollit anim id est laborum.
-        """
+        """)
 
 def upper(text):
     """Returns the given text in upper case."""

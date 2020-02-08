@@ -593,7 +593,14 @@ def get_template(template_name='default', theme='default'):
         return get_template('default', theme)
 
 def zoompath(*args):
-    """Returns the location of a standard Zoom asset"""
+    """Returns the location of a standard Zoom asset
+
+    >>> import os
+    >>> theme_path = zoompath('web', 'themes', 'default')
+    >>> os.path.exists(theme_path)
+    True
+
+    """
     realpath = os.path.realpath
     dirname = os.path.dirname
     join = os.path.join
@@ -608,4 +615,3 @@ def hide_helpers(content):
 def restore_helpers(content):
     """Restores content helpers to their usual form"""
     return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
-

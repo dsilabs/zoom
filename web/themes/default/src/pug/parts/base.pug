@@ -3,6 +3,7 @@ html
   head
 
     title <dz:page_title>
+    |
     | <meta charset="UTF-8">
     | <meta name="viewport" content="width=device-width, initial-scale=1.0">
     | <meta name="keywords"  content="<dz:keywords>">
@@ -11,11 +12,13 @@ html
     |
 
     // flash of unstyled content (FOUC)
+    |
     | <style type="text/css">html.js .nojs, html.js .inojs { display: none;}</style>
     | <script type="text/javascript">document.documentElement.className += ' js';</script>
     |
 
     // standard css
+    |
     | <link rel="stylesheet" href="/static/zoom/bootstrap/css/bootstrap.min.css">
     | <link rel="stylesheet" href="/themes/default/css/content.css">
     | <link rel="stylesheet" href="/themes/default/css/widget.css">
@@ -27,20 +30,27 @@ html
     | <link rel="stylesheet" href="/themes/default/css/buttons.css">
     | <link rel="stylesheet" href="/themes/default/css/components.css">
     |
+
     // app specific css
+    |
     | <dz:styles>
     | <dz:css>
     |
+
     // app specific head
+    |
     | <dz:head>
     |
+
     // tracker
+    |
     | <dz:tracker>
     |
 
   block body
 
   // js
+  |
   | <script src="/static/zoom/jquery/jquery.min.js"></script>
   | <script src="/static/zoom/jquery-ui/jquery-ui.min.js"></script>
   | <script src="/static/zoom/bootstrap/js/bootstrap.min.js"></script>
@@ -50,6 +60,7 @@ html
   | <dz:js>
 
   // tail
+  |
   | <dz:tail>
   |
 

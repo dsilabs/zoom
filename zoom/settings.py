@@ -2,6 +2,8 @@
     zoom.settings
 
     Classes for mananging settings.
+
+    EXPERIMENTAL!
 """
 
 import zoom
@@ -13,7 +15,7 @@ class AppSettings(zoom.store.Entity):
     pass
 
 
-class SystemSettings(zoom.store.Entity):
+class SiteSettings(zoom.store.Entity):
     """site settings"""
     pass
 
@@ -23,19 +25,20 @@ class SettingsSection(zoom.utils.Record):
     pass
 
 
-class SiteSettings(object):
+class SiteSettingsManager(object):
     """Site Settings"""
 
-    def __init__(self, config):
-        self.kind = SystemSettings
+    def __init__(self, site_name, config):
+        self.site_name = site_name
+        self.kind = SiteSettings
         self.settings = zoom.store_of(self.kind)
         self._values = None
         self.config = config
 
     def load(self):
         """load the settings values"""
-        rec = self.settings.first()
-        self._values = zoom.jsonz.loads(rec.value) if rec else {}
+        rec = self.settings.first(site=self.site_name) or self.settings.first()
+        self._values = zoom.jsonz.loads(rec.value) if rec and rec.value else {}
         return self._values
 
     @property
@@ -46,14 +49,16 @@ class SiteSettings(object):
 
     def save(self):
         """save the settings values"""
-        rec = self.settings.first() or self.kind()
+        rec = self.settings.first(site=self.site_name) or \
+            self.kind(site=self.site_name)
         rec.update(dict(value=zoom.jsonz.dumps(self.values)))
+        self.settings.delete(site=self.site_name)
         self.settings.put(rec)
 
     def clear(self):
         """Clear all settings"""
         self._values = None
-        self.settings.zap()
+        self.settings.delete(site=self.site_name)
 
     def items(self, section):
         items = dict(self.config.items(section))

@@ -13,17 +13,10 @@ import logging
 import zoom
 from zoom.site import Site as BasicSite
 
-class BackgroundJob(object):
-    """Background Job"""
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-        self.cron = '* * * * *'
-        self.scheduled = 'never'
-        self.status = 'paused'
-
-    def __repr__(self):
-        return 'BackgroundJob(%r)' % self.name
+# The default path for sites is configurable based on an environment variable,
+# which we read eagerly here to ensure we don't provide app code an opportunity
+# to modify the environment first.
+default_site_path = os.environ.get('ZOOM_DEFAULT_SITE')
 
 class Site(BasicSite):
     """a Zoom site
@@ -50,11 +43,14 @@ class Site(BasicSite):
     """
 
     def __init__(self, path=None):
-
-        # prepare a fake request adapter to satisfy the legacy api
-        path = path or zoom.tools.zoompath('web', 'sites', 'localhost')
+        # Resolve the site path from a parameter, environment variable, or
+        # logical default.
+        path = path or default_site_path or \
+                zoom.tools.zoompath('web', 'sites', 'localhost')
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
+        
+        # prepare a fake request adapter to satisfy the legacy api
         rest, name = os.path.split(path)
         instance, _ = os.path.split(rest)
         fake_request_adapter = zoom.utils.Bunch(
@@ -75,54 +71,14 @@ class Site(BasicSite):
         self.groups = zoom.models.Groups(db)
         self.users = zoom.models.Users(db)
 
-    def get_background_jobs(self):
-        """Returns a dict of background jobs
-
-        >>> site = Site()
-        >>> site.name
-        'localhost'
-        >>> site.get_background_jobs()
-        [BackgroundJob('hello')]
-        """
-        result = []
-        for path in self.apps_paths:
-            app_path = os.path.realpath(os.path.join(self.path, path))
-            for app_name in os.listdir(app_path):
-                pathname = os.path.join(app_path, app_name, 'background.py')
-                if os.path.isfile(pathname):
-                    result.append(BackgroundJob(app_name, pathname))
+    @property
+    def background_jobs(self):
+        """All background jobs for this site. Value is a list."""
+        result = list()
+        for app in self.apps:
+            result.extend(app.background_jobs)
         return result
 
-
-class SiteProxy(object):
-    """Site proxy"""
-
-    def __init__(self, path):
-        self.name = os.path.split(path)[-1]
-        self.path = path
-
-    def run_background_jobs(self):
-        """Run background jobs
-
-        Iterates through the apps in the site and calls
-        run_background_jobs on each one.
-
-        >>> import zoom
-        >>> site_directory = zoom.tools.zoompath('web/sites/localhost')
-        >>> site = SiteProxy(site_directory)
-        >>> site.run_background_jobs()
-        localhost
-        """
-        logger = logging.getLogger(__name__)
-        logger.info('running background jobs for site %r', self.name)
-
-        # create a concrete site object
-        site = Site(self.path)
-
-        print(self.name)
-
-        logger.info('finished background jobs for site %r',self.name)
-
-    def __repr__(self):
-        return 'Site(%r)' % (self.name)
-
+    def activate(self):
+        """Activate this site in Zoom's thread-local context."""
+        zoom.system.site = self

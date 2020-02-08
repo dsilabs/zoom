@@ -1,0 +1,42 @@
+/*
+not colored part
+*/
+.metrics {
+  position: relative;
+  margin: 0 -5px;
+}
+
+.metrics > div > a:hover {
+    text-decoration: none; }
+
+.metrics .metric:hover {
+    background-color: #f9f9f9; }
+
+.metric {
+  border: 1px solid #d8d8d8;
+  border-radius: 4px;
+  width: 100%;
+  height: 80px;
+  color: #999;
+  padding: 10px;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+}
+
+.metric-value {
+  font-size: 40px;
+  line-height: 45px;
+}
+
+.metric-units {
+  font-size: 12px;
+  line-height: 15px;
+  margin-top: 5px;
+}
+
+.sixth {
+  width: 16.666667%;
+  float: left;
+  padding: 5px;
+}

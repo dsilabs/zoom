@@ -1,3 +1,4 @@
-pyvirtualdisplay
 selenium
-nose  
+nose
+coverage
+nose-exclude

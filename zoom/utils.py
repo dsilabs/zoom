@@ -25,6 +25,9 @@ keep_these = string.ascii_letters + string.digits + '-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+def create_csrf_token():
+    """Create and return a canonical CSRF token; a un-segmented UUID4."""
+    return uuid.uuid4().hex
 
 def pretty(obj):
     """return an object in a pretty form

@@ -1,0 +1,10 @@
+{
+    "Morphext": {
+        "libs": [
+            "//cdnjs.cloudflare.com/ajax/libs/Morphext/2.4.4/morphext.min.js"
+        ],
+        "styles": [
+            "//cdnjs.cloudflare.com/ajax/libs/Morphext/2.4.4/morphext.css"
+        ]
+    }
+}

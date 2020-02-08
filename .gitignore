@@ -11,3 +11,7 @@ __pycache__
 .vscode
 docs/_build
 docs/make.bat
+dist
+build
+ZoomFoundry.egg-info
+dumps

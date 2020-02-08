@@ -14,6 +14,8 @@ import timeit
 import warnings
 from decimal import Decimal
 
+from pymysql.err import OperationalError
+
 import zoom
 
 __all__ = [
@@ -471,7 +473,7 @@ class Sqlite3Database(Database):
     def create_site_tables(self, filename=None):
         """Create Sqlite3 version of site tables"""
         logger = logging.getLogger(__name__)
-        filename = zoom.tools.zoompath('tools/zoom/sql/setup_sqlite3g.sql')
+        filename = zoom.tools.zoompath('zoom/sql/setup_sqlite3g.sql')
         self.run(filename)
         logger.debug('created tables from %s', filename)
 
@@ -541,7 +543,7 @@ class MySQLDatabase(Database):
     def create_site_tables(self):
         """create the tables for a site in a mysql server"""
         logger = logging.getLogger(__name__)
-        filename = zoom.tools.zoompath('tools/zoom/sql/setup_mysql.sql')
+        filename = zoom.tools.zoompath('zoom/sql/setup_mysql.sql')
         self.run(filename)
         logger.debug('created tables from %s', filename)
 
@@ -598,12 +600,14 @@ class MySQLDatabase(Database):
         return MySQLDatabaseTransaction(self)
 
     def __del__(self):
-        if self.open:
+        try:
             logger = logging.getLogger(__name__)
-            logger.debug('closing %s connection with del',
-                self.__class__.__name__)
-            self.close()
-
+            if self.open:
+                logger.debug('closing %s connection with del',
+                    self.__class__.__name__)
+                self.close()
+        except OperationalError:
+            pass
 
 class MySQLdbDatabase(Database):   # pragma: no cover
     """MySQLdb Database
@@ -757,6 +761,8 @@ def setup_test(engine=None):   # pragma: no cover
     get = os.environ.get
     engine = engine or get('ZOOM_TEST_DATABASE_ENGINE', 'mysql')
 
+    test_database_name = get('ZOOM_TEST_DATABASE_NAME', 'zoomtest')
+
     if engine == 'mysql':
         db = database(
             'mysql',
@@ -764,9 +770,9 @@ def setup_test(engine=None):   # pragma: no cover
             user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
             passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
         )
-        db('drop database if exists zoomtest')
-        db('create database zoomtest')
-        db('use zoomtest')
+        db('drop database if exists ' + test_database_name)
+        db('create database ' + test_database_name)
+        db('use ' + test_database_name)
         db.create_test_tables()
 
     elif engine == 'memory':
@@ -776,6 +782,8 @@ def setup_test(engine=None):   # pragma: no cover
         )
         db.delete_test_tables()
         db.create_test_tables()
+
     else:
         raise Exception('Invalid engine parameter: {!r}'.format(engine))
+
     return db
