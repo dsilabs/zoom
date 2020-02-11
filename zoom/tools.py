@@ -5,6 +5,7 @@
 import datetime
 import logging
 import os
+import uuid
 
 from markdown import Markdown
 from zoom.response import RedirectResponse
@@ -12,6 +13,10 @@ import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
 from zoom.utils import trim, dedup
 from zoom.render import apply_helpers
+
+# Needed for access to zoom.system, which is circular if imported directly
+# here.
+import zoom
 
 one_day = datetime.timedelta(1)
 one_week = one_day * 7
@@ -463,9 +468,60 @@ def load(pathname, encoding='utf-8'):
     with open(pathname, encoding=encoding) as reader:
         return reader.read()
 
+def safe_format(__content, *args, **kwargs):
+    """
+    Perform a brace-style string format, leaving double curly braces
+    unchanged (they would normally be treated as an escape of a single brace).
+
+    >>> '{{a}} {b}'.format(b=1)
+    '{a} 1'
+    >>> safe_format('{{a}} {b}', b=1)
+    '{{a}} 1'
+    """
+    # XXX: This approach trades runtime efficiency for implementation
+    # simplicity. It could be improved in the future.
+
+    # Create (functionally) universally unique tokens to replace double curly
+    # braces during the format.
+    open_helper = uuid.uuid4().hex
+    close_helper = uuid.uuid4().hex
+
+    # Swap double curly braces for their tokens, format, then restore them.
+    content = close_helper.join(open_helper.join(
+        __content.split('{{')
+    ).split('}}'))
+    content = content.format(*args, **kwargs)
+    content = '{{'.join('}}'.join(content.split(
+        close_helper
+    )).split(open_helper))
+    return content
+
+
+def apply_helpers_and_format(template, *args, **kwargs):
+    """
+    Apply keyword arguments as Zoom helpers to `template`, then all provided
+    arguments except for `template` as standard brace-style format parameters,
+    in that order.
+
+    Missing format parameters result in a `KeyError`, while un-matched helpers
+    are left as is (presumably to be filled later in the request).
+
+    >>> apply_helpers_and_format('{{a}} {{b "B"}} {c} {{d}}', a='A', c='C')
+    'A B C {{d}}'
+    >>> apply_helpers_and_format('{a}')
+    Traceback (most recent call last):
+        ...
+    KeyError: 'a'
+    """
+    after_helpers = apply_helpers(template, None, [kwargs])
+    return safe_format(after_helpers, *args, **kwargs)
+
 
 def load_content(pathname, *args, **kwargs):
-    """Load a content file and use it to format parameters
+    """
+    Load the content template from the given file, then apply the remaining
+    arguments as helpers and standard brace-style format parameters. See
+    `zoom.tools.apply_helpers_and_format()` for behaviour.
     """
     isfile = os.path.isfile
 
@@ -477,7 +533,7 @@ def load_content(pathname, *args, **kwargs):
 
     template = load(pathname)
     if template:
-        content = apply_helpers(template, None, [kwargs]).format(*args, **kwargs)
+        content = apply_helpers_and_format(template, *args, **kwargs)
         if pathname.endswith('.html'):
             result = content
         else:

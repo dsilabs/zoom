@@ -51,7 +51,7 @@ def init():
                     'directory, use --replace to replace)'
                 )%path)
         if with_creation:
-            os.mkdir(path)
+            os.makedirs(path, exist_ok=True)
 
         # Copy instance boilerplate to the new instance directory.
         copy_boilerplate('instances/basic', path)
@@ -75,15 +75,15 @@ def init():
         # Output a result description.
         op_description = ' (created)' if with_creation else str()
         print('Initialized in "%s"%s'%(path, op_description))
-    except BaseException as ex:
-        if isinstance(ex, SystemExit):
-            raise ex
-        
+    except BaseException as ex: 
         # If an error occurred and we created the directory, remove it.
         if with_creation:
             try:
                 shutil.rmtree(path)
             except: pass
+        
+        if isinstance(ex, SystemExit):
+            raise ex
 
         finish(True, 'Failed to initialize in "%s" (%s)'%(path, str(ex)))
 init.__doc__ = __doc__%describe_options((
