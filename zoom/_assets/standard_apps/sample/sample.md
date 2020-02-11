@@ -181,45 +181,41 @@ Missing App Variable with Default: **{{notaname "a default value"}}**
 
 Helpers
 ----
-&lt;dz:site_name&gt; : "<dz:site_name>"
+&lcub;&lcub;site_name&rcub;&rcub; : "{{site_name}}"
 
-&lt;dz:slogan&gt; : "<dz:slogan>"
+&lcub;&lcub;slogan&rcub;&rcub; : "{{slogan}}"
 
-&lt;dz:owner_name&gt; : "<dz:owner_name>"
+&lcub;&lcub;owner_name&rcub;&rcub; : "{{owner_name}}"
 
-&lt;dz:owner_name&gt; : "<dz:owner_url>"
+&lcub;&lcub;owner_name&rcub;&rcub; : "{{owner_url}}"
 
-&lt;dz:owner_email&gt; : "<dz:owner_email>"
+&lcub;&lcub;owner_email&rcub;&rcub; : "{{owner_email}}"
 
-&lt;dz:owner_link&gt; : "<dz:owner_link>"
+&lcub;&lcub;owner_link&rcub;&rcub; : "{{owner_link}}"
 
-&lt;dz:admin_email&gt; : "<dz:admin_email>"
+&lcub;&lcub;admin_email&rcub;&rcub; : "{{admin_email}}"
 
-&lt;dz:protocol&gt; : "<dz:protocol>"
+&lcub;&lcub;protocol&rcub;&rcub; : "{{protocol}}"
 
-&lt;dz:domain&gt; : "<dz:domain>"
+&lcub;&lcub;domain&rcub;&rcub; : "{{domain}}"
 
-&lt;dz:host&gt; : "<dz:host>"
+&lcub;&lcub;host&rcub;&rcub; : "{{host}}"
 
-&lt;dz:username&gt; : "<dz:username>"
+&lcub;&lcub;username&rcub;&rcub; : "{{username}}"
 
-&lt;dz:user_first_name&gt; : "<dz:user_first_name>"
+&lcub;&lcub;user_first_name&rcub;&rcub; : "{{user_first_name}}"
 
-&lt;dz:user_last_name&gt; : "<dz:user_last_name>"
+&lcub;&lcub;user_last_name&rcub;&rcub; : "{{user_last_name}}"
 
-&lt;dz:user_full_name&gt; : "<dz:user_full_name>"
+&lcub;&lcub;user_full_name&rcub;&rcub; : "{{user_full_name}}"
 
-&lt;dz:user_id&gt; : "<dz:user_id>"
+&lcub;&lcub;elapsed&rcub;&rcub; : "{{elapsed}}"
 
-&lt;dz:elapsed&gt; : "<dz:elapsed>"
+&lcub;&lcub;upper text="test"&rcub;&rcub; : "{{upper text="test"}}"
 
-&lt;dz:upper "test"&gt; : "<dz:upper "test">"
+&lcub;&lcub;date&rcub;&rcub; : "{{date}}"
 
-&lt;dz:current_date&gt; : "<dz:current_date>"
-
-&lt;dz:date&gt; : "<dz:date>"
-
-&lt;dz:year&gt; : "<dz:year>"
+&lcub;&lcub;year&rcub;&rcub; : "{{year}}"
 
 
 Missing Substitutions
