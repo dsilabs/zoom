@@ -304,6 +304,18 @@ class ItemList(list):
     Joe      12    125
     Sally    13    135
 
+    >>> data = [
+    ...     [10000, 'Joe', 12, 125],
+    ...     [10001, 'Sally', 13, 135],
+    ... ]
+    >>> items = ItemList(data, labels=['_id', 'Name', 'Score', 'Points'])
+    >>> print(items)
+    _id   Name  Score Points
+    ----- ----- ----- ------
+    10000 Joe      12    125
+    10001 Sally    13    135
+
+
 
     """
     def __init__(self, *args, **kwargs):
@@ -329,14 +341,14 @@ class ItemList(list):
             )[:1]
             if first_non_null:
                 data_type = first_non_null[0]
-                if data_type in [int, float, decimal.Decimal]:
+                if label in ['_id', 'userid']:
+                    return '{:{width}}'
+                elif data_type in [int, float, decimal.Decimal]:
                     return '{:{width},}'
                 elif data_type in [datetime.date]:
                     return '{:%Y-%m-%d}'
                 elif data_type in [datetime.datetime]:
                     return '{:%Y-%m-%d %H:%M:%S}'
-                elif label in ['_id', 'userid']:
-                    return '{:10}'
             return '{:<{width}}'
 
         def nvl(value):
