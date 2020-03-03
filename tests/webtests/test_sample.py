@@ -25,7 +25,7 @@ class SampleTests(AdminTestCase):
         self.assertContains('<h1 id="sample">Sample</h1>')
         self.assertContains('<h2 id="paragraph-of-text">Paragraph of Text</h2>')
         self.assertContains('Site name: <strong>ZOOM</strong>')
-        self.assertContains('&lt;dz:user_full_name&gt; : "Admin User"')
+        self.assertContains('{{user_full_name}} : "Admin User"')
 
     def test_fields_show(self):
         self.get('/sample/fields')

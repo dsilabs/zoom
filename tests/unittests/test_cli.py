@@ -109,6 +109,12 @@ class TestCLI(unittest.TestCase):
         ))
         self.assertTrue(False not in dirs_created, 'Directories created')
         
+    def test_init_failure_rollback(self):
+        path = os.path.join(TEST_DIR, 'web1')
+        code, out, err = invoke('zoom init "%s" -u fakeuser -p nosuchpassword')
+        self.assertTrue(code, 'Process fails')
+        self.assertTrue(not os.path.exists(path), 'Rollback deleted fragment')
+
     def test_pip_install(self):
         lib_path = os.path.join(TEST_DIR, 'libs')
         cwd = os.path.abspath('.')
