@@ -315,7 +315,18 @@ class ItemList(list):
     10000 Joe      12    125
     10001 Sally    13    135
 
-
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [10000, 'Joe', now - datetime.date(1980, 1, 20)],
+    ...     [10001, 'Sally', now - datetime.date(1984, 9, 20)],
+    ... ]
+    >>> items = ItemList(data, labels=['_id', 'Name', 'Age'])
+    >>> print(items)
+    _id   Name  Age
+    ----- ----- -------------------
+    10000 Joe   14622 days, 0:00:00
+    10001 Sally 12917 days, 0:00:00
 
     """
     def __init__(self, *args, **kwargs):
@@ -347,6 +358,8 @@ class ItemList(list):
                     return '{:{width},}'
                 elif data_type in [datetime.date]:
                     return '{:%Y-%m-%d}'
+                elif data_type in [datetime.timedelta]:
+                    return '{:}'
                 elif data_type in [datetime.datetime]:
                     return '{:%Y-%m-%d %H:%M:%S}'
             return '{:<{width}}'
