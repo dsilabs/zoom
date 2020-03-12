@@ -1794,12 +1794,46 @@ class CheckboxesField(Field):
     <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Two" /><div>Two</div></li>
     <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
     </ul>
+
+    >>> values = [('One', '1'), ('Two', '2'), 'Three']
+    >>> cb = CheckboxesField('Select', value='1', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
+    >>> values = [('One', '1'), ('Two', 2), 'Three']
+    >>> cb = CheckboxesField('Select', value='One', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
+    >>> values = [('One', '1'), ('Two', 2), 'Three']
+    >>> cb = CheckboxesField('Select', value='2', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
     """
 
     def widget(self):
+        current_value = self.value or self.default
+        current_values = list(map(str, ensure_listy(current_value)))
         result = []
-        for value in self.values:
-            checked = value in self.value and 'checked' or ''
+        for option in self.values:
+            if type(option) in (list, tuple) and len(option) == 2:
+                text, value = option
+            else:
+                text = value = option
+            checked = ((str(value) in current_values) or (text in current_values)) and 'checked' or ''
             tag = html.tag(
                 'input',
                 checked,
@@ -1808,8 +1842,8 @@ class CheckboxesField(Field):
                 Type='checkbox',
                 Class='checkbox_field',
                 value=value,
-                )
-            result.append('<li>%s<div>%s</div></li>\n' % (tag, value))
+            )
+            result.append('<li>%s<div>%s</div></li>\n' % (tag, text))
         result = '<ul class="checkbox_field">\n%s</ul>' % (''.join(result))
         return result
 
