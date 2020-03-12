@@ -23,10 +23,11 @@ def form_for(*args, **kwargs):
 
     params = kwargs.copy()
     name = params.pop('form_name', 'zoom_form')
-    id = params.pop('id', 'zoom_form')
+    _id = params.pop('id', 'zoom_form')
     method = params.pop('method', 'POST')
     action = params.pop('action', '<dz:request_path>')
     enctype = params.pop('enctype', 'application/x-www-form-urlencoded')
+    classed = params.pop('classed', 'clearfix')
 
     t = []
     if method == 'POST':
@@ -54,10 +55,10 @@ def form_for(*args, **kwargs):
         '\n' + '\n'.join(t + content) + '\n',
         action=action,
         name=name,
-        id=name,
+        id=_id,
         method=method,
         enctype=enctype,
-        classed='clearfix'
+        classed=classed,
     )
 
 
@@ -117,6 +118,7 @@ class Form(Fields):
 
         self.action = kwargs.get('action', '')
         self.form_name = kwargs.get('form_name', 'zoom_form')
+        self.form_id = kwargs.get('form_id', 'zoom_form')
         self.method = kwargs.get('method', 'POST')
 
     def edit(self):
@@ -124,7 +126,7 @@ class Form(Fields):
         return form_for(
             fields,
             action=self.action,
-            id=self.form_name,
+            id=self.form_id,
             form_name=self.form_name,
             method=self.method,
             enctype=self.enctype,
