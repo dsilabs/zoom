@@ -84,9 +84,9 @@ site_not_found = """
     </div>
     <div id="footer">
         <div id="center" align="center">
-            <img src="https://www.dynamic-solutions.com/themes/dsi2014/images/dynamicsolutions.png">
+            <img src="https://www.dynamic-solutions.com/images/dynamicsolutions.png">
             Request ID: {request.request_id}<br/>
-            &copy; <a href="https://www.dynamic-solutions.com">Dynamic Solutions Inc.</a> 2016
+            &copy; <a href="https://www.dynamic-solutions.com">Dynamic Solutions Inc.</a> {date.year}
         </div>
     </div>
     </body>
