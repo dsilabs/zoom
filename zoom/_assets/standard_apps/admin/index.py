@@ -373,14 +373,30 @@ class MyView(zoom.View):
             profiling_message = 'No'
 
         items = zoom.packages.get_registered_packages()
-        packages = '<dt>combined</dt><dd>{}</dd>'.format(
-            zoom.html.pre(json.dumps(items, indent=4, sort_keys=True))
+        packages = '\n'.join(
+            '<dt>{}</dt><dd>{}</dd>'.format(
+                key,
+                '<br>'.join(
+                    '{resources}'.format(
+                        resources='<br>'.join(resources)
+                    ) for resource_type, resources
+                    in sorted(parts.items(), key=lambda a: ['requires', 'styles', 'libs'].index(a[0]))
+                )
+            )
+            for key, parts in sorted(items.items())
         )
-        return page(load_content('configuration.md').format(
-            request=self.model,
-            packages=packages,
-            profiling=profiling_message,
-        ))
+
+        apps_paths = '<br>'.join(zoom.system.request.site.apps_paths)
+
+        return page(
+            load_content(
+                'configuration.md',
+                request=zoom.system.request,
+                packages=packages,
+                profiling=profiling_message,
+                apps_paths=apps_paths,
+            ),
+        )
 
     def environment(self):
         return page(

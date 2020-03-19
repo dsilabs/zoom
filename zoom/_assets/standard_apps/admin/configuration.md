@@ -5,30 +5,30 @@ Site
 ----
 
 CSRF Validation
-: {{request.site.csrf_validation}}
+: {request.site.csrf_validation}
 
 Profiling
-: {{profiling}}
+: {profiling}
 
 Paths
 ----
 
 Instance
-: {{request.instance}}
+: {request.instance}
 
 Site
-: {{request.site.path}}
+: {request.site.path}
 
 Theme
-: {{request.site.theme_path}}
+: {request.site.theme_path}
 
 App
-: {{request.app.path}}
+: {request.app.path}
 
-Apps
-: {{request.site.apps_paths}}
+Apps Paths
+: {apps_paths}
 
 
 Packages
 ----
-: {{packages}}
+: {packages}
