@@ -508,10 +508,15 @@ def apply_helpers_and_format(template, *args, **kwargs):
 
     >>> apply_helpers_and_format('{{a}} {{b "B"}} {c} {{d}}', a='A', c='C')
     'A B C {{d}}'
+
+    >>> apply_helpers_and_format('{{a}} {{b "B"}} {c} {{d}}', a='A', c='C', d='{{e}}', e='{{a}}')
+    'A B C A'
+
     >>> apply_helpers_and_format('{a}')
     Traceback (most recent call last):
         ...
     KeyError: 'a'
+
     """
     after_helpers = apply_helpers(template, None, [kwargs])
     return safe_format(after_helpers, *args, **kwargs)
