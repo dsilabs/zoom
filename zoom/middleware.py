@@ -309,23 +309,52 @@ def serve_themes(request, handler, *rest):
         return handler(request, *rest)
 
 
-def serve_images(request, handler, *rest):
-    """Serve an image file
+def serve_content_images(request, handler, *rest):
+    """Serve Images from the Content app
 
-    >>> url = 'http://localhost/images/banner_logo.png'
+    Direct a request for an image to the content app.
+
+    >>> site = zoom.sites.Site()
+    >>> url = 'http://localhost/images/some-image.png'
     >>> request = zoom.request.build(url)
-    >>> request.site = zoom.sites.Site()
-    >>> result = serve_images(request, lambda a: False)
-    >>> isinstance(result, PNGResponse)
+    >>> request.path == '/images/some-image.png'
     True
+    >>> response = serve_content_images(request, lambda a: None)
+    >>> request.path
+    '/content/images/some-image.png'
 
-    >>> url = 'http://localhost/notimages/banner_logo.png'
-    >>> request = zoom.request.build(url)
-    >>> serve_images(request, lambda a: False)
-    False
     """
     if request.path.startswith('/images/'):
-        return serve_response(request.site_path, 'content', request.path[1:])
+        logger = logging.getLogger(__name__)
+        request.path = '/content' + request.path
+        request.route = request.path.split('/')[1:]
+        logger.debug('calling content app for image (%r, %r)', request.path, request.route)
+        return handler(request, *rest)
+    else:
+        return handler(request, *rest)
+
+
+def serve_content_files(request, handler, *rest):
+    """Serve Files from the Content app
+
+    Direct a request for a file to the content app.
+
+    >>> site = zoom.sites.Site()
+    >>> url = 'http://localhost/files/some-file.pdf'
+    >>> request = zoom.request.build(url)
+    >>> request.path == '/files/some-file.pdf'
+    True
+    >>> response = serve_content_files(request, lambda a: None)
+    >>> request.path
+    '/content/files/some-file.pdf'
+
+    """
+    if request.path.startswith('/files/'):
+        logger = logging.getLogger(__name__)
+        request.path = '/content' + request.path
+        request.route = request.path.split('/')[1:]
+        logger.debug('calling content app for file (%r, %r)', request.path, request.route)
+        return handler(request, *rest)
     else:
         return handler(request, *rest)
 
@@ -687,6 +716,8 @@ def handle(request, handlers=None):  # pragma: no cover
         display_errors,
         check_csrf,
         flag_trap_middleware,
+        serve_content_images,
+        serve_content_files,
         zoom.apps.handler,
         not_found,
     )
@@ -697,6 +728,6 @@ DEBUGGING_HANDLERS = (
     trap_errors,
     serve_favicon,
     serve_static,
-    serve_images,
+    serve_content_images,
     debug,
 )
