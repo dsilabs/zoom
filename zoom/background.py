@@ -64,7 +64,7 @@ class BackgroundJob:
         for runtime in runtimes:
             if not last or runtime.timestamp_dt > last.timestamp_dt:
                 last = runtime
-        
+
         return last
 
     def save_record(self):
@@ -81,7 +81,7 @@ class BackgroundJob:
     def has_changed_since_record(self):
         previous = self.get_record()
         return (
-            not previous or 
+            not previous or
             previous.uow_signature != self.uow_signature
         )
 
@@ -110,7 +110,7 @@ def load_app_background_jobs(app):
     """Load the background jobs for the given app from that apps background.py
     module."""
     global _job_set
-    
+
     # Ensure we have a background module.
     background_module_path = os.path.join(app.path, 'background.py')
     if not os.path.isfile(background_module_path):
@@ -182,7 +182,7 @@ class JobRuntime_(Entity):
                 if as_html else
                 'Errored: [%s]'
             )%self.runtime_error.split('\n')[-2]
-        
+
         timing_desc = (
             '<i>in %sms at %s</i>'
             if as_html else
@@ -235,7 +235,7 @@ def run_background_jobs(site, app):
             runtime_error = ''.join(traceback.format_exception(
                 ex.__class__, ex, ex.__traceback__
             ))
-            logger.critical('\tJob %s failed!\n%s', 
+            logger.critical('\tJob %s failed!\n%s',
                 job.qualified_name,
                 runtime_error.join(('='*10 + '\n',)*2)
             )
