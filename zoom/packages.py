@@ -77,7 +77,7 @@ default_packages = {
     },
     'fontawesome4': {
         'styles': [
-            '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+            '/static/zoom/fontawesome4/css/font-awesome.min.css'
         ]
     },
     'fontawesome': {
