@@ -264,39 +264,64 @@ class TestApps(unittest.TestCase):
         self.assertEqual(type(response), zoom.response.HTMLResponse)
         self.assertTrue('<!DOCTYPE html>' in response.content)
 
-    def call(self, uri, as_username='admin', tag='content'):
+    def call(self, uri, as_username='admin', tag='content', adjust=None):
         def clear():
             clearable = ('app', 'index')
             for module in clearable:
                 if module in sys.modules:
                     del sys.modules[module]
-        request = build('http://localhost/' + uri, {})
+        request = build('http://localhost' + uri, {})
+        request.uri = uri
         request.profiler = set()
         request.site = zoom.system.site
         request.user = zoom.users.Users(self.db).first(username=as_username)
+        request.user.is_authenticated = as_username != 'guest'
         zoom.system.user = request.user
         clear()
+        if adjust:
+            adjust(request)
         response = zoom.apps.handle(request)
         if isinstance(response, zoom.response.HTMLResponse):
             return zoom.render.render('{{' + tag + '}}')
         else:
             return response
 
-    def test_handle_redirect_to_index(self):
-        response = self.call('home', 'guest')
-        self.assertTrue(response.headers['Location'] == '/')
+    def test_handle_unauth_guest(self):
+        response = self.call('/home', 'guest')
+        self.assertEqual(
+            response.headers['Location'],
+            '/login?original_url=http%3A%2F%2Flocalhost%2Fhome'
+        )
 
     def test_handle_insufficient_privileges(self):
-        response = self.call('admin', 'user')
-        self.assertTrue(response.headers['Location'] == '/')
+        response = self.call('/admin', 'user')
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '/'
+        )
 
-    # def test_handle_missing_app(self):
-    #     response = self.call('aaa')
-    #     self.assertEqual(response.status, '302 Found')
+    def test_handle_insufficient_privileges_with_auth(self):
+        def add_auth_function(request):
+            request.site.auth_app_name = 'authorize'
+        response = self.call('/admin', 'user', adjust=add_auth_function)
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '/authorize?original_url=http%3A%2F%2Flocalhost%2Fadmin'
+        )
 
-    # def test_handle_default_app(self):
-    #     response = self.call('aaa')
-    #     self.assertEqual(response, None)
+    def test_handle_missing_app(self):
+        response = self.call('/aaa', as_username='admin')
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/app'
+        )
+
+    def test_handle_default_app(self):
+        response = self.call('aaa', as_username='guest')
+        self.assertEqual(response, None)
 
     def test_read_config(self):
         site = zoom.system.site

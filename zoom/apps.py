@@ -10,6 +10,7 @@ import importlib
 import logging
 import os
 import sys
+import urllib
 
 import zoom
 from zoom.components import as_links
@@ -425,10 +426,33 @@ def load_app(site, name):
 def get_default_app_name(site, user):
     """get the default app for the currrent user"""
     if user.is_authenticated:
-        default_app = site.config.get('apps', 'home', 'home')
+        default_app = site.home_app_name
     else:
-        default_app = site.config.get('apps', 'index', 'content')
+        default_app = site.index_app_name
     return default_app
+
+
+def make_source_url(app_name, request):
+    """URL to pass to recovery apps"""
+    original_url = ''.join([
+        request.protocol,
+        '://',
+        request.host,
+        request.uri
+    ])
+    original_referrer_url = request.referrer
+    params = dict(
+        original_url=original_url,
+    )
+    if request.referrer:
+        params['original_referrer_url'] = request.referrer
+    url = ''.join([
+        '/',
+        app_name,
+        '?',
+        urllib.parse.urlencode(params)
+    ])
+    return url
 
 
 def handle(request):
@@ -451,7 +475,12 @@ def handle(request):
 
     logger = logging.getLogger(__name__)
 
+    site = request.site
     user = request.user
+    if user.is_authenticated:
+        logger.debug('user is authenticated')
+    else:
+        logger.debug('user is a guest')
     app_name = request.route and request.route[0] or None
     redirect_response = zoom.response.RedirectResponse
 
@@ -487,6 +516,11 @@ def handle(request):
     if not app:
         logger.debug('app %r not found in site.apps_paths', app_name)
         logger.debug('site.apps_paths: %r', request.site.apps_paths)
+
+        if site.locate_app_name:
+            locate_url = make_source_url(site.locate_app_name, request)
+            logger.debug('redirecting to %r', locate_url)
+            return redirect_response(locate_url)
 
         app_name = get_default_app_name(request.site, request.user)
         logger.debug('default app is %r', app_name)
@@ -527,8 +561,11 @@ def handle(request):
         logger.debug('running requested app')
         return run_app(app)
 
-    elif user.is_guest:
+    elif not user.is_authenticated:
         logger.debug('redirecting to login')
+        if site.login_app_name:
+            login_url = make_source_url(site.login_app_name, request)
+            return redirect_response(login_url)
         return redirect_response('/login')
 
     else:
@@ -537,6 +574,11 @@ def handle(request):
             'redirecting to default'
         )
         logger.warning(msg, user.username, app_name, app.path)
+
+        if site.auth_app_name:
+            auth_url = make_source_url(site.auth_app_name, request)
+            return redirect_response(auth_url)
+
         return redirect_response('/')
 
 

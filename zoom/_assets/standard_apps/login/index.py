@@ -49,7 +49,21 @@ class LoginView(View):
             )
         else:
             referrer = ''
-        form = LoginForm(username=username, user=user, referrer=referrer)
+        original_url = k.get('original_url')
+        if original_url:
+            origin = html.hidden(
+                id="original-url",
+                name="original_url",
+                value=original_url,
+            )
+        else:
+            origin = ''
+        form = LoginForm(
+            username=username,
+            user=user,
+            referrer=referrer,
+            origin=origin,
+        )
         return page(form)
 
 
@@ -68,6 +82,10 @@ class LoginController(Controller):
             if user:
                 if user.login(self.model, password, remember_me):
                     logger.info('user {!r} sucesfully logged in'.format(username))
+                    logger.debug(data)
+                    if 'original_url' in data:
+                        logger.debug('redirecting to %r', data['original_url'])
+                        return redirect_to(data['original_url'])
                     return redirect_to('/')
             logger.debug('failed login attempt for user {!r}'.format(username))
             error('incorrect username or password')

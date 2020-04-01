@@ -177,6 +177,12 @@ class Site(object):
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
             self.admin_email = get('site', 'admin_email', 'admin@testco.com')
 
+            self.home_app_name = get('apps', 'home', 'home')
+            self.index_app_name = get('apps', 'index', 'content')
+            self.login_app_name = get('apps', 'login', '')
+            self.auth_app_name = get('apps', 'authorize', '')
+            self.locate_app_name = get('apps', 'locate', '')
+
             self.smtp_host = get('mail', 'smtp_host', '')
             self.smtp_port = get('mail', 'smtp_port', '')
             self.smtp_user = get('mail', 'smtp_user', '')
