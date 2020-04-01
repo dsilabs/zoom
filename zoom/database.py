@@ -176,7 +176,7 @@ class Database(object):
         if self.__connection is None:
             self.__connection = self.__factory(*self.__args, **self.__keywords)
             logger = logging.getLogger(__name__)
-            logger.debug('opening %s', self)
+            logger.debug('opening %s', self.__class__.__name__)
         return getattr(self.__connection, name)
 
     def translate(self, command, *args):
@@ -605,7 +605,7 @@ class MySQLDatabase(Database):
         try:
             logger = logging.getLogger(__name__)
             if self.open:
-                logger.debug('closing %s', self)
+                logger.debug('closing %s', self.__class__.__name__)
                 self.close()
         except OperationalError:
             pass
