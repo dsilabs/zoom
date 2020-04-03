@@ -55,7 +55,7 @@ def standard_zoom_tail_tags():
     return ''.join('{{%s}}' % tag for tag in tags)
 
 def tag_for(name, *a, **k):
-    """create a zoom tag
+    """create a dz tag
 
     >>> tag_for('name')
     '<dz:name>'
@@ -70,6 +70,29 @@ def tag_for(name, *a, **k):
             '{}={!r}'.format(k, v) for k, v in sorted(k.items())
         )) or ''
     )
+
+
+def ztag(name, *args, **kwargs):
+    """return a zoom tag
+
+    >>> ztag('name')
+    '{{name}}'
+
+    >>> ztag('name', 'upper', 2)
+    "{{name 'upper' 2}}"
+
+    >>> ztag('name', 10, 'test', default=1)
+    "{{name 10 'test' default=1}}"
+    """
+    return ''.join([
+        '{{',
+        name,
+        args and (' ' + ' '.join(map(repr, args))) or '',
+        kwargs and (' ' + ' '.join(
+            '{}={!r}'.format(k, v) for k, v in sorted(kwargs.items())
+        )) or '',
+        '}}',
+    ])
 
 
 def url_for(*a, **k):
