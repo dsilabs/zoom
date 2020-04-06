@@ -52,21 +52,21 @@ def run():
         delay = int(delay)
     except ValueError:
         finish(True, 'Error: invalid timeout or delay')
-    
+
     indefinite = repeat or timeout == 0
     only_once = timeout == -1
 
     # State runtime options.
     if indefinite:
-        logger.info('Will repeat indefinitely with delay %d second(s)', delay)
+        logger.info('will repeat indefinitely with delay %d second(s)', delay)
     elif only_once:
-        logger.info('Will execute once')
+        logger.info('will scan once')
     else:
         logger.info(
-            'Will repeat for %s second(s) with delay %s seconds(s)', 
+            'will repeat for %s second(s) with delay %s seconds(s)',
             timeout, delay
         )
-    
+
     # Mark start.
     start_time = time.time()
     try:
@@ -93,5 +93,5 @@ def run():
                 sleep_time += 1
     except KeyboardInterrupt: pass
 
-    print('\rStopped')
+    print('\rstopped')
 run.__doc__ = __doc__%describe_options(LOGGING_OPTIONS)
