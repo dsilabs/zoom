@@ -58,13 +58,17 @@ class IndexView(View):
 
         return Page(content, title='Storage', subtitle=database_info)
 
-    def entity(self, name):
+    def entity(self, name, limit=20):
         items = EntityStore(self.model.site.db, MyModel, kind=name)
-        if len(items) == 1:
+        limit = int(limit)
+        count = len(items)
+        if count == 1:
             footer_name = 'record'
         else:
             footer_name = 'records'
-        footer = len(items) and '%s %s' % (len(items), footer_name) or ''
+        footer = count and '%s %s' % (count, footer_name) or ''
+        if count > limit:
+            items = items[-limit:] # most recent 100
         return page(browse(items, footer=footer), title='Entity: '+name)
 
     def table(self, name, limit='6'):
