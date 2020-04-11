@@ -11,7 +11,9 @@ requires = [
     'faker',
     'docopt',
     'werkzeug',
-    'croniter'
+    'croniter',
+    'pypugjs>=5.9.1',
+    'libsass>=0.19.4'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
