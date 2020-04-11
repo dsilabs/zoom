@@ -8,3 +8,4 @@ faker
 docopt
 werkzeug
 croniter
+pypugjs>=5.9.1

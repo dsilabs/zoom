@@ -8,6 +8,7 @@ import os
 import uuid
 
 from markdown import Markdown
+from pypugjs import simple_convert as pug
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -531,7 +532,7 @@ def load_content(pathname, *args, **kwargs):
     isfile = os.path.isfile
 
     if not isfile(pathname):
-        for extension in ['html', 'md', 'txt']:
+        for extension in ['html', 'md', 'txt', 'pug']:
             if isfile(pathname + '.' + extension):
                 pathname = pathname + '.' + extension
                 break
@@ -541,6 +542,8 @@ def load_content(pathname, *args, **kwargs):
         content = apply_helpers_and_format(template, *args, **kwargs)
         if pathname.endswith('.html'):
             result = content
+        elif pathname.endswith('.pug'):
+            result = pug(content)
         else:
             result = markdown(content)
         return result
