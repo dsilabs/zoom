@@ -9,3 +9,4 @@ docopt
 werkzeug
 croniter
 pypugjs>=5.9.1
+libsass>=0.19.4
