@@ -2,11 +2,6 @@
     login app
 """
 
-from zoom.apps import App
+import zoom
 
-
-class MyApp(App):
-    pass
-
-
-app = MyApp()
+app = zoom.App()
