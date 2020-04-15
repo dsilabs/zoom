@@ -12,11 +12,14 @@ import unittest
 import zoom
 import zoom.middleware as middleware
 
+from zoom.testing.common import get_output_path
+
 
 def get_path():
     default_test_path = zoom.tools.zoompath('web', 'sites', 'localhost')
     path = os.environ.get('ZOOM_TEST_PATH', default_test_path)
     return path
+
 
 class AppTestPrimitives(unittest.TestCase):
     """AppTest Primitives"""
@@ -126,7 +129,7 @@ class AppTestPrimitives(unittest.TestCase):
         if filename is None:
 
             join = os.path.join
-            test_output_directory = join('tests', 'output')
+            test_output_directory = get_output_path()
             if not os.path.isdir(test_output_directory):
                 os.mkdir(test_output_directory)
 
