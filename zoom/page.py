@@ -7,7 +7,7 @@ import logging
 import sys
 
 import zoom
-from zoom.component import Component
+from zoom.component import render
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
@@ -196,7 +196,7 @@ class Page(object):
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
 
-        self.content = Component(self.header(), self.content, *self.args).render()
+        self.content = render(self.header(), self.content, *self.args)
 
         app_theme = request.app.theme if hasattr(request, 'app') else None
         site_theme = request.site.theme

@@ -221,6 +221,11 @@ class Component(object):
         return self.render()
 
 
+def render(*components):
+    html_part = Component(*components).render()
+    return html_part
+
+
 component = Component
 
 
