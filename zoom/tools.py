@@ -582,8 +582,6 @@ def load_template(name, default=None):
                     source = None
 
                 t = load(pathname)
-                # print(t)
-                # t = 'got it'
 
                 if source and pathname[-5:].lower() == '.html':
                     result = (
@@ -597,7 +595,8 @@ def load_template(name, default=None):
                 return result
 
         logger = logging.getLogger(__name__)
-        logger.warning('template missing: %r', name)
+        if default is None:
+            logger.warning('template missing: %r', name)
         logger.debug('templates paths: %r', templates_paths)
 
         if default:
