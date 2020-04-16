@@ -593,25 +593,6 @@ def trap_errors(request, handler, *rest):
 def display_errors(request, handler, *rest):
     """Display errors for developers
 
-    >>> request = zoom.request.build('http://localhost')
-    >>> request.app = zoom.utils.Bunch(theme='default', templates_paths=[])
-    >>> request.host = 'localhost'
-    >>> request.site = zoom.sites.Site()
-    >>> request.site.theme = 'default'
-    >>> request.site.request = request
-    >>> zoom.system.request = request
-    >>> zoom.system.site = request.site
-    >>> zoom.system.user = request.site.users.first(username='admin')
-    >>> zoom.system.user.is_admin = True
-    >>> def throw(request):
-    ...     raise Exception('ouch!')
-    >>> response = display_errors(request, throw)
-    >>> isinstance(response, HTMLResponse)
-    True
-    >>> zoom.system.user.is_admin = False
-    >>> response = display_errors(request, throw)
-    >>> isinstance(response, HTMLResponse)
-    True
     """
     try:
         return handler(request, *rest)

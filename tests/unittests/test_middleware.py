@@ -9,8 +9,19 @@ from zoom.database import setup_test
 from zoom.request import Request
 from zoom.site import Site
 from zoom.session import Session
-from zoom.middleware import check_csrf, get_csrf_token
+from zoom.middleware import (
+    check_csrf,
+    display_errors
+)
+from zoom.render import apply_helpers, add_helpers
 
+error_message = """
+    <div class="jumbotron">
+        <h1>Whoops!</h1>
+        <p>Something went wrong!</p>
+        <p>Please try again later or contact {{owner_link}} for assistance.<p>
+    </div>
+ """
 
 logger = logging.getLogger(__name__)
 
@@ -54,3 +65,32 @@ class TestCSRFMiddleware(unittest.TestCase):
         self.assertIsNotNone(getattr(request.session, 'csrf_token', None))
         zoom.forms.form_for('test') # generates a new token
         self.assertIsNot(request.session.csrf_token, token)
+
+
+def throw(request):
+    raise Exception('ouch!')
+
+
+class TestDisplayError(unittest.TestCase):
+
+    def setUp(self):
+        request = zoom.request.build('http://localhost')
+        request.app = zoom.utils.Bunch(theme='default', templates_paths=[])
+        request.host = 'localhost'
+        request.site = zoom.sites.Site()
+        request.site.theme = 'default'
+        request.site.request = request
+        self.request = request
+        zoom.system.request = request
+        zoom.system.site = request.site
+        zoom.system.user = request.site.users.first(username='admin')
+        zoom.system.providers = []
+
+    def test_display_error_as_admin(self):
+        zoom.system.user.is_admin = False
+        message = 'Something is broken'
+        response = display_errors(self.request, throw)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
+        body = zoom.render.render(response.content, content=message)
+        self.assertIn(message, body)
+
