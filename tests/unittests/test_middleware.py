@@ -13,21 +13,11 @@ from zoom.middleware import (
     check_csrf,
     display_errors
 )
-from zoom.render import apply_helpers, add_helpers
-
-error_message = """
-    <div class="jumbotron">
-        <h1>Whoops!</h1>
-        <p>Something went wrong!</p>
-        <p>Please try again later or contact {{owner_link}} for assistance.<p>
-    </div>
- """
 
 logger = logging.getLogger(__name__)
 
-def noop(request, **rest):
+def noop(_, **__):
     """do nothing handler"""
-    pass
 
 
 class TestCSRFMiddleware(unittest.TestCase):
