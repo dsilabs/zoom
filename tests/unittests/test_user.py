@@ -176,6 +176,11 @@ class TestUser(unittest.TestCase):
         user.username = 'domain\\user'
         self.assertEqual(user.key, 'domain-user')
 
+    def test_user_email_user_id(self):
+        user = self.users.first(username='user')
+        user.username = 'user@testco.com'
+        self.assertEqual(user.key, 'user-at-testco.com')
+
     def test_user_activate(self):
         user = self.users.first(username='user')
         self.assertEqual(user.status, 'A')

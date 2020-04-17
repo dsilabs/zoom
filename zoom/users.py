@@ -37,20 +37,24 @@ def key_for(username):
         >>> key_for(1234)
         '1234'
         >>> key_for('this %$&#@^is##-$&*!it')
-        'this-is-it'
+        'this--at-is-it'
         >>> key_for('test-this')
         'test-this'
         >>> key_for('test.this')
         'test.this'
         >>> key_for('test\\\\this')
         'test-this'
+        >>> key_for('test@this.com')
+        'test-at-this.com'
 
     """
     def _key_for(text):
         return str(text).strip().translate(allowed).lower().replace(' ', '-')
 
     if '\\' in str(username):
-        username = username.replace('\\','-')
+        username = username.replace('\\', '-')
+    if '@' in str(username):
+        username = username.replace('@', '-at-')
 
     return _key_for(username)
 
@@ -528,13 +532,12 @@ class Users(RecordStore):
         user.remove_groups()
 
     def locate(self, key):
-        users = context.site.users
-        user = users.first(username=key)
-        if user:
-            return user
-        alternate_key = key.replace('-', '\\')
-        user = users.first(username=alternate_key)
-        if user:
+        user = key and (
+            self.first(username=key) or
+            self.first(username=key.replace('-', '\\')) or
+            self.first(username=key.replace('-at-', '@'))
+        )
+        if user and user.key == key:
             return user
 
 
