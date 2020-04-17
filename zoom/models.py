@@ -5,7 +5,6 @@
 """
 
 import zoom
-from zoom.utils import DefaultRecord, id_for
 from zoom.helpers import link_to, url_for_item, url_for
 from zoom.utils import Record
 from zoom.records import RecordStore
@@ -13,7 +12,7 @@ from zoom.users import Users
 from zoom.audit import audit
 
 
-class Model(DefaultRecord):
+class Model(zoom.utils.DefaultRecord):
     """Model Superclass
 
     Provide basic model properties and functions.
@@ -61,7 +60,7 @@ class Model(DefaultRecord):
     @property
     def key(self):
         """Return the key"""
-        return id_for(self.name)
+        return zoom.utils.id_for(self.name)
 
     @property
     def url(self):
@@ -97,7 +96,7 @@ def get_users(db, group):
                 users.id = members.user_id
                 and group_id = %s
         """,
-        group._id)
+        group.group_id)
     }
     return my_users
 
