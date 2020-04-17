@@ -77,10 +77,12 @@ class TestDisplayError(unittest.TestCase):
         zoom.system.providers = []
 
     def test_display_error_as_admin(self):
-        zoom.system.user.is_admin = False
-        message = 'Something is broken'
+        zoom.system.user.is_admin = True
         response = display_errors(self.request, throw)
         self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
-        body = zoom.render.render(response.content, content=message)
-        self.assertIn(message, body)
+
+    def test_display_error_as_non_admin(self):
+        zoom.system.user.is_admin = False
+        response = display_errors(self.request, throw)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
 
