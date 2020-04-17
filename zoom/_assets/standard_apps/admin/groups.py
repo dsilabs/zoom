@@ -12,6 +12,12 @@ import zoom.fields as f
 import model
 
 
+no_app_groups = v.Validator(
+    'group names cannot start with a_',
+    lambda a: not a.startswith('a_')
+)
+
+
 class SelectionField(f.ChosenMultiselectField):
     """Selects things related to groups"""
 
@@ -43,7 +49,7 @@ def group_fields(request):
     user_groups = model.get_user_group_options(request.site)
 
     fields = f.Fields([
-        f.TextField('Name', v.required, v.valid_name),
+        f.TextField('Name', v.required, v.valid_name, no_app_groups),
         f.TextField('Description', maxlength=60),
         f.PulldownField(
             'Administrators',
