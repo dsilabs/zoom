@@ -166,6 +166,11 @@ class TestUser(unittest.TestCase):
             '<a href="mysite.com/app/admin/users/user" name="link-to-user">user</a>'
         )
 
+    def test_user_user_id(self):
+        user = self.users.first(username='user')
+        self.assertEqual(user._id, 2)
+        self.assertEqual(user.user_id, 2)
+
     def test_user_activate(self):
         user = self.users.first(username='user')
         self.assertEqual(user.status, 'A')
