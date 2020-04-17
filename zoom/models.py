@@ -178,15 +178,17 @@ class Group(Record):
 
     @property
     def group_id(self):
+        """Return the group ID"""
         return self._id
 
     @property
     def key(self):
+        """Return the group key"""
         return str(self._id)
 
     @property
     def url(self):
-        """user view url"""
+        """return the group URL"""
         return url_for('/admin/groups/{}'.format(self.key))
 
     @property
@@ -195,15 +197,17 @@ class Group(Record):
         return link_to(self.name, self.url)
 
     def allows(self, user, action):
+        """access policy"""
         system_groups = ['administrators', 'everyone', 'guests', 'managers', 'users']
         return self.name not in system_groups or action != 'delete'
 
     def get_users(self):
+        """return set of IDs for users that are a member of this group"""
         return get_users(self['__store'].db, self)
 
     @property
     def users(self):
-        """Return list of users that are part of this group"""
+        """Return list of IDs of users that are part of this group"""
         # TODO:
         # Ideally, this should have returned users as it advertises.  Instead
         # it returns user IDs.  We're introducing the user_ids property below
@@ -219,6 +223,7 @@ class Group(Record):
         return list(self.get_users())
 
     def add_user(self, user):
+        """Add a user to a group"""
         store = self.get('__store')
         members = Members(store.db)
         membership = members.first(group_id=self._id, user_id=user._id)
@@ -227,6 +232,7 @@ class Group(Record):
 
     @property
     def roles(self):
+        """Return set of IDs of roles that group can assume"""
         db = self['__store'].db
         my_roles = {
             group_id
@@ -245,7 +251,7 @@ class Group(Record):
 
     @property
     def apps(self):
-        """Return set of apps that group can access"""
+        """Return set of IDs of apps that group can access"""
         db = self['__store'].db
         my_apps = {
             group_id
@@ -264,9 +270,9 @@ class Group(Record):
 
     @property
     def subgroups(self):
-        """Return set of subgroups that are part of this group"""
+        """Return set of IDs of subgroups that are part of this group"""
         db = self['__store'].db
-        my_apps = {
+        my_subgroups = {
             group_id
             for group_id, in db("""
             select distinct
@@ -279,10 +285,11 @@ class Group(Record):
             """,
             self._id)
         }
-        return my_apps
+        return my_subgroups
 
     @property
     def administrators(self):
+        """Returns the administrator group name"""
         store = self['__store']
         admin_group = store.get(self['admin_group_id'])
         if admin_group:
@@ -338,8 +345,8 @@ class Groups(RecordStore):
         """locate a group whether it is referred to by reference, id or name"""
         return (
             isinstance(locator, Group) and locator or
-            type(locator) == int and self.get(locator) or
-            type(locator) == str and self.first(name=locator)
+            isinstance(locator, int) and self.get(locator) or
+            isinstance(locator, str) and self.first(name=locator)
         )
 
 

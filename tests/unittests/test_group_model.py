@@ -55,3 +55,12 @@ class TestGroup(unittest.TestCase):
 
         managers_group.remove_subgroup(users_group)
         self.assertEqual(managers_group.subgroups, {1})
+
+    def test_locate_group(self):
+        groups = self.groups
+        group = groups.first(name='users')
+        group_id = group.group_id
+
+        self.assertEqual(groups.locate(group).group_id, group_id)
+        self.assertEqual(groups.locate(group_id).group_id, group_id)
+        self.assertEqual(groups.locate(group.name).group_id, group_id)
