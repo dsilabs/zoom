@@ -3,9 +3,10 @@
 """
 import unittest
 
+import zoom
 from zoom.database import setup_test
 from zoom.models import Group, Groups
-
+from zoom.utils import Bunch
 
 class TestGroup(unittest.TestCase):
     """Test the Zoom Group and Groups models"""
@@ -13,6 +14,9 @@ class TestGroup(unittest.TestCase):
     def setUp(self):
         self.db = setup_test()
         self.groups = Groups(self.db)
+        zoom.system.site = zoom.sites.Site()
+        zoom.system.user = zoom.system.site.users.get(1)
+        zoom.system.request = Bunch(app=Bunch(name=__name__))
 
     def tearDown(self):
         self.db.close()
@@ -40,3 +44,14 @@ class TestGroup(unittest.TestCase):
         self.assertRaises(KeyError, lambda: group.apps, )
         self.assertRaises(KeyError, lambda: group.roles, )
         self.assertRaises(KeyError, lambda: group.subgroups, )
+
+    def test_add_remove_subgroup(self):
+        users_group = self.groups.first(name='users')
+        managers_group = self.groups.first(name='managers')
+        self.assertEqual(managers_group.subgroups, {1})
+
+        managers_group.add_subgroup(users_group)
+        self.assertEqual(managers_group.subgroups, {1, users_group.group_id})
+
+        managers_group.remove_subgroup(users_group)
+        self.assertEqual(managers_group.subgroups, {1})

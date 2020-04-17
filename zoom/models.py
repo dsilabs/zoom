@@ -7,9 +7,10 @@
 import zoom
 from zoom.utils import DefaultRecord, id_for
 from zoom.helpers import link_to, url_for_item, url_for
-from zoom.utils import Record, id_for
+from zoom.utils import Record
 from zoom.records import RecordStore
 from zoom.users import Users
+from zoom.audit import audit
 
 
 class Model(DefaultRecord):
@@ -30,8 +31,10 @@ class Model(DefaultRecord):
     this way the key should generated such that it is unique
     for each record.
 
+    >>> from zoom.utils import Bunch
     >>> zoom.system.site = site = zoom.sites.Site()
-    >>> zoom.system.request = zoom.utils.Bunch(route=[])
+    >>> zoom.system.user = zoom.system.site.users.get(1)
+    >>> zoom.system.request = Bunch(route=[], app=Bunch(name=__name__))
     >>> class MyModel(Model):
     ...     pass
     >>> thing = MyModel(name='Pat Smith')
@@ -112,7 +115,23 @@ class Members(RecordStore):
             entity,
             name='members',
             key='id'
-            )
+        )
+
+
+class Subgroup(Record):
+    pass
+
+
+class Subgroups(RecordStore):
+
+    def __init__(self, db, entity=Subgroup):
+        RecordStore.__init__(
+            self,
+            db,
+            entity,
+            name='subgroups',
+            key='id'
+        )
 
 
 class Group(Record):
@@ -270,6 +289,39 @@ class Group(Record):
             return admin_group.name
         return 'nothing'
 
+    def add_subgroup(self, subgroup):
+        """add a subgroup"""
+        db = self['__store'].db
+        cmd = """
+            insert into subgroups (
+                group_id,
+                subgroup_id
+            ) values (
+                %s, %s
+            )
+        """
+        db(cmd, self.group_id, subgroup.group_id)
+        audit(
+            'add subgroup',
+            self.name,
+            subgroup.name,
+        )
+
+    def remove_subgroup(self, subgroup):
+        """remove a subgroup"""
+        db = self['__store'].db
+        cmd = """
+            delete from subgroups where
+                group_id=%s and
+                subgroup_id=%s
+        """
+        db(cmd, self.group_id, subgroup.group_id)
+        audit(
+            'remove subgroup',
+            self.name,
+            subgroup.name,
+        )
+
 
 class Groups(RecordStore):
 
@@ -280,7 +332,7 @@ class Groups(RecordStore):
             entity,
             name='groups',
             key='id'
-            )
+        )
 
     def locate(self, locator):
         """locate a group whether it is referred to by reference, id or name"""
