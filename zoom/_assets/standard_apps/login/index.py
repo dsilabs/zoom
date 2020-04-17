@@ -15,7 +15,7 @@ class LoginForm(zoom.DynamicView):
     @property
     def registration_link(self):
         """returns registration link for new users"""
-        if self.user.is_member('a_register'):
+        if 'register' in self.user.apps:
             return html.a('New User?', href='/register')
         return ''
 
