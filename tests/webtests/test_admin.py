@@ -146,19 +146,19 @@ class SystemTests(AdminTestCase):
 
         # group 5 = content managers
         self.get('/admin/groups')
-        self.assertContains('link-to-users')
+        self.assertContains('link-to-guests')
 
         self.get('/admin/groups/5')
-        self.assertDoesNotContain('link-to-users')
+        self.assertDoesNotContain('link-to-guests')
 
         self.get('/admin/groups/5/edit')
-        self.assertDoesNotContain('link-to-users')
+        self.assertDoesNotContain('link-to-guests')
 
         try:
             self.get('/admin/groups/5/edit')
-            self.chosen('subgroups', ['users'])
+            self.chosen('subgroups', ['guests'])
             self.click('id=save_button')
-            self.assertContains('link-to-users')
+            self.assertContains('link-to-guests')
 
         finally:
             # remove the subgroup we just added
@@ -168,5 +168,5 @@ class SystemTests(AdminTestCase):
             self.click('id=save_button')
 
         self.get('/admin/groups/5')
-        self.assertDoesNotContain('link-to-users')
+        self.assertDoesNotContain('link-to-guests')
 
