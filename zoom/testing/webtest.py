@@ -25,6 +25,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
 
+from zoom.testing.common import get_output_path
+
+
 LOGGER.setLevel(logging.WARNING)
 
 target_cache = {}
@@ -158,6 +161,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         test_name = unittest.TestCase.id(self)
         driver.save_screenshot('%s-error_screen.png' % test_name)
+        self.save_content()
         raise Exception('Don\'t know how to find %s' % target)
 
     def type(self, target, text):
@@ -236,6 +240,36 @@ class WebdriverTestPrimitives(unittest.TestCase):
     @property
     def page_source(self):
         return self.driver.page_source
+
+    def save_content(self, filename=None):
+        """Save page content to a file
+
+        If filename is provided, the page content will be saved to that
+        location.  If not the content will be saved to the artifacts
+        directory in a filename starting with "content-", followed by
+        the test name, followed by a ".html" extension.
+
+        This function can be called anytime you wish to view the content
+        of the current page.  It is called automatically whenever a
+        test fails due to missing content.
+        """
+        if filename is None:
+
+            join = os.path.join
+            test_output_directory = get_output_path()
+            if not os.path.isdir(test_output_directory):
+                os.mkdir(test_output_directory)
+
+            test_name = unittest.TestCase.id(self)
+            filename = join(
+                test_output_directory,
+                'content-%s.html' % test_name
+            )
+
+        print('saving content to %s' % filename)
+        with open(filename, 'w') as f:
+            f.write(str(self.driver.page_source))
+
 
 
 class WebdriverTestCase(WebdriverTestPrimitives):
