@@ -171,35 +171,6 @@ class AdminModel(object):
         else:
             self.log('users unchanged')
 
-    def update_group_subgroups(self, record):
-        """Post updated group subgroups"""
-
-        record_id = int(record['_id'])
-
-        updated_subgroups = set(int(id) for id in record['subgroups'])
-        self.log('updated subgroups: %r', updated_subgroups)
-
-        cmd = 'select subgroup_id from subgroups where group_id=%s'
-        existing_subgroups = set(
-            subgroup_id for subgroup_id, in
-            self.db(cmd, record_id)
-        )
-        self.log('existing subgroups: %r', existing_subgroups)
-
-        if updated_subgroups != existing_subgroups:
-            if existing_subgroups - updated_subgroups:
-                self.log('deleting: %r', existing_subgroups - updated_subgroups)
-                cmd = 'delete from subgroups where group_id=%s and subgroup_id in %s'
-                self.db(cmd, record_id, existing_subgroups - updated_subgroups)
-            if updated_subgroups - existing_subgroups:
-                self.log('inserting: %r', updated_subgroups - existing_subgroups)
-                cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
-                values = updated_subgroups - existing_subgroups
-                sequence = zip([record_id] * len(values), values)
-                self.db.execute_many(cmd, sequence)
-        else:
-            self.log('subgroups unchanged')
-
     def update_group_roles(self, record):
         """Post updated group roles"""
 
@@ -282,8 +253,9 @@ class AdminModel(object):
             self.log('apps unchanged')
 
     def update_group_relationships(self, record):
+        group = record
         self.update_group_users(record)
-        self.update_group_subgroups(record)
+        group.update_subgroups_by_id(group['subgroups'])
         self.update_group_roles(record)
         self.update_group_apps(record)
 

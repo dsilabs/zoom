@@ -4,6 +4,9 @@
     common models
 """
 
+import logging
+
+
 import zoom
 from zoom.helpers import link_to, url_for_item, url_for
 from zoom.utils import Record
@@ -327,6 +330,65 @@ class Group(Record):
             self.name,
             subgroup.name,
         )
+
+    def update_subgroups_by_id(self, subgroup_ids):
+        """Post updated group subgroups"""
+
+        updated_subgroups = set(map(int, subgroup_ids))
+
+        logger = logging.getLogger(__name__)
+        debug = logger.debug
+
+        debug('updating subgroups: %r', updated_subgroups)
+
+        existing_subgroups = self.subgroups
+        debug('existing subgroups: %r', existing_subgroups)
+
+        if updated_subgroups != existing_subgroups:
+
+            group_lookup = {
+                group.group_id: group.name
+                for group in zoom.system.site.groups
+            }
+
+            db = self['__store'].db
+
+            to_remove = existing_subgroups - updated_subgroups
+            if to_remove:
+                debug('removing subgroups %r from %r', to_remove, self.name)
+                cmd = 'delete from subgroups where group_id=%s and subgroup_id in %s'
+                db(cmd, self.group_id, to_remove)
+
+                for subgroup_id in to_remove:
+                    audit(
+                        'remove subgroup',
+                        self.name,
+                        group_lookup.get(
+                            subgroup_id,
+                            'unknown (%s)' % subgroup_id,
+                        )
+                    )
+
+            to_add = updated_subgroups - existing_subgroups
+            if to_add:
+                debug('adding %r to %r', to_add, self.name)
+                cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
+                values = updated_subgroups - existing_subgroups
+                sequence = zip([self.group_id] * len(values), values)
+                db.execute_many(cmd, sequence)
+
+                for subgroup_id in to_add:
+                    audit(
+                        'add subgroup',
+                        self.name,
+                        group_lookup.get(
+                            subgroup_id,
+                            'unknown (%s)' % subgroup_id,
+                        )
+                    )
+
+        else:
+            debug('subgroups unchanged')
 
 
 class Groups(RecordStore):

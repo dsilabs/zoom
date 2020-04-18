@@ -114,6 +114,8 @@ def group_activity_log(group):
                 "add group",
                 "remove group",
                 "create group",
+                "remove subgroup",
+                "add subgroup",
                 "delete group",
                 "add member",
                 "remove member"

@@ -140,3 +140,33 @@ class SystemTests(AdminTestCase):
             self.get('/admin/groups')
             self.assertDoesNotContain('special_group')
 
+    def test_add_remove_subgroup(self):
+
+        self.get('/admin')
+
+        # group 5 = content managers
+        self.get('/admin/groups')
+        self.assertContains('link-to-users')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-users')
+
+        self.get('/admin/groups/5/edit')
+        self.assertDoesNotContain('link-to-users')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('subgroups', ['users'])
+            self.click('id=save_button')
+            self.assertContains('link-to-users')
+
+        finally:
+            # remove the subgroup we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-users')
+
