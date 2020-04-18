@@ -171,33 +171,6 @@ class AdminModel(object):
         else:
             self.log('users unchanged')
 
-    def update_group_roles(self, record):
-        """Post updated group roles"""
-
-        record_id = int(record['_id'])
-        group = context.site.groups.get(record_id)
-        assert group
-
-        updated_roles = set(int(user) for user in record['roles'])
-        self.log('updated roles: %r', updated_roles)
-
-        existing_roles = group.roles
-        self.log('existing roles: %r', existing_roles)
-
-        if updated_roles != existing_roles:
-            if existing_roles - updated_roles:
-                self.log('deleting: %r', existing_roles - updated_roles)
-                cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
-                self.db(cmd, record_id, existing_roles - updated_roles)
-            if updated_roles - existing_roles:
-                self.log('inserting: %r', updated_roles - existing_roles)
-                cmd = 'insert into subgroups (subgroup_id, group_id) values (%s, %s)'
-                values = updated_roles - existing_roles
-                sequence = zip([record_id] * len(values), values)
-                self.db.execute_many(cmd, sequence)
-        else:
-            self.log('roles unchanged')
-
     def update_group_apps(self, record):
         """Post updated group apps"""
 
@@ -256,7 +229,7 @@ class AdminModel(object):
         group = record
         self.update_group_users(record)
         group.update_subgroups_by_id(group['subgroups'])
-        self.update_group_roles(record)
+        group.update_roles_by_id(group['roles'])
         self.update_group_apps(record)
 
 

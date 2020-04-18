@@ -373,8 +373,7 @@ class Group(Record):
             if to_add:
                 debug('adding %r to %r', to_add, self.name)
                 cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
-                values = updated_subgroups - existing_subgroups
-                sequence = zip([self.group_id] * len(values), values)
+                sequence = zip([self.group_id] * len(to_add), to_add)
                 db.execute_many(cmd, sequence)
 
                 for subgroup_id in to_add:
@@ -389,6 +388,65 @@ class Group(Record):
 
         else:
             debug('subgroups unchanged')
+
+
+    def update_roles_by_id(self, role_ids):
+        """Post updated group roles"""
+
+        updated_roles = set(map(int, role_ids))
+
+        logger = logging.getLogger(__name__)
+        debug = logger.debug
+
+        debug('updating roles: %r', updated_roles)
+
+        existing_roles = self.roles
+        debug('existing roles: %r', updated_roles)
+
+        if updated_roles != existing_roles:
+
+            group_lookup = {
+                group.group_id: group.name
+                for group in zoom.system.site.groups
+            }
+
+            db = self['__store'].db
+
+            to_remove = existing_roles - updated_roles
+            if to_remove:
+                debug('removing roles %r from %r', to_remove, self.name)
+                cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
+                db(cmd, self.group_id, to_remove)
+
+                for group_id in to_remove:
+                    audit(
+                        'remove subgroup',
+                        group_lookup.get(
+                            group_id,
+                            'unknown (%s)' % group_id,
+                        ),
+                        self.name
+                    )
+
+            to_add = updated_roles - existing_roles
+            if to_add:
+                debug('adding roles %r to %r', to_add, self.name)
+                cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
+                sequence = zip(to_add, [self.group_id] * len(to_add))
+                db.execute_many(cmd, sequence)
+
+                for subgroup_id in to_add:
+                    audit(
+                        'add subgroup',
+                        group_lookup.get(
+                            subgroup_id,
+                            'unknown (%s)' % subgroup_id,
+                        ),
+                        self.name
+                    )
+
+        else:
+            debug('roles unchanged')
 
 
 class Groups(RecordStore):

@@ -170,3 +170,33 @@ class SystemTests(AdminTestCase):
         self.get('/admin/groups/5')
         self.assertDoesNotContain('link-to-guests')
 
+    def test_add_remove_role(self):
+
+        self.get('/admin')
+
+        # group 5 = content managers
+        self.get('/admin/groups')
+        self.assertContains('link-to-guests')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+        self.get('/admin/groups/5/edit')
+        self.assertDoesNotContain('link-to-guests')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('subgroups', ['guests'])
+            self.click('id=save_button')
+            self.assertContains('link-to-guests')
+
+        finally:
+            # remove the subgroup we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
