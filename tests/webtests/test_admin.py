@@ -191,7 +191,7 @@ class SystemTests(AdminTestCase):
             self.assertContains('link-to-guests')
 
         finally:
-            # remove the subgroup we just added
+            # remove the role we just added
             self.get('/admin/groups/5/edit')
             element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
             element.click()
@@ -213,7 +213,7 @@ class SystemTests(AdminTestCase):
             self.assertContains('Register')
 
         finally:
-            # remove the subgroup we just added
+            # remove the app we just added
             self.get('/admin/groups/5/edit')
             element = self.find('//*[@id="apps_chosen"]/ul/li[1]/a')
             element.click()
@@ -221,4 +221,26 @@ class SystemTests(AdminTestCase):
 
         self.get('/admin/groups/5')
         self.assertDoesNotContain('Register')
+
+    def test_add_remove_user(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guest')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('users', ['guest'])
+            self.click('id=save_button')
+            self.assertContains('link-to-guest')
+
+        finally:
+            # remove the user we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="users_chosen"]/ul/li[1]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
 

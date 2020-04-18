@@ -389,7 +389,6 @@ class Group(Record):
         else:
             debug('subgroups unchanged')
 
-
     def update_roles_by_id(self, role_ids):
         """Post updated group roles"""
 
@@ -447,6 +446,56 @@ class Group(Record):
 
         else:
             debug('roles unchanged')
+
+    def update_members_by_id(self, user_ids):
+        """Post updated group memberships"""
+
+        updated = set(int(id) for id in user_ids)
+
+        logger = logging.getLogger(__name__)
+        debug = logger.debug
+
+        db = self['__store'].db
+
+        debug('updating members: %r', updated)
+
+        cmd = 'select user_id from members where group_id=%s'
+        existing = set(
+            user_id for user_id, in
+            db(cmd, self.group_id)
+        )
+        debug('existing members: %r', existing)
+
+        if updated != existing:
+
+            user_lookup = {
+                user.user_id: user.username
+                for user in zoom.system.site.users
+            }
+
+            to_remove = existing - updated
+            if to_remove:
+                debug('removing members: %r', to_remove)
+                cmd = 'delete from members where group_id=%s and user_id in %s'
+                db(cmd, self.group_id, to_remove)
+
+                for user_id in to_remove:
+                    audit('remove member', self.name, \
+                            user_lookup.get(user_id, 'unknown'))
+
+            to_add = updated - existing
+            if to_add:
+                debug('adding members: %r', to_add)
+                cmd = 'insert into members (group_id, user_id) values (%s, %s)'
+                sequence = zip([self.group_id] * len(to_add), to_add)
+                db.execute_many(cmd, sequence)
+
+                for user_id in to_add:
+                    audit('add member', self.name, \
+                            user_lookup.get(user_id, 'unknown'))
+
+        else:
+            debug('memberships unchanged')
 
 
 class Groups(RecordStore):

@@ -142,35 +142,6 @@ class AdminModel(object):
             ) for app in zoom.system.site.apps
         ], key=repr)
 
-    def update_group_users(self, record):
-        """Post updated group users"""
-
-        record_id = int(record['_id'])
-
-        updated_users = set(int(id) for id in record['users'])
-        self.log('updated members: %r', updated_users)
-
-        cmd = 'select user_id from members where group_id=%s'
-        existing_users = set(
-            user_id for user_id, in
-            self.db(cmd, record_id)
-        )
-        self.log('existing members: %r', existing_users)
-
-        if updated_users != existing_users:
-            if existing_users - updated_users:
-                self.log('deleting members: %r', existing_users - updated_users)
-                cmd = 'delete from members where group_id=%s and user_id in %s'
-                self.db(cmd, record_id, existing_users - updated_users)
-            if updated_users - existing_users:
-                self.log('inserting members: %r', updated_users - existing_users)
-                cmd = 'insert into members (group_id, user_id) values (%s, %s)'
-                values = updated_users - existing_users
-                sequence = zip([record_id] * len(values), values)
-                self.db.execute_many(cmd, sequence)
-        else:
-            self.log('users unchanged')
-
     def update_group_apps(self, record):
         """Post updated group apps"""
 
@@ -227,7 +198,7 @@ class AdminModel(object):
 
     def update_group_relationships(self, record):
         group = record
-        self.update_group_users(record)
+        group.update_members_by_id(group['users'])
         group.update_subgroups_by_id(group['subgroups'])
         group.update_roles_by_id(group['roles'])
         self.update_group_apps(record)
