@@ -40,6 +40,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
     size = (1024, 768)
     logger = logging.getLogger(__name__)
     path = '.'
+    wait_time = 2
 
     driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
 
@@ -78,7 +79,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             })
             driver = webdriver.Chrome(options=chrome_options)
             driver.set_window_size(*self.size)
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(self.wait_time)
 
         elif driver_name == 'firefox':
             firefox_options = FirefoxOptions()
@@ -86,7 +87,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
                 firefox_options.headless = True
             driver = webdriver.Firefox(options=firefox_options)
             driver.set_window_size(*self.size)
-            driver.implicitly_wait(10)
+            driver.implicitly_wait(self.wait_time)
 
         elif driver_name == 'phantomjs':
             driver = webdriver.PhantomJS()
