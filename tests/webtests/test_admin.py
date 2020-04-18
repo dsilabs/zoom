@@ -200,3 +200,25 @@ class SystemTests(AdminTestCase):
         self.get('/admin/groups/5')
         self.assertDoesNotContain('link-to-guests')
 
+    def test_add_remove_app(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('apps', ['Register'])
+            self.click('id=save_button')
+            self.assertContains('Register')
+
+        finally:
+            # remove the subgroup we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="apps_chosen"]/ul/li[1]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
