@@ -159,9 +159,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             logger.debug('found %r: %r', target, direct)
             return direct
 
-        test_name = unittest.TestCase.id(self)
-        driver.save_screenshot('%s-error_screen.png' % test_name)
-        self.save_content()
+        self.save_artifacts()
         raise Exception('Don\'t know how to find %s' % target)
 
     def type(self, target, text):
@@ -171,8 +169,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             element.clear()
             element.send_keys(text)
         except:
-            test_name = unittest.TestCase.id(self)
-            self.driver.save_screenshot('%s-error_screen.png' % test_name)
+            self.save_artifacts()
             raise
 
     def fill(self, values):
@@ -183,8 +180,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
         try:
             self.find(target).click()
         except WebDriverException:
-            test_name = unittest.TestCase.id(self)
-            self.driver.save_screenshot('%s-click_error_screen.png' % test_name)
+            self.save_artifacts()
             raise
 
     def click_and_wait(self, target):
@@ -222,15 +218,13 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
     def assertContains(self, text):
         if not self.contains(text):
-            test_name = unittest.TestCase.id(self)
-            self.driver.save_screenshot('%s-error_screen.png' % test_name)
+            self.save_artifacts()
             msg = 'page does not contain {!r}'.format(text)
             raise self.failureException(msg)
 
     def assertNotContains(self, text):
         if self.contains(text):
-            test_name = unittest.TestCase.id(self)
-            self.driver.save_screenshot('%s-error_screen.png' % test_name)
+            self.save_artifacts()
             msg = 'page contains {!r}'.format(text)
             raise self.failureException(msg)
 
@@ -241,15 +235,20 @@ class WebdriverTestPrimitives(unittest.TestCase):
     def page_source(self):
         return self.driver.page_source
 
+    def save_artifacts(self):
+        """Save artifacts of current state"""
+        self.save_content()
+        self.save_screenshot()
+
     def save_content(self, filename=None):
         """Save page content to a file
 
         If filename is provided, the page content will be saved to that
         location.  If not the content will be saved to the artifacts
-        directory in a filename starting with "content-", followed by
-        the test name, followed by a ".html" extension.
+        directory in a filename starting with the test name, and ending
+        with "-content.html".
 
-        This function can be called anytime you wish to view the content
+        This function can be called anytime you wish to save the content
         of the current page.  It is called automatically whenever a
         test fails due to missing content.
         """
@@ -263,13 +262,40 @@ class WebdriverTestPrimitives(unittest.TestCase):
             test_name = unittest.TestCase.id(self)
             filename = join(
                 test_output_directory,
-                'content-%s.html' % test_name
+                '%s-content.html' % test_name
             )
 
         print('saving content to %s' % filename)
         with open(filename, 'w') as f:
             f.write(str(self.driver.page_source))
 
+    def save_screenshot(self, filename=None):
+        """Save screenshot image to a file
+
+        If filename is provided, the screenshot will be saved to that
+        location.  If not the screenshot will be saved to the artifacts
+        directory in a filename starting with the test name, and ending
+        with "-screenshot.png".
+
+        This function can be called anytime to save a screenshot
+        of the current page.  It is called automatically whenever a
+        test fails due to missing content.
+        """
+        if filename is None:
+
+            join = os.path.join
+            test_output_directory = get_output_path()
+            if not os.path.isdir(test_output_directory):
+                os.mkdir(test_output_directory)
+
+            test_name = unittest.TestCase.id(self)
+            filename = join(
+                test_output_directory,
+                '%s-screenshot.png' % test_name
+            )
+
+        print('saving content to %s' % filename)
+        self.driver.save_screenshot(filename)
 
 
 class WebdriverTestCase(WebdriverTestPrimitives):
