@@ -27,11 +27,16 @@ def user_fields(request):
         # f.TextField('Email', v.required, v.valid_email, not_registered(request)),
         f.EmailField('Email', v.required, v.valid_email),
         f.PhoneField('Phone', v.valid_phone, hint='optional'),
-        ])
+    ])
 
-    account_fields = f.Section('Account', [
-        # f.TextField('Username', v.required, v.valid_username, username_available(request)),
-        f.TextField('Username', v.required, v.valid_username),
+    if request.route[-1] == 'new':
+        account_fields = f.Section('Account', [
+            f.TextField('Username', v.required, v.valid_username),
+            f.CheckboxField('Send invitation'),
+        ])
+    else:
+        account_fields = f.Section('Account', [
+            f.TextField('Username', v.required, v.valid_username),
         ])
 
     security_fields = f.Section('Security', [
@@ -176,6 +181,8 @@ class UserCollectionController(CollectionController):
 
     def after_insert(self, record):
         model.update_user_groups(record)
+        if record.send_invitation:
+            model.send_invitation(record)
 
     def save_password_button(self, key, *args, **data):
         form = get_reset_password_form(key)

@@ -3,8 +3,10 @@
 """
 
 import logging
+import uuid
 
 import zoom
+import zoom.mail
 from zoom.context import context
 from zoom.tools import today
 from zoom.users import Users
@@ -236,6 +238,17 @@ def update_user_groups(record):
 def update_group_relationships(record):
     admin = AdminModel(context.site.db)
     admin.update_group_relationships(record)
+
+
+def send_invitation(user):
+    password = uuid.uuid4().hex[-10:]
+    user.set_password(password)
+    site = zoom.system.site
+    body = zoom.tools.load_content(
+        'welcome', user=user, site=site, password=password)
+    subject = 'Welcome - ' + site.name
+    zoom.mail.send(user.email, subject, body)
+    zoom.alerts.success(f'invitation sent to {user.username}')
 
 
 def admin_crud_policy():
