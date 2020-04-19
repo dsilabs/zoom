@@ -71,8 +71,8 @@ class App(object):
     expects.
     """
 
-    def __init__(self):
-        self.menu = []
+    def __init__(self, menu=[]):
+        self.menu = menu
         self.request = None
 
     def static(self, *args, **kwargs):
@@ -268,6 +268,7 @@ class AppProxy(object):
 
     def menu(self):
         """generate an app menu"""
+
         def by_name(name):
             """Returns a function that selects an item by name"""
             def selector(item):
@@ -278,13 +279,18 @@ class AppProxy(object):
         route = self.site.request.route
         logger = logging.getLogger(__name__)
         logger.debug('constructing menu')
+
         menu = getattr(self.method, 'menu', [])
+        if callable(menu):
+            menu = menu()  #pylint: disable=not-callable
+
         selected = (
             len(route) > 2 and route[0] == 'content' and route[2] or
             len(route) > 1 and route[1] or
             len(route) == 1 and route[0] != 'content' and 'index'
         )
         logger.debug('selected: %s', selected)
+
         result = as_links(menu, select=by_name(selected))
         return result
 
