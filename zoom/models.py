@@ -389,20 +389,22 @@ class Group(Record):
         else:
             debug('subgroups unchanged')
 
-    def update_roles_by_id(self, role_ids):
-        """Post updated group roles"""
+    def update_supergroups_by_id(self, role_ids, kind):
+        """Post updated group supergroups"""
 
-        updated_roles = set(map(int, role_ids))
+        updated = set(map(int, role_ids))
 
         logger = logging.getLogger(__name__)
         debug = logger.debug
 
-        debug('updating roles: %r', updated_roles)
+        debug('updating %s: %r', kind, updated)
 
-        existing_roles = self.roles
-        debug('existing roles: %r', updated_roles)
+        # print(kind)
+        existing = getattr(self, kind + 's')
+        debug('existing %s: %r', kind, updated)
+        # print(updated, existing)
 
-        if updated_roles != existing_roles:
+        if updated != existing:
 
             group_lookup = {
                 group.group_id: group.name
@@ -411,15 +413,15 @@ class Group(Record):
 
             db = self['__store'].db
 
-            to_remove = existing_roles - updated_roles
+            to_remove = existing - updated
             if to_remove:
-                debug('removing roles %r from %r', to_remove, self.name)
+                debug('removing %s %r from %r', kind, to_remove, self.name)
                 cmd = 'delete from subgroups where subgroup_id=%s and group_id in %s'
                 db(cmd, self.group_id, to_remove)
 
                 for group_id in to_remove:
                     audit(
-                        'remove subgroup',
+                        'remove %s' % kind,
                         group_lookup.get(
                             group_id,
                             'unknown (%s)' % group_id,
@@ -427,16 +429,16 @@ class Group(Record):
                         self.name
                     )
 
-            to_add = updated_roles - existing_roles
+            to_add = updated - existing
             if to_add:
-                debug('adding roles %r to %r', to_add, self.name)
+                debug('adding %s %r to %r', kind, to_add, self.name)
                 cmd = 'insert into subgroups (group_id, subgroup_id) values (%s, %s)'
                 sequence = zip(to_add, [self.group_id] * len(to_add))
                 db.execute_many(cmd, sequence)
 
                 for subgroup_id in to_add:
                     audit(
-                        'add subgroup',
+                        'add %s' % kind,
                         group_lookup.get(
                             subgroup_id,
                             'unknown (%s)' % subgroup_id,
@@ -445,7 +447,13 @@ class Group(Record):
                     )
 
         else:
-            debug('roles unchanged')
+            debug('%s unchanged', kind)
+
+    def update_apps_by_id(self, app_ids):
+        return self.update_supergroups_by_id(app_ids, 'app')
+
+    def update_roles_by_id(self, role_ids):
+        return self.update_supergroups_by_id(role_ids, 'role')
 
     def update_members_by_id(self, user_ids):
         """Post updated group memberships"""
@@ -516,6 +524,20 @@ class Groups(RecordStore):
             isinstance(locator, int) and self.get(locator) or
             isinstance(locator, str) and self.first(name=locator)
         )
+
+    def add(self, name, group_type, description=''):
+        """Add a group"""
+        debug = logging.getLogger(__name__).debug
+        group_id = self.put(
+            Group(
+                name=name,
+                type=group_type,
+                description=description,
+            )
+        )
+        debug('created new group %r (%r)', name, group_id)
+        audit('create group', name)
+        return group_id
 
 
 class SystemAttachment(Record):
