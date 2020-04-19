@@ -1,12 +1,12 @@
 
 
 stages:
-  - lint
+  - qa
   - test
   - build
 
 whitespace:
-  stage: lint
+  stage: qa
   image: "python:3.7"
   script:
     - which git || (apt-get update -y && apt-get install -y git)
@@ -22,6 +22,7 @@ legacy_tests:
     MYSQL_ROOT_PASSWORD: root
   script:
     - /bin/bash tests/run_in_gitlab_ci.sh
+
 new_tests:
   stage: test
   image: "python:3.7"
