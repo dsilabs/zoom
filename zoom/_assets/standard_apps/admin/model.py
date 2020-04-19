@@ -241,6 +241,7 @@ def update_group_relationships(record):
 
 
 def send_invitation(user):
+    """Send invitation email"""
     password = uuid.uuid4().hex[-10:]
     user.set_password(password)
     site = zoom.system.site
@@ -249,6 +250,15 @@ def send_invitation(user):
     subject = 'Welcome - ' + site.name
     zoom.mail.send(user.email, subject, body)
     zoom.alerts.success(f'invitation sent to {user.username}')
+
+
+def send_password(user, password):
+    """Send password reset email"""
+    site = zoom.system.site
+    body = zoom.tools.load_content(
+        'reset', user=user, site=site, password=password)
+    subject = 'Password reset - ' + site.name
+    zoom.mail.send(user.email, subject, body)
 
 
 def admin_crud_policy():

@@ -5,7 +5,6 @@
 import uuid
 
 import zoom
-from zoom.components import success
 from zoom.collect import CollectionView, CollectionController, RawSearch
 from zoom.context import context
 from zoom.forms import Form
@@ -18,6 +17,7 @@ from fields import UserGroupsField
 import model
 
 def user_fields(request):
+    """Return user fields"""
     # username_available = Validator('taken', valid_username(db))
     # not_registered = Validator('already registered', email_unknown_test)
 
@@ -54,7 +54,8 @@ def user_fields(request):
 def get_reset_password_form(key):
     reset_password_form = Form(
         f.TextField('New Password', v.required),
-        f.ButtonField('Save Password', cancel='/admin/users/' + key)
+        f.CheckboxField('Email Password', value=True),
+        f.ButtonField('Save Password', cancel='/admin/users/' + key),
     )
     return reset_password_form
 
@@ -95,16 +96,17 @@ def user_activity_logs(user, weeks=12):
         (a[1],who(a[2]),a[3],a[4],a[5],when(a[6])
     ) for a in auth_data], labels=labels)
 
-    activity_data = db("""
-        select
-            id, timestamp, path, status, address, elapsed, message
-        from log
-        where
-            user_id=%s
-            and server=%s
-        order by timestamp desc
-        limit 50
-    """,
+    activity_data = db(
+        """
+            select
+                id, timestamp, path, status, address, elapsed, message
+            from log
+            where
+                user_id=%s
+                and server=%s
+            order by timestamp desc
+            limit 50
+        """,
         user.user_id,
         zoom.system.request.host
     )
@@ -191,7 +193,11 @@ class UserCollectionController(CollectionController):
             if user:
                 new_password = form.evaluate()['new_password']
                 user.set_password(new_password)
-                success('password updated')
+                message = 'password updated'
+                if form.evaluate()['email_password']:
+                    model.send_password(user, new_password)
+                    message += ' and sent'
+                zoom.alerts.success(message)
                 return home('users/' + key)
 
     def activate(self, key):
