@@ -58,11 +58,11 @@ def run():
 
     # State runtime options.
     if indefinite:
-        logger.info('will repeat indefinitely with delay %d second(s)', delay)
+        logger.debug('will repeat indefinitely with delay %d second(s)', delay)
     elif only_once:
-        logger.info('will scan once')
+        logger.debug('will scan once')
     else:
-        logger.info(
+        logger.debug(
             'will repeat for %s second(s) with delay %s seconds(s)',
             timeout, delay
         )
@@ -91,7 +91,8 @@ def run():
             while sleep_time < delay:
                 time.sleep(1)
                 sleep_time += 1
-    except KeyboardInterrupt: pass
 
-    print('\rstopped')
+    except KeyboardInterrupt:
+        print('\rstopped')
+
 run.__doc__ = __doc__%describe_options(LOGGING_OPTIONS)
