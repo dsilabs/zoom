@@ -8,7 +8,7 @@ import os
 import uuid
 
 from markdown import Markdown
-from pypugjs import simple_convert as pug
+from pypugjs.ext.html import process_pugjs as pug
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -543,7 +543,8 @@ def load_content(pathname, *args, **kwargs):
         if pathname.endswith('.html'):
             result = content
         elif pathname.endswith('.pug'):
-            result = pug(content)
+            basedir = os.path.realpath(os.path.split(pathname)[0])
+            result = pug(content, options=dict(basedir=basedir))
         else:
             result = markdown(content)
         return result
@@ -632,14 +633,22 @@ def get_template(template_name='default', theme='default'):
 
     logger = logging.getLogger(__name__)
     path = zoom.system.site.themes_path
+    isfile = os.path.isfile
 
     pathname = os.path.realpath(
         os.path.join(path, theme, template_name + '.html')
     )
-    if os.path.isfile(pathname):
+    if isfile(pathname):
         logger.debug('get_template %r', pathname)
         with open(pathname, 'rb') as reader:
             return reader.read().decode('utf8')
+    elif pathname.endswith('.html') and isfile(pathname.replace('.html', '.pug')):
+        pathname = pathname.replace('.html', '.pug')
+        basedir = os.path.split(pathname)[0]
+        logger.debug('get_template %r', pathname)
+        logger.debug('basedir %r', basedir)
+        with open(pathname, 'rb') as reader:
+            return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
     else:
         if template_name == 'default':
             logger.error(
