@@ -269,7 +269,14 @@ def run_background_jobs(site, app):
         # Run the jobs unit of work with safety.
         return_value = runtime_error = str()
         try:
-            return_value = job.uow()
+
+            save_cwd = os.getcwd()
+            os.chdir(app.path)
+            try:
+                return_value = job.uow()
+            finally:
+                os.chdir(save_cwd)
+
             logger.debug('\treturned: %s', return_value)
             status = 'success'
             succeeded += 1
