@@ -108,7 +108,7 @@ class Page(object):
 
             return errors + warnings + successes
 
-        def get(part, formatter='{}', joiner='\n'):
+        def get(part, formatter='{}', joiner='\n  '):
             parts = zoom.system.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
@@ -116,12 +116,12 @@ class Page(object):
                     parts |= page_part
                 else:
                     parts |= [page_part]
-            return parts and joiner.join(
+            return parts and joiner + joiner.join(
                 formatter.format(part) for part in parts
             ) + '\n' or ''
 
         def get_css():
-            wrapper = '<style>\n{}\n</style>'
+            wrapper = '\n  <style>\n{}\n</style>'
             content = get('css')
             return content and wrapper.format(content) or ''
 
