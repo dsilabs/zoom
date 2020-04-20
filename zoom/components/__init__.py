@@ -171,7 +171,7 @@ def dropzone(url, **kwargs):
 
     >>> zoom.system.site = zoom.sites.Site()
     >>> zoom.system.site.packages = {}
-    >>> zoom.system.request = zoom.utils.Bunch(app=zoom.utils.Bunch(name='hello', packages={}))
+    >>> zoom.system.request = zoom.utils.Bunch(app=zoom.utils.Bunch(name='hello', packages={}, common_packages={}))
     >>> c = dropzone('/app/files')
     >>> isinstance(c, zoom.Component)
     True

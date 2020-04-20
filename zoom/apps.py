@@ -173,6 +173,7 @@ class AppProxy(object):
         self.link = zoom.helpers.link_to(self.title, self.url)
         self.request = None
         self.packages = {}
+        self.common_packages = {}
 
         get = self.config.get
         self.visible = get('visible') not in zoom.utils.NEGATIVE
@@ -224,9 +225,12 @@ class AppProxy(object):
     def method(self):
         """Returns the app callable entry point"""
         if self._method is None:
+            split, join = os.path.split, os.path.join
             self.request.profiler.add('app loaded')
             self._method = getattr(load_module('app', self.filename), 'app')
-            self.packages = zoom.packages.load(os.path.join(self.path, 'packages.json'))
+            self.packages = zoom.packages.load(join(self.path, 'packages.json'))
+            apps_dir = split(self.path)[0]
+            self.common_packages = zoom.packages.load(join(apps_dir, 'packages.json'))
         return self._method
 
     @property

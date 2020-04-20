@@ -166,7 +166,7 @@ def get_registered_packages():
     >>> import zoom.request
     >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
     >>> zoom.system.site = zoom.site.Site(zoom.system.request)
-    >>> zoom.system.request.app = zoom.utils.Bunch(packages={})
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
 
     >>> packages = get_registered_packages()
     >>> 'c3' in packages
@@ -176,6 +176,7 @@ def get_registered_packages():
     packages_list = [
         default_packages,
         zoom.system.site.packages,
+        zoom.system.request.app.common_packages,
         zoom.system.request.app.packages,
     ]
     for packages in packages_list:

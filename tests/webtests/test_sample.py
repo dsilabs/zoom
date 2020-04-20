@@ -67,6 +67,10 @@ class SampleTests(AdminTestCase):
         self.get('/sample/collection')
         self.click('id=new-action')
 
+    def test_common_packages(self):
+        self.get('/sample/components')
+        self.assertContains('this text was updated by a common package')
+
     def test_missing(self):
         self.get('/sample/missing')
         self.assertContains('<h1>Page Not Found</h1>')

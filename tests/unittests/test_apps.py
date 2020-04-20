@@ -36,6 +36,7 @@ class TestApps(unittest.TestCase):
             keywords='one,two',
             theme=None,
             packages={},
+            common_packages={},
         )
         self.request.user = zoom.users.Users(self.db).first(username='user')
 
