@@ -133,6 +133,37 @@ def error_panel(db):
     return zoom.browse(rows, labels=labels, title=link_to_page('Errors'))
 
 
+def warning_panel(db):
+
+    host = zoom.system.request.host
+
+    data = db("""
+        select
+            log.id,
+            username,
+            path,
+            timestamp
+        from log inner join users on log.user_id = users.id
+        where log.status in ("W") and timestamp>=%s
+        and server = %s
+        order by log.id desc
+        limit 10
+        """, today(), host)
+
+    rows = []
+    for rec in data:
+        row = [
+            link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
+            link_to_user(rec[1]),
+            rec[2],
+            how_long_ago(rec[3]),
+        ]
+        rows.append(row)
+
+    labels = 'id', 'user', 'path', 'when'
+    return zoom.browse(rows, labels=labels, title=link_to_page('Warnings'))
+
+
 def users_panel(db):
 
     host = zoom.system.request.host
@@ -245,6 +276,7 @@ class MyView(zoom.View):
                 feed1=activity_panel(db),
                 feed2=users_panel(db),
                 feed3=error_panel(db),
+                feed4=warning_panel(db),
             ),
         )
         return content
@@ -326,6 +358,10 @@ class MyView(zoom.View):
     def errors(self, n=0, limit=50, q=''):
         db = self.model.site.db
         return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
+
+    def warnings(self, n=0, limit=50, q=''):
+        db = self.model.site.db
+        return page(log_data(db, ['W'], n, limit, q), title='Warnings', search=q, clear='/admin/warnings')
 
     def entry(self, key):
 
