@@ -133,7 +133,7 @@ def submit_registration(data):
     logger = logging.getLogger(__name__)
 
     if is_test_account(rec):
-        logger.warning('no email sent to test account')
+        logger.debug('no email sent to test account')
         zoom.alerts.warning(
             'test account - registration email will not be sent'
         )
