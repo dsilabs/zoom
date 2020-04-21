@@ -76,7 +76,7 @@ class Session(object):
                 db(cmd, sid, expiry)
                 return True
             except DatabaseException as s:
-                logger.warning('wow, it happened')
+                logger.debug('wow, it happened')
                 if 'Duplicate' in str(s):
                     return False
                 raise
@@ -161,13 +161,13 @@ class Session(object):
                 if len(result):
                     status, expiry = list(result)[0]
                     if expiry <= now:
-                        logger.warning('session expired')
+                        logger.debug('session expired')
                     elif status != 'A':
-                        logger.warning('session not active')
+                        logger.debug('session not active')
                     else:
-                        logger.warning('session invalid')
+                        logger.debug('session invalid')
                 else:
-                    logger.warning('session record missing')
+                    logger.debug('session record missing')
 
         logger = logging.getLogger(__name__)
         logger.debug('loading session: {}'.format(token))
@@ -179,9 +179,9 @@ class Session(object):
                 self.__dict__.update(values)
                 return True
             elif values == {}:
-                logger.warning('session values missing')
+                logger.debug('session values missing')
             else:
-                logger.warning('session not loaded')
+                logger.debug('session not loaded')
 
 
 def handler(request, next_handler, *rest):
