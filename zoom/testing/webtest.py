@@ -40,7 +40,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
     size = (1024, 768)
     logger = logging.getLogger(__name__)
     path = '.'
-    wait_time = 2
+    wait_time = 4
 
     driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
 
@@ -295,7 +295,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
                 '%s-screenshot.png' % test_name
             )
 
-        print('saving content to %s' % filename)
+        print('saving screenshot to %s' % filename)
         self.driver.save_screenshot(filename)
 
 
