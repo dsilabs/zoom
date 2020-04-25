@@ -147,6 +147,33 @@ class AppTestPrimitives(unittest.TestCase):
         """return True if response contains text"""
         return text in self.response.content
 
+    def url_matches(self, location, target):
+        return (
+            location == target or (
+            location == self.url + self.base_url + target
+            )
+        )
+
+    def assertRedirectResponse(self, location=None):
+        """Pass if response is a redirect"""
+        status = self.response.status
+        if status not in ['302 Found']:
+            raise AssertionError('expected Redirect but got %r' % status)
+        url = self.response.headers.get('Location')
+        if location and not self.url_matches(url, location):
+            msg = 'redirect location is %r instead of %r as expected'
+            raise AssertionError(msg % (url, location))
+
+    def assertNotRedirectResponse(self, location=None):
+        """Pass if response is a redirect"""
+        status = self.response.status
+        if location is None and status in ['302 Found']:
+            raise AssertionError('unexpected redirect')
+        url = self.response.headers.get('Location')
+        if location is not None and self.url_matches(url, location):
+            msg = 'redirect location is %r'
+            raise AssertionError(msg % url)
+
     def assertContains(self, text):
         """Pass if response contains text"""
         if not self.contains(text):
@@ -177,15 +204,9 @@ class AppTestPrimitives(unittest.TestCase):
                     code, self.response.status))
 
     def assertRedirected(self, location=None):
-        def matches(location, target):
-            return (
-                location == target or (
-                location == self.url + self.base_url + target
-                )
-            )
         if not self.redirected:
             raise AssertionError('not redirected as expected')
-        if location and not matches(self.redirected, location):
+        if location and not self.url_matches(self.redirected, location):
             msg = 'redirected to %r instead of %r as expected'
             raise AssertionError(msg % (self.redirected, location))
 

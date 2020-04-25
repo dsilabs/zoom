@@ -23,3 +23,12 @@ class SampleAppTestCase(AppTestCase):
 
         self.get('/sample/static/test.css')
         self.assertContains(b'this is CSS')
+
+    def test_redirect(self):
+        self.get('/sample')
+        self.assertNotRedirectResponse()
+
+        self.get('/login')
+        self.assertRedirectResponse()
+        self.assertRedirectResponse('/')
+        self.assertNotRedirectResponse('/nowhere')
