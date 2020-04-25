@@ -389,10 +389,10 @@ class Group(Record):
         else:
             debug('subgroups unchanged')
 
-    def update_supergroups_by_id(self, role_ids, kind):
+    def update_supergroups_by_id(self, group_ids, kind):
         """Post updated group supergroups"""
 
-        updated = set(map(int, role_ids))
+        updated = set(map(int, group_ids))
 
         logger = logging.getLogger(__name__)
         debug = logger.debug
@@ -504,6 +504,28 @@ class Group(Record):
 
         else:
             debug('memberships unchanged')
+
+    def add_apps(self, app_names):
+        """Add apps to the group"""
+        logger = logging.getLogger(__name__)
+        debug = logger.debug
+        site = zoom.system.site
+
+        for name in app_names:
+            if not site.groups.first(name='a_' + name):
+                debug('adding group for app %r', name)
+                site.groups.add(name='a_' + name, type='A')
+                audit('add app', name)
+            supergroup = site.groups.first(name='a_' + name)
+            supergroup.add_subgroup(self)
+
+    def remove_apps(self, app_names):
+        """Remove apps from the group"""
+        site = zoom.system.site
+        for name in app_names:
+            supergroup = site.groups.first(name='a_' + name)
+            if supergroup:
+                supergroup.remove_subgroup(self)
 
 
 class Groups(RecordStore):
