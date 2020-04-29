@@ -88,3 +88,29 @@ class TestGroup(unittest.TestCase):
             'a_' + app_name,
             set(g.name for g in groups)
         )
+
+    def test_groups_add_remove_app_idempotentcy(self):
+        groups = self.groups
+
+        app_name = 'ping'
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.add_app(app_name)
+        groups.add_app(app_name)
+
+        self.assertIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.remove_app(app_name)
+        groups.remove_app(app_name)
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
