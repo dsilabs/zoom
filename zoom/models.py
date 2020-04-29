@@ -270,6 +270,22 @@ class Group(Record):
         }
         return my_apps
 
+    def get_app_ids(self):
+        return self.apps
+
+    def get_app_names(self):
+        groups = self['__store']
+        lookup = {
+            g.group_id: g.name[2:]
+            for g in groups
+            if (g.name.startswith('a_'))
+        }
+        return set(map(lookup.get, self.get_app_ids()))
+
+    @property
+    def app_names(self):
+        return self.get_app_names()
+
     @property
     def subgroups(self):
         """Return set of IDs of subgroups that are part of this group"""
@@ -334,6 +350,8 @@ class Group(Record):
     def update_subgroups_by_id(self, subgroup_ids):
         """Post updated group subgroups"""
 
+        groups = self['__store']
+
         updated_subgroups = set(map(int, subgroup_ids))
 
         logger = logging.getLogger(__name__)
@@ -348,10 +366,10 @@ class Group(Record):
 
             group_lookup = {
                 group.group_id: group.name
-                for group in zoom.system.site.groups
+                for group in groups
             }
 
-            db = self['__store'].db
+            db = groups.db
 
             to_remove = existing_subgroups - updated_subgroups
             if to_remove:
@@ -399,6 +417,8 @@ class Group(Record):
 
         debug('updating %s: %r', kind, updated)
 
+        groups = self['__store']
+
         # print(kind)
         existing = getattr(self, kind + 's')
         debug('existing %s: %r', kind, updated)
@@ -408,10 +428,10 @@ class Group(Record):
 
             group_lookup = {
                 group.group_id: group.name
-                for group in zoom.system.site.groups
+                for group in groups
             }
 
-            db = self['__store'].db
+            db = groups.db
 
             to_remove = existing - updated
             if to_remove:
@@ -464,6 +484,7 @@ class Group(Record):
         debug = logger.debug
 
         db = self['__store'].db
+        users = zoom.users.Users(db)
 
         debug('updating members: %r', updated)
 
@@ -478,7 +499,7 @@ class Group(Record):
 
             user_lookup = {
                 user.user_id: user.username
-                for user in zoom.system.site.users
+                for user in users
             }
 
             to_remove = existing - updated
@@ -509,20 +530,21 @@ class Group(Record):
         """Add apps to the group"""
         logger = logging.getLogger(__name__)
         debug = logger.debug
-        site = zoom.system.site
+        groups = self['__store']
 
         for name in app_names:
-            if not site.groups.first(name='a_' + name):
-                debug('adding group for app %r', name)
-                site.groups.add_app(name)
-            supergroup = site.groups.first(name='a_' + name)
-            supergroup.add_subgroup(self)
+            debug('adding %s', name)
+            groups.add_app(name)
+            supergroup = groups.first(name='a_' + name)
+            if supergroup:
+                debug('adding supergroup %s to %s', name, self.name)
+                supergroup.add_subgroup(self)
 
     def remove_apps(self, app_names):
         """Remove apps from the group"""
-        site = zoom.system.site
+        groups = self['__store']
         for name in app_names:
-            supergroup = site.groups.first(name='a_' + name)
+            supergroup = groups.first(name='a_' + name)
             if supergroup:
                 supergroup.remove_subgroup(self)
 
@@ -546,7 +568,7 @@ class Groups(RecordStore):
             isinstance(locator, str) and self.first(name=locator)
         )
 
-    def add(self, name, group_type, description=''):
+    def add(self, name, group_type='U', description=''):
         """Add a group"""
         debug = logging.getLogger(__name__).debug
         group_id = self.put(
@@ -554,6 +576,7 @@ class Groups(RecordStore):
                 name=name,
                 type=group_type,
                 description=description,
+                admin_group_id=1,
             )
         )
         debug('created new group %r (%r)', name, group_id)
@@ -570,6 +593,7 @@ class Groups(RecordStore):
                     name=group_name,
                     type='A',
                     description='%s application group' % name,
+                    admin_group_id=1,
                 )
             )
             debug('created new app group %r (%r)', group_name, group_id)
@@ -584,6 +608,19 @@ class Groups(RecordStore):
             self.delete(name=group_name)
             audit('delete app group', name)
             debug('deleted app group %r', group_name)
+
+    def __str__(self):
+        return str(
+            zoom.utils.ItemList(
+                ((
+                    group.group_id,
+                    group.name,
+                    group.type,
+                    group.description,
+                ) for group in self),
+                labels=('ID', 'Name', 'Type', 'Description')
+            )
+        )
 
 
 class SystemAttachment(Record):
