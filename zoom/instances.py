@@ -142,6 +142,11 @@ class Instance(object):
                 )
         return result
 
+    def run_background_jobs(self):
+        """Run background jobs for all sites in an instance"""
+        for site in self.get_sites(skip_fails=True).values():
+            site.run_background_jobs()
+
     def __str__(self):  # pragma: nocover
         return 'Instance %r contains %s sites:\n%s' % (
             self.path,
