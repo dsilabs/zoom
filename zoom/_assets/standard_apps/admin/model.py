@@ -153,7 +153,8 @@ class AdminModel(object):
             if isinstance(app_key, str) and app_key.startswith('a_')
         )
         for group_name in new_groups_required:
-            zoom.system.site.groups.add(group_name, 'A')
+            app_name = group_name[2:]
+            zoom.system.site.groups.add_app(app_name)
 
         groups_lookup = {
             group.name: group.group_id

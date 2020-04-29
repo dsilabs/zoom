@@ -505,31 +505,6 @@ class Group(Record):
         else:
             debug('memberships unchanged')
 
-    # def add_app(self, app_name):
-    #     """Add apps to the group"""
-    #     logger = logging.getLogger(__name__)
-    #     debug = logger.debug
-    #     groups = zoom.system.site.groups
-
-    #     app_group_name = 'a_' + app_name
-
-    #     existing_app_group_names = set(g.name for g in groups)
-
-    #     if app_group_name not in existing_app_group_names:
-    #         debug('add a group')
-    #     else:
-    #         debug('app group exists')
-
-
-    #     # for name in app_names:
-    #     #     if not site.groups.first(name='a_' + name):
-    #     #         debug('adding group for app %r', name)
-    #     #         site.groups.add(name='a_' + name, type='A')
-    #     #         audit('add app', name)
-    #     #     supergroup = site.groups.first(name='a_' + name)
-    #     #     supergroup.add_subgroup(self)
-
-
     def add_apps(self, app_names):
         """Add apps to the group"""
         logger = logging.getLogger(__name__)
@@ -540,7 +515,6 @@ class Group(Record):
             if not site.groups.first(name='a_' + name):
                 debug('adding group for app %r', name)
                 site.groups.add_app(name)
-                audit('add app', name)
             supergroup = site.groups.first(name='a_' + name)
             supergroup.add_subgroup(self)
 
