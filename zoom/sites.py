@@ -12,6 +12,7 @@ import logging
 
 import zoom
 from zoom.site import Site as BasicSite
+from zoom.background import run_background_jobs
 
 # The default path for sites is configurable based on an environment variable,
 # which we read eagerly here to ensure we don't provide app code an opportunity
@@ -49,7 +50,7 @@ class Site(BasicSite):
                 zoom.tools.zoompath('web', 'sites', 'localhost')
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
-        
+
         # prepare a fake request adapter to satisfy the legacy api
         rest, name = os.path.split(path)
         instance, _ = os.path.split(rest)
@@ -78,6 +79,12 @@ class Site(BasicSite):
         for app in self.apps:
             result.extend(app.background_jobs)
         return result
+
+    def run_background_jobs(self):
+        """Run background jobs for a site"""
+        self.activate()
+        for app in self.apps:
+            run_background_jobs(app)
 
     def activate(self):
         """Activate this site in Zoom's thread-local context."""

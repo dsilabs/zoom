@@ -153,7 +153,7 @@ def frequently(job_fn):
 
 def always(job_fn):
     """decorator to schedule a job to run on every execution cycle"""
-    return cron(None)(job_fn)
+    return cron('* * * * *')(job_fn)
 
 # Discovery.
 def load_app_background_jobs(app):
@@ -187,6 +187,10 @@ def load_app_background_jobs(app):
         # Import the background module from the app. This has the side effect of
         # allowing the job registrars to populate _job_set.
         importlib.import_module('background', app.path)
+
+    except BaseException:
+        logger.error('unable to load background job %r', app.path)
+        return set()
 
     finally:
         # Return to our previous CWD.
@@ -244,13 +248,20 @@ class BackgroundJobResult(Entity):
         return ' '.join((return_desc, timing_desc))
 
 
-def run_background_jobs(site, app):
+def run_background_jobs(app):
+
+    site = zoom.system.site
 
     jobs_list = app.background_jobs
     if not len(jobs_list):
         return
 
-    logger.debug('scanning %d background jobs for %s/%s', len(jobs_list), site.name, app.name)
+    logger.debug(
+        'scanning %d background jobs for %s/%s',
+        len(jobs_list),
+        site.name,
+        app.name
+    )
     tick_time = datetime.now()
     failed = succeeded = total = 0
 
@@ -273,7 +284,12 @@ def run_background_jobs(site, app):
             save_cwd = os.getcwd()
             os.chdir(app.path)
             try:
-                return_value = job.uow()
+                try:
+                    return_value = job.uow()
+                finally:
+                    # re-activate the site in case the background
+                    # job has activated a different site
+                    site.activate()
             finally:
                 os.chdir(save_cwd)
 
@@ -284,7 +300,8 @@ def run_background_jobs(site, app):
             runtime_error = ''.join(traceback.format_exception(
                 ex.__class__, ex, ex.__traceback__
             ))
-            logger.critical('\tjob %s failed!\n%s',
+            logger.critical(
+                '\tjob %s failed!\n%s',
                 job.qualified_name,
                 runtime_error.join(('='*10 + '\n',)*2)
             )

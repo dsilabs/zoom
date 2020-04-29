@@ -22,7 +22,6 @@ from docopt import docopt
 
 from zoom.sites import Site
 from zoom.instances import Instance
-from zoom.background import run_background_jobs
 from zoom.cli.common import LOGGING_OPTIONS, setup_logging
 from zoom.cli.utils import resolve_path_with_context, describe_options, \
     finish, is_instance_dir
@@ -71,12 +70,8 @@ def run():
     start_time = time.time()
     try:
         while True:
-            # For each site in this instance, run those jobs.
-            for site in instance.get_sites(skip_fails=True).values():
-                site.activate()
 
-                for app in site.apps:
-                    run_background_jobs(site, app)
+            instance.run_background_jobs()
 
             # Check whether we're done.
             if not indefinite and only_once:
