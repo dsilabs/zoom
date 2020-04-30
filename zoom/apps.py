@@ -21,7 +21,7 @@ from zoom.users import Users
 from zoom.background import load_app_background_jobs
 
 DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
-DEFAULT_MAIN_APPS = ['home', 'admin', 'apps', 'info']
+DEFAULT_MAIN_APPS = ['home', 'admin', 'apps']
 DEFAULT_SETTINGS = dict(
     title='',
     icon='cube',

@@ -9,6 +9,7 @@ import sys
 import platform
 
 import zoom
+import zoom.apps
 import zoom.html as h
 from zoom.helpers import link_to, link_to_page
 from zoom.page import page
@@ -400,6 +401,7 @@ class MyView(zoom.View):
         return page(content, title='Log Entry', css=css)
 
     def configuration(self):
+
         if zoom.system.request.site.profiling:
             if zoom.system.request.profiling:
                 profiling_message = 'Yes'
@@ -424,13 +426,23 @@ class MyView(zoom.View):
 
         apps_paths = '<br>'.join(zoom.system.request.site.apps_paths)
 
+        get = zoom.system.site.config.get
+
+        system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
+        main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
+
         return page(
             load_content(
                 'configuration.md',
+                site=zoom.system.site,
                 request=zoom.system.request,
                 packages=packages,
                 profiling=profiling_message,
                 apps_paths=apps_paths,
+                override=get('users', 'override', ''),
+                system_apps=system_apps,
+                main_apps=main_apps,
+                user_errors=get('errors', 'users', False),
             ),
         )
 
