@@ -14,13 +14,11 @@ Options:
                               ticks. Defaults to 1 second.
 """
 
-import os
 import time
 import logging
 
 from docopt import docopt
 
-from zoom.sites import Site
 from zoom.instances import Instance
 from zoom.cli.common import LOGGING_OPTIONS, setup_logging
 from zoom.cli.utils import resolve_path_with_context, describe_options, \
@@ -39,7 +37,7 @@ def run():
         arguments.get('<path>') or '.', instance=True
     )
     if not is_instance_dir(instance_path):
-        finish(True, 'Error: "%s" is not a Zoom instance'%instance_path)
+        finish(True, 'Error: "%s" is not a Zoom instance' % instance_path)
     instance = Instance(instance_path)
 
     # Parse and comprehend options.
