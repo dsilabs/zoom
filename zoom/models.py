@@ -309,7 +309,7 @@ class Group(Record):
     def administrators(self):
         """Returns the administrator group name"""
         store = self['__store']
-        admin_group = store.get(self['admin_group_id'])
+        admin_group = store.get(self.get('admin_group_id', None))
         if admin_group:
             return admin_group.name
         return 'nothing'
