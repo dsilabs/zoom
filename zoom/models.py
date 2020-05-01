@@ -271,9 +271,11 @@ class Group(Record):
         return my_apps
 
     def get_app_ids(self):
+        """Return set of app group ids"""
         return self.apps
 
     def get_app_names(self):
+        """Return set of names of app groups"""
         groups = self['__store']
         lookup = {
             g.group_id: g.name[2:]
@@ -284,6 +286,7 @@ class Group(Record):
 
     @property
     def app_names(self):
+        """Return set of names of app groups"""
         return self.get_app_names()
 
     @property
@@ -470,9 +473,11 @@ class Group(Record):
             debug('%s unchanged', kind)
 
     def update_apps_by_id(self, app_ids):
+        """Update apps by app group ids"""
         return self.update_supergroups_by_id(app_ids, 'app')
 
     def update_roles_by_id(self, role_ids):
+        """Update roles by role group ids"""
         return self.update_supergroups_by_id(role_ids, 'role')
 
     def update_members_by_id(self, user_ids):
