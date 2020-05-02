@@ -167,6 +167,7 @@ def serve_response(*path):
         gif=PNGResponse,
         ico=ICOResponse,
         css=CSSResponse,
+        sass=CSSResponse,
         js=JavascriptResponse,
         ttf=TTFResponse,
         json=JSONResponse,
