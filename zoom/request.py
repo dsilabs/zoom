@@ -124,6 +124,13 @@ def get_instance(directory):
         else:
             raise zoom.exceptions.NotAnInstanceExecption('Not an instance')
 
+    else:
+        if os.path.isdir(os.path.join('.', 'sites')):
+            # or, we may be in an instance directory now
+            instance = os.path.realpath('.')
+            logger.debug('instance: %s', instance)
+            return instance
+
     config_file = (
         zoom.utils.locate_config('zoom.conf') or
         zoom.utils.locate_config('.zoomrc') or
