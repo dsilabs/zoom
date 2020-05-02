@@ -23,7 +23,7 @@ class AppsController(zoom.Controller):
             app_group = zoom.system.site.groups.first(name=group_name)
             groups = ', '.join(
                 get_group_link(s) for g, s in subgroups if g == app_group._id
-            ) if app_group else ''
+            ) or 'none' if app_group else ''
             return [
                 app.title,
                 app.name,
