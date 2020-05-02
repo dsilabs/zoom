@@ -15,32 +15,28 @@ Parameters:
   instance                    The Zoom instance directory. Defaults to the
                               instance directory at or above CWD."""
 
-import logging
-import os
-import sys
-
 from werkzeug.serving import run_simple
 from docopt import docopt
 
+import zoom
 from zoom import middleware
 from zoom.server import WSGIApplication
 from zoom.cli.common import LOGGING_OPTIONS, setup_logging
-from zoom.cli.utils import resolve_path_with_context, is_instance_dir, \
+from zoom.cli.utils import (
     describe_options, finish
+)
 
 def serve(_arguments=None):
     arguments = _arguments or docopt(serve.__doc__)
 
-    # Resolve the instance directory.
-    instance = resolve_path_with_context(
-        arguments['<instance>'] or '.',
-        instance=True
-    )
-    # Assert it exists.
-    if not is_instance_dir(instance):
-        finish(True, '"%s" is not a valid directory'%instance)
+    path_to_try = arguments['<instance>']
 
-    # Set up logging.
+    try:
+        instance_path = zoom.request.get_instance(path_to_try)
+
+    except zoom.exceptions.NotAnInstanceExecption:
+        finish(True, '"%s" is not a Zoom instance' % path_to_try)
+
     setup_logging(arguments)
 
     # Comprehend options.
@@ -56,8 +52,8 @@ def serve(_arguments=None):
         finish(True, 'Invalid port %s'%port)
 
     # Create the application.
-    print('Serving Zoom instance at "%s"'%instance)
-    app = WSGIApplication(instance=instance, handlers=handlers, username=user)
+    print('Serving Zoom instance at %r' % instance_path)
+    app = WSGIApplication(instance=instance_path, handlers=handlers, username=user)
     try:
         # Run.
         run_simple('localhost', port, app, use_reloader=reloader)

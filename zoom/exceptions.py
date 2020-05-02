@@ -26,6 +26,10 @@ class ValidException(Exception):
     pass
 
 
+class NotAnInstanceExecption(Exception):
+    """invalid instance path provided"""
+
+
 class TypeException(Exception):
     """unsupported type"""
     pass
