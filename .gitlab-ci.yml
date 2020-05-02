@@ -33,8 +33,12 @@ new_tests:
     MYSQL_ROOT_PASSWORD: root
   script:
     - /bin/bash tests/run_in_gitlab_ci_new.sh
+  artifacts:
+    paths:
+    - tests/artifacts
+    expire_in: 1 week
 
-docker build:
+      docker build:
   stage: build
   image: docker:stable
   script:
