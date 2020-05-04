@@ -289,7 +289,7 @@ class Site(object):
 
     @property
     def apps(self):
-        """Return list of apps installed on this site"""
+        """Return list of apps available to this site"""
         if self.__apps is None:
             result = []
             names = []

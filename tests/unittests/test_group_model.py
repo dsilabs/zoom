@@ -5,7 +5,7 @@ import unittest
 
 import zoom
 from zoom.database import setup_test
-from zoom.models import Group, Groups
+from zoom.models import Groups
 from zoom.utils import Bunch
 
 class TestGroup(unittest.TestCase):
@@ -64,3 +64,76 @@ class TestGroup(unittest.TestCase):
         self.assertEqual(groups.locate(group).group_id, group_id)
         self.assertEqual(groups.locate(group_id).group_id, group_id)
         self.assertEqual(groups.locate(group.name).group_id, group_id)
+
+    def test_groups_add_remove_app(self):
+        groups = self.groups
+
+        app_name = 'ping'
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.add_app(app_name)
+
+        self.assertIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.remove_app(app_name)
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+    def test_groups_add_remove_app_idempotentcy(self):
+        groups = self.groups
+
+        app_name = 'ping'
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.add_app(app_name)
+        groups.add_app(app_name)
+
+        self.assertIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+        groups.remove_app(app_name)
+        groups.remove_app(app_name)
+
+        self.assertNotIn(
+            'a_' + app_name,
+            set(g.name for g in groups)
+        )
+
+    def test_add_apps_remove_apps(self):
+
+        groups = self.groups
+        group_name = 'my_new_group'
+        app_names = {'ping', 'hello'}
+
+        if not groups.first(name=group_name):
+            groups.add(group_name)
+        group = groups.first(name=group_name)
+
+        self.assertEqual(group.app_names, set())
+
+        group.add_apps(app_names)
+
+        self.assertEqual(group.app_names, app_names)
+
+        group.remove_apps(app_names)
+
+        group = groups.first(name=group_name)
+        self.assertEqual(group.app_names, set())
+
+        groups.delete(name=group_name)
