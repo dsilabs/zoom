@@ -34,7 +34,7 @@ def get_format(label, values):
     )[:1]
     if first_non_null:
         data_type = first_non_null[0]
-        if label in ['_id', 'userid']:
+        if label in ['id', '_id', 'userid']:
             return '{}', 'right'
         elif data_type in [int, float, Decimal]:
             return '{:,}', 'right'
