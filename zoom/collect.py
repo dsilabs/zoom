@@ -838,6 +838,7 @@ class Collection(object):
         self.route = None
         self.search_engine = get('search_engine', BasicSearch)
         self.many_records = 50
+        self.sorter = get('sorter', None)
 
         if 'policy' in kwargs:
             self.allows = get('policy')
