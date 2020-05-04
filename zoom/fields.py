@@ -142,6 +142,7 @@ class Field(object):
     validators = []
     wrap = ' nowrap'
     browse = True
+    alignment = 'left'
     field_layout = FieldLayout()
 
     def __init__(self, label='', *validators, **keywords):
@@ -1330,6 +1331,7 @@ class NumberField(TextField):
     css_class = 'number_field'
     units = ''
     converter = int
+    alignment = 'right'
 
     def assign(self, value):
         try:

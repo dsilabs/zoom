@@ -2,9 +2,63 @@
     zoom.browse
 """
 
-from zoom.utils import name_for, sorted_column_names, Record
+import datetime
+from decimal import Decimal
+
+import zoom
 from zoom.components import as_actions
-from zoom.html import tag, div
+from zoom.utils import (
+    name_for, sorted_column_names, Record,
+)
+
+
+def is_homogeneous(values):
+    """Return True if values have the same type"""
+    if len(values) <= 1:
+        return True
+    for n, value in enumerate(values):
+        if value is not None:
+            rest = values[n:]
+            col_type = type(value)
+            for other in rest:
+                if other and not isinstance(other, col_type):
+                    return False
+    return True
+
+
+def get_format(label, values):
+    """Return a suitable format string and alignment for columns"""
+    alignment = 'left'
+    first_non_null = list(
+        map(type, [a for a in values if a is not None])
+    )[:1]
+    if first_non_null:
+        data_type = first_non_null[0]
+        if label in ['_id', 'userid']:
+            return '{}', 'right'
+        elif data_type in [int, float, Decimal]:
+            return '{:,}', 'right'
+        elif data_type in [datetime.date]:
+            return '{:%Y-%m-%d}', alignment
+        elif data_type in [datetime.timedelta]:
+            return '{:}', alignment
+        elif data_type in [datetime.datetime]:
+            return '{:%Y-%m-%d %H:%M:%S}', alignment
+    return '{}', alignment
+
+
+def calculate_styling(columns, labels, items):
+    """Return calculated styling based on data content"""
+    # print(columns)
+    formats = []
+    rows = items
+    for col in range(len(columns)):
+        values = [row[col] for row in rows]
+        if is_homogeneous(values):
+            formats.append(get_format(labels[col], values))
+        else:
+            formats.append(('{}', 'left'))
+    return formats
 
 
 def browse(data, **kwargs):
@@ -81,6 +135,8 @@ def browse(data, **kwargs):
     columns = list(columns)
     labels = list(labels)
     invisible = []
+    formatters = []
+    alignments = []
 
     if fields:
         invisible_labels = []
@@ -92,9 +148,16 @@ def browse(data, **kwargs):
                 field = lookup[col]
                 better_label = field.label
                 visible = field.visible and field.browse
+                if visible:
+                    alignments.append(field.alignment)
+                    formatters.append(str)
             else:
                 better_label = None
                 visible = True
+                values = [getcol(row, col) for row in items]
+                formatter, alignment = get_format(col, values)
+                alignments.append(alignment)
+                formatters.append(formatter)
 
             if better_label:
                 if n > len(labels):
@@ -113,10 +176,36 @@ def browse(data, **kwargs):
         for item in items:
             fields.initialize(item)
             flookup = fields.display_value()
-            row = [flookup.get(col, getcol(item, col)) for col in columns if col not in invisible]
+            row = [
+                flookup.get(col, getcol(item, col))
+                for col in columns
+                if col not in invisible
+            ]
             alist.append(row)
     else:
         alist = [[getcol(item, col) for col in columns] for item in items]
+        styling = calculate_styling(columns, labels, alist)
+        formatters = [s[0] for s in styling]
+        alignments = [s[1] for s in styling]
+
+    column_alignments = """
+        .baselist tbody>tr>td:nth-child(%s) {
+            text-align: right;
+            padding-right: 20px;
+        }
+        .baselist thead>tr>th:nth-child(%s) {
+            text-align: right;
+            padding-right: 20px;
+        }
+    """
+
+    alignment_css = ''.join(
+        column_alignments % (n+1, n+1)
+        for n, alignment in enumerate(alignments)
+        if alignment == 'right'
+    )
+
+    css = alignment_css
 
     t = []
     if labels:
@@ -136,10 +225,10 @@ def browse(data, **kwargs):
         count += 1
         t.append('<tr id="row-%s">' % (count))
 
-        for item in row:
+        for n, item in enumerate(row):
             try:
-                value = str(item)
-            except Exception:
+                value = formatters[n].format(item)
+            except BaseException:
                 value = repr(item)
             wrapping = len(value) < 80 and ' nowrap' or ''
             cell_tpl = '<td{}>%s</td>'.format(wrapping)
@@ -168,4 +257,5 @@ def browse(data, **kwargs):
         [footer_body] +
         ['</div>']
     )
+    zoom.Component(css=css).render()
     return result
