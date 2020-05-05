@@ -180,7 +180,8 @@ class CollectionView(View):
             labels=c.get_labels(),
             columns=c.get_columns(),
             fields=c.fields,
-            footer=footer
+            footer=footer,
+            sortable=c.sortable,
         )
 
         return page(content, title=title, actions=actions, search=q)
@@ -839,6 +840,7 @@ class Collection(object):
         self.search_engine = get('search_engine', BasicSearch)
         self.many_records = 50
         self.sorter = get('sorter', None)
+        self.sortable = get('sortable', False)
 
         if 'policy' in kwargs:
             self.allows = get('policy')

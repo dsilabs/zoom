@@ -31,7 +31,7 @@ class MyView(View):
         db = site.db
 
         cmd = 'select id, username, email, phone from users limit 10'
-        data = browse(db(cmd))
+        data = browse(db(cmd)) + '<br>or in sortable form:' + browse(db(cmd), sortable=True)
 
         content = load_content(
             'sample.md',

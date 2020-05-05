@@ -4,6 +4,7 @@
 
 import datetime
 from decimal import Decimal
+import uuid
 
 import zoom
 from zoom.components import as_actions
@@ -79,6 +80,8 @@ def browse(data, **kwargs):
     actions = kwargs.get('actions', [])
     header = kwargs.get('header')
     footer = kwargs.get('footer', '')
+    sortable = kwargs.get('sortable', False)
+    table_id = kwargs.get('table_id', uuid.uuid4().hex)
 
     items = list(data)
 
@@ -250,12 +253,35 @@ def browse(data, **kwargs):
     header_body = header and ('<div class="header">%s</div>' % header) or ''
     footer_body = footer and ('<div class="footer">%s</div>' % footer) or ''
 
+    if sortable:
+        zoom.requires('datatables')
+        js = """
+            $('#{}').DataTable( {{
+            "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+            "dom": '<if>rt<lp><"clear">',
+            paging: false,
+            "oLanguage": {{
+            "sSearch": "Filter"
+            }}
+        }} );
+        """.format(table_id)
+        css += """
+        .dataTables_filter label {
+            font-weight: normal;
+        }
+        """
+        zoom.Component(css=css, js=js).render()
+        table_tag = '<table id="{}" >'.format(table_id)
+    else:
+        zoom.Component(css=css).render()
+        table_tag = '<table>'
+
     result = '\n'.join(
         ['<div class="baselist">'] +
         [header_body] +
-        ['<table>'] + t + ['</table>'] +
+        [table_tag] + t + ['</table>'] +
         [footer_body] +
         ['</div>']
     )
-    zoom.Component(css=css).render()
+
     return result
