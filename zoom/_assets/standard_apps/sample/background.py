@@ -41,7 +41,7 @@ class TickEventView(zoom.View):
         event = events.first(site=site.name)
 
         if event:
-            msg = 'Tick {event.counter} happened {event.when}'
+            msg = 'Tick {event.counter:,} happened {event.when}'
             message = msg.format(event=event)
         else:
             message = 'No ticks yet.  Background process may not be active.'
