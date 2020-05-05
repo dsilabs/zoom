@@ -46,10 +46,10 @@ default_packages = {
     },
     'datatables': {
         'libs': [
-            '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js',
+            '//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js',
             ],
         'styles': [
-            '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css',
+            '//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css',
         ]
     },
     'datatables.buttons': {
