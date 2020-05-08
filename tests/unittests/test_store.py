@@ -8,8 +8,10 @@ from decimal import Decimal
 from datetime import date, time, datetime
 import unittest
 
+import zoom
 from zoom.store import Entity, EntityStore, EntityList
 from zoom.database import setup_test
+from zoom.sqltools import make_store_select, less_than, gt, entify
 
 
 class Person(Entity):
@@ -136,6 +138,30 @@ class TestStore(unittest.TestCase):
         empty_store = EntityStore(self.db, 'none_of_these')
         self.assertEqual(type(empty_store.all()), EntityList)
         self.assertEqual(str(empty_store), 'Empty list')
+
+    def test_make_store_select(self):
+        data = [
+            dict(name='Alice', size=100, amount=2200),
+            dict(name='Janice', size=510, amount=200),
+            dict(name='Jimmy', size=200, amount=2100),
+            dict(name='Ozzy', size=401, amount=1900),
+            dict(name='Angus', size=510, amount=200),
+        ]
+        people = zoom.store_of(Person, self.db)
+        for row in data:
+            people.put(row)
+        low = [person.name for person in people.find(amount=200)]
+        self.assertEqual(low, ['Janice', 'Angus'])
+
+        cmd = make_store_select('person', amount=less_than(2000), size=gt(401))
+        rows = entify(self.db(cmd))
+        self.assertEqual(
+            rows,
+            [
+                {'_id': 5, 'name': 'Janice', 'size': 510, 'amount': 200},
+                {'_id': 8, 'name': 'Angus', 'size': 510, 'amount': 200},
+            ]
+        )
 
 
 class TestEntify(unittest.TestCase):

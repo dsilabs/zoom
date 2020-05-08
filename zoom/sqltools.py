@@ -8,6 +8,171 @@ import itertools
 
 import zoom
 
+
+class SearchTerm(object):
+
+    def __init__(self, value):
+        self.value = value
+
+    def visit(self, visitor, *a, **k):
+        return visitor(self, *a, **k)
+
+
+class LessThan(SearchTerm):
+    operator = '<'
+
+
+class LessThanOrEqualTo(SearchTerm):
+    operator = '<='
+
+
+class GreaterThan(SearchTerm):
+    operator = '>'
+
+
+class GreaterThanOrEqualTo(SearchTerm):
+    operator = '>='
+
+
+class Equal(SearchTerm):
+    operator = '=='
+
+
+class NotEqual(SearchTerm):
+    operator = '<>'
+
+
+class Occurs(SearchTerm):
+    operator = ' in '
+
+
+class NotOccurs(SearchTerm):
+    operator = ' not in '
+
+
+# common aliases
+lt = less_than = LessThan
+le = lte = less_than_or_equal_to = LessThanOrEqualTo
+gt = greater_than = GreaterThan
+ge = gte = greater_than_or_equal_to = GreaterThanOrEqualTo
+eq = equal = equals = Equal
+ne = not_equal = not_equal_to = NotEqual
+occurs = is_in = Occurs
+not_occurs = is_not_in = NotOccurs
+
+
+def make_table_select(table, *args, **kwargs):
+    """Return select a statement and parameter list
+    corresponding to the parameters provided.
+
+    >>> make_table_select('people', name='Joe', age=less_than(3))
+    ('select * from people where age<%s and name==%s', [3, 'Joe'])
+
+    >>> make_table_select('people', name='Joe', age=less_than(4))
+    ('select * from people where age<%s and name==%s', [4, 'Joe'])
+
+    >>> make_table_select('people', name='Joe', age=occurs([4]))
+    ('select * from people where age in %s and name==%s', [[4], 'Joe'])
+
+    """
+
+    def visitor(term):
+        return term.operator, term.value
+
+    def express(k, v):
+        if isinstance(v, SearchTerm):
+            return (k, v.visit(visitor))
+        else:
+            return (k, ('==', v))
+
+    pairs = sorted(list(express(k, v) for k, v in kwargs.items()))
+    expr, values = (
+        ' and '.join('%s%s%s' % (v[0], v[1][0], '%s') for v in pairs),
+        [v[1][1] for v in pairs],
+    )
+    cmd = 'select %s from %s where %s'
+    return cmd % (args and ','.join(args) or '*', table, expr), values
+
+
+def entify(attributes):
+    """Convert a store result to a list of dicts
+    """
+    dictrec = zoom.utils.Bunch(klass=dict)
+    result = zoom.store.entify(
+        ((None, None, row_id, attribute, datatype, value) for row_id, attribute, datatype, value in attributes),
+        dictrec
+    )
+    for rec in result:
+        del rec['__store']
+    return zoom.utils.RecordList(result)
+
+
+def make_store_select(kind, *a,**k):
+    """Return an EntityStore query
+
+    >>> sql = make_store_select('person', name='Joe', age=gt(25))
+    >>> target = (
+    ...     'select row_id, attribute, datatype, value from attributes where kind="person" and \\n'
+    ...     '  row_id in (select row_id from attributes where kind="person" and attribute="age" and CAST(value AS INTEGER)>25) and\\n'
+    ...     '  row_id in (select row_id from attributes where kind="person" and attribute="name" and value="Joe")'
+    ... )
+    >>> sql == target
+    True
+    """
+
+    def quote(text):
+        return '"%s"' % text
+
+    p = (
+        '(select row_id from attributes '
+        'where kind=%s and attribute=%s and %s)'
+    )
+
+    def visitor(term, name):
+        get = {
+            int: 'INTEGER',
+            str: 'CHAR',
+            float: 'DECIMAL',
+            'decimal.Decimal': 'DECIMAL',
+        }.get
+
+        if isinstance(term.value, str):
+            return p % (
+                quote(kind),
+                name,
+                'value'+term.operator,
+                term.value
+            )
+        else:
+            cast_to = get(type(term.value))
+            return p % (
+                quote(kind),
+                quote(name),
+                'CAST(value AS %s)%s%s' % (
+                    cast_to,
+                    term.operator,
+                    term.value,
+                ),
+            )
+
+    def express(k, v):
+        if isinstance(v, SearchTerm):
+            return v.visit(visitor, k)
+        else:
+            return p % (quote(kind), quote(k), 'value=' + quote(v))
+
+    if a:
+        start = 'select row_id, attribute, datatype, value from attributes where kind=' + quote(kind) + ' and attribute in ({}) '.format(
+            ', '.join(quote(name) for name in sorted(a))
+        ) + (' and' if k else '')
+    else:
+        start = 'select row_id, attribute, datatype, value from attributes where kind=' + quote(kind) + (' and ' if k else '')
+
+    cmd = start + '\n' + ' and\n'.join('  row_id in %s' % express(k, v) for k,v in sorted(k.items()))
+
+    return cmd
+
+
 def setup_test():
     """setup test"""
     def create_test_tables(db):
@@ -109,6 +274,7 @@ def summarize(table, dimensions, metrics=None):
     # pylint: disable=invalid-name
     # pylint: disable=unused-variable
     # pylint: disable=unused-argument
+    # pylint: disable=possibly-unused-variable
 
     metrics = metrics or []
 

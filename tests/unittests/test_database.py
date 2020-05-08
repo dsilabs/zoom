@@ -643,6 +643,29 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             'select * from test_table where notes like "%%2" and amount > %s', 20
         )
 
+    def test_make_select_statement(self):
+        from zoom.sqltools import make_table_select, less_than, gt
+        cmd = make_table_select('test_table', amount=less_than(20))
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            1    10.2     50 notes 1
+            """,
+            *cmd
+        )
+
+        cmd = make_table_select('test_table', amount=gt(20))
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+            2    30.2     75 notes 2
+            3    40.1     20 notes 3
+            """,
+            *cmd
+        )
+
 
 class TestTranslate(unittest.TestCase):
 
