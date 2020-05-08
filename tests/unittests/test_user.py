@@ -21,7 +21,8 @@ class TestUser(unittest.TestCase):
         zoom.system.request = zoom.utils.Bunch(
             app=zoom.utils.Bunch(
                 name=__name__,
-            )
+            ),
+            session=zoom.utils.Bunch(),
         )
 
     def tearDown(self):

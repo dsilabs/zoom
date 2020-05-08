@@ -8,6 +8,8 @@ import datetime
 import zoom
 import zoom.html as html
 from zoom.snippets import snippet
+import zoom.impersonation
+
 
 def username():
     """Returns the username."""
@@ -295,12 +297,17 @@ def link_to(label, *args, **kwargs):
     '<a href="http://company.com?q=test" name="link-to-http-company-com">http://company.com</a>'
     """
     nargs = args or [label]
+    options = {}
+    classed = kwargs.pop('classed', None)
+    if classed:
+        options['classed'] = classed
     return html.tag(
         'a', label,
         href=url_for(*nargs, **kwargs),
         name='link-to-' + zoom.utils.id_for(
             str(label).replace('.', '-').replace(':', '-')
         ),
+        **options,
     )
 
 
@@ -394,3 +401,8 @@ def when(date, since=None):
         )
     else:
         return 'never'
+
+
+def impersonation_notice(*args, **kwargs):
+    """Impersonation Notice Helper"""
+    return zoom.impersonation.get_impersonation_notice()

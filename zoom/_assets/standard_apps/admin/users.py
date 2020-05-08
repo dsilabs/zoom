@@ -12,6 +12,7 @@ from zoom.users import User, Users
 from zoom.tools import home
 import zoom.validators as v
 import zoom.fields as f
+import zoom.impersonation
 
 from fields import UserGroupsField
 import model
@@ -143,6 +144,7 @@ class UserCollectionView(CollectionView):
             page.actions.insert(0, 'Reset Password')
             if user.is_active:
                 page.actions.insert(0, 'Deactivate')
+                page.actions.insert(0, 'Impersonate')
             else:
                 page.actions.insert(0, 'Activate')
             return page
@@ -211,6 +213,12 @@ class UserCollectionController(CollectionController):
         if user:
             user.deactivate()
         return home('users/' + key)
+
+    def impersonate(self, username):
+        zoom.impersonation.impersonate(username)
+        zoom.alerts.success(f'Impersonating {username}!')
+        return zoom.home()
+
 
 def get_users_collection(request):
     db = request.site.db

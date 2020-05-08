@@ -1,3 +1,13 @@
-
+#impersonation-notice {
+  line-height: 2.5em;
+  background: #822;
+  color: white;
+  padding: 5px 10px;
+}
+#impersonation-notice a {
+  float: none;
+  padding: 5px 13px;
+  margin-left: 10px;
+}
 
 /*# sourceMappingURL=components.css.map */

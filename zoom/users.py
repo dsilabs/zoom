@@ -12,7 +12,7 @@ from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
-
+from zoom.impersonation import get_impersonated_username
 
 chars = ''.join(map(chr, range(256)))
 keep_these = string.ascii_letters + string.digits + '.-_ '
@@ -69,6 +69,7 @@ def get_current_username(request):
     return (
         getattr(request, 'username', None) or
         site.config.get('users', 'override', '') or
+        get_impersonated_username() or
         getattr(request.session, 'username', None) or
         request.remote_user or
         site.guest or
@@ -160,7 +161,7 @@ class User(Record):
 
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)
-        self.is_admin = False
+        self.is_admin = self.is_administrator = False
         self.is_developer = False
         self.is_authenticated = False
         self.__groups = None
@@ -196,6 +197,7 @@ class User(Record):
         )
 
         self.is_admin = self.is_member(site.administrators_group)
+        self.is_administrator = self.is_admin
         self.is_developer = self.is_member(site.developers_group)
 
         if self.is_developer:
@@ -500,6 +502,7 @@ class Users(RecordStore):
       when_updated ........: 'over a month ago'
       when_last_seen ......: 'never'
       updated_by_link .....: 'admin'
+      is_administrator ....: False
       is_authenticated ....: False
 
 

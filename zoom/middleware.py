@@ -555,7 +555,8 @@ def capture_stdout(request, handler, *rest):
         printed_output = sys.stdout.getvalue()
         sys.stdout.close()
         sys.stdout = real_stdout
-        if 'result' in locals() and isinstance(result.content, str) and '{*stdout*}' in result.content:
+        content = getattr(result, 'content', None)
+        if 'result' in locals() and isinstance(content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
                 '{*stdout*}', websafe(printed_output))
     logger = logging.getLogger(__name__)
@@ -692,6 +693,7 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,
+        zoom.impersonation.handler,
         zoom.component.handler,
         zoom.users.handler,
         zoom.render.handler,
