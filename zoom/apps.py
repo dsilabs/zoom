@@ -386,6 +386,8 @@ class NoApp(object):
     title = ''
     description = ''
     keywords = ''
+    common_packages = {}
+    packages = {}
 
     def run(self, request):
         status = '404 Not Found'
