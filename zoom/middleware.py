@@ -555,8 +555,8 @@ def capture_stdout(request, handler, *rest):
         printed_output = sys.stdout.getvalue()
         sys.stdout.close()
         sys.stdout = real_stdout
-        content = getattr(result, 'content', None)
-        if 'result' in locals() and isinstance(content, str) and '{*stdout*}' in result.content:
+        content = 'result' in locals() and getattr(result, 'content', None)
+        if isinstance(content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
                 '{*stdout*}', websafe(printed_output))
     logger = logging.getLogger(__name__)
