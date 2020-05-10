@@ -98,6 +98,9 @@ def as_links(items, select=None, filter=None):
             if not filter or filter(link_item):
                 yield link_item
 
+    if items is None:
+        return ''
+
     links = []
 
     for link_item in as_link_items(items):
