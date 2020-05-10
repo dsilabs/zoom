@@ -7,6 +7,7 @@ import pickle
 import time
 import uuid
 
+import zoom.utils
 from zoom.database import DatabaseException
 from zoom.records import Record, RecordStore
 
@@ -182,6 +183,12 @@ class Session(object):
                 logger.debug('session values missing')
             else:
                 logger.debug('session not loaded')
+
+    def __str__(self):
+        class Session(zoom.utils.Record): pass
+        return str(
+            Session(self.__dict__)
+        )
 
 
 def handler(request, next_handler, *rest):
