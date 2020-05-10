@@ -46,9 +46,9 @@ new_tests:
 
 pypi:
   stage: publish
-  trigger: dsilabs/zoom-publish
+  trigger: dsilabs/zoom-publisher
   only:
-    - tag
+    - tags
 
 docker:
   stage: build
