@@ -11,21 +11,30 @@ def impersonate(username):
     zoom.authorize()
     site = zoom.system.site
     if site.users.first(username=username):
-        zoom.system.request.session.impersonated_user = username
+        session = zoom.system.request.session
+        session.impersonated_user = username
+        zoom.audit('start impersonating', zoom.system.request.user.username, username)
 
 
 def stop_impersonating():
     """Stop impersonating"""
     session = zoom.system.request.session
     if hasattr(session, 'impersonated_user'):
+        actual_username = session.username
+        actual_user = zoom.system.site.users.first(username=actual_username)
+        zoom.audit(
+            'stop impersonating',
+            actual_username,
+            session.impersonated_user,
+            user=actual_user,
+            app_name='middlware'
+        )
         del session.impersonated_user
 
 
 def get_impersonated_username():
     """Returns username of impersonated user or None"""
     session = zoom.system.request.session
-    # print(session)
-    # print(getattr(session, 'impersonated_user', None))
     return getattr(session, 'impersonated_user', None)
 
 
