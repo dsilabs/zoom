@@ -63,7 +63,6 @@
   border: 1px solid #ccc;
   height: 2em;
   display: table-cell;
-  margin-right: 4px;
 }
 .field_edit ul.checkbox_field {
   padding-left: 0;
@@ -203,7 +202,6 @@ input[type=text], input[type=password], input[type=datetime], input[type=datetim
   height: 30px;
   padding: 2px 6px;
   margin: 0;
-  margin-right: 4px;
   font-size: 14px;
   line-height: 20px;
   color: #555;
@@ -374,6 +372,7 @@ div.search span.clear a {
   margin-top: 0.42em;
   margin-left: 0px;
   font-size: 0.9em;
+  padding-left: 5px;
 }
 
 .content .alert {

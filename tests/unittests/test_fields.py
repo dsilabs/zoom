@@ -158,7 +158,7 @@ class TestEditField(unittest.TestCase, TextTests):
         TextTests.setUp(self, EditField)
         self.show_css_class = 'textarea'
         self.widget_template = (
-            '<textarea class="{self.css_class}" height="6" '
+            '<textarea class="{self.css_class}" cols="80" height="6" '
             'id="field1" name="field1" size="10">{text}</textarea>'
         )
 

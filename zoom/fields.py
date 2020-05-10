@@ -574,29 +574,6 @@ class MemoField(Field):
             Class=self.css_class,
         )
 
-    def edit(self):
-        widget = self.widget()
-        if self.hint or self.msg:
-            table_start = (
-                '<table class="transparent" width="100%">'
-                '<tr><td width=10%>'
-            )
-            table_middle = '</td><td>'
-            table_end = '</td></tr></table>'
-            return self.layout(
-                self.label,
-                ''.join([
-                    table_start,
-                    widget,
-                    table_middle,
-                    self.render_msg(),
-                    self.render_hint(),
-                    table_end
-                ])
-            )
-        else:
-            return self.layout(self.label, widget)
-
     def show(self):
         return (
             self.visible and
@@ -616,15 +593,6 @@ class MarkdownField(MemoField):
     >>> f.display_value()
     '<p>test <strong>one</strong> 23</p>'
 
-    >>> target = (
-    ...     '<div class="field">\\n'
-    ...     '  <div class="field_label">Notes</div>\\n'
-    ...     '  <div class="field_edit"><textarea class="memo_field" cols="60" id="notes" name="notes" rows="6" size="10">test **one** 23</textarea></div>\\n'
-    ...     '</div>\\n'
-    ... )
-    >>> f.edit() == target
-    True
-
     """
     def display_value(self):
         return markdown(self.value)
@@ -634,12 +602,13 @@ class EditField(MemoField):
     """Large textedit.
 
     >>> EditField('Notes').widget()
-    '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
+    '<textarea class="edit_field" cols="80" height="6" id="notes" name="notes" size="10"></textarea>'
     """
     value = ''
     height = 6
     size = 10
     css_class = 'edit_field'
+    cols = 80
 
     def widget(self):
         return html.tag(
@@ -649,18 +618,16 @@ class EditField(MemoField):
             id=self.id,
             size=self.size,
             height=self.height,
+            cols=self.cols,
             Class=self.css_class,
         )
-
-    def edit(self):
-        return self.layout(self.label, self.widget())
 
 
 class MarkdownEditField(EditField):
     """Large markdown edit field
 
     >>> MarkdownEditField('Notes').widget()
-    '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
+    '<textarea class="edit_field" cols="80" height="6" id="notes" name="notes" size="10"></textarea>'
     """
     def display_value(self):
         return markdown(websafe(self.value))
