@@ -813,7 +813,11 @@ class Record(Storage):
                 return value
         except KeyError as k:
             try:
-                return self.__class__.__dict__[name].__get__(self)
+                value = self.__class__.__dict__[name]
+                if hasattr(value, '__get__'):
+                    return value.__get__(self)
+                else:
+                    return value
             except KeyError as k:
                 raise k
 
