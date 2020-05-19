@@ -14,7 +14,8 @@ parts_re = (
 )
 tag_parts = re.compile(parts_re)
 
-pattern_tpl = r'%s([a-z0-9_]+)\s*(.*?)%s'
+name_re = '[a-z0-9_.]+'
+pattern_tpl = r'%s(' + name_re + r')\s*(.*?)%s'
 patterns = {}
 
 
@@ -86,6 +87,7 @@ def fill(text, callback):
     ...             return name.lower()
     ...         else:
     ...             return name
+    ...
     >>> fill('Hello {{name}}!', filler)
     'Hello James!'
     >>> fill('Hello {{name language=\"french\"}}!', filler)
@@ -110,6 +112,20 @@ def fill(text, callback):
     >>> del values['name']
     >>> fill('Hello{{name ""}}!', values.get )
     'Hello!'
+
+    >>> class Thing:
+    ...     name = 'Widget'
+    >>> thing = Thing()
+    >>> thing.name
+    'Widget'
+    >>> def fill_this(template, *args, **kwargs):
+    ...     def filler(name, *a, **k):
+    ...         tpl = ('{'+name+'}')
+    ...         result = tpl.format(*args, **kwargs)
+    ...         return result
+    ...     return fill(template, filler)
+    >>> fill_this('A {{thing.name}}, {{person}}!', thing=thing, person='Ann')
+    'A Widget, Ann!'
 
     """
     return dzfill(_fill('{{', '}}', text, callback), callback)
