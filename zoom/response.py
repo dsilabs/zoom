@@ -528,5 +528,6 @@ class SiteNotFoundResponse(HTMLResponse):
             request=request,
             node=platform.node(),
             date=datetime.datetime.now(),
+            version=zoom.__version__
         )
         HTMLResponse.__init__(self, content, status='404 Not Found')

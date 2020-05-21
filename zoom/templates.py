@@ -81,6 +81,7 @@ site_not_found = """
         <p><span>Date ............:</span> <span>{date}</span></p>
         <p><span>Client&nbsp;IP .......:</span> <span>{request.ip_address}</span></p>
         <p><span>Module ..........:</span> <span>{request.module}</span></p>
+        <p><span>Version .........:</span> <span>{version}</span></p>
     </div>
     <div id="footer">
         <div id="center" align="center">
