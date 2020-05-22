@@ -22,17 +22,17 @@ def get_args():
         usage='zoom database [options] <command> ...'
         )
 
-    parser.add_argument("-e", "--engine", type=str, default='sqlite3',
+    parser.add_argument("-e", "--engine", type=str, default='mysql',
                         help='database engine (sqlite3 or mysql)')
     parser.add_argument("-H", "--host", type=str, default='localhost',
                         help='database host')
-    parser.add_argument("-d", "--database", type=str, default='zoomdata',
+    parser.add_argument("-d", "--database", type=str, default=None,
                         help='database name')
     parser.add_argument("-P", "--port", type=int, default=3306,
                         help='database service port')
-    parser.add_argument("-u", "--user", type=str, default='zoomuser',
+    parser.add_argument("-u", "--user", type=str, default=None,
                         help='database username', nargs='?')
-    parser.add_argument("-p", "--password", type=str, default='zoompass',
+    parser.add_argument("-p", "--password", type=str, default=None,
                         help='database password', nargs='?')
     parser.add_argument("-v", "--verbose", action='store_true',
                         help='verbose console logging')
@@ -43,6 +43,7 @@ def get_args():
     parser.add_argument('args', nargs='*', default=None, help='database_name')
 
     return parser.parse_args(legacy_command_argv('database'))
+
 
 def connect(engine, **kwargs):
     """Connect to the database specified"""
