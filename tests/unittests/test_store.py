@@ -150,8 +150,8 @@ class TestStore(unittest.TestCase):
         people = zoom.store_of(Person, self.db)
         for row in data:
             people.put(row)
-        low = [person.name for person in people.find(amount=200)]
-        self.assertEqual(low, ['Janice', 'Angus'])
+        low = set([person.name for person in people.find(amount=200)])
+        self.assertEqual(low, set(['Janice', 'Angus']))
 
         cmd = make_store_select('person', amount=less_than(2000), size=gt(401))
         rows = entify(self.db(cmd))
