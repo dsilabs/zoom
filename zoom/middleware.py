@@ -598,6 +598,12 @@ def display_errors(request, handler, *rest):
     """
     try:
         return handler(request, *rest)
+
+    except zoom.exceptions.ThemeTemplateMissingException:
+        return zoom.response.HTMLResponse(
+            zoom.templates.template_missing
+        )
+
     except Exception:
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
