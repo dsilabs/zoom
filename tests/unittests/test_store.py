@@ -156,11 +156,11 @@ class TestStore(unittest.TestCase):
         cmd = make_store_select('person', amount=less_than(2000), size=gt(401))
         rows = entify(self.db(cmd))
         self.assertEqual(
-            rows,
-            [
+            set(rows),
+            set([
                 {'_id': 5, 'name': 'Janice', 'size': 510, 'amount': 200},
                 {'_id': 8, 'name': 'Angus', 'size': 510, 'amount': 200},
-            ]
+            ])
         )
 
 
