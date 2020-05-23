@@ -4,14 +4,11 @@
 
 from argparse import ArgumentParser
 import os
-import shutil
 import sys
-
-import zoom
 
 from zoom.cli.utils import legacy_command_argv
 
-def setup(name=None):
+def setup():
     """set up a new Zoom instance"""
 
     join = os.path.join
@@ -25,7 +22,6 @@ def setup(name=None):
     args = parser.parse_args(legacy_command_argv('setup'))
 
     dst = args.directory[0]
-    src = zoom.tools.zoompath('web')
 
     if os.path.exists(dst):
         print('warning: directory exists')
@@ -40,12 +36,5 @@ def setup(name=None):
     # create the themes directory for new theme developmenet
     os.mkdir(join(dst, 'themes'))
 
-    # copy default theme
-    shutil.copytree(
-        join(src, 'themes', 'default'), join(dst, 'themes', 'default')
-    )
-
     # create the default site
     os.mkdir(join(dst, 'sites'))
-    shutil.copytree(join(src, 'sites', 'default'), join(dst, 'sites', 'default'))
-

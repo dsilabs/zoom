@@ -48,7 +48,7 @@ COMMANDS = {
     'describe': describe,
     'run': run
 }
-DEPRECATED_COMMANDS = ('setup', 'server')
+DEPRECATED_COMMANDS = 'server',
 EXPERIMENTAL_COMMANDS = 'init', 'assign', 'describe'
 
 def main():
