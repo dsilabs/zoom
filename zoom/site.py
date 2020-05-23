@@ -18,6 +18,8 @@ from zoom.tools import zoompath
 
 
 isdir = os.path.isdir
+isfile = os.path.isfile
+split = os.path.split
 realpath = os.path.realpath
 join = os.path.join
 exists = os.path.exists
@@ -141,6 +143,34 @@ class SiteConfig(object):
         return self.section(name)
 
 
+def locate_theme(path, name):
+    """return a valid theme directory or None"""
+
+    def valid_theme(pathname):
+        for ext in ['html', 'pug', 'md']:
+            if isfile(join(pathname, 'default.{}'.format(ext))):
+                return True
+
+    logger = logging.getLogger(__name__)
+
+    if name != 'default':
+        possibility = path, name
+        if valid_theme(join(*possibility)):
+            logger.info('using theme %s', join(*possibility))
+            return possibility
+
+    possibility = path, 'default'
+    if valid_theme(join(*possibility)):
+        logger.info('using theme %s', join(*possibility))
+        return possibility
+
+    default_path = zoompath('zoom', '_assets', 'web', 'themes')
+    possibility = default_path, 'default'
+    if valid_theme(join(*possibility)):
+        logger.info('using theme %s', join(*possibility))
+        return possibility
+
+
 class Site(object):
     """a Zoom site"""
     # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -205,11 +235,31 @@ class Site(object):
                 get('sessions', 'secure_cookies', True)
             )
 
-            theme_dir = get('theme', 'path', join(instance, 'themes'))
-            self.themes_path = realpath(join(self.path, theme_dir))
-            self.theme = get('theme', 'name', 'default')
-            self.theme_path = os.path.join(theme_dir, self.theme)
-            self.default_theme_path = existing(theme_dir, 'default')
+            theme_dir = realpath(get('theme', 'path', join(instance, 'themes')))
+            theme = get('theme', 'name', 'default')
+
+            # establish main theme
+            location = locate_theme(theme_dir, theme)
+            if not location:
+                raise zoom.exceptions.ThemeTemplateMissingException(
+                    'theme %r not found in %r' % (theme, theme_dir)
+                )
+            self.themes_path, self.theme = location
+            self.theme_path = join(self.themes_path, self.theme)
+
+            # establish default theme
+            if self.theme == 'default':
+                # same as main theme
+                self.default_theme_path = self.theme_path
+            else:
+                default_location = locate_theme(theme_dir, 'default')
+                if not default_location:
+                    raise zoom.exceptions.ThemeTemplateMissingException(
+                        'theme %r not found in %r' % (theme, theme_dir)
+                    )
+                self.default_theme_path = default_location[0]
+
+            # theme options
             self.theme_comments = get('theme', 'comments', 'name')
             self.default_template = (
                 get('theme', 'template', 'default')
