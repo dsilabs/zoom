@@ -651,17 +651,11 @@ def get_template(template_name='default', theme='default'):
             return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
     else:
         if template_name == 'default':
-            logger.error(
-                'default template %s missing',
-                os.path.realpath(pathname),
-            )
+            logger.error('default template %s missing', pathname)
             raise zoom.exceptions.ThemeTemplateMissingException(
                 'Default template missing %r' % pathname
             )
-        logger.warning(
-            'template %r missing',
-            pathname,
-        )
+        logger.debug('template %r missing', pathname)
         return get_template('default', theme)
 
 def zoompath(*args):
