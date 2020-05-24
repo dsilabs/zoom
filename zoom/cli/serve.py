@@ -56,7 +56,7 @@ def serve(_arguments=None):
     app = WSGIApplication(instance=instance_path, handlers=handlers, username=user)
     try:
         # Run.
-        run_simple('localhost', port, app, use_reloader=reloader)
+        run_simple('0.0.0.0', port, app, use_reloader=reloader)
     except (PermissionError, OSError) as err:
         finish(True, (
             '%s: is port %s in use?\n'
