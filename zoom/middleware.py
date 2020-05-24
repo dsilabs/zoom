@@ -402,7 +402,7 @@ def serve_favicon(request, handler, *rest):
     """
     if request.path == '/favicon.ico':
         pathname = zoom.tools.zoompath(
-            'web', 'themes', 'default', 'images', 'favicon.ico'
+            'zoom', '_assets', 'web', 'themes', 'default', 'images', 'favicon.ico'
         )
         return serve_response(pathname)
     else:
