@@ -30,7 +30,7 @@ class Config(object):
     If no value is found it raises and exception.
 
     >>> from zoom.tools import zoompath
-    >>> config = Config(zoompath('web/sites/default'), 'site.ini')
+    >>> config = Config(zoompath('zoom/_assets/web/sites/default'), 'site.ini')
     >>> config.get('site', 'name')
     'ZOOM'
 
@@ -76,7 +76,7 @@ class Config(object):
         parent, _ = os.path.split(directory)
         pathname = os.path.join(parent, 'default', name)
         if not os.path.isfile(pathname):
-            pathname = zoom.tools.zoompath('web', 'sites', 'default', name)
+            pathname = zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'default', name)
             if not os.path.isfile(pathname):
                 raise Exception('Unable to find default config file %s.' % pathname)
 
