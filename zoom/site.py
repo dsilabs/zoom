@@ -156,18 +156,18 @@ def locate_theme(path, name):
     if name != 'default':
         possibility = path, name
         if valid_theme(join(*possibility)):
-            logger.info('using theme %s', join(*possibility))
+            logger.debug('using theme %s', join(*possibility))
             return possibility
 
     possibility = path, 'default'
     if valid_theme(join(*possibility)):
-        logger.info('using theme %s', join(*possibility))
+        logger.debug('using theme %s', join(*possibility))
         return possibility
 
     default_path = zoompath('zoom', '_assets', 'web', 'themes')
     possibility = default_path, 'default'
     if valid_theme(join(*possibility)):
-        logger.info('using theme %s', join(*possibility))
+        logger.debug('using theme %s', join(*possibility))
         return possibility
 
 
