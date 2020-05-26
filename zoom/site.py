@@ -291,7 +291,7 @@ class Site(object):
             positive = zoom.utils.POSITIVE
             if self.conf.section('apps').get('include_basics') in positive and basic_apps not in self.apps_paths:
                 logger.debug('including default apps (%r)', basic_apps)
-                self.apps_paths.insert(0, basic_apps)
+                self.apps_paths.append(basic_apps)
             else:
                 logger.debug('not including default apps')
 
