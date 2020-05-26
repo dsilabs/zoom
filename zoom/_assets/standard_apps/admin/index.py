@@ -400,19 +400,19 @@ class MyView(zoom.View):
         """
         return page(content, title='Log Entry', css=css)
 
-    def configuration(self):
 
-        if zoom.system.request.site.profiling:
-            if zoom.system.request.profiling:
-                profiling_message = 'Yes'
-            else:
-                profiling_message = 'No <span class="hint">(environment variable missing)</span>'
-        else:
-            profiling_message = 'No'
+    def configuration(self):
+        """Return the configuration page"""
+        get = zoom.system.site.config.get
+        site = zoom.system.site
+        request = zoom.system.request
+        app = zoom.system.request.app
+        system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
+        main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
 
         items = zoom.packages.get_registered_packages()
-        packages = '\n'.join(
-            '<dt>{}</dt><dd>{}</dd>'.format(
+        packages = (
+            (
                 key,
                 '<br>'.join(
                     '{resources}'.format(
@@ -420,30 +420,78 @@ class MyView(zoom.View):
                     ) for resource_type, resources
                     in sorted(parts.items(), key=lambda a: ['requires', 'styles', 'libs'].index(a[0]))
                 )
-            )
-            for key, parts in sorted(items.items())
+            ) for key, parts in sorted(items.items())
         )
 
-        apps_paths = '<br>'.join(zoom.system.request.site.apps_paths)
-
-        get = zoom.system.site.config.get
-
-        system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
-        main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
-
         return page(
-            load_content(
-                'configuration.md',
-                site=zoom.system.site,
-                request=zoom.system.request,
-                packages=packages,
-                profiling=profiling_message,
-                apps_paths=apps_paths,
-                override=get('users', 'override', ''),
-                system_apps=system_apps,
-                main_apps=main_apps,
-                user_errors=get('errors', 'users', False),
+            zoom.Component(
+                h.h2('Site'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'name',
+                        'path',
+                        'owner_name',
+                        'owner_email',
+                        'owner_url',
+                        'admin_email',
+                        'csrf_validation',
+                    )
+                ]),
+                h.h2('Users'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'guest',
+                        'administrators_group',
+                        'developers_group',
+                    )
+                ]),
+                h.h2('Apps'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'index_app_name',
+                        'home_app_name',
+                        'login_app_name',
+                        'auth_app_name',
+                        'locate_app_name',
+                    )
+                ] + [
+                    ('app.path', app.path),
+                    ('apps_paths', '<br>'.join(site.apps_paths)),
+                    ('main_apps', main_apps),
+                    ('system_apps', system_apps),
+                ]),
+                h.h2('Theme'),
+                zoom.html.table([
+                    ('name', site.theme),
+                    ('path', site.theme_path),
+                    ('comments', site.theme_comments),
+                ]),
+                h.h2('Sessions'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    ('secure_cookies',)
+                ]),
+                h.h2('Monitoring'),
+                zoom.html.table([
+                    ('logging', site.theme),
+                    ('profiling', site.theme_path),
+                    ('app_database', site.monitor_app_database),
+                    ('system_database', site.monitor_system_database),
+                ]),
+                h.h2('Errors'),
+                zoom.html.table([
+                    ('users', get('errors', 'users', False)),
+                ]),
+                h.h2('Packages'),
+                zoom.html.table(
+                    packages,
+                ),
+                css = """
+                    .content table { width: 100%; }
+                    .content table td { vertical-align: top; width: 70%; }
+                    .content table td:first-child { width: 25%; }
+                """
             ),
+            title='Environment'
         )
 
     def environment(self):
@@ -484,7 +532,7 @@ class MyView(zoom.View):
         )
 
     def about(self, *a):
-        return page(load_content('about.md'))
+        return page(load_content('about.md', version=zoom.__version__ + ' Community Edition'))
 
 
 def main(route, request):
