@@ -185,7 +185,7 @@ class Component(object):
                 if key == 'html':
                     part.extend(value)
                 else:
-                    part |= value
+                    part |= filter(bool, value)
         return self
 
     def __add__(self, other):
