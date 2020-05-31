@@ -42,7 +42,7 @@ apt-get update && apt-get install -y --no-install-recommends \
 export LC_ALL=C
 
 # run zoom server
-zoom server -p 8000 web &
+zoom serve -p 8000 $ZOOM_DEFAULT_INSTANCE &
 
 cat $ZOOM_DEFAULT_SITE_INI
 
