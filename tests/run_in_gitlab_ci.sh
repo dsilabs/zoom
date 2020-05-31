@@ -40,9 +40,8 @@ apt-get update && apt-get install -y --no-install-recommends \
 export LC_ALL=C
 
 # run zoom server
-pushd /tmp/testinstance
-zoom serve -p 8000 &
-popd
+zoom serve -p 8000 zoom/_assets/web &
+
 
 cat /tmp/testinstance/sites/default/site.ini
 
