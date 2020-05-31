@@ -122,7 +122,7 @@ class App(object):
             view = if_callable(getattr(source, 'view', None))
             controller = if_callable(getattr(source, 'controller', None))
         else:
-            main = app = view = None
+            main = app = view = controller = None
 
         return (
             main and main(rest, self.request) or

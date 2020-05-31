@@ -122,7 +122,8 @@ def get_instance(directory):
             logger.debug('instance: %s', instance)
             return instance
         else:
-            raise zoom.exceptions.NotAnInstanceExecption('Not an instance')
+            raise zoom.exceptions.NotAnInstanceExecption(
+                '%s is not an instance' % directory)
 
     else:
         if os.path.isdir(os.path.join('.', 'sites')):

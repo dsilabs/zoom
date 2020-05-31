@@ -47,7 +47,7 @@ class Site(BasicSite):
         # Resolve the site path from a parameter, environment variable, or
         # logical default.
         path = path or default_site_path or \
-                zoom.tools.zoompath('web', 'sites', 'localhost')
+                zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
 

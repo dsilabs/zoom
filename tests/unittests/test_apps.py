@@ -26,7 +26,7 @@ class TestApps(unittest.TestCase):
         zoom.system.site = zoom.site.Site(self.request)
         zoom.system.site.db = self.db
         self.request.site = zoom.system.site
-        self.apps_dir = zoom.tools.zoompath('web', 'apps')
+        self.apps_dir = zoom.tools.zoompath('zoom', '_assets', 'standard_apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
             name='app',
             title='App',
@@ -46,11 +46,10 @@ class TestApps(unittest.TestCase):
     def test_app_process_index(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample', {})
-            request.site = zoom.site.Site(self.request)
-            request.site.db = zoom.database.setup_test()
+            request.site = zoom.sites.Site()
             response = app(request)
             self.assertEqual(type(response), zoom.Page)
         finally:
@@ -59,7 +58,7 @@ class TestApps(unittest.TestCase):
     def test_app_process_method(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/about', {})
             request.site = zoom.site.Site(self.request)
@@ -72,7 +71,7 @@ class TestApps(unittest.TestCase):
     def test_app_process_module(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/parts', {})
             request.site = zoom.site.Site(self.request)
@@ -152,12 +151,12 @@ class TestApps(unittest.TestCase):
 
     def test_app_menu(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.menu(), '<ul></ul>')
 
-        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'sample', 'app.py')
         app = zoom.apps.AppProxy('Sample', pathname, site)
         app.request = self.request
         self.assertEquals(app.menu(), (
@@ -167,30 +166,32 @@ class TestApps(unittest.TestCase):
             '<li><a href="<dz:app_url>/collection">Collection</a></li>'
             '<li><a href="<dz:app_url>/components">Components</a></li>'
             '<li><a href="<dz:app_url>/alerts">Alerts</a></li>'
+            '<li><a href="<dz:app_url>/flags">Flags</a></li>'
             '<li><a href="<dz:app_url>/parts">Parts</a></li>'
             '<li><a href="<dz:app_url>/tools">Tools</a></li>'
             '<li><a href="<dz:app_url>/missing">Missing</a></li>'
             '<li><a href="<dz:app_url>/about">About</a></li>'
+            '<li><a href="<dz:app_url>/background">Background</a></li>'
             '</ul>'
         ))
 
     def test_app_description(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.description, 'The Hello app.')
 
     def test_app_keywords(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.keywords, 'The, Hello, app.')
 
     def test_app_str(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(str(app), '<a href="/Hello" name="link-to-hello">Hello</a>')
@@ -242,7 +243,7 @@ class TestApps(unittest.TestCase):
 
     def test_app_proxy_call(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         zoom.system.request.app = app = zoom.apps.AppProxy('hello', pathname, site)
         app.request = self.request
         method = app.method
@@ -251,7 +252,7 @@ class TestApps(unittest.TestCase):
 
     def test_app_proxy_process(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('hello', pathname, site)
         response = app.run(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
@@ -259,7 +260,7 @@ class TestApps(unittest.TestCase):
 
     def test_handle(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('hello', pathname, site)
         response = app.run(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
@@ -326,13 +327,13 @@ class TestApps(unittest.TestCase):
 
     def test_read_config(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'sample', 'app.py')
         app = zoom.apps.AppProxy('Sample', pathname, site)
         self.assertTrue(app.read_config('settings', 'title', 'notfound'), 'Sample')
 
     def test_read_config_missing(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'ping', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'ping', 'app.py')
         app = zoom.apps.AppProxy('Ping', pathname, site)
         self.assertTrue(app.read_config('settings', 'icon', 'notfound'), 'cube')
 

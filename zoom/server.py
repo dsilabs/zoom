@@ -114,7 +114,7 @@ def application(environ, start_response):
 
     >>> save_dir = os.getcwd()
     >>> try:
-    ...     env = dict(DOCUMENT_ROOT=zoom.tools.zoompath('web', 'www'))
+    ...     env = dict(DOCUMENT_ROOT=zoom.tools.zoompath('zoom', '_assets', 'web', 'www'))
     ...     response = application(env, lambda a, b: None)
     ... finally:
     ...     os.chdir(save_dir)

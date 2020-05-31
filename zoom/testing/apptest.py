@@ -16,7 +16,7 @@ from zoom.testing.common import get_output_path
 
 
 def get_path():
-    default_test_path = zoom.tools.zoompath('web', 'sites', 'localhost')
+    default_test_path = zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
     path = os.environ.get('ZOOM_TEST_PATH', default_test_path)
     return path
 

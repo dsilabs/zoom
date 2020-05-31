@@ -662,7 +662,7 @@ def zoompath(*args):
     """Returns the location of a standard Zoom asset
 
     >>> import os
-    >>> theme_path = zoompath('web', 'themes', 'default')
+    >>> theme_path = zoompath('zoom', '_assets', 'web', 'themes', 'default')
     >>> os.path.exists(theme_path)
     True
 

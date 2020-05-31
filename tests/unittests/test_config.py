@@ -30,7 +30,7 @@ class TestConfig(unittest.TestCase):
                 return find_config(parent)
 
         logger = logging.getLogger('zoom.unittest.test_config')
-        site_dir = abspath(join(dirname(__file__), '..', '..', 'web', 'sites', 'localhost'))
+        site_dir = zoom.tools.zoompath('zoom/_assets/web/sites/localhost')
         logger.debug(site_dir)
         # standard_config_file = join(split(__file__)[0], config_location)
         # config_location = find_config(abspath('.'))
@@ -68,7 +68,7 @@ class TestConfig(unittest.TestCase):
 
     def test_section_failover_when_site_config_missing(self):
 
-        site_dir = zoom.tools.zoompath('web', 'sites', 'temptestsite')
+        site_dir = zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'temptestsite')
         try:
             os.mkdir(site_dir)
             config = Config(site_dir, 'site.ini')

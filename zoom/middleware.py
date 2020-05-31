@@ -136,12 +136,12 @@ def serve_redirects(request, handler, *rest):
 def serve_response(*path):
     """Serve up various respones with their correct response type
 
-    >>> zoom_js = zoom.tools.zoompath('web/www/static/zoom/zoom.js')
+    >>> zoom_js = zoom.tools.zoompath('zoom/_assets/web/www/static/zoom/zoom.js')
     >>> response = serve_response(zoom_js)
     >>> isinstance(response, JavascriptResponse)
     True
 
-    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> zoom_path = zoom.tools.zoompath('zoom', '_assets', 'web')
     >>> response = serve_response(zoom_path, 'www/static/zoom/nada.js')
     >>> isinstance(response, JavascriptResponse)
     False
@@ -151,7 +151,7 @@ def serve_response(*path):
     >>> response.status
     '404 Not Found'
 
-    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> zoom_path = zoom.tools.zoompath('zoom', '_assets', 'web')
     >>> response = serve_response(zoom_path, 'www/static/zoom/images')
     >>> isinstance(response, JavascriptResponse)
     False
@@ -443,6 +443,8 @@ def serve_html(request, handler, *rest):
 
 
 def get_csrf_token(session):
+    """ test """
+
     """generate a csrf token
 
     >>> zoom.system.request.session = session = zoom.utils.Bunch()

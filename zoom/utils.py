@@ -475,7 +475,7 @@ class Config(object):
 
     A Config with a handy get method.
 
-    >>> config = Config(zoom.tools.zoompath('web','sites','default','site.ini'))
+    >>> config = Config(zoom.tools.zoompath('zoom', '_assets', 'web','sites','default','site.ini'))
     >>> config.get('site', 'name')
     'ZOOM'
 
