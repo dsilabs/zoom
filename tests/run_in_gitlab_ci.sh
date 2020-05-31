@@ -5,17 +5,17 @@ pip install -r tests/requirements.txt
 
 export PYTHONPATH=$(pwd)
 
-zoom database -e mysql -H mariadb -u root -p root create zoomdata
-zoom database -e mysql -H mariadb -u root -p root create zoomtest
+zoom init /tmp/testinstance -H mariadb -u root -p root -d zoomdata -v root -q root
+zoom new database zoomtest -H mariadb -u root -p root
 
 export ZOOM_TEST_DATABASE_HOST=mariadb
 export ZOOM_TEST_DATABASE_USER=root
 export ZOOM_TEST_DATABASE_PASSWORD=root
 export ZOOM_DATABASE_HOST=mariadb
-
-echo "host=mariadb" >> web/sites/localhost/site.ini
-echo "user=root" >> web/sites/localhost/site.ini
-echo "password=root" >> web/sites/localhost/site.ini
+# environment variables describing the instance we created as the default
+export ZOOM_DEFAULT_INSTANCE=/tmp/testinstance
+export ZOOM_DEFAULT_SITE=/tmp/testinstance/sites/localhost
+export ZOOM_TEST_PATH=/tmp/testinstance/sites/localhost
 
 # install google chrome
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -40,8 +40,10 @@ apt-get update && apt-get install -y --no-install-recommends \
 export LC_ALL=C
 
 # run zoom server
-zoom server -p 8000 web &
+pushd /tmp/testinstance
+zoom serve -p 8000 &
+popd
 
-cat web/sites/localhost/site.ini
+cat /tmp/testinstance/sites/default/site.ini
 
 nosetests --with-doctest --with-coverage --cover-package=zoom -vx zoom tests/unittests tests/apptests tests/webtests --exclude-dir=zoom/testing --exclude-dir=zoom/cli

@@ -12,7 +12,7 @@ whitespace:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
-legacy_tests:
+tests:
   stage: test
   image: "python:3.7"
   services:
@@ -22,22 +22,6 @@ legacy_tests:
     MYSQL_ROOT_PASSWORD: root
   script:
     - /bin/bash tests/run_in_gitlab_ci.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-new_tests:
-  stage: test
-  image: "python:3.7"
-  services:
-    - mariadb:latest
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_in_gitlab_ci_new.sh
   artifacts:
     paths:
     - tests/artifacts/
