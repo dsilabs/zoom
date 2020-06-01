@@ -38,4 +38,4 @@ docker:
   stage: build
   trigger: dsilabs/docker-zoom
   only:
-    - master
+    - tags
