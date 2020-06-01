@@ -30,6 +30,16 @@ class TestGroup(unittest.TestCase):
         group = self.groups.get(3)
         self.assertEqual(group._id, 3)
 
+    def test_get_group_admin_group_ids(self):
+        ids = self.groups.get_group_admin_group_ids()
+        self.assertEqual(ids, {1})
+
+    def test_is_group_admin_group(self):
+        group = self.groups.get(1)
+        self.assertTrue(group.is_group_admin_group)
+        group = self.groups.get(2)
+        self.assertFalse(group.is_group_admin_group)
+
     def test_get_group_users(self):
         group = self.groups.first(name='users')
         self.assertSetEqual(group.users, group.get_users())

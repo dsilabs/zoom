@@ -208,6 +208,17 @@ class Group(Record):
         return get_users(self['__store'].db, self)
 
     @property
+    def is_group_admin_group(self):
+        """Return True if this is a group amdin group
+
+        Returns bool indicating whether or not members of this group
+        are able to administer group memberships of any groups on
+        the system.
+        """
+        groups = self['__store']
+        return self.group_id in groups.get_group_admin_group_ids()
+
+    @property
     def users(self):
         """Return list of IDs of users that are part of this group"""
         # TODO:
@@ -613,6 +624,12 @@ class Groups(RecordStore):
             self.delete(name=group_name)
             audit('delete app group', name)
             debug('deleted app group %r', group_name)
+
+    def get_group_admin_group_ids(self):
+        """Return a set of group administrator group group_ids"""
+        return set(
+            group.admin_group_id for group in self.find(type='U')
+        )
 
     def __str__(self):
         return str(
