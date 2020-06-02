@@ -262,7 +262,7 @@ def serve_static(request, handler, *rest):
             join(request.instance, 'static'),
             join(request.instance, 'www', 'static'),
             join(request.instance, '..', 'static'),
-            zoom.tools.zoompath('zoom', '_assets', 'www', 'static'),
+            zoom.tools.zoompath('zoom', '_assets', 'web', 'www', 'static'),
         ]))
         for location in locations:
             pathname = join(location, *request.route[1:])
