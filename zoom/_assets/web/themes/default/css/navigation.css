@@ -27,7 +27,6 @@ a:hover.navbar-brand {
 .user-info {
   height: 48px;
   line-height: 48px;
-  font-size: 12px;
   display: inline;
   float: right;
   padding: 0 15px;
@@ -36,7 +35,6 @@ a:hover.navbar-brand {
 
 /* system menu */
 .system-menu {
-  font-size: 12px;
   display: inline;
 }
 .system-menu > ul {
@@ -75,7 +73,6 @@ a:hover.navbar-brand {
 
 /* main menu */
 .main-menu {
-  font-size: 14px;
   display: inline;
 }
 .main-menu ul {
@@ -107,7 +104,7 @@ a:hover.navbar-brand {
 /* app menu */
 .app-menu {
   background: #f8f8f8;
-  font-size: 13px;
+  font-size: 0.9em;
 }
 .app-menu ul {
   text-align: left;
@@ -176,8 +173,6 @@ a:hover.navbar-brand {
   transition: background 0.1s linear, opacity 0.1s linear;
   -webkit-font-smoothing: antialiased;
   opacity: 0.9;
-  font-weight: 600;
-  font-size: 14px;
 }
 .navbar-zoom .navbar-inner .nav li a:hover {
   background: #4E5D6C;
@@ -205,7 +200,6 @@ a:hover.navbar-brand {
   color: #428bca;
   padding: 7px 15px;
   font-weight: normal;
-  font-size: 12px;
 }
 
 .dropdown ul.dropdown-menu {

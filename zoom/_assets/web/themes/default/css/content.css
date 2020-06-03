@@ -1,7 +1,6 @@
 /* content.css */
 body, table, input, select {
   font-family: helvetica, arial, freesans;
-  font-size: 14px;
 }
 
 a {
@@ -18,17 +17,17 @@ a:hover {
   margin-bottom: 20px;
 }
 .content h1 {
-  font-size: 27px;
+  font-size: 3.5rem;
   margin: 1em 0 0.4em;
   clear: both;
 }
 .content h2 {
-  font-size: 18px;
+  font-size: 2.5rem;
   margin: 1em 0 0;
   clear: both;
 }
 .content h3 {
-  font-size: 16px;
+  font-size: 2rem;
   font-weight: bold;
   clear: both;
 }
@@ -39,10 +38,10 @@ a:hover {
   clear: both;
 }
 .content .jumbotron {
-  background: #ffd8b7;
+  background: #cad4d6;
 }
 .content .jumbotron h1 {
-  font-size: 63px;
+  font-size: 6rem;
 }
 .content p {
   margin: 0.5em 0 0.5em 0;
@@ -75,7 +74,6 @@ a:hover {
 }
 .content blockquote {
   margin-left: 1em;
-  font-size: inherit;
 }
 .content blockquote ol {
   list-style-type: lower-alpha;
