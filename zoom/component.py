@@ -217,6 +217,45 @@ class Component(object):
         zoom.system.parts += self
         return ''.join(map(str, self.parts['html']))
 
+    def format(self, *args, **kwargs):
+        """Return formatted object component"""
+
+        def js_fill(template, *args, **kwargs):
+            """fills a js template based on the parameters"""
+            def filler(name, *_, **__):
+                tpl = '{' + name + '}'
+                result = tpl.format(*args, **kwargs)
+                return result
+            result = zoom.fill._fill('\$\(\( ', ' \)\)', template, filler)
+            return result
+
+        def css_fill(template, *args, **kwargs):
+            """fills a css template based on the parameters"""
+            def filler(name, *_, **__):
+                tpl = '{' + name + '}'
+                result = tpl.format(*args, **kwargs)
+                return result
+            result = zoom.fill._fill('\$\(\( ', ' \)\)', template, filler)
+            return result
+
+        result = {}
+        for k, v in self.parts.items():
+            if k == 'html':
+                tpl = ''.join(map(str, v))
+                result[k] = tpl.format(*args, **kwargs)
+            elif k == 'js':
+                result[k] = ''.join(
+                    js_fill(segment, *args, **kwargs) for segment in v
+                )
+            elif k == 'css':
+                result[k] = ''.join(
+                    css_fill(segment, *args, **kwargs) for segment in v
+                )
+            else:
+                result[k] = ''.join(map(str, v))
+
+        return Component() + result
+
     def __str__(self):
         return self.render()
 
