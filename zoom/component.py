@@ -18,12 +18,14 @@
     in future releases.
 """
 
+from inspect import getfile
 import logging
-import threading
+from os.path import abspath, split, join, isfile
 import sys
 
 import zoom
-from zoom.utils import OrderedSet
+from zoom.utils import OrderedSet, kind
+from zoom.tools import load
 
 
 class Component(object):
@@ -127,9 +129,13 @@ class Component(object):
         self.parts = {
             'html': [],
         }
+        self.load_assets()
         for arg in flatten(args):
             self += arg
         self += kwargs
+
+    def load_assets(self):
+        """load static assets"""
 
     def __iadd__(self, other):
         """add something to a component
@@ -266,6 +272,31 @@ def render(*components):
 
 
 component = Component
+
+
+def load_assets(path, name):
+    """Return file based component assets for a named component"""
+    assets = {}
+    for ext in ['html', 'css', 'js']:
+        pathname = join(
+            path, name + '.' + ext
+        )
+        if isfile(pathname):
+            assets[ext] = load(pathname)
+    return assets
+
+
+class DynamicComponent(Component):
+    """A component that loads its parts from the file system"""
+
+    def load_assets(self):
+        path = split(abspath(getfile(self.__class__)))[0]
+        assets = load_assets(path, kind(self))
+        for k, v in assets.items():
+            if k == 'html':
+                self.parts['html'].insert(0, v)
+            else:
+                self.parts[k] = OrderedSet([v]) | self.parts.get(k, {})
 
 
 def compose(*args, **kwargs):
