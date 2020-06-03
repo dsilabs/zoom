@@ -3,7 +3,6 @@
 """
 
 import decimal
-import uuid
 
 import zoom
 import zoom.html as h
