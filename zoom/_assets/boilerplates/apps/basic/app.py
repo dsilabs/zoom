@@ -1,6 +1,10 @@
-"""This file tells Zoom about our app (for example what menus it has)."""
+"""
+    Main App Module
+
+    This is the entrypoint to every app.
+"""
 
 import zoom
 
-app = zoom.App()
-app.menu = ('About', 'Overview')
+app = zoom.App(['Overview', 'About'])
+
