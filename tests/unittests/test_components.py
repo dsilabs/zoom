@@ -153,3 +153,24 @@ class TestRender(unittest.TestCase):
             ['test1other']
         )
 
+    def test_format_html(self):
+        widget = Component('Hello {name}!')
+        html = widget.format(name='Sam').render()
+        self.assertEqual(
+            html,
+            'Hello Sam!'
+        )
+
+    def test_format_js(self):
+        Component(js='$(".thing").html("$(( name ))");').format(name='Sam').render()
+        self.assertEqual(
+            parts()['js'],
+            ['$(".thing").html("Sam");']
+        )
+
+    def test_format_css(self):
+        Component(css='.thing { color: $(( color )); }').format(color='red').render()
+        self.assertEqual(
+            parts()['css'],
+            ['.thing { color: red; }']
+        )
