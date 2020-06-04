@@ -52,7 +52,8 @@ def serve(_arguments=None):
         finish(True, 'Invalid port %s'%port)
 
     # Create the application.
-    print('Serving Zoom instance at %r' % instance_path)
+    if arguments['--verbose']:
+        print('Serving Zoom instance at %r' % instance_path)
     app = WSGIApplication(instance=instance_path, handlers=handlers, username=user)
     try:
         # Run.
