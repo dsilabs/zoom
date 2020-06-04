@@ -174,3 +174,14 @@ class TestRender(unittest.TestCase):
             parts()['css'],
             ['.thing { color: red; }']
         )
+
+    def test_format_css_multi(self):
+        css = '.thing { color1: $(( color1 )); color2: $(( color2 )); }'
+        Component(css=css).format(
+            color1='red',
+            color2='blue',
+        ).render()
+        self.assertEqual(
+            parts()['css'],
+            ['.thing { color1: red; color2: blue; }']
+        )

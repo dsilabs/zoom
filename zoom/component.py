@@ -232,7 +232,7 @@ class Component(object):
                 tpl = '{' + name + '}'
                 result = tpl.format(*args, **kwargs)
                 return result
-            result = zoom.fill._fill('\$\(\( ', ' \)\)', template, filler)
+            result = zoom.fill.dollar_fill(template, filler)
             return result
 
         def css_fill(template, *args, **kwargs):
@@ -241,7 +241,7 @@ class Component(object):
                 tpl = '{' + name + '}'
                 result = tpl.format(*args, **kwargs)
                 return result
-            result = zoom.fill._fill('\$\(\( ', ' \)\)', template, filler)
+            result = zoom.fill.dollar_fill(template, filler)
             return result
 
         result = {}
