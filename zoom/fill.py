@@ -76,7 +76,7 @@ def _fill(tag_start, tag_end, text, callback):
 
 
 def fill(text, callback):
-    """fill a tag in the double handlebars style
+    """fill tags in the double handlebars style
 
     >>> def filler(name, *args, **kwargs):
     ...     if name == 'name':
@@ -131,6 +131,26 @@ def fill(text, callback):
     return dzfill(_fill('{{', '}}', text, callback), callback)
 
 
+def custom_fill(tag_start, tag_end, text, callback):
+    """fill tags in a custom style
+
+    >>> def fill2(*args, **kwargs):
+    ...     return custom_fill('\$\(\( ', '\)\)', *args, **kwargs)
+    >>> def callback(name, *args, **kwargs):
+    ...     return dict(first_name='Sam', last_name='Jones').get(name, 'unknown')
+    >>> fill2('Hello $(( first_name ))', callback)
+    'Hello Sam'
+    >>> fill2('Hello $(( first_name )) $(( last_name ))', callback)
+    'Hello Sam Jones'
+    """
+    return _fill(tag_start, tag_end, text, callback)
+
+
 def dzfill(text, callback):
-    """fill a tag in the <dz: style"""
+    """fill tags in the <dz: style"""
     return _fill('<dz:', '>', text, callback)
+
+def dollar_fill(text, callback):
+    """fill templates in the dollar style"""
+    start, end = '\$\(\(\s*?', '\s*?\)\)'
+    return custom_fill(start, end, text, callback)
