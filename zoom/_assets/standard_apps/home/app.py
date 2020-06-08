@@ -54,7 +54,7 @@ def app(request):
     if len(request.route) > 1 or request.data:
         return zoom.home()
 
-    skip = 'home', 'logout', 'login'
+    skip = 'home', 'logout', 'login', 'settings'
     content = h.div(
         h.ul(
             a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title.lower())
