@@ -3,7 +3,7 @@
 """
     zoom.request
 
-    Web requsets.
+    Web requests.
 """
 
 import os
