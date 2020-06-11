@@ -472,8 +472,8 @@ class MyView(zoom.View):
                 ]),
                 h.h2('Monitoring'),
                 zoom.html.table([
-                    ('logging', site.theme),
-                    ('profiling', site.theme_path),
+                    ('logging', site.logging),
+                    ('profiling', site.profiling),
                     ('app_database', site.monitor_app_database),
                     ('system_database', site.monitor_system_database),
                 ]),
