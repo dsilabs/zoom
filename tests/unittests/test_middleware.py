@@ -1,5 +1,5 @@
 """
-    Test the CSRF middleware
+    test middleware
 """
 import logging
 import unittest
