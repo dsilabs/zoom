@@ -7,6 +7,7 @@ import logging
 import os
 import uuid
 
+import sass as libsass
 from markdown import Markdown
 from pypugjs.ext.html import process_pugjs as pug
 from zoom.response import RedirectResponse
@@ -681,3 +682,17 @@ def hide_helpers(content):
 def restore_helpers(content):
     """Restores content helpers to their usual form"""
     return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
+
+
+def sass(text):
+    """Convert SASS to CSS
+
+    >>> tpl = '''
+    ... .fancy
+    ...   color: red
+    ... '''
+    >>> sass(tpl)
+    '.fancy {\\n  color: red; }\\n'
+
+    """
+    return libsass.compile(string=text, indented=True)

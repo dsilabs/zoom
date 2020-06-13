@@ -197,6 +197,9 @@ def serve_response(*path):
                 # create a different response type in this case.
                 data = zoom.jsonz.loads(data)
 
+            elif file_type == 'sass':
+                data = zoom.tools.sass(data).encode('utf8')
+
             return response_type(data)
 
         msg = 'unknown file type {!r}'.format(file_type)
@@ -300,7 +303,9 @@ def serve_themes(request, handler, *rest):
 
     pathname = path and (
         existing(site.theme_path, path) or
-        existing(site.default_theme_path, path)
+        existing(site.theme_path, path[:-4]+'.sass') or
+        existing(site.default_theme_path, path) or
+        existing(site.default_theme_path, path[:-4]+'.sass')
     )
     if pathname:
         return serve_response(pathname)
