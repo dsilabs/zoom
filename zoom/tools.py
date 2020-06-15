@@ -695,4 +695,8 @@ def sass(text):
     '.fancy {\\n  color: red; }\\n'
 
     """
-    return libsass.compile(string=text, indented=True)
+    if text.endswith('.sass'):
+        out = libsass.compile(filename=text)
+    else:
+        out = libsass.compile(string=text, indented=True)
+    return out
