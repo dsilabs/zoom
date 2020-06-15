@@ -186,10 +186,11 @@ def serve_response(*path):
         response_type = known_types.get(file_type)
         if response_type:
 
-            with open(pathname, 'rb') as f:
-                data = f.read()
-
             if file_type == 'json':
+
+                with open(pathname, 'rb') as f:
+                    data = f.read()
+
                 # JSONResponse expects an object which it will seriaize
                 # so this unserializaing / reserializing an extra step
                 # which may be unnecessary.  For now, we'll use the
@@ -198,7 +199,11 @@ def serve_response(*path):
                 data = zoom.jsonz.loads(data)
 
             elif file_type == 'sass':
-                data = zoom.tools.sass(data).encode('utf8')
+                data = zoom.tools.sass(pathname).encode('utf8')
+
+            else:
+                with open(pathname, 'rb') as f:
+                    data = f.read()
 
             return response_type(data)
 
