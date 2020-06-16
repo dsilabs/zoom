@@ -176,10 +176,19 @@ def serve_response(*path):
         map=BinaryResponse,
         svg=SVGResponse,
     )
+    exists = os.path.exists
     pathname = os.path.realpath(os.path.join(*path))
+
     logger = logging.getLogger(__name__)
     logger.debug('attempting to serve up file %r', pathname)
-    if os.path.exists(pathname):
+
+    if not exists(pathname) and pathname.endswith('.css'):
+        alt_pathname = pathname[:-3] + 'sass'
+        logger.debug('trying alt_pathname %r', alt_pathname)
+        if exists(alt_pathname):
+            pathname = alt_pathname
+
+    if exists(pathname):
         pathnamel = pathname.lower()
         _, file_type = os.path.splitext(pathnamel)
         file_type = file_type[1:]
@@ -199,6 +208,7 @@ def serve_response(*path):
                 data = zoom.jsonz.loads(data)
 
             elif file_type == 'sass':
+                logger.warning('rendering sass file response %r', pathname)
                 data = zoom.tools.sass(pathname).encode('utf8')
 
             else:
@@ -211,6 +221,7 @@ def serve_response(*path):
         logger.warning(msg)
         return HTMLResponse(msg, status='415 Unsupported Media Type')
     else:
+        logger.warning('hey %r', pathname)
         logger.warning('unable to serve file %r', pathname)
         relative_path = os.path.join(*path[1:])
         msg = 'file not found: {!r}'
@@ -308,9 +319,9 @@ def serve_themes(request, handler, *rest):
 
     pathname = path and (
         existing(site.theme_path, path) or
-        existing(site.theme_path, path[:-4]+'.sass') or
+        existing(site.theme_path, path[:-4]+'sass') or
         existing(site.default_theme_path, path) or
-        existing(site.default_theme_path, path[:-4]+'.sass')
+        existing(site.default_theme_path, path[:-4]+'sass')
     )
     if pathname:
         return serve_response(pathname)

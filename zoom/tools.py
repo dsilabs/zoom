@@ -639,17 +639,21 @@ def get_template(template_name='default', theme='default'):
     pathname = os.path.realpath(
         os.path.join(path, theme, template_name + '.html')
     )
+    alt_pathname = pathname.endswith('.html') and pathname[:-4] + 'pug'
+    logger.debug('alt_pathname: %r', alt_pathname)
+
     if isfile(pathname):
         logger.debug('get_template %r', pathname)
         with open(pathname, 'rb') as reader:
             return reader.read().decode('utf8')
-    elif pathname.endswith('.html') and isfile(pathname.replace('.html', '.pug')):
-        pathname = pathname.replace('.html', '.pug')
-        basedir = os.path.split(pathname)[0]
-        logger.debug('get_template %r', pathname)
+
+    elif alt_pathname and isfile(alt_pathname):
+        basedir = os.path.split(alt_pathname)[0]
+        logger.debug('get_template %r', alt_pathname)
         logger.debug('basedir %r', basedir)
-        with open(pathname, 'rb') as reader:
+        with open(alt_pathname, 'rb') as reader:
             return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
+
     else:
         if template_name == 'default':
             logger.error('default template %s missing', pathname)
