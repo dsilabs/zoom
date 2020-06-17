@@ -1,5 +1,5 @@
 
 # ZoomFoundry
 
-The enteprise web application framework for professionals.
+The enterprise web application framework for professionals.
 
