@@ -221,7 +221,6 @@ def serve_response(*path):
         logger.warning(msg)
         return HTMLResponse(msg, status='415 Unsupported Media Type')
     else:
-        logger.warning('hey %r', pathname)
         logger.warning('unable to serve file %r', pathname)
         relative_path = os.path.join(*path[1:])
         msg = 'file not found: {!r}'
