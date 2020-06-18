@@ -147,7 +147,7 @@ def group_activity_log(group):
     ]
     auth_activity = zoom.browse(items, labels=labels)
     return """
-    <h2>Recent Authorizations Activity<h2>
+    <h2>Recent Authorizations Activity</h2>
     {}
     """.format(auth_activity)
 
