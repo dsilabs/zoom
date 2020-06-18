@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 
+## [6.6.0] - 2020-06-04
+- Add app boilerplate
+- Add DynamicComponent
+- Add metadata to content overview
+- Replace px with rem in default theme
+- Update display of configuration settings in admin app
+- Automatically fallback to default theme if specified theme is missing
+
+## [6.5.0] - 2020-05-10
+- Add user impersonation
+- Add support for sass response type
+- Move default instance into _assets
+- Add more detailed audit logging
+
+## [6.4.0] - 2020-04-21
+- Add pug content rendering
+- Add libsass support
+- Add support for email addresses as usernames
+- Add screenshot artifact saving for tests
+- Add callable app menus
+- Tighten up CLI
+
+## [6.3.0] - 2020-04-06
+- Add support for timedetla formatting
+- Fix PyPi build
+- Add zoom init to CLI
+- Add support for more form attribute overrides
+- Bundle fontawesome4
+- Add ztag helper
+
+## [6.2.2] - 2019-12-23
+- Add background processing
+- Enable reading of JSON request bodies
+
 ## [6.1.0] - 2019-11-26
 - Add support for pip install
 - Refactor and enhance CLI
