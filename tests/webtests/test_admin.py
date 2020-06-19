@@ -222,6 +222,60 @@ class SystemTests(AdminTestCase):
         self.get('/admin/groups/5')
         self.assertDoesNotContain('Register')
 
+    def test_add_remove_several_apps(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
+        # add an app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Register'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+
+        # add anpther app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Forgot'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+        self.assertContains('Forgot')
+
+        # add one more app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Sample'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+        self.assertContains('Forgot')
+        self.assertContains('Sample')
+
+        # remove one of the apps we just added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[2]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertContains('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertContains('Sample')
+
+        # remove another one of the apps we just added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[2]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertContains('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertDoesNotContain('Sample')
+
+        # remove final app added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[1]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertDoesNotContain('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertDoesNotContain('Sample')
+
     def test_add_remove_user(self):
 
         # group 5 = content managers
