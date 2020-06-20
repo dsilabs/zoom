@@ -30,15 +30,3 @@ script:
 
 after_success:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.7' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
-
-notifications:
-  email:
-    recipients:
-      - developers@dynamic-solutions.com
-    on_success: never
-    on_failure: always
-  slack:
-    rooms:
-      - secure: JZe34JPv6VjHH899COS15M1xRWEoy0c2qpL7uxFlqS0KO3FeS+1L5Qms6NCXP53IQrKDN82Cn8eGXoL2juiyN5kN4HZKlvkfgW8PmZyCMhLwWsOpGSWz/IIzNosURk3l73d0MZXluMJ5DDQILzKk1boXjgfpWlXrkwdW9dXLe2q7NpiNtqbLDQNrq5bFomeEnnyBapHk+I5De6JfkhghxZcQgQqftsPo2oP4bn1eol2COuVe3pOU4j7CEOdPX4njomIyY8GSVhtI2rLXtDI/l4L3wESBjapW9ILPUx+rUlpR0opBDWdSVEVC7B2pAvZbTb5GRP9EFt2SB2/QPuXcjv/PI+fIHctY6Ln0fIZbPIne4pQx6rQzl4/CAafoFc0WHhWwqSpT82y7sgcpBPEobLqgYAnSlo7Y90MVYqTxlNImden16yWraYzTvkWsOOtOR35SZs1E7rbcE7REScfESULMUBsmcpsVQkmunO1i/UP3cVrlm4fRkYuuh9Xhf3kF336JZGfpmixuhQTU1WE1iD/kMglnajBrfR4v/iUCrm95ZzyNLxCln4r6VVhbLcjAhbgUfZtiMBwhF48ZrJIcVB9t/ehh+TxlqPdddAJjmlZEUL9JWR+lDJyAZWuBslduxTTDYNXrO/eFTYZh7/0hYmZgpDx6U2be2M0dj3F6W8g=
-    on_success: always
-    on_failure: always

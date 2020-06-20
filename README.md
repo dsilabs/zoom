@@ -1,7 +1,7 @@
 # README
 
 [![Build Status](https://travis-ci.org/dsilabs/zoom.svg?branch=master)](https://travis-ci.org/dsilabs/zoom)
-[![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ZoomFoundry is a dynamic Python Web framework written specifically for Python 3 that
@@ -38,8 +38,8 @@ All set?  Okay, here we go!
     This will install a new Python package and corresponding CLI command; `zoom`.
 
 1. Once you have ZoomFoundry installed, you'll first want to create and populate a
-    Zoom *instance directory*.<br><br> Zoom is multi-tenant, meaning it can serve 
-    multiple sites at the same time; an instance directory contains a set of Zoom 
+    Zoom *instance directory*.<br><br> Zoom is multi-tenant, meaning it can serve
+    multiple sites at the same time; an instance directory contains a set of Zoom
     *sites* and resources shared between them. Run:
     ```shell
     $ zoom init ~/my-zoom-instance
