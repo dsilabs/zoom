@@ -40,6 +40,9 @@ class AppTestPrimitives(unittest.TestCase):
     def setUp(self):
         self.site = zoom.sites.Site(self.path)
 
+    def tearDown(self):
+        del self.site
+
     def handle(self, request):
         handlers = (
             middleware.zoom.request.handler,
