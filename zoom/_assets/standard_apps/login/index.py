@@ -41,7 +41,7 @@ class LoginView(zoom.View):
     def index(self, *args, **kwargs):
         """return index page"""
         username = kwargs.get('username', '')
-        user = zoom.system.request.user
+        user = zoom.get_user()
 
         referrer_url = kwargs.get('referrer')
         if referrer_url:

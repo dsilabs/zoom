@@ -607,6 +607,11 @@ def set_current_user(request):
         raise Exception('Unable to initialize user')
 
 
+def get_user():
+    """Return the currrent user object"""
+    return zoom.system.request.user
+
+
 def handler(request, next_handler, *rest):
     """handle user"""
     set_current_user(request)

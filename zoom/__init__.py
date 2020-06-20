@@ -37,5 +37,5 @@ from .packages import requires
 from .store import store_of
 from .records import table_of
 from .tools import home, redirect_to, load
-from .users import authorize
+from .users import authorize, get_user
 from .utils import Record
