@@ -26,7 +26,7 @@ before_script:
   - mysql -uroot zoomdata < zoom/sql/setup_mysql.sql
   - mysql -uroot < zoom/sql/create_zoomuser.sql
 script:
-  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing --exclude-dir=zoom/cli
+  - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing --exclude-dir=zoom/cli --exclude-dir=zoom/_assets
 
 after_success:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.7' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
