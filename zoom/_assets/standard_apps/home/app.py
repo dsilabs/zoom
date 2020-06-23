@@ -60,5 +60,5 @@ def app(request):
             a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title.lower())
             if a.name not in skip and a.visible and request.user.can_run(a)
         ), classed='app-icons'
-    )
+    ) + '<div style="clear:both"></div>'
     return zoom.page(content, css=css)
