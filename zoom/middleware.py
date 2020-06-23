@@ -177,16 +177,19 @@ def serve_response(*path):
         svg=SVGResponse,
     )
     exists = os.path.exists
+    isfile = os.path.isfile
     pathname = os.path.realpath(os.path.join(*path))
 
     logger = logging.getLogger(__name__)
     logger.debug('attempting to serve up file %r', pathname)
 
-    if not exists(pathname) and pathname.endswith('.css'):
+    if not isfile(pathname) and pathname.endswith('.css'):
         alt_pathname = pathname[:-3] + 'sass'
         logger.debug('trying alt_pathname %r', alt_pathname)
-        if exists(alt_pathname):
+        if isfile(alt_pathname):
             pathname = alt_pathname
+        else:
+            raise Exception('not a file')
 
     if exists(pathname):
         pathnamel = pathname.lower()
@@ -312,15 +315,20 @@ def serve_themes(request, handler, *rest):
     False
     """
 
+    def existing(*path):
+        """Return existing file pathname or none"""
+        pathname = os.path.join(*path)
+        if pathname and os.path.isfile(pathname):
+            return pathname
+
     path = request.path[1:]
     site = request.site
-    existing = zoom.utils.existing
 
     pathname = path and (
         existing(site.theme_path, path) or
-        existing(site.theme_path, path[:-4]+'sass') or
+        existing(site.theme_path, path[:-4]+'.sass') or
         existing(site.default_theme_path, path) or
-        existing(site.default_theme_path, path[:-4]+'sass')
+        existing(site.default_theme_path, path[:-4]+'.sass')
     )
     if pathname:
         return serve_response(pathname)
