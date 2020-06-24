@@ -19,6 +19,14 @@ default_packages = {
             '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
         ]
     },
+    'bootstrap4.5': {
+        'libs': [
+            '/static/zoom/bootstrap/bootstrap4.5/js/bootstrap.bundle.min.js',
+        ],
+        'styles': [
+            '/static/zoom/bootstrap/bootstrap4.5/css/bootstrap.min.css'
+        ]
+    },
     'd3': {
         'libs': [
             'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js',
