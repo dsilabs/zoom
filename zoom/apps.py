@@ -13,6 +13,7 @@ import sys
 import urllib
 
 import zoom
+import zoom.components.apps
 from zoom.components import as_links
 from zoom.database import Database
 import zoom.html as html
@@ -20,7 +21,7 @@ from zoom.utils import existing
 from zoom.users import Users
 from zoom.background import load_app_background_jobs
 
-DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
+DEFAULT_SYSTEM_APPS = ['register', 'profile', 'settings', 'login', 'logout']
 DEFAULT_MAIN_APPS = ['home', 'admin', 'apps']
 DEFAULT_SETTINGS = dict(
     title='',
@@ -598,8 +599,8 @@ def get_system_apps(request):
     """Returns a list containing the system apps.
 
     System apps are apps that appear in the system menu, which is usually found
-    at the top left of a web site.  The system menu typically includes apps such
-    as login, logout, profile and register.
+    at the top right of a web site.  The system menu typically includes apps such
+    as login, logout, profile, settings and register.
 
     This list can be defined in the site.ini file in the [apps] section using the
     key `system`.  A example is provided in the default site.ini file.
@@ -680,6 +681,30 @@ def main_menu(request):
     return '<ul>%s</ul>' % main_menu_items(request)
 
 
+def apps_menu(request):
+    """Returns a menu of available apps"""
+    site = request.site
+    user = zoom.get_user()
+
+    system_apps = list(get_system_apps(request))
+    main_apps = list(get_main_apps(request))
+    exclude = list(a.name for a in system_apps + main_apps)
+
+    menu_item = zoom.components.apps.AppMenuItem()
+    active_app = zoom.system.request.app.name
+
+    return html.div(
+        html.ul(
+            menu_item.format(
+                app=app,
+                active=' active' if app.name == active_app else ''
+            ) for app in site.apps
+            if app.name in user.apps and
+            app.visible and app.name not in exclude
+        ), classed='apps-menu'
+    )
+
+
 def helpers(request):
     """return a dict of app helpers"""
     app = request.app
@@ -695,6 +720,7 @@ def helpers(request):
         system_menu=system_menu(request),
         main_menu_items=main_menu_items(request),
         main_menu=main_menu(request),
+        apps_menu=apps_menu(request),
         page_name=len(request.route) > 1 and request.route[1] or '',
     )
 
