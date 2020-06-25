@@ -11,6 +11,7 @@ from zoom.database import setup_test
 from zoom.users import (
     User, Users, hash_password, get_current_username, set_current_user
 )
+from zoom.models import Groups
 from zoom.exceptions import UnauthorizedException
 
 class TestUser(unittest.TestCase):
@@ -18,15 +19,40 @@ class TestUser(unittest.TestCase):
     def setUp(self):
         self.db = setup_test()
         self.users = Users(self.db)
+        self.groups = Groups(self.db)
         zoom.system.request = zoom.utils.Bunch(
             app=zoom.utils.Bunch(
                 name=__name__,
             ),
             session=zoom.utils.Bunch(),
         )
+        zoom.system.site = zoom.utils.Bunch(
+            url='nosite',
+            db=self.db,
+            groups=self.groups,
+        )
 
     def tearDown(self):
         self.db.close()
+
+    def test_add(self):
+        self.assertFalse(self.users.first(username='sam'))
+        user = self.users.add('sam', 'sam', 'smith', 'sam@testco.com')
+        self.assertTrue(isinstance(user, User))
+        self.assertEqual(user.name, 'sam smith')
+        self.assertTrue(self.users.first(username='sam'))
+        self.users.delete(username='sam')
+        self.assertFalse(self.users.first(username='sam'))
+
+    def test_add_invalid(self):
+        self.assertFalse(self.users.first(username='sam'))
+        with self.assertRaises(Exception):
+            self.users.add('sam', '', 'smith', 'sam@testco.com')
+        try:
+            self.users.add('sam', '', 'smith', 'sam@testco.com')
+        except BaseException as e:
+            self.assertEqual(str(e), 'minimum length 2')
+        self.assertFalse(self.users.first(username='sam'))
 
     def test_get_user(self):
         user = self.users.get(1)

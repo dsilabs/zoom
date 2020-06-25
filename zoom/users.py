@@ -516,6 +516,46 @@ class Users(RecordStore):
             key='id'
             )
 
+    def add(
+            self,
+            username,
+            first_name,
+            last_name,
+            email,
+            phone=None,
+        ):
+        """Add user record to the database"""
+
+        def validate(value, validator):
+            """validate a value"""
+            if not validator(value):
+                raise Exception(validator.msg)
+
+        v = zoom.validators
+
+        rules = (
+            (username, v.valid_username),
+            (first_name, v.valid_name),
+            (last_name, v.valid_name),
+            (email, v.valid_email),
+            (email, v.valid_email),
+        )
+
+        for value, rule in rules:
+            validate(value, rule)
+
+        user = User(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+        )
+
+        self.put(user)
+
+        return user
+
     def before_insert(self, user):
         """Things to do just before inserting a new User record"""
         user.update(status='A')
@@ -526,15 +566,16 @@ class Users(RecordStore):
         user.updated = zoom.tools.now()
 
     def after_insert(self, user):
-        """Things to do right after inserting a new user"""
+        """Things to do immediately after inserting a new user"""
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
 
     def before_delete(self, user):
-        """Things to do right before deleting a user"""
+        """Things to do immediately before deleting a user"""
         user.remove_groups()
 
     def locate(self, key):
+        """Locate a user by username or user_id"""
         user = key and (
             self.first(username=key) or
             self.first(username=key.replace('-', '\\')) or
