@@ -365,7 +365,7 @@ class RecordStore(Store):
 
     def _delete(self, ids):
         if ids:
-            affected = self.get(ids)
+            affected = list(self.get(ids))
 
             for rec in affected:
                 self.before_delete(rec)
