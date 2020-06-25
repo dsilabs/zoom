@@ -586,7 +586,6 @@ class Groups(RecordStore):
 
     def add(self, name, group_type='U', description=''):
         """Add a group"""
-        debug = logging.getLogger(__name__).debug
         group_id = self.put(
             Group(
                 name=name,
@@ -595,9 +594,30 @@ class Groups(RecordStore):
                 admin_group_id=1,
             )
         )
+        return group_id
+
+    def after_insert(self, record):
+        name = record['name']
+        group_id = record['_id']
+        debug = logging.getLogger(__name__).debug
         debug('created new group %r (%r)', name, group_id)
         audit('create group', name)
-        return group_id
+
+    def after_update(self, record):
+        name = record['name']
+        group_id = record['_id']
+        debug = logging.getLogger(__name__).debug
+        debug('updated group %r (%r)', name, group_id)
+        audit('update group', name)
+
+    def after_delete(self, record):
+        """After Delete
+
+        Adds log entries after a delete has been executed.
+        """
+        debug = logging.getLogger(__name__).debug
+        debug('deleted group %r (%r)', record['name'], record['group_id'])
+        audit('delete group', record['name'])
 
     def add_app(self, name):
         """Add an app"""

@@ -55,6 +55,14 @@ class TestGroup(unittest.TestCase):
         self.assertRaises(KeyError, lambda: group.roles, )
         self.assertRaises(KeyError, lambda: group.subgroups, )
 
+    def test_add_delete_group(self):
+        groups = self.groups
+        self.assertFalse(groups.first(name='testgroup1'))
+        groups.add('testgroup1')
+        self.assertTrue(groups.first(name='testgroup1'))
+        groups.delete(name='testgroup1')
+        self.assertFalse(groups.first(name='testgroup1'))
+
     def test_add_remove_subgroup(self):
         users_group = self.groups.first(name='users')
         managers_group = self.groups.first(name='managers')
