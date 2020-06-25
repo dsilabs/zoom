@@ -184,7 +184,8 @@ def get_index_metrics(db):
 
     def avg(metric, where, *args):
         """Return the result of a query that calculates an average"""
-        return '{:,.1f}'.format((list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]))
+        value = list(db('select avg({}) from {}'.format(metric, where), *args))[0][0]
+        return '{:,.1f}'.format(value) if value else '-'
 
     the_day = today()
     host = zoom.system.request.host
