@@ -565,14 +565,20 @@ class Users(RecordStore):
         """Things to do just before updating a User record"""
         user.updated = zoom.tools.now()
 
+    def after_update(self, user):
+        """Things to do immediately after a user update"""
+        audit('update user', user.username)
+
     def after_insert(self, user):
         """Things to do immediately after inserting a new user"""
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
+        audit('create user', user.username)
 
     def before_delete(self, user):
         """Things to do immediately before deleting a user"""
         user.remove_groups()
+        audit('delete user', user.username)
 
     def locate(self, key):
         """Locate a user by username or user_id"""
