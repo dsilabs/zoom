@@ -112,7 +112,6 @@ def get_groups(db, user):
     >>> 'administrators' in groups
     True
     """
-    logger = logging.getLogger(__name__)
 
     def get_memberships(group, memberships, depth=0):
         """get group memberships"""
@@ -138,13 +137,9 @@ def get_groups(db, user):
         'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
     ))
 
-    # memberships = []
     groups = set()
     for group in my_groups:
-        # memberships += get_memberships(group, subgroups)
         groups |= get_memberships(group, subgroups)
-
-    # groups = my_groups + memberships
 
     named_groups = sorted(all_groups[g] for g in set(groups))
 
@@ -522,7 +517,7 @@ class Users(RecordStore):
             first_name,
             last_name,
             email,
-            phone=None,
+            phone='',
         ):
         """Add user record to the database"""
 
@@ -531,14 +526,18 @@ class Users(RecordStore):
             if not validator(value):
                 raise Exception(validator.msg)
 
-        v = zoom.validators
+        def username_not_taken(username):
+            return self.first(username=username) is None
 
+        v = zoom.validators
+        username_available = v.Validator('username taken', username_not_taken)
         rules = (
             (username, v.valid_username),
             (first_name, v.valid_name),
             (last_name, v.valid_name),
             (email, v.valid_email),
-            (email, v.valid_email),
+            (phone, v.valid_phone),
+            (username, username_available),
         )
 
         for value, rule in rules:

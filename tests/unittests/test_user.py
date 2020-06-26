@@ -31,6 +31,7 @@ class TestUser(unittest.TestCase):
             db=self.db,
             groups=self.groups,
         )
+        zoom.system.user = self.users.first(username='admin')
 
     def tearDown(self):
         self.db.close()
@@ -52,6 +53,18 @@ class TestUser(unittest.TestCase):
             self.users.add('sam', '', 'smith', 'sam@testco.com')
         except BaseException as e:
             self.assertEqual(str(e), 'minimum length 2')
+        with self.assertRaises(Exception):
+            self.users.add('sam', 'sam', 'smith', 'sam')
+        try:
+            self.users.add('sam', 'sam', 'smith', 'sam')
+        except BaseException as e:
+            self.assertEqual(str(e), 'enter a valid email address')
+        with self.assertRaises(Exception):
+            self.users.add('sam', 'sam', 'smith', 'sam@test.co', '123')
+        try:
+            self.users.add('sam', 'sam', 'smith', 'sam@test.co', '123')
+        except BaseException as e:
+            self.assertEqual(str(e), 'enter valid phone number')
         self.assertFalse(self.users.first(username='sam'))
 
     def test_get_user(self):
