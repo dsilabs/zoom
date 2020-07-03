@@ -516,6 +516,7 @@ class SiteNotFoundResponse(HTMLResponse):
     ...     ip_address='127.0.0.1',
     ...     module='index',
     ...     request_id=1234,
+    ...     elapsed=0.01,
     ... )
     >>> response = SiteNotFoundResponse(request)
     >>> 'ZOOM' in str(response.render())
