@@ -226,6 +226,8 @@ class CollectionView(View):
                 actions.append(action_for(record, 'Edit'))
             if user.can('delete', record):
                 actions.append(action_for(record, 'Delete'))
+            if user.can('create', record):
+                actions.append(action_for(record, 'New'))
             c.fields.initialize(c.model(record))
 
             if 'updated' in record and 'updated_by' in record:
