@@ -58,6 +58,28 @@ class TestCGIRequest(unittest.TestCase):
         result = {'also': 'another', 'parameter': 'value'}
         self.assertEqual(request.data, result)
 
+    def test_get_with_duplicates(self):
+        env = dict(
+            REQUEST_METHOD='GET',
+            QUERY_STRING='parameter=one&parameter=two'
+        )
+        request = Request(env)
+        expected = {
+            'parameter': ['one', 'two']
+        }
+        self.assertEqual(request.data, expected)
+
+    def test_get_with_indexed_values(self):
+        env = dict(
+            REQUEST_METHOD='GET',
+            QUERY_STRING='parameter[1]=one&parameter[2]=two'
+        )
+        request = Request(env)
+        expected = {
+            'parameter': ['two', 'one'],
+        }
+        self.assertEqual(sorted(request.data), sorted(expected))
+
     def get_post_request(self, body):
         sys.stdin = body
         return Request(self.env)
