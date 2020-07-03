@@ -614,8 +614,11 @@ def load_template(name, default=None):
         return default or '<!-- template %s-->' % comment
 
     site = zoom.system.request.site
-    app = zoom.system.request.app
-    templates_paths = dedup(app.templates_paths + site.templates_paths)
+
+    app = getattr(zoom.system.request, 'app', None)
+    app_templates_paths = app.templates_paths if app else []
+
+    templates_paths = dedup(app_templates_paths + site.templates_paths)
 
     if not '.' in name:
         name = name + '.html'
@@ -626,7 +629,6 @@ def load_template(name, default=None):
             'Templates are located in theme folders.'
         )
 
-    # return 'got stuff'
     return site.templates.setdefault(name, load_template_file(name, default))
 
 def get_template(template_name='default', theme='default'):

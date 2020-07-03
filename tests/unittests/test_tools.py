@@ -28,6 +28,12 @@ class TestTools(unittest.TestCase):
         template = load('default.pug')
         self.assertIn('!!! 5', template)
 
+    def test_load_template_no_app(self):
+        del zoom.system.request.app
+        load = zoom.tools.load_template
+        template = load('default.pug')
+        self.assertIn('!!! 5', template)
+
     @unittest.skip
     def test_load_template_source_note_name(self):
         load = zoom.tools.load_template
