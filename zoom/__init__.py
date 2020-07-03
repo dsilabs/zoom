@@ -26,7 +26,7 @@ import zoom.users
 from .apps import App
 from .auditing import audit
 from .browse import browse
-from .component import Component
+from .component import Component, DynamicComponent
 from .context import context as system
 from .forms import form, Form
 from .helpers import link_to, url_for, url_for_page
