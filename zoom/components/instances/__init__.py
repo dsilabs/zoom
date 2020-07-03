@@ -22,6 +22,7 @@ def get_info_page(request):
         date=datetime.datetime.now(),
         version=zoom.__version__,
         css=css,
+        elapsed=request.elapsed * 1000
     )
 
     content = html.format(**values)
