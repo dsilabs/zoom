@@ -72,11 +72,11 @@ class App(object):
     expects.
     """
 
-    def __init__(self, menu=[]):
-        self.menu = menu
+    def __init__(self, menu=None):
+        self.menu = [] if menu is None else menu
         self.request = None
 
-    def static(self, *args, **kwargs):
+    def static(self, *args):
         return zoom.middleware.serve_response('static', *args)
 
     def process(self, *route, **data):
@@ -313,15 +313,15 @@ class AppProxy(object):
         try:
             config.read(local_config_file)
             return config.get(section, key)
-        except:
+        except BaseException:
             try:
                 config.read(shared_config_file)
                 return config.get(section, key)
-            except:
+            except BaseException:
                 try:
                     config.read(system_config_file)
                     return config.get(section, key)
-                except:
+                except BaseException:
                     if default != None:
                         return default
                     else:
@@ -453,7 +453,6 @@ def make_source_url(app_name, request):
         request.host,
         request.uri
     ])
-    original_referrer_url = request.referrer
     params = dict(
         original_url=original_url,
     )
@@ -750,7 +749,7 @@ def handler(request, next_handler, *rest):
         sys.path.insert(0, '.')
     response = handle(request)
     if isinstance(response, zoom.response.RedirectResponse):
-        logger.debug('app redirecting to %s' % response.headers['Location'])
+        logger.debug('app redirecting to %s', response.headers['Location'])
     else:
-        logger.debug('app responded with type %s' % type(response))
+        logger.debug('app responded with type %s', type(response))
     return response or next_handler(request, *rest)
