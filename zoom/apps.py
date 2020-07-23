@@ -683,22 +683,38 @@ def main_menu(request):
 
 def apps_menu(request):
     """Returns a menu of available apps"""
+
+    def calc_position(app):
+        """position of app"""
+        name = app.name
+        return names.index(name) if name in names else 9999
+
     site = request.site
-    user = zoom.get_user()
+    user = request.user
+    get = site.config.get
+
+    names = get('apps', 'apps', '')
+    names = names and [s.strip() for s in names.split(',')] or []
 
     system_apps = list(get_system_apps(request))
     main_apps = list(get_main_apps(request))
     exclude = list(a.name for a in system_apps + main_apps)
 
+    apps = [
+        app for app in sorted(site.apps, key=calc_position)
+        if app.name not in exclude and app.visible
+        and app.name in user.apps
+    ]
+
     menu_item = zoom.components.apps.AppMenuItem()
-    active_app = zoom.system.request.app.name
+    active_app = request.app.name
 
     return html.div(
         html.ul(
             menu_item.format(
                 app=app,
                 active=' active' if app.name == active_app else ''
-            ) for app in site.apps
+            ) for app in apps
             if app.name in user.apps and
             app.visible and app.name not in exclude
         ), classed='apps-menu'
