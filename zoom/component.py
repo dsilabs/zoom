@@ -20,12 +20,12 @@
 
 from inspect import getfile
 import logging
-from os.path import abspath, split, join, isfile
+from os.path import abspath, split, join, isfile, realpath
 import sys
 
 import zoom
 from zoom.utils import OrderedSet, kind
-from zoom.tools import load
+from zoom.tools import load, pug, sass
 
 
 class Component(object):
@@ -277,12 +277,21 @@ component = Component
 def load_assets(path, name):
     """Return file based component assets for a named component"""
     assets = {}
-    for ext in ['html', 'css', 'js']:
+    for ext in ['html', 'css', 'js', 'pug', 'sass']:
         pathname = join(
             path, name + '.' + ext
         )
         if isfile(pathname):
-            assets[ext] = load(pathname)
+            if ext == 'pug':
+                basedir = realpath(split(pathname)[0])
+                content = load(pathname)
+                result = pug(content, options=dict(basedir=basedir))
+                assets['html'] = result
+            elif ext == 'sass':
+                result = sass(pathname)
+                assets['css'] = result
+            else:
+                assets[ext] = load(pathname)
     return assets
 
 
@@ -341,7 +350,7 @@ def handler(request, handler, *rest):
             request.session.system_errors = []
         request.session.system_errors = list(error_alerts)
 
-    stdout = sys.stdout.getvalue()
+    stdout = sys.stdout.getvalue() # pylint: disable=no-member
     if stdout:
         renderable = (
             isinstance(result.content, str) and '{*stdout*}' in result.content
