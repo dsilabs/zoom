@@ -1,0 +1,9 @@
+.widgets-layout {
+    display: flex;
+    width: 100%;
+    background: #eee;
+}
+.widgets-layout .widget-panel {
+    width: 25%;
+    padding: 10px;
+}
