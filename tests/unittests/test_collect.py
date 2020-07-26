@@ -451,7 +451,7 @@ class TestCollect(unittest.TestCase):
         self.assert_response(VIEW_TWO_RECORD_LIST)
 
         response = self.collect('delete', 'joe').content
-        assert 'Are you sure' in response
+        assert 'Are you sure' in str(response)
         self.assert_response(VIEW_TWO_RECORD_LIST)
 
         self.collect('delete', 'joe', **{'confirm': 'no'})
