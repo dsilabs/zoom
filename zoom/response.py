@@ -519,7 +519,7 @@ class SiteNotFoundResponse(HTMLResponse):
     ...     elapsed=0.01,
     ... )
     >>> response = SiteNotFoundResponse(request)
-    >>> 'ZOOM' in str(response.render())
+    >>> 'ZoomFoundry' in str(response.render())
     True
     """
 
