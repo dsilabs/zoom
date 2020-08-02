@@ -406,3 +406,9 @@ def when(date, since=None):
 def impersonation_notice(*args, **kwargs):
     """Impersonation Notice Helper"""
     return zoom.impersonation.get_impersonation_notice()
+
+
+def version():
+    """return ZoomFoundry version number"""
+    return zoom.__version__
+    
