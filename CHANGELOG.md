@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 
+## [6.7.0] - 2020-06-04
+- Add auto pug and sass compilation to DynamicComponents
+- Add apps_menu helper
+- Add support for Widgets
+- Refine collection styling
+
 ## [6.6.0] - 2020-06-04
 - Add app boilerplate
 - Add DynamicComponent
