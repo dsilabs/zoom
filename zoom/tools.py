@@ -662,7 +662,6 @@ def get_template(template_name='default', theme='default'):
             raise zoom.exceptions.ThemeTemplateMissingException(
                 'Default template missing %r' % pathname
             )
-        logger.debug('template %r missing', pathname)
         return get_template('default', theme)
 
 def zoompath(*args):

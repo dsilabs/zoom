@@ -70,7 +70,7 @@ class LoginView(zoom.View):
             origin=origin,
         )
 
-        return zoom.page(form)
+        return zoom.page(form, template='login')
 
 
 class LoginController(zoom.Controller):
