@@ -164,6 +164,9 @@ def how_long(time1, time2):
     >>> how_long(now, now + one_hour / 3)
     '20 minutes'
 
+    >>> how_long(now, now + one_hour)
+    '1 hour'
+
     >>> how_long(now, now + one_day / 3)
     '8 hours'
 
@@ -249,8 +252,10 @@ def how_long(time1, time2):
         result = '%d days' % diff.days
     elif diff.days == 1:
         result = '1 day'
-    elif diff.seconds > 3600:
+    elif diff.seconds > 7200:
         result = '%d hours' % int(diff.seconds / 3600)
+    elif diff.seconds > 3600:
+        result = '1 hour'
     elif diff.seconds > 60:
         result = '%d minutes' % int(diff.seconds / 60)
     elif diff.seconds > 0:
