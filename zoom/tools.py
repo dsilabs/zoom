@@ -254,7 +254,7 @@ def how_long(time1, time2):
         result = '1 day'
     elif diff.seconds > 7200:
         result = '%d hours' % int(diff.seconds / 3600)
-    elif diff.seconds > 3600:
+    elif int(diff.seconds) >= 3600:
         result = '1 hour'
     elif diff.seconds > 60:
         result = '%d minutes' % int(diff.seconds / 60)
