@@ -138,9 +138,8 @@ def delete_form(name, cancel=None):
     css = """
     .delete-card {
         border: thin solid #ddd;
-        margin: 0 auto;
+        margin: 10% auto;
         width: 50%;
-        margin-top: 10%;
         padding: 3em;
         background: white;
         box-shadow: 3px 3px 3px #ddd;
