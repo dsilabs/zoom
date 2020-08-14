@@ -451,7 +451,7 @@ def make_source_url(app_name, request):
         request.protocol,
         '://',
         request.host,
-        request.uri
+        request.path
     ])
     params = dict(
         original_url=original_url,
