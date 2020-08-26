@@ -37,6 +37,8 @@ def get_format(label, values):
         data_type = first_non_null[0]
         if label in ['id', '_id', 'userid']:
             return '{}', 'right'
+        elif label.endswith(' ID'):
+            return '{}', 'right'
         elif data_type in [int, float, Decimal]:
             return '{:,}', 'right'
         elif data_type in [datetime.date]:
