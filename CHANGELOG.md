@@ -5,7 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- add pytz requirement for timezone support
+- add order_by support for RecordStore
+- adjust ID format in browse
+
 ### Added
+
+## [6.7.2] - 2020-08-02
+- Fix bug in url constructor for login redirects
+
+## [6.7.1] - 2020-08-02
+- Add login page template support
+- Add level to how_long formatter
 
 ## [6.7.0] - 2020-08-02
 - Add auto pug and sass compilation to DynamicComponents
