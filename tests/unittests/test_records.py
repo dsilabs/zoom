@@ -187,6 +187,26 @@ class TestRecordStore(unittest.TestCase):
         self.people.zap()
         self.assertEqual(0, len(self.people))
 
+    def test_iter(self):
+        self.assertEqual(3, len(self.people))
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Joe', 'Sam', 'Ann'])
+
+    def test_iter_ordered(self):
+        self.assertEqual(3, len(self.people))
+        self.people.order_by = 'name'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Ann', 'Joe', 'Sam'])
+
+        self.people.order_by = 'age'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Sam', 'Ann', 'Joe'])
+
+    def test_iter_ordered_desc(self):
+        self.assertEqual(3, len(self.people))
+        self.people.order_by = 'name desc'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
 
 class TestKeyedRecordStore(TestRecordStore):
     """Keyed RecordStore Tests

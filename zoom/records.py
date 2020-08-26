@@ -182,6 +182,7 @@ class RecordStore(Store):
         self.record_class = record_class
         self.kind = name or kind(record_class())
         self.key = key
+        self.order_by = None
 
     @property
     def id_name(self):
@@ -580,7 +581,8 @@ class RecordStore(Store):
         """
         items = kwargs.items()
         where_clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
-        cmd = 'select * from ' + self.kind + ' where ' + where_clause
+        order_by = self.order_by and (' order by ' + self.order_by) or ''
+        cmd = 'select * from ' + self.kind + ' where ' + where_clause + order_by
         result = self.db(cmd, *[v for _, v in items])
         return Result(result, self)
 
@@ -711,7 +713,8 @@ class RecordStore(Store):
             105
 
         """
-        cmd = 'select * from '+self.kind
+        order_by = self.order_by and (' order by ' + self.order_by) or ''
+        cmd = 'select * from ' + self.kind + order_by
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 
