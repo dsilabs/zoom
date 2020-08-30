@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - return str responses as content in a page
+- return Compontent responses as content in a page
 
 ### Added
 
