@@ -211,7 +211,7 @@ def serve_response(*path):
                 data = zoom.jsonz.loads(data)
 
             elif file_type == 'sass':
-                logger.warning('rendering sass file response %r', pathname)
+                logger.debug('rendering sass file response %r', pathname)
                 data = zoom.tools.sass(pathname).encode('utf8')
 
             else:
