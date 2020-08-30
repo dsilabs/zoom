@@ -402,6 +402,7 @@ def respond(content, request):
     """construct a response"""
 
     html_response = zoom.response.HTMLResponse
+    json_response = zoom.response.JSONResponse
 
     if content:
         if isinstance(content, zoom.response.Response):
@@ -415,6 +416,9 @@ def respond(content, request):
 
         elif isinstance(content, (list, set, tuple)):
             result = html_response(''.join(content))
+
+        elif isinstance(content, (dict, )):
+            result = json_response(content)
 
         else:
             result = html_response('OK')
