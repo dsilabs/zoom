@@ -21,6 +21,7 @@ from zoom.utils import existing
 from zoom.users import Users
 from zoom.background import load_app_background_jobs
 
+
 DEFAULT_SYSTEM_APPS = ['register', 'profile', 'settings', 'login', 'logout']
 DEFAULT_MAIN_APPS = ['home', 'admin', 'apps']
 DEFAULT_SETTINGS = dict(
@@ -416,7 +417,7 @@ def respond(content, request):
             result = html_response(''.join(content))
 
         elif isinstance(content, str):
-            result = html_response(content)
+            result = zoom.Page(content).render(request)
 
         else:
             result = html_response('OK')

@@ -81,15 +81,6 @@ class TestApps(unittest.TestCase):
         finally:
             os.chdir(save_dir)
 
-    def test_respond_text(self):
-        response = zoom.apps.respond('test', self.request)
-        self.assertEqual(response.status, '200 OK')
-        self.assertEqual(response.content, 'test')
-
-    def test_respond_none(self):
-        response = zoom.apps.respond(None, self.request)
-        self.assertEqual(response, None)
-
     def test_noapp(self):
         app = zoom.apps.NoApp()
         self.assertEqual(app.name, 'none')
@@ -170,7 +161,7 @@ class TestApps(unittest.TestCase):
             '<li><a href="<dz:app_url>/flags">Flags</a></li>'
             '<li><a href="<dz:app_url>/parts">Parts</a></li>'
             '<li><a href="<dz:app_url>/tools">Tools</a></li>'
-            '<li><a href="<dz:app_url>/missing">Missing</a></li>'
+            '<li><a href="<dz:app_url>/responses">Responses</a></li>'
             '<li><a href="<dz:app_url>/about">About</a></li>'
             '<li><a href="<dz:app_url>/background">Background</a></li>'
             '</ul>'
@@ -204,11 +195,16 @@ class TestApps(unittest.TestCase):
 
     def test_respond_str(self):
         response = zoom.apps.respond('test', self.request)
+        self.assertEqual(response.status, '200 OK')
         self.assertEqual(type(response), zoom.response.HTMLResponse)
 
     def test_respond_component(self):
         response = zoom.apps.respond(zoom.Component('my html', css='my css'), self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_respond_none(self):
+        response = zoom.apps.respond(None, self.request)
+        self.assertEqual(response, None)
 
     def test_respond_list(self):
         response = zoom.apps.respond(['one', 'two'], self.request)
