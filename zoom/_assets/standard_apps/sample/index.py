@@ -44,7 +44,7 @@ class MyView(View):
         return page(content)
 
     def about(self):
-        return page(load_content('about.md'))
+        return load_content('about.md', version=zoom.__version__)
 
 
 def main(route, request):

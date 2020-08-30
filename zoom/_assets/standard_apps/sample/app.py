@@ -13,5 +13,5 @@ app = App()
 app.menu = (
     'Content', 'Fields', 'Collection', 'Components',
     'Widgets', 'Alerts', 'Flags', 'Parts', 'Tools',
-    'Responses', 'About', 'Background'
+    'Responses', 'Background', 'About'
 )
