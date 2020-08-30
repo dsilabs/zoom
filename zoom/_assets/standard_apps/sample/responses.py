@@ -13,6 +13,7 @@ class View(zoom.View):
         # Responses
         * [str](/sample/responses/string)
         * [text](/sample/responses/text)
+        * [Component](/sample/responses/component)
         * [Missing (404)](/sample/responses/missing)
         """)
 
@@ -20,7 +21,11 @@ class View(zoom.View):
         return '<h1>Str</h1>This is a <code>str</code> response.'
 
     def text(self):
-        return zoom.response.TextResponse('This is a TextResponse response')
+        t = 'This is a TextResponse response.'
+        return zoom.response.TextResponse(t)
+
+    def component(self):
+        return zoom.Component('<h1>Component</h1>This is a <code>Component</code> response.')
 
 
 main = zoom.dispatch(View)

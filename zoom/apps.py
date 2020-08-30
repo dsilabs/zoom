@@ -407,17 +407,14 @@ def respond(content, request):
         if isinstance(content, zoom.response.Response):
             result = content
 
-        elif isinstance(content, zoom.Component):
-            result = html_response(content.render())
+        elif isinstance(content, (str, zoom.Component)):
+            result = zoom.Page(content).render(request)
 
         elif hasattr(content, 'render') and content.render:
             result = content.render(request)
 
         elif isinstance(content, (list, set, tuple)):
             result = html_response(''.join(content))
-
-        elif isinstance(content, str):
-            result = zoom.Page(content).render(request)
 
         else:
             result = html_response('OK')

@@ -64,7 +64,7 @@ class TestApps(unittest.TestCase):
             request.site = zoom.site.Site(self.request)
             request.site.db = zoom.database.setup_test()
             response = app(request)
-            self.assertEqual(type(response), zoom.Page)
+            self.assertEqual(type(response), str)
         finally:
             os.chdir(save_dir)
 
@@ -162,8 +162,8 @@ class TestApps(unittest.TestCase):
             '<li><a href="<dz:app_url>/parts">Parts</a></li>'
             '<li><a href="<dz:app_url>/tools">Tools</a></li>'
             '<li><a href="<dz:app_url>/responses">Responses</a></li>'
-            '<li><a href="<dz:app_url>/about">About</a></li>'
             '<li><a href="<dz:app_url>/background">Background</a></li>'
+            '<li><a href="<dz:app_url>/about">About</a></li>'
             '</ul>'
         ))
 
