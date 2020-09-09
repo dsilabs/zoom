@@ -216,7 +216,7 @@ def callback(method, url=None, timeout=5000):
         timeout=timeout
     )
     content = '<div id="%(method_name)s">%(initial_value)s</div>' % dict(
-        initial_value=method(),
+        initial_value=method().content,
         method_name=method_name
     )
     return zoom.Component(content, js=js)
@@ -267,7 +267,6 @@ class MyView(zoom.View):
         )
 
     def _index(self):
-        # return None
         self.model.site.logging = False
         db = self.model.site.db
 
@@ -280,7 +279,7 @@ class MyView(zoom.View):
                 feed4=warning_panel(db),
             ),
         )
-        return content
+        return zoom.partial(content)
 
     def clear(self):
         """Clear the search"""
