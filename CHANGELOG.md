@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - return str responses as content in a page
 - return Component responses as content in a page
 - return dict responses as JSONResponse
+- add partial response
 
 ### Added
 
