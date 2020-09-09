@@ -352,6 +352,12 @@ def redirect_to(*args, **kwargs):
     return Redirector(*args, **kwargs)
 
 
+def partial(*args, **kwargs):
+    """Return a partial HTML response."""
+    content = zoom.Component(*args, **kwargs)
+    return zoom.response.HTMLResponse(content.render())
+
+
 def home(view=None):
     """Redirect to application home.
 
