@@ -43,6 +43,14 @@ default_packages = {
             'd3',
         ]
     },
+    "chartjs": {
+        "libs": [
+            "//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"
+        ],
+        "styles": [
+            "//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css"
+        ]
+    },
     'cookieconsent': {
         'libs': [
             '/static/zoom/cookieconsent.js',
@@ -184,9 +192,12 @@ def get_registered_packages():
     packages_list = [
         default_packages,
         zoom.system.site.packages,
-        zoom.system.request.app.common_packages,
-        zoom.system.request.app.packages,
     ]
+    if zoom.system.request:
+        packages_list.extend([
+            zoom.system.request.app.common_packages,
+            zoom.system.request.app.packages,
+        ])
     for packages in packages_list:
         registered.update(packages)
     return registered

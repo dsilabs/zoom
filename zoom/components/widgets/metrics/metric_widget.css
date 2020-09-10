@@ -1,0 +1,23 @@
+.metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #3c4b64;
+}
+.metric-title {
+    font-size: 1rem;
+    color: #3c4b64;
+}
+.metric-chart-wrapper {
+    height: 50%;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+.metric-wrapper {
+    display: flex;
+    flex-direction: column;
+    word-wrap: break-word;
+    border: 0;
+    height: $(( metric.height ));
+}

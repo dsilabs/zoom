@@ -14,7 +14,8 @@ class ProgressWidget(DynamicComponent):
 
     """
 
-    def format(self,
+    def format(
+            self,
             percent,
             title='value title',
             hint='',
