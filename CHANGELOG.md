@@ -5,12 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- return str responses as content in a page
-- return Component responses as content in a page
-- return dict responses as JSONResponse
 - add partial response
 
 ### Added
+
+## [6.7.4] - 2020-08-30
+- return str responses as content in a page
+- return Component responses as content in a page
+- return dict responses as JSONResponse
 
 ## [6.7.3] - 2020-08-26
 - add pytz requirement for timezone support
