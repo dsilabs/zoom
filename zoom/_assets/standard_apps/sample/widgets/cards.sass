@@ -1,0 +1,13 @@
+
+.cards-flex
+    display: flex
+    flex-direction: column
+    margin-top: 1rem
+
+@media (min-width: 600px)
+  .card
+    width: calc(25% - 4px)
+  .cards-flex
+      flex-direction: row
+      flex-flow: row wrap
+      justify-content: space-between

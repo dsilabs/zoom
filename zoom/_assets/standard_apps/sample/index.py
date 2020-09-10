@@ -7,6 +7,8 @@ from zoom.browse import browse
 from zoom.fields import *
 from zoom.validators import required
 
+import widgets
+
 my_form = Fields(
     Section('Personal', [
         TextField('Name', required, size=20, value='John Doe', hint='this is a hint'),
@@ -42,6 +44,9 @@ class MyView(View):
             form3=small_form.edit(),
         )
         return page(content)
+
+    def widgets(self):
+        return widgets.view()
 
     def about(self):
         return load_content('about.md', version=zoom.__version__)
