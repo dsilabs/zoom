@@ -1,7 +1,6 @@
-.progress-card.text-white.bg-gradient-primary
-  .progress-card-body
-    .value 89.9%
-    .title Widget title
-    .progress.progress-white.progress-xs.my-2
-    .progress-bar(role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100")
-    small.text-muted Widget helper text
+.progress-card-body
+  .value {percent}%
+  .title {title}
+  .progress.progress-white.progress-xs.my-2
+    .progress-bar(role="progressbar" style="width: {percent}%; background-color: {color};" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100")
+  small.text-muted {hint}

@@ -9,8 +9,21 @@ class ProgressWidget(DynamicComponent):
     >>> component = progress.format(
     ...    title='Widget Title',
     ...    hint='Widget hint',
-    ...    value=75,
+    ...    percent=75,
     ... )
 
     """
 
+    def format(self,
+            percent,
+            title='value title',
+            hint='',
+            color='#337ab7',
+        ):
+        return DynamicComponent.format(
+            self,
+            percent=percent,
+            title=title,
+            hint=hint,
+            color=color,
+        )
