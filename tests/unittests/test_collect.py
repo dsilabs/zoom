@@ -190,11 +190,14 @@ class FakeRequest(object):
 
 class FakeSite(object):
     def __init__(self, **kwargs):
+        self.packages = {}
         self.__dict__.update(kwargs)
 
 
 class FakeApp(object):
     def __init__(self, **kwargs):
+        self.common_packages = {}
+        self.packages = {}
         self.__dict__.update(kwargs)
 
 
