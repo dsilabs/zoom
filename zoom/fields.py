@@ -1683,6 +1683,7 @@ class DateField(Field):
         return result
 
     def widget(self):
+        zoom.requires('jquery-ui')
         value = self.display_value(self.input_format)
         parameters = dict(
             name=self.name,
