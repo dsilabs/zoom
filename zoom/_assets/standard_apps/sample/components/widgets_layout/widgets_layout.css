@@ -1,9 +1,0 @@
-.widgets-layout {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 1rem;
-}
-.widgets-layout .widget-panel {
-    width: calc(25% - 4px);
-}

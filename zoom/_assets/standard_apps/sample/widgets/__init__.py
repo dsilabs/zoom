@@ -36,7 +36,7 @@ def view():
             ProgressWidget().format(
                 10 + n*20,
                 title='Metric %s' % n,
-                hint='Metric %s hint' % n if n in [1,3] else ''
+                hint='Metric %s hint' % n if n in [1,3] else '',
             )
         )
         for n in range(4)

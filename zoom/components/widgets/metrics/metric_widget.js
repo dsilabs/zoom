@@ -4,8 +4,8 @@ var myChart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: $(( metric.labels )),
-        labels: $(( metric.labels )),
         datasets: [{
+            label: false,
             data: $(( metric.data )),
             borderColor: '$(( metric.line_color ))',
             backgroundColor: '$(( metric.fill_color ))',
@@ -22,9 +22,9 @@ var myChart = new Chart(ctx, {
         },
         layout: {
             padding: {
-                top: 5,
+                top: 0,
                 right: 0,
-                bottom: 5,
+                bottom: 0,
                 left: 0,
             }
         },
@@ -42,6 +42,7 @@ var myChart = new Chart(ctx, {
         },
         scales: {
             xAxes: [{
+                    display: false,
                     gridLines: {
                         color: 'transparent',
                         zeroLineColor: 'transparent'

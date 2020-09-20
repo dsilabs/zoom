@@ -28,9 +28,9 @@ class Metric(zoom.utils.Record):
         self.description = 'Online users'
         self.uid = uuid4().hex
         self.height = '120px'
-        self.point_background_color = 'silver'
-        self.line_color = 'grey'
-        self.fill_color = 'silver'
+        self.point_background_color = '#d0dce6'
+        self.line_color = '#337ab7'
+        self.fill_color = '#d0dce6'
 
     @property
     def value(self):
