@@ -268,7 +268,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         print('saving content to %s' % filename)
         with open(filename, 'w') as f:
-            f.write(str(self.driver.page_source))
+            f.write(self.driver.page_source)
 
     def save_screenshot(self, filename=None):
         """Save screenshot image to a file

@@ -1,5 +1,6 @@
 
 
+from zoom import __version__
 from zoom.mvc import View
 from zoom.page import page
 from zoom.tools import load_content
@@ -49,7 +50,7 @@ class MyView(View):
         return widgets.view()
 
     def about(self):
-        return load_content('about.md', version=zoom.__version__)
+        return load_content('about.md', version=__version__)
 
 
 def main(route, request):
