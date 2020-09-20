@@ -181,41 +181,23 @@ Missing App Variable with Default: **{{notaname "a default value"}}**
 
 Helpers
 ----
-&lcub;&lcub;site_name&rcub;&rcub; : "{{site_name}}"
-
-&lcub;&lcub;slogan&rcub;&rcub; : "{{slogan}}"
-
-&lcub;&lcub;owner_name&rcub;&rcub; : "{{owner_name}}"
-
-&lcub;&lcub;owner_name&rcub;&rcub; : "{{owner_url}}"
-
-&lcub;&lcub;owner_email&rcub;&rcub; : "{{owner_email}}"
-
-&lcub;&lcub;owner_link&rcub;&rcub; : "{{owner_link}}"
-
-&lcub;&lcub;admin_email&rcub;&rcub; : "{{admin_email}}"
-
-&lcub;&lcub;protocol&rcub;&rcub; : "{{protocol}}"
-
-&lcub;&lcub;domain&rcub;&rcub; : "{{domain}}"
-
-&lcub;&lcub;host&rcub;&rcub; : "{{host}}"
-
-&lcub;&lcub;username&rcub;&rcub; : "{{username}}"
-
-&lcub;&lcub;user_first_name&rcub;&rcub; : "{{user_first_name}}"
-
-&lcub;&lcub;user_last_name&rcub;&rcub; : "{{user_last_name}}"
-
-&lcub;&lcub;user_full_name&rcub;&rcub; : "{{user_full_name}}"
-
-&lcub;&lcub;elapsed&rcub;&rcub; : "{{elapsed}}"
-
-&lcub;&lcub;upper text="test"&rcub;&rcub; : "{{upper text="test"}}"
-
-&lcub;&lcub;date&rcub;&rcub; : "{{date}}"
-
-&lcub;&lcub;year&rcub;&rcub; : "{{year}}"
+&lcub;&lcub;site_name&rcub;&rcub; : **{{site_name}}**  
+&lcub;&lcub;owner_name&rcub;&rcub; : **{{owner_name}}**  
+&lcub;&lcub;owner_name&rcub;&rcub; : **{{owner_url}}**  
+&lcub;&lcub;owner_email&rcub;&rcub; : **{{owner_email}}**  
+&lcub;&lcub;owner_link&rcub;&rcub; : **{{owner_link}}**  
+&lcub;&lcub;admin_email&rcub;&rcub; : **{{admin_email}}**  
+&lcub;&lcub;protocol&rcub;&rcub; : **{{protocol}}**  
+&lcub;&lcub;domain&rcub;&rcub; : **{{domain}}**  
+&lcub;&lcub;host&rcub;&rcub; : **{{host}}**  
+&lcub;&lcub;username&rcub;&rcub; : **{{username}}**  
+&lcub;&lcub;user_first_name&rcub;&rcub; : **{{user_first_name}}**  
+&lcub;&lcub;user_last_name&rcub;&rcub; : **{{user_last_name}}**  
+&lcub;&lcub;user_full_name&rcub;&rcub; : **{{user_full_name}}**  
+&lcub;&lcub;elapsed&rcub;&rcub; : **{{elapsed}}**  
+&lcub;&lcub;upper text="test"&rcub;&rcub; : **{{upper text"test"}}**  
+&lcub;&lcub;date&rcub;&rcub; : **{{date}}**  
+&lcub;&lcub;year&rcub;&rcub; : **{{year}}**  
 
 
 Missing Substitutions
