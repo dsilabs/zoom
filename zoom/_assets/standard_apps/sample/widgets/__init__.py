@@ -5,9 +5,10 @@
 import zoom
 import zoom.html as h
 
-from zoom.components.widgets.progress import ProgressWidget
-from zoom.components.widgets.cards import Card
-from zoom.components.widgets.metrics import Metric, MetricWidget
+from zoom.widgets.progress import ProgressWidget
+from zoom.widgets.cards import Card
+from zoom.widgets.metrics import Metric, MetricWidget
+from zoom.widgets.charts import ChartWidget, Chart
 
 from components.widgets_layout import WidgetsLayout
 
@@ -22,6 +23,7 @@ def view():
     layout = WidgetsLayout()
 
     card = Card()
+
     cards = Cards().format(
         cards=zoom.Component(
             card.format('basic card'),
@@ -42,44 +44,47 @@ def view():
         for n in range(4)
     )
     progress = zoom.Component(
-        h.h2('ProgressWidget'),
+        h.h2('Progress'),
         layout.format(*progress_widgets),
     )
 
-    metrics = [
-        Metric(
+    charts = [
+        Chart(
             title='Pipeline',
             format='${:,.2f}',
         ),
-        Metric(
+        Chart(
             title='Inventory',
-            classed='bg-gradient-info'
+            classed='bg-gradient-info',
+            smooth=False,
         ),
-        Metric(
+        Chart(
             title='Expenses',
             classed='bg-gradient-warning',
             data=[100, 200, 700, 400],
-            labels=['January', 'February', 'March', 'April']
+            labels=['January', 'February', 'March', 'April'],
+            type='bar',
         ),
-        Metric(
+        Chart(
             title='Errors',
-            classed='bg-gradient-danger'
+            classed='bg-gradient-danger',
+            fill_color='#fff',
         ),
     ]
-
-    metric_widget = MetricWidget()
-    metric_widgets = (
-        card.format(metric_widget.format(metric)) for metric in metrics
+    chart_widget = ChartWidget()
+    chart_widgets = (
+        card.format(chart_widget.format(chart)) for chart in charts
+    )
+    charts_section = zoom.Component(
+        h.h2('Charts'),
+        layout.format(*chart_widgets)
     )
 
-    metrics_section = zoom.Component(
-        h.h2('MetricWidget'),
-        layout.format(*metric_widgets)
-    )
 
     return zoom.page(
         cards,
         progress,
-        metrics_section,
+        # metrics_section,
+        charts_section,
         title='Widgets'
     )
