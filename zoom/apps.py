@@ -755,3 +755,7 @@ def handler(request, next_handler, *rest):
     else:
         logger.debug('app responded with type %s', type(response))
     return response or next_handler(request, *rest)
+
+def get_app():
+    """Return the current app"""
+    return zoom.system.request.app

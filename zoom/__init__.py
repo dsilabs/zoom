@@ -23,7 +23,7 @@ import zoom.settings
 import zoom.store
 import zoom.users
 
-from .apps import App
+from .apps import App, get_app
 from .auditing import audit
 from .browse import browse
 from .component import Component, DynamicComponent
@@ -36,6 +36,7 @@ from .page import page, Page
 from .packages import requires
 from .store import store_of
 from .records import table_of
+from .sites import get_site
 from .tools import home, redirect_to, load, partial
 from .users import authorize, get_user
 from .utils import Record

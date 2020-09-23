@@ -89,3 +89,8 @@ class Site(BasicSite):
     def activate(self):
         """Activate this site in Zoom's thread-local context."""
         zoom.system.site = self
+
+
+def get_site():
+    """Return the currrent site object"""
+    return zoom.system.request.site
