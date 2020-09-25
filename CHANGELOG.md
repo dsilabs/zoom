@@ -5,13 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+## [6.8.0] - 2020-08-30
 - add partial response
 - add cards
 - add progress widget
 - add metric widget
 - update chosen package to latest version 1.8.7
-
-### Added
 
 ## [6.7.4] - 2020-08-30
 - return str responses as content in a page
