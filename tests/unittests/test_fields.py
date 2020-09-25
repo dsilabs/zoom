@@ -214,7 +214,7 @@ class DateTests(object):
         f = self.field_type('Field1')
         f.initialize({'field1': self.basic_text})
         t = self.widget_template.format(self=self, text=self.basic_text)
-        self.compare(t, f.widget())
+        self.compare(t, str(f.widget()))
 
     def test_display_value(self):
         f = self.field_type('Field1')

@@ -1599,7 +1599,7 @@ class DateField(Field):
     representations of those dates formatted according to the specified
     format.
 
-    >>> DateField("Start Date").widget()
+    >>> str(DateField("Start Date").widget())
     '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="" />'
 
     >>> from datetime import date, datetime
@@ -1648,7 +1648,7 @@ class DateField(Field):
     >>> failed
     True
 
-    >>> DateField("Start Date", value=date(2015,1,1)).widget()
+    >>> str(DateField("Start Date", value=date(2015,1,1)).widget())
     '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
 
     """
@@ -1671,15 +1671,15 @@ class DateField(Field):
 
     def display_value(self, alt_format=None):
         # pylint: disable=E1101
-        format = alt_format or self.format
+        display_format = alt_format or self.format
         if self.value:
             strftime = datetime.datetime.strftime
             try:
-                result = strftime(self.evaluate()[self.name], format)
+                result = strftime(self.evaluate()[self.name], display_format)
             except ValueError:
                 result = self.value
         else:
-            result = self.default and self.default.strftime(format) or ''
+            result = self.default and self.default.strftime(display_format) or ''
         return result
 
     def widget(self):
@@ -1694,20 +1694,26 @@ class DateField(Field):
             Class=self.css_class,
         )
         js = []
+        js.append("""
+            $('.date_field').datepicker({
+                dateFormat: 'M d, yy',
+                changeMonth: true,
+                changeYear: true
+            })
+        """)
         if self.min != None:
             js.append("""
-            $(function(){
-                $('#%s').datepicker('option', 'minDate', '%s');
-            });
+            $('#%s').datepicker('option', 'minDate', '%s');
             """ % (self.id, self.min.strftime(self.input_format)))
 
         if self.max != None:
             js.append("""
-            $(function(){
-                $('#%s').datepicker('option', 'maxDate', '%s');
-            });
+            $('#%s').datepicker('option', 'maxDate', '%s');
             """ % (self.id, self.max.strftime(self.input_format)))
-        return html.tag('input', **parameters)
+        return zoom.Component(
+            html.tag('input', **parameters),
+            js=js,
+        )
 
     def show(self):
         return self.visible and bool(self.value) and self.layout(self.label, self.display_value()) or ''
@@ -1753,6 +1759,19 @@ class BirthdateField(DateField):
     size = maxlength = 12
     css_class = 'birthdate_field'
 
+    def widget(self):
+        return zoom.Component(
+            DateField.widget(self),
+            js = """
+                $('.birthdate_field')
+                    .datepicker({
+                        dateFormat: 'M d, yy',
+                        changeMonth: true,
+                        changeYear: true,
+                        yearRange: '-120:+00'
+                    });
+            """
+        )
 
 class CheckboxesField(Field):
     """Checkboxes field.
