@@ -25,6 +25,9 @@ default_packages = {
         ],
         'styles': [
             '/static/zoom/bootstrap/bootstrap4.5/css/bootstrap.min.css'
+        ],
+        'requires': [
+            'jquery',
         ]
     },
     'd3': {
