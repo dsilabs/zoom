@@ -51,6 +51,17 @@ default_packages = {
             "//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css"
         ]
     },
+    "chosen": {
+        "libs": [
+            "/static/zoom/chosen/chosen.jquery.js"
+        ],
+        "styles": [
+            "/static/zoom/chosen/chosen.css"
+        ],
+        'requires': [
+            'jquery',
+        ]
+    },
     'cookieconsent': {
         'libs': [
             '/static/zoom/cookieconsent.js',

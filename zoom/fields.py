@@ -2194,7 +2194,7 @@ class PulldownField(TextField):
         found = False
         result.append(self.select_layout.format(**dict(place=self.placeholder, classed=self.css_class, name=name)))
         for option in self.options:
-            if type(option) in (list, tuple) and len(option)==2:
+            if type(option) in (list, tuple) and len(option) == 2:
                 label, value = option
             else:
                 label, value = option, option
@@ -2212,9 +2212,11 @@ class PulldownField(TextField):
 
 class ChosenSelectField(PulldownField):
     css_class = 'chosen'
-    libs = ['/static/zoom/chosen/chosen.jquery.js']
-    styles = ['/static/zoom/chosen/chosen.css']
     select_layout = '<select data-placeholder="{place}" class="{classed}" name="{name}" id="{name}">\n'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        zoom.requires('chosen')
 
 
 class MultiselectField(TextField):

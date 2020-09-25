@@ -10,15 +10,6 @@
 
     $(function() {
 
-        $('.date_field').datepicker({
-            dateFormat: 'M d, yy',
-            changeMonth: true,
-            changeYear: true
-        });
-
-        $('.birthdate_field').datepicker({ dateFormat: 'M d, yy', changeMonth: true, changeYear: true, yearRange: '-120:+00' });
-
-
         if ( $('.chosen').length > 0 ) { $('.chosen').chosen({search_contains: true}); };
 
         $('.flag').click(toggle_flag);
@@ -40,7 +31,7 @@ $(function() {
         event.stopPropagation();
         event.preventDefault();
         var newState = flag.attr('data-state') == 'true' ? 'false' : 'true';
-        
+
         dispatchToggle(flag.attr('data-flag-id'));
 
         flag.attr('data-state', newState);
