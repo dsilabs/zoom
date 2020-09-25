@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add cards
 - add progress widget
 - add metric widget
+- update chosen package to latest version 1.8.7
 
 ### Added
 

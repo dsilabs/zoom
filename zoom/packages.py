@@ -56,10 +56,10 @@ default_packages = {
     },
     "chosen": {
         "libs": [
-            "/static/zoom/chosen/chosen.jquery.js"
+            "/static/zoom/chosen/chosen.jquery.min.js"
         ],
         "styles": [
-            "/static/zoom/chosen/chosen.css"
+            "/static/zoom/chosen/chosen.min.css"
         ],
         'requires': [
             'jquery',

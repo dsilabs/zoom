@@ -2529,8 +2529,7 @@ class ChosenMultiselectField(MultiselectField):
             self.placeholder = 'Select ' + self.label
 
     def widget(self):
-        libs = ['/static/zoom/chosen/chosen.jquery.js']
-        styles = ['/static/zoom/chosen/chosen.css']
+        zoom.requires('chosen')
         if self.value == None:
             current_values = self.default
         else:
@@ -2550,7 +2549,7 @@ class ChosenMultiselectField(MultiselectField):
             else:
                 result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
         result.append('</select>')
-        return component(result, libs=libs, styles=styles)
+        return ''.join(result)
 
 
 class RangeSliderField(IntegerField):
