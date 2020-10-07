@@ -13,7 +13,9 @@ requires = [
     'werkzeug',
     'croniter',
     'pypugjs>=5.9.1',
-    'libsass>=0.19.4'
+    'libsass>=0.19.4',
+    'pytz==2020.1',
+    'pytzdata==2019.3'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
