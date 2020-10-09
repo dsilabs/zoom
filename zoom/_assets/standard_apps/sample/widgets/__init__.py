@@ -33,8 +33,23 @@ def view():
         ),
     )
 
+    metric = MetricWidget()
+    metrics = zoom.Component(
+        h.h2('Metrics'),
+        zoom.html.div(
+            layout.format(
+                card(metric(title='Queries', value=100, hint='numeric value')),
+                card(metric(title='Items', value='1,123', hint='string')),
+                card(metric(title='Revenue', value='$1,323', hint='formatted')),
+                card(metric(title='Date', value=zoom.tools.today(), hint='other types')),
+            ),
+            classed='metrics-layout',
+        ),
+        css='.metrics-layout .widgets-layout { min-height: auto; }'
+    )
+
     progress_widgets = (
-        card.format(
+        card(
             ProgressWidget().format(
                 10 + n*20,
                 title='Metric %s' % n,
@@ -73,7 +88,7 @@ def view():
     ]
     chart_widget = ChartWidget()
     chart_widgets = (
-        card.format(chart_widget.format(chart)) for chart in charts
+        card(chart_widget.format(chart)) for chart in charts
     )
     charts_section = zoom.Component(
         h.h2('Charts'),
@@ -83,8 +98,8 @@ def view():
 
     return zoom.page(
         cards,
+        metrics,
         progress,
-        # metrics_section,
         charts_section,
         title='Widgets'
     )
