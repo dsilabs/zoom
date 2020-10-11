@@ -1,7 +1,7 @@
 .action, .button, .search-button, .plain-button {
   height: 31px;
-  line-height: 28px;
-  padding: 0 13px;
+  line-height: 32px;
+  padding: 7px 13px;
   border-radius: 4px;
   background: #41812f;
   color: white;
@@ -21,6 +21,7 @@
   background: #fafafa;
   background-image: linear-gradient(#fff, #ddd);
   color: #555;
+  padding: 0px 13px;
 }
 .search-button:hover, .plain-button:hover {
   color: #000;
@@ -29,7 +30,8 @@
 }
 
 input.button {
-  height: 35px;
+  height: auto;
+  padding: 0px 13px;
 }
 
 /*# sourceMappingURL=buttons.css.map */
