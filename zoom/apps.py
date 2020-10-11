@@ -616,7 +616,7 @@ def system_menu_items(request):
     """Returns the system menu."""
     return html.li([
         app.link for app in get_system_apps(request)
-        if app.visible and app.name != request.app.name
+        if app.visible
     ])
 
 
