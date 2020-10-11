@@ -222,10 +222,10 @@ class CollectionView(View):
             user.authorize('read', record)
 
             actions = []
-            if user.can('update', record):
-                actions.append(action_for(record, 'Edit'))
             if user.can('delete', record):
                 actions.append(action_for(record, 'Delete'))
+            if user.can('update', record):
+                actions.append(action_for(record, 'Edit'))
             if user.can('create', record):
                 actions.append(action_for(record, 'New'))
             c.fields.initialize(c.model(record))
