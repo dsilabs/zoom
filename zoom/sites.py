@@ -93,4 +93,4 @@ class Site(BasicSite):
 
 def get_site():
     """Return the currrent site object"""
-    return zoom.system.request.site
+    return zoom.system.site
