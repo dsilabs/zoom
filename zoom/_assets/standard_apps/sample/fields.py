@@ -50,6 +50,7 @@ form1 = Form(
     DateField('Min Max Date', min=date1, max=date2, hint='test hint'),
     DateField('Formatted Date', format='%Y-%m-%d (%A)', hint='test hint'),
     BirthdateField('Birth Date', hint='test hint'),
+    TimezoneField('Timezone'),
     CheckboxesField(
         'Select', values=['One', 'Two', 'Three'], hint='test hint'),
     CheckboxField('Publish', hint='test hint'),
@@ -85,6 +86,7 @@ sample = dict(
     count=456,
     size=1.2345,
     decimal=Decimal('1234132.234'),
+    timezone='Canada/Pacific',
     amount=Decimal('12341232.32432'),
     foreign_amount=Decimal('121232.432'),
     date=datetime.date(2015, 4, 1),

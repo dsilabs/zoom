@@ -1,5 +1,7 @@
 """
     metric widget
+
+    a widget that displays a single number
 """
 
 from random import randint
@@ -40,20 +42,9 @@ class Metric(zoom.utils.Record):
 class MetricWidget(zoom.DynamicComponent):
     """MetricWidget
 
-    MetricWidget provides a UI for metrics.
-
-    >>> import zoom
-    >>> zoom.system.parts = zoom.Component()
-    >>> zoom.system.site = zoom.sites.Site()
-    >>> zoom.system.request.app = zoom.utils.Bunch(common_packages={}, packages={})
-    >>> data = [100, 200, 700, 400]
-    >>> labels = ['January', 'February', 'March', 'April']
-    >>> metric = Metric(title='Metric One', data=data, labels=labels)
-    >>> metric_widget = MetricWidget()
-    >>> component = metric_widget.format(metric)
+    MetricWidget provides a basic metric view.
 
     """
 
-    def format(self, metric):
-        zoom.requires('chartjs')
-        return zoom.DynamicComponent.format(self, metric=metric)
+    def __call__(self, *args, **kwargs):
+        return self.format(*args, **kwargs)

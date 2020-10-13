@@ -47,7 +47,7 @@ def hash_password(password):
 def validate_password(password, stored_password_hash):
     """validate a password and return the best hash
 
-    >>> hash = '$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6'
+    >>> hash = '$bcrypt-sha256$v=2,t=2b,r=14$v1UwNPTDgX5pEusaU5XKXe$y0C3DuzSGp/vuV5UYPrSqzT8HfjCqxS'
     >>> validate_password('admin', hash)
     (True, None)
 
@@ -57,8 +57,10 @@ def validate_password(password, stored_password_hash):
     >>> valid, hash = validate_password('mypass', '6f8c114b58f2ce9e')
     >>> valid
     True
-    >>> len(hash) == 75 and hash.startswith('$bcrypt')
+    >>> hash.startswith('$bcrypt')
     True
+    >>> len(hash)
+    83
 
     >>> new_hash = hash_password('adminpw')
     >>> validate_password('adminpw', new_hash)

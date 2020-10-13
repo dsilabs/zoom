@@ -34,3 +34,6 @@ class Card(zoom.DynamicComponent):
             self,
             card,
         )
+
+    def __call__(self, *args, **kwargs):
+        return self.format(*args, **kwargs)

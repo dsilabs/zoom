@@ -643,7 +643,7 @@ def load_template(name, default=None):
     return site.templates.setdefault(name, load_template_file(name, default))
 
 def get_template(template_name='default', theme='default'):
-    """Get site page template"""
+    """Get site template"""
 
     logger = logging.getLogger(__name__)
     path = zoom.system.site.themes_path

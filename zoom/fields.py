@@ -1773,6 +1773,7 @@ class BirthdateField(DateField):
             """
         )
 
+
 class CheckboxesField(Field):
     """Checkboxes field.
 
@@ -2236,6 +2237,14 @@ class ChosenSelectField(PulldownField):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         zoom.requires('chosen')
+
+
+class TimezoneField(ChosenSelectField):
+
+    @property
+    def options(self):
+        import pytz
+        return pytz.all_timezones
 
 
 class MultiselectField(TextField):

@@ -22,6 +22,7 @@ from zoom.context import context
 from zoom.store import EntityStore
 from zoom.tools import ensure_listy, now
 from zoom.utils import Record
+from zoom.tools import get_template
 
 
 __all__ = (
@@ -40,29 +41,6 @@ class AttachmentDataException(Exception):
 class SystemMail(Record):
     """system message"""
     pass
-
-
-BODY_TPL = """
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-<BODY>
-<table width="100%">
- <tr>
-  <td align="left">
-  <img src="{logo_url}" alt="banner logo">
-  </td>
- </tr>
- <tr>
-  <td align="left">
-    <font face="helvetica,arial,freesans,clean,sans-serif" size="2">
-    {message}
-    </font>
-  </td>
- </tr>
-</table>
-</BODY>
-</HTML>
-"""
 
 
 class Attachment(object):
@@ -105,7 +83,8 @@ def get_mail_store(site):
 
 
 def format_as_html(text, logo_url):
-    return BODY_TPL.format(logo_url=logo_url, message=text)
+    template = get_template('email_template')
+    return template.format(logo_url=logo_url, message=text)
 
 
 def display_email_address(email):
