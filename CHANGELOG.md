@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor Metric widget
 - add support for bootstrap 4.5 pulldowns in system menu
 - add profile app
+- add site.system property and system helper tag
 
 ### Added
 

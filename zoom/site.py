@@ -197,6 +197,7 @@ class Site(object):
             get = self.config.get
             self.url = get('site', 'url', '')
             self.title = get('site', 'name', self.name)
+            self.system = get('site', 'system', self.name)
             self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
             self.csrf_validation = get('site', 'csrf_validation', True) in zoom.utils.POSITIVE
             self.tracking_id = get('site', 'tracking_id', '')
@@ -373,6 +374,7 @@ class Site(object):
     def helpers(self):
         """provide helpers"""
         return dict(
+            system=self.system,
             site_name=self.title,
             site_url=self.url,
             abs_site_url=self.abs_url,
