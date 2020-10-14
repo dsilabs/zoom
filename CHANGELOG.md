@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [6.11.0] - 2020-10-14
+- use default theme as fallback for get_template
+
 ## [6.10.0] - 2020-10-13
 - refactor Metric widget
 - add support for bootstrap 4.5 pulldowns in system menu
