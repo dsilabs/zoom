@@ -37,9 +37,9 @@ All set?  Okay, here we go!
     This will install a new Python package and corresponding CLI command; `zoom`.
 
 1. Once you have ZoomFoundry installed, you'll first want to create and populate a
-    Zoom *instance directory*.<br><br> Zoom is multi-tenant, meaning it can serve
-    multiple sites at the same time; an instance directory contains a set of Zoom
-    *sites* and resources shared between them. Run:
+    ZoomFoundry *instance directory*.<br><br> ZoomFoundry is multi-tenant, meaning
+    it can serve multiple sites at the same time; an instance directory contains a
+    set of ZoomFoundry *sites* and resources shared between them. Run:
     ```shell
     $ zoom init ~/my-zoom-instance
     ```
@@ -47,7 +47,7 @@ All set?  Okay, here we go!
     This will walk you through setting up your instance, including creating a
     default site and database.
 
-    *Don't like wizards?* Every option Zoom commands prompt you with have a
+    *Don't like wizards?* Every option zoom commands prompt you with have a
     corresponding command line option: see the help with `zoom -h`.
 
 1. Serve the created instance. <br><br>
@@ -152,14 +152,13 @@ What, what?!  Where's the data model step?  How do I create my tables?!  Where i
 
 For now, ZoomFoundry will handle all of this for you.  Rest assured, your data is being stored in the MySQL database, but it's being stored in an entity store with a dynamic schema so you can add and remove fields from your collection at will and ZoomFoundry will just take care of it.
 
-Zoom can use traditional tables as well, of course, but for prototyping and many other types of work a dynamic schema works very well.
+ZoomFoundry can use traditional tables as well, of course, but for prototyping and many other types of work a dynamic schema works very well.
 
 That's as far as we'll go with the app right now.  In the future we'll provide more of the features people have come to expect from a blog app.
 
 
 ## Contributing
-To contribute your own code to Zoom you'll need to setup a development
-environment.
+To contribute your own code to ZoomFoundry you'll need to setup a development environment.
 
 ### Setting Up The Easy way
 The simplest way to hack on ZoomFoundry is to use one of our

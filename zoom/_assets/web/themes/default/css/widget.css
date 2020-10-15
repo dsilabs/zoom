@@ -326,9 +326,6 @@ div.search span.clear a {
 }
 
 @media (max-width: 560px) {
-  .search {
-    margin-top: 0.2em;
-  }
   .search input.text_field {
     width: 40%;
   }
@@ -349,7 +346,6 @@ div.search span.clear a {
 }
 
 .action {
-  float: right;
   margin-left: 2px;
   margin-right: 2px;
 }

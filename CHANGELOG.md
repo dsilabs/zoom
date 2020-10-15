@@ -5,9 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- refactor Metric widget
 
 ### Added
+
+## [6.11.0] - 2020-10-14
+- use default theme as fallback for get_template
+
+## [6.10.0] - 2020-10-13
+- refactor Metric widget
+- add support for bootstrap 4.5 pulldowns in system menu
+- add profile app
+- add site.system property and system helper tag
+- fix json iso date encoding bug
 
 ## [6.9.0] - 2020-10-07
 - add email template support

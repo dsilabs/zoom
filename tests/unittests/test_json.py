@@ -55,6 +55,20 @@ class TestConvert(unittest.TestCase):
         d2 = loads(dj)
         self.assertListEqual(d, d2)
 
+    def test_obj_with_datetime(self):
+        """test date encoding decoding when part of a list like object"""
+        d = [datetime.datetime(2020,1,1,2,2,2,3), dict(status='this is a test')]
+        dj = dumps(d)
+        d2 = loads(dj)
+        self.assertListEqual(d, d2)
+
+    def test_obj_with_datetime_without_milliseconds(self):
+        """test date encoding decoding when part of a list like object"""
+        d = [datetime.datetime(2020,1,1,2,2,2), dict(status='this is a test')]
+        dj = dumps(d)
+        d2 = loads(dj)
+        self.assertListEqual(d, d2)
+
     def test_error(self):
         d = [Decimal('22.32'), self]
         self.assertRaises(TypeError, dumps, d)

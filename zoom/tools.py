@@ -653,7 +653,15 @@ def get_template(template_name='default', theme='default'):
         os.path.join(path, theme, template_name + '.html')
     )
     alt_pathname = pathname.endswith('.html') and pathname[:-4] + 'pug'
-    logger.debug('alt_pathname: %r', alt_pathname)
+    default_pathname = os.path.realpath(
+        os.path.join(
+            zoom.tools.zoompath(
+                'zoom/_assets/web/themes/default',
+                template_name + '.pug'
+            )
+        )
+    )
+    logger.debug('default_pathname: %r', alt_pathname)
 
     if isfile(pathname):
         logger.debug('get_template %r', pathname)
@@ -662,9 +670,16 @@ def get_template(template_name='default', theme='default'):
 
     elif alt_pathname and isfile(alt_pathname):
         basedir = os.path.split(alt_pathname)[0]
-        logger.debug('get_template %r', alt_pathname)
+        logger.info('get_template %r', alt_pathname)
         logger.debug('basedir %r', basedir)
         with open(alt_pathname, 'rb') as reader:
+            return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
+
+    elif default_pathname and isfile(default_pathname):
+        basedir = os.path.split(default_pathname)[0]
+        logger.debug('get_template %r', default_pathname)
+        logger.debug('basedir %r', basedir)
+        with open(default_pathname, 'rb') as reader:
             return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
 
     else:

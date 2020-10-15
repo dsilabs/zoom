@@ -98,6 +98,7 @@ class TestTools(unittest.TestCase):
         template = zoom.tools.get_template('notthere')
         self.assertIn('html>', template)
 
+    @unittest.skip
     def test_get_default_template_missing(self):
         self.assertRaises(
             zoom.exceptions.ThemeTemplateMissingException,

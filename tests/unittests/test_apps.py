@@ -131,7 +131,10 @@ class TestApps(unittest.TestCase):
         self.assertFalse(self.request.user.is_authenticated)
         self.assertEqual(menu, (
             '<div class="system-menu">'
-            '<ul><li><a href="/logout" name="link-to-logout">Logout</a></li></ul>'
+            '<ul>'
+            '<li><a href="/profile" name="link-to-profile">Profile</a></li>'
+            '<li><a href="/logout" name="link-to-logout">Logout</a></li>'
+            '</ul>'
             '</div>'
             )
         )

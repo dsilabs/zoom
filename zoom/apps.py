@@ -1,8 +1,4 @@
-"""
-    zoom.apps
-
-    handles requests by locating and calling a suitable app
-"""
+""" zoom.apps handles requests by locating and calling a suitable app """
 
 import configparser
 import imp
@@ -620,7 +616,7 @@ def system_menu_items(request):
     """Returns the system menu."""
     return html.li([
         app.link for app in get_system_apps(request)
-        if app.visible and app.name != request.app.name
+        if app.visible
     ])
 
 
@@ -700,6 +696,9 @@ def apps_menu(request):
     system_apps = list(get_system_apps(request))
     main_apps = list(get_main_apps(request))
     exclude = list(a.name for a in system_apps + main_apps)
+
+    if not 'content' in names:
+        exclude.append('content')
 
     apps = [
         app for app in sorted(site.apps, key=calc_position)
