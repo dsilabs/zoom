@@ -49,7 +49,7 @@ class PivotWidget(zoom.DynamicComponent):
     """
     def format(self, chart):
         """Format a Chart"""
-        zoom.requires('pivottable', 'pivot-d3', 'pivot-c3')
+        zoom.requires('pivot-table')
         return (
             zoom.Component("<div class='pivot-table' id='%s'></div>" % chart.selector)  +
             zoom.DynamicComponent.format(self, chart=chart)
