@@ -144,18 +144,19 @@ default_packages = {
     'pivot-table': {
         'libs': [
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/plotly.js/1.33.1/plotly.min.js",
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js",
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js",
-            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.cs.min.js",
-            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.cs.min.js",          
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/export_renderers.min.js"
         ],
         'styles': [
             '//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css'
         ],
         'requires': [
-            'c3',
-        ]
+            'c3'
+        ],
     },
     'spin': {
         'libs': [
