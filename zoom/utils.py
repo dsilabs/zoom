@@ -328,6 +328,31 @@ class ItemList(list):
     10000 Joe   14622 days, 0:00:00
     10001 Sally 12917 days, 0:00:00
 
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [10000, 'Joe', now - datetime.date(1980, 1, 20)],
+    ...     [10001, 'Sally', now - datetime.date(1984, 9, 20)],
+    ... ]
+    >>> items = ItemList(data, labels=['user_id', 'Name', 'Age'])
+    >>> print(items)
+    user_id Name  Age
+    ------- ----- -------------------
+      10000 Joe   14622 days, 0:00:00
+      10001 Sally 12917 days, 0:00:00
+
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [9000, 'Greens', 1234],
+    ...     [10000, 'Browns', 1203],
+    ... ]
+    >>> items = ItemList(data, labels=['id', 'customer', 'invoice_number'])
+    >>> print(items)
+    id    customer invoice_number
+    ----- -------- --------------
+     9000 Greens             1234
+    10000 Browns             1203
     """
     def __init__(self, *args, **kwargs):
         self.labels = kwargs.pop('labels', None)
@@ -353,7 +378,13 @@ class ItemList(list):
             if first_non_null:
                 data_type = first_non_null[0]
                 if label in ['_id', 'userid']:
-                    return '{:{width}}'
+                    return '{:>{width}}'
+                elif label == 'id':
+                    return '{:>{width}}'
+                elif label.endswith('_id'):
+                    return '{:>{width}}'
+                elif label.endswith('_number'):
+                    return '{:>{width}}'
                 elif data_type in [int, float, decimal.Decimal]:
                     return '{:{width},}'
                 elif data_type in [datetime.date]:

@@ -209,9 +209,9 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -220,8 +220,8 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > %s', 20
         )
@@ -230,7 +230,7 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < %(amount)s', dict(amount=20)
         )
@@ -239,7 +239,7 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%%1"'
         )
@@ -248,7 +248,7 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%%2" and amount > %s', 20
         )
@@ -313,9 +313,9 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -324,8 +324,8 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > ?', 20
         )
@@ -334,7 +334,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < :amount', dict(amount=20)
         )
@@ -343,7 +343,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%1"'
         )
@@ -352,7 +352,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%2" and amount > ?', 20
         )
@@ -599,9 +599,9 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -610,8 +610,8 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > %s', 20
         )
@@ -620,7 +620,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < %(amount)s', dict(amount=20)
         )
@@ -629,7 +629,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%%1"'
         )
@@ -638,7 +638,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%%2" and amount > %s', 20
         )
@@ -650,7 +650,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             *cmd
         )
@@ -660,8 +660,8 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             *cmd
         )
