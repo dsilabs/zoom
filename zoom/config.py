@@ -3,10 +3,14 @@
 """
 
 import os
+import sys
 import configparser
 import logging
 
 import zoom
+
+class UndefinedValueError(Exception):
+    """Required config value missing"""
 
 
 def get_config(pathname):
@@ -140,3 +144,57 @@ class Config(object):
             self.config_pathname,
             self.default_config_pathname,
         ])
+
+
+def get(key, cast=None, default=None, required=False):
+    """get configuration variable by key
+
+    The zoom.config.get function tries a variety of places to satisfy
+    the request for a configuration setting.  They are:
+
+      1. the environment
+      --- more coming ---
+
+    The cast callable can be used to cast the value into a desired type.
+
+    All key have a default value except for any key that contains the word
+    'SECRET'.  If a source in the stack returns None the function will keep
+    looking until one of the sources either returns None or until the sources
+    are exausted.
+
+    >>> os.environ['MY_SETTING'] = 'one'
+    >>> get('MY_SETTING')
+    'one'
+
+    >>> os.environ['MY_SETTING'] = '3'
+    >>> get('MY_SETTING', cast=int)
+    3
+
+    >>> get('NO_SETTING')
+
+    >>> get('NO_SETTING', default='3', cast=float)
+    3.0
+
+    >>> got_it = False
+    >>> try:
+    ...     get('MISSING_SECRET')
+    ... except UndefinedValueError:
+    ...     got_it = True
+    >>> got_it
+    True
+
+
+    """
+
+    value = (
+        os.environ.get(key)
+    )
+
+    if value is None:
+        if required or 'SECRET' in key:
+            msg = 'Required config definition {} missing'
+            raise UndefinedValueError(msg.format(key))
+
+    value = value if value is not None else default
+
+    return cast(value) if value is not None and cast else value
