@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-#   ____
-#     /     _     _    _   _
-#    /    /   \ /   \ | \_/ |
-#   /___  \ _ / \ _ / |     |
+#   ____                      ____
+#     /     _     _    _   _  |__    _          _     __   __
+#    /    /   \ /   \ | \_/ | |    /   \ |   | | \ | |  \ |__| \___/
+#   /___  \ _ / \ _ / |     | |    \ _ / |___| |  \| |__/ |  \   |
+#
 
 """
-    Zoom Web Framework
+    ZoomFoundry Web Framework
 """
-
-from .__version__ import __version__
-__license__ = "MIT"
 
 import zoom.alerts
 import zoom.collect
@@ -23,6 +21,7 @@ import zoom.settings
 import zoom.store
 import zoom.users
 
+from .__version__ import __version__
 from .apps import App, get_app
 from .auditing import audit
 from .browse import browse
@@ -40,3 +39,5 @@ from .sites import get_site
 from .tools import home, redirect_to, load, partial
 from .users import authorize, get_user
 from .utils import Record
+
+__license__ = "MIT"
