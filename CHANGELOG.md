@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.11.0] - 2020-10-14
 - use default theme as fallback for get_template
+- update pivottable data serialization and styling
 
 ## [6.10.0] - 2020-10-13
 - refactor Metric widget
