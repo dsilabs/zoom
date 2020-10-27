@@ -253,6 +253,192 @@ class DatabaseTests(object):
             'select * from test_table where notes like "%%2" and amount > %s', 20
         )
 
+    def test_execute_many_from_empty_list_of_tuples(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_tuples(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                (4, 50.10, '20.00', 'notes 4'),
+                (5, 60.10, '20.00', 'notes 5'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+             5   60.1     20 notes 5
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_one_tuple(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                (4, 50.10, '20.00', 'notes 4'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_empty_list_of_dicts(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_dicts(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+                dict(id=4, amount=50.10, salary='20.00', notes='notes 4'),
+                dict(id=5, amount=60.10, salary='20.00', notes='notes 5'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+             5   60.1     20 notes 5
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_one_dict(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+                dict(id=4, amount=50.10, salary='20.00', notes='notes 4'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+            """,
+            'select * from test_table'
+        )
+
 
 class TestSqlite3Database(unittest.TestCase, DatabaseTests):
 
