@@ -169,7 +169,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
             element = self.find(target)
             element.click()
             element.clear()
-            element.send_keys(str(text))
+            element.send_keys(text)
         except:
             self.save_artifacts()
             raise
