@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - improve formatting of id columns in printed output
 - fix bug in database.execute_many when passed single dict arg
+- add support for select elements in web tests
 
 ### Added
 
