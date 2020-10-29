@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+## [6.12.0] - 2020-10-29
 - improve formatting of id columns in printed output
 - fix bug in database.execute_many when passed single dict arg
 - add support for select elements in web tests
-
-### Added
 
 ## [6.11.0] - 2020-10-14
 - use default theme as fallback for get_template
