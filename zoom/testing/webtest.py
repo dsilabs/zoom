@@ -24,6 +24,7 @@ from selenium.common.exceptions import NoSuchElementException, WebDriverExceptio
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.webdriver.support.ui import Select
 
 from zoom.testing.common import get_output_path
 
@@ -173,9 +174,22 @@ class WebdriverTestPrimitives(unittest.TestCase):
             self.save_artifacts()
             raise
 
+    def select(self, target, value):
+        try:
+            element = self.find(target)
+            select = Select(element)
+            select.select_by_value(value)
+        except:
+            self.save_artifacts()
+            raise
+
     def fill(self, values):
         for name, value in values.items():
-            self.type(name, value)
+            element = self.find(name)
+            if element.tag_name == 'select':
+                self.select(name, value)
+            else:
+                self.type(name, value)
 
     def click(self, target):
         try:
