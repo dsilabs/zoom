@@ -201,7 +201,7 @@ class Migrations(object):
 
                     revision += 1
                     record = SystemMigrationRecord(
-                        version=i,
+                        version=i-1,
                         revision=revision,
                         timestamp=zoom.tools.now(),
                         method='revert',

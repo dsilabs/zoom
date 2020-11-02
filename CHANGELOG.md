@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - add support for date and datetime in sqltools query builder
+- fix bug in migration revert logging
 
 ### Added
 
