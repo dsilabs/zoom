@@ -460,12 +460,12 @@ def number_valid(value):
     >>> number_valid(False) # not sure if this is what's we want
     True
     """
-    if value == '':
+    if not value:
         return True
     try:
         float(value)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
