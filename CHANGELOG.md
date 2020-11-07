@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add support for date and datetime in sqltools query builder
 - fix bug in migration revert logging
 - add missing jquery requirement for datatables package
+- fix bug in collection preventing image deletion in record stores
+- fix bug in number field validator
 
 ### Added
 
