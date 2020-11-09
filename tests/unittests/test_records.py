@@ -8,7 +8,8 @@ from decimal import Decimal
 from datetime import date, time, datetime
 import unittest
 
-from zoom.records import Record, RecordStore
+import zoom
+from zoom.records import Record, RecordStore, table_of
 from zoom.database import setup_test
 
 
@@ -207,6 +208,39 @@ class TestRecordStore(unittest.TestCase):
         self.people.order_by = 'name desc'
         names = [record.name for record in self.people]
         self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
+
+    def test_reserved_words(self):
+        db = self.db
+        now = zoom.tools.now()
+
+        # note: column is a reserved word
+
+        self.assertNotIn('z_test_table', db.get_tables())
+        db("""
+           create table z_test_table (
+             `item` int not null auto_increment,
+             `column` text(20),
+             `created` timestamp,
+            PRIMARY KEY (`item`)
+           )
+        """)
+        self.assertIn('z_test_table', db.get_tables())
+
+        table = table_of(dict, db=db, name='z_test_table', key='item')
+
+        self.assertIsNone(table.first(item=1))
+
+        table.put(dict(column='test', created=now))
+
+        self.assertIsNotNone(table.first(column='test'))
+
+        table.delete(column='test')
+
+        self.assertIsNone(table.first(column='test'))
+
+        db('drop table z_test_table')
+        self.assertNotIn('z_test_table', db.get_tables())
+
 
 class TestKeyedRecordStore(TestRecordStore):
     """Keyed RecordStore Tests

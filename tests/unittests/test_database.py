@@ -439,6 +439,20 @@ class DatabaseTests(object):
             'select * from test_table'
         )
 
+    def test_column_name_reserved(self):
+        db = self.db
+        self.assertNotIn('z_test_table', db.get_tables())
+        db("""
+           create table z_test_table (
+             `id` integer,
+             `column` text(20),
+             `created` timestamp
+           )
+        """)
+        self.assertIn('z_test_table', db.get_tables())
+        db('drop table z_test_table')
+        self.assertNotIn('z_test_table', db.get_tables())
+
 
 class TestSqlite3Database(unittest.TestCase, DatabaseTests):
 

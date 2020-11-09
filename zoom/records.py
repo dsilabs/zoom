@@ -176,13 +176,14 @@ class RecordStore(Store):
 
         """
 
+    order_by = None
+
     def __init__(self, db, record_class=dict, name=None, key='id'):
         # pylint: disable=invalid-name
         self.db = db
         self.record_class = record_class
         self.kind = name or kind(record_class())
         self.key = key
-        self.order_by = None
 
     @property
     def id_name(self):
@@ -540,7 +541,7 @@ class RecordStore(Store):
         Find keys that meet search critieria
         """
         items = kwargs.items()
-        clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
+        clause = ' and '.join('`%s`=%s' % (k, '%s') for k, v in items)
         cmd = ' '.join([
             'select distinct',
             self.key,
@@ -580,7 +581,7 @@ class RecordStore(Store):
 
         """
         items = kwargs.items()
-        where_clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
+        where_clause = ' and '.join('`%s`=%s' % (k, '%s') for k, v in items)
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         cmd = 'select * from ' + self.kind + ' where ' + where_clause + order_by
         result = self.db(cmd, *[v for _, v in items])
