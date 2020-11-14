@@ -5,12 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- improve formatting of id columns in printed output
+- add support for date and datetime in sqltools query builder
+- fix bug in migration revert logging
+- add missing jquery requirement for datatables package
+- fix bug in collection preventing image deletion in record stores
+- fix bug in number field validator
+- escape reserved words in store find methods
 
 ### Added
 
+## [6.12.0] - 2020-10-29
+- improve formatting of id columns in printed output
+- fix bug in database.execute_many when passed single dict arg
+- add support for select elements in web tests
+
 ## [6.11.0] - 2020-10-14
 - use default theme as fallback for get_template
+- update pivottable data serialization and styling
 
 ## [6.10.0] - 2020-10-13
 - refactor Metric widget

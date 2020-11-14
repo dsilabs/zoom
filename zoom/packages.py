@@ -80,6 +80,9 @@ default_packages = {
             ],
         'styles': [
             '//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css',
+        ],
+        'requires': [
+            'jquery'
         ]
     },
     'datatables.buttons': {
@@ -148,13 +151,15 @@ default_packages = {
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js",
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js",
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js",
-            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.cs.min.js",          
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.cs.min.js",
             "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/export_renderers.min.js"
         ],
         'styles': [
             '//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css'
         ],
         'requires': [
+            'jquery',
+            'jquery-ui',
             'c3'
         ],
     },

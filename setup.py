@@ -35,7 +35,7 @@ setuptools.setup(
     description="A dynamic Web Framework that promotes modularity and rapid prototyping",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/dsilabs/zoom",
+    url="https://github.com/ZoomFoundry/ZoomFoundry",
     packages=['zoom'],
     install_requires=requires,
     entry_points={

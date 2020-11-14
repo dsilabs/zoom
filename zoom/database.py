@@ -179,7 +179,7 @@ class Database(object):
             logger.debug('opening %s', self.__class__.__name__)
         return getattr(self.__connection, name)
 
-    def translate(self, command, *args):
+    def translate(self, command, *args, many=False):
         """translate sql dialects
 
         The Python db API standard does not attempt to unify parameter passing
@@ -196,10 +196,14 @@ class Database(object):
             return isinstance(obj, collections.Sequence)
 
         if self.paramstyle == 'qmark':
-            if len(args) == 1 and hasattr(args[0], 'items') and args[0]:
+            if not many and len(args) == 1 and hasattr(args[0], 'items') and args[0]:
                 # a dict-like thing
                 placeholders = {key: ':%s' % key for key in args[0]}
                 cmd = command % placeholders, args[0]
+            elif many and len(args) >= 1 and hasattr(args[0], 'items') and args[0]:
+                # a dict-like thing
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args
             elif len(args) >= 1 and issequenceform(args[0]):
                 # a list of tuple-like things
                 placeholders = ['?'] * len(args[0])
@@ -211,10 +215,14 @@ class Database(object):
             return cmd
 
         elif self.paramstyle == 'named':
-            if len(args) == 1 and hasattr(args[0], 'items'):
+            if not many and len(args) == 1 and hasattr(args[0], 'items'):
                 # a dict-like thing
                 placeholders = {key: ':%s' % key for key in args[0]}
                 cmd = command % placeholders, args[0]
+            elif many and len(args) >= 1 and hasattr(args[0], 'items'):
+                # a dict-like thing
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args
             elif len(args) >= 1 and issequenceform(args[0]):
                 # a list of tuple-like things
                 placeholders = [':%d' % (n+1) for n in range(len(args[0]))]
@@ -226,7 +234,8 @@ class Database(object):
             return cmd
 
         else:
-            params = len(args) == 1 and \
+            params = not many and \
+                len(args) == 1 and \
                 hasattr(args[0], 'items') and \
                 args[0] or \
                 args
@@ -250,7 +259,8 @@ class Database(object):
             )
 
         start = timeit.default_timer()
-        command, params = self.translate(command, *args)
+        many = method == cursor.executemany
+        command, params = self.translate(command, *args, many=many)
         try:
             method(command, params)
         except Exception as error:
@@ -283,6 +293,8 @@ class Database(object):
 
     def execute_many(self, command, sequence):
         """execute a SQL command with a sequence of parameters"""
+        if not sequence:
+            return None
         cursor = self.cursor()
         return self._execute(cursor, cursor.executemany, command, *sequence)
 

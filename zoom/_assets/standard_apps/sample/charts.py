@@ -24,6 +24,10 @@ class ChartSampleView(View):
         )
         widget = PivotWidget()
         content = widget.format(chart=my_pivot_table)
-        return zoom.page(content, title='PivotTable')
+        return zoom.page(
+            '<h2>Pivot Table</h2>',
+            content,
+            title='Charts'
+        )
 
 view = ChartSampleView()

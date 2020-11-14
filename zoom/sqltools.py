@@ -4,6 +4,8 @@
     sql utilities
 """
 
+import datetime
+import decimal
 import itertools
 
 import zoom
@@ -99,7 +101,10 @@ def entify(attributes):
     """
     dictrec = zoom.utils.Bunch(klass=dict)
     result = zoom.store.entify(
-        ((None, None, row_id, attribute, datatype, value) for row_id, attribute, datatype, value in attributes),
+        (
+            (None, None, row_id, attribute, datatype, value)
+            for row_id, attribute, datatype, value in attributes
+        ),
         dictrec
     )
     for rec in result:
@@ -118,6 +123,14 @@ def make_store_select(kind, *a,**k):
     ... )
     >>> sql == target
     True
+
+    >>> sql = make_store_select('person', birthdate=le(datetime.date(2020,1,1)))
+    >>> target = (
+    ...    'select row_id, attribute, datatype, value from attributes where kind="person" and \\n'
+    ...    '  row_id in (select row_id from attributes where kind="person" and attribute="birthdate" and CAST(value AS DATE)<="2020-01-01")'
+    ... )
+    >>> sql == target
+    True
     """
 
     def quote(text):
@@ -129,12 +142,17 @@ def make_store_select(kind, *a,**k):
     )
 
     def visitor(term, name):
-        get = {
-            int: 'INTEGER',
-            str: 'CHAR',
-            float: 'DECIMAL',
-            'decimal.Decimal': 'DECIMAL',
-        }.get
+
+        def get_cast(value):
+            get = {
+                int: ('INTEGER', int),
+                str: ('CHAR', str),
+                datetime.datetime: ('DATETIME', quote),
+                datetime.date: ('DATE', quote),
+                float: ('DECIMAL', str),
+                decimal.Decimal: ('DECIMAL', str)
+            }.get
+            return get(type(value))
 
         if isinstance(term.value, str):
             return p % (
@@ -144,14 +162,19 @@ def make_store_select(kind, *a,**k):
                 term.value
             )
         else:
-            cast_to = get(type(term.value))
+            cast_to, convert = get_cast(term.value)
+            if cast_to is None:
+                raise Exception('unknown type %r' % type(term.value))
+
+            value = convert(term.value)
+
             return p % (
                 quote(kind),
                 quote(name),
                 'CAST(value AS %s)%s%s' % (
                     cast_to,
                     term.operator,
-                    term.value,
+                    value,
                 ),
             )
 

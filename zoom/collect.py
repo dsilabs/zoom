@@ -483,7 +483,7 @@ class CollectionController(Controller):
         """Delete an image field"""
         record = locate(self.collection, key)
         if record:
-            del record[name]
+            record[name] = None
             record.save()
             return redirect_to(zoom.helpers.url_for(record.url, 'edit'))
 

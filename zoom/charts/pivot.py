@@ -1,6 +1,24 @@
+
+import json
+
+from decimal import Decimal
 from uuid import uuid4
 
 import zoom
+
+def dumps(data, *args, **kwargs):
+    """Dump data to json"""
+
+    def handler(obj):
+        """handle unsupported types converters"""
+        if isinstance(obj, Decimal):
+            return str(obj)
+        else:
+            msg = 'Object of type %s with value %s is not JSON serializable.'
+            raise TypeError(msg % (type(obj), repr(obj)))
+
+    return json.dumps(data, default=handler, *args, **kwargs)
+
 
 class PivotTable(zoom.DynamicComponent):
     """
@@ -8,8 +26,8 @@ class PivotTable(zoom.DynamicComponent):
         See documentation on options:
         https://github.com/nicolaskruchten/pivottable/wiki/Parameters#options-object-for-pivotui
     """
-    
-    def __init__(self, data, rows=[], columns=[], values=[], 
+
+    def __init__(self, data, rows=[], columns=[], values=[],
                  aggregator_name='Count',
                  renderer_name='Table', row_order='key_a_to_z',
                  col_order='key_a_to_z', show_ui=True,
@@ -40,7 +58,7 @@ class PivotTable(zoom.DynamicComponent):
                 for k, v in _dict.items():
                     if v is None:
                         _dict[k] = 'None'
-        return data
+        return dumps(data)
 
 class PivotWidget(zoom.DynamicComponent):
     """
