@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug in number field validator
 - escape reserved words in store find methods
 - render CheckboxField inputs with unique ids
+- set database logging off by default
 
 ## [6.12.0] - 2020-10-29
 - improve formatting of id columns in printed output
