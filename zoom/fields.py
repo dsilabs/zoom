@@ -15,7 +15,7 @@ from platform import system
 
 import zoom
 from zoom.component import component
-from zoom.utils import name_for
+from zoom.utils import name_for, id_for
 from zoom.tools import (
     websafe,
     markdown,
@@ -1780,36 +1780,36 @@ class CheckboxesField(Field):
     >>> cb = CheckboxesField('Select', value='One', values=['One','Two','Three'], hint='test hint')
     >>> print(cb.widget())
     <ul class="checkbox_field">
-    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="One" /><div>One</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Two" /><div>Two</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-one" name="select" value="One" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-two" name="select" value="Two" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
     </ul>
 
     >>> values = [('One', '1'), ('Two', '2'), 'Three']
     >>> cb = CheckboxesField('Select', value='1', values=values, hint='test hint')
     >>> print(cb.widget())
     <ul class="checkbox_field">
-    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
     </ul>
 
     >>> values = [('One', '1'), ('Two', 2), 'Three']
     >>> cb = CheckboxesField('Select', value='One', values=values, hint='test hint')
     >>> print(cb.widget())
     <ul class="checkbox_field">
-    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
     </ul>
 
     >>> values = [('One', '1'), ('Two', 2), 'Three']
     >>> cb = CheckboxesField('Select', value='2', values=values, hint='test hint')
     >>> print(cb.widget())
     <ul class="checkbox_field">
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="1" /><div>One</div></li>
-    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="2" /><div>Two</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
     </ul>
 
     """
@@ -1824,11 +1824,12 @@ class CheckboxesField(Field):
             else:
                 text = value = option
             checked = ((str(value) in current_values) or (text in current_values)) and 'checked' or ''
+            tag_id = id_for('-'.join([self.id, str(value)]))
             tag = html.tag(
                 'input',
                 checked,
                 name=self.name,
-                id=self.id,
+                id=tag_id,
                 Type='checkbox',
                 Class='checkbox_field',
                 value=value,
