@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+## [6.13.0] - 2020-11-27
 - add support for date and datetime in sqltools query builder
 - fix bug in migration revert logging
 - add missing jquery requirement for datatables package
