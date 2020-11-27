@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - escape reserved words in store find methods
 - render CheckboxField inputs with unique ids
 - set database logging off by default
+- make how_log_ago work with dates and datetimes
 
 ## [6.12.0] - 2020-10-29
 - improve formatting of id columns in printed output

@@ -283,8 +283,21 @@ def how_long_ago(anytime, since=None):
     '10 minutes ago'
 
     """
+
+    def as_datetime(anytime):
+        """Convert value to datetime"""
+        if isinstance(anytime, datetime.datetime):
+            return anytime
+        elif isinstance(anytime, datetime.date):
+            return datetime.datetime(anytime.year, anytime.month, anytime.day)
+        elif anytime is None:
+            msg = 'date, datetime or timestamp required (None passed)'
+            raise TypeError(msg)
+        else:
+            return datetime.datetime.fromtimestamp(anytime)
+
     right_now = since or now()
-    if anytime < right_now:
+    if as_datetime(anytime) < right_now:
         return how_long(anytime, right_now) + ' ago'
     else:
         return how_long(right_now, anytime) + ' from now'
