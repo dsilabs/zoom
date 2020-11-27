@@ -9,6 +9,7 @@ import zoom
 
 class TestSite(unittest.TestCase):
 
+    @unittest.skip
     def test_default_site_database_logging_defaults(self):
         path = zoom.tools.zoompath('zoom/_assets/web/sites/default')
         site = zoom.sites.Site(path)
