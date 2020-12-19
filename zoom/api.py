@@ -14,12 +14,6 @@ class API:
         Note: request header specifies json but it's up to the app
               to decide whether or not to respect that.
 
-        >>> test_site = get_test_site()
-        >>> api = API(test_site, 'admin', 'admin')
-        >>> api.get('ping')
-        True
-        >>> api.close()
-
     """
 
     def __init__(self, site_url, username, password):
