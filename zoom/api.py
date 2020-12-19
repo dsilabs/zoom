@@ -36,7 +36,7 @@ class API:
             password=self.password,
             csrf_token=token,
         )
-        session.post(f'{site_url}/api', data=data)
+        self.response = session.post(f'{site_url}/api', data=data)
 
     def get(self, *args, **kwargs):
         """get a response from the remote site"""
