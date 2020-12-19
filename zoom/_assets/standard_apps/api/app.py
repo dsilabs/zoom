@@ -42,7 +42,7 @@ def authenticate(request):
 def app(request):
     """API index"""
     if request.data:
-        authenticate(request)
+        return authenticate(request)
     else:
         token = create_csrf_token()
         request.session.csrf_token = token
