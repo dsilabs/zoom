@@ -25,7 +25,7 @@ import sys
 
 import zoom
 from zoom.utils import OrderedSet, kind
-from zoom.tools import load, pug, sass
+from zoom.tools import load, pug, sass, websafe
 
 
 class Component(object):
@@ -248,7 +248,16 @@ class Component(object):
         for k, v in self.parts.items():
             if k == 'html':
                 tpl = ''.join(map(str, v))
-                result[k] = tpl.format(*args, **kwargs)
+                try:
+                    result[k] = tpl.format(*args, **kwargs)
+                except TypeError as e:
+                    msg = str(e)
+                    if 'unsupported format' in msg:
+                        raise Exception(msg + '<pre>' + websafe(tpl) + '</pre>')
+                    raise
+                except KeyError as e:
+                    msg = str(e)
+                    raise Exception(msg + '<pre>\n' + websafe(tpl) + '</pre>')
             elif k == 'js':
                 result[k] = ''.join(
                     js_fill(segment, *args, **kwargs) for segment in v
