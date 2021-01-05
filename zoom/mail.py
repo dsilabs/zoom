@@ -83,7 +83,8 @@ def get_mail_store(site):
 
 
 def format_as_html(text, logo_url):
-    template = get_template('email_template')
+    site = zoom.get_site()
+    template = get_template('email_template', theme=site.theme)
     return template.format(logo_url=logo_url, message=text)
 
 

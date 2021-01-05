@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - add installed path to admin environment info page
+- add support for custom themed email templates
 
 ### Added
 ## [6.14.0] - 2020-12-21
