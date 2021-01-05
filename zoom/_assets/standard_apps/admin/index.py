@@ -499,6 +499,7 @@ class MyView(zoom.View):
                 h.h2('Zoom'),
                 zoom.html.table([
                     ('Version', zoom.__version__ + ' Community Edition'),
+                    ('Installed Path', zoom.tools.zoompath()),
                 ]),
                 h.h2('Python'),
                 zoom.html.table([
