@@ -9,11 +9,10 @@ import uuid
 import zoom
 from zoom.context import context
 from zoom.mvc import View, Controller
-from zoom.mail import get_mail_store, send, Attachment, send_as
+from zoom.mail import get_mail_store, Attachment, send_as
 from zoom.browse import browse
 import zoom.fields as f
 from zoom.forms import Form
-from zoom.components import success
 from zoom.tools import home
 from zoom.alerts import success
 
@@ -56,6 +55,7 @@ class MyView(View):
 class MyController(Controller):
 
     def send_button(self, *args, **input):
+        """Send Button"""
 
         if mail_form.validate(input):
 
