@@ -296,7 +296,7 @@ def expedite(site, sender, recipients, subject, body,
     logger = logging.getLogger(__name__)
 
     email = compose(
-        get_default_sender(site),
+        sender,
         sender,
         recipients,
         subject,
@@ -326,6 +326,7 @@ def expedite(site, sender, recipients, subject, body,
             disconnect(server)
     else:
         logger.error('unable to connect to mail server')
+
 
 def post(put, sender, recipients, subject,
          body, attachments=None, style='plain'):
