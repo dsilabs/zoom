@@ -23,7 +23,7 @@ mail_form = Form([
     f.TextField('Recipient', size=60, maxlength=60, default=(context.user.email)),
     f.TextField('Subject', default='a subject ' + uuid.uuid4().hex),
     f.MemoField('Message', value='this is the message body\n' + uuid.uuid4().hex),
-    # f.FileField('Attachment'),
+    f.FileField('Attachment'),
     f.ButtonField('Send'),
 ])
 
@@ -59,8 +59,9 @@ class MyController(Controller):
 
         if mail_form.validate(input):
 
-            if False and 'attachment' in input and hasattr(input['attachment'], 'filename'):
-                send(
+            if 'attachment' in input and hasattr(input['attachment'], 'filename'):
+                send_as(
+                    (input['from_name'], input['from_email']),
                     input['recipient'],
                     input['subject'],
                     input['message'],
