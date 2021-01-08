@@ -56,13 +56,17 @@ def log_data(db, status, n, limit, q):
             ),
             item[1],
             zoom.helpers.who(item[2]),
-        ] + list(item[3:])
+            item[3],
+            item[4],
+            zoom.link_to(item[5]),
+            how_long_ago(item[6]),
+        ] + list(item[6:])
         for item in data
         if q in repr(item)
     ]
     labels = (
         'id', 'status', 'user', 'address', 'app',
-        'path', 'timestamp', 'elapsed'
+        'path', 'when', 'timestamp', 'elapsed'
     )
     return zoom.browse(data, labels=labels)
 
@@ -92,7 +96,7 @@ def activity_panel(db):
             link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
-            rec[3],
+            zoom.link_to(rec[3]),
             how_long_ago(rec[4]),
             rec[4],
             rec[5],
@@ -312,7 +316,7 @@ class MyView(zoom.View):
         def fmt(rec):
             user = (zoom.helpers.who(rec[2]),)
             when = (zoom.helpers.when(rec[-1]),)
-            return rec[0:2] + user + rec[3:-1] + when
+            return rec[0:2] + user + rec[3:-1] + when + rec[-1:]
 
         db = self.model.site.db
         data = list(map(fmt, db("""
@@ -323,14 +327,15 @@ class MyView(zoom.View):
             limit 100"""
         )))
 
-        labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When'
+        labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When', 'Timestamp'
         return page(zoom.browse(data, labels=labels), title='Activity')
 
     def requests(self, show_all=False):
         def fmt(rec):
             entry = (link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),)
             user = (zoom.helpers.who(rec[4]),)
-            return entry + rec[1:4] + user + rec[5:]
+            link = (zoom.link_to(rec[2]),)
+            return entry + (rec[1],) + link + rec[3:4] + user + rec[5:]
         path_filter = '' if show_all else 'and path not like "%%\\/\\_%%"'
         db = self.model.site.db
         data = db("""
