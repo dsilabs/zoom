@@ -22,7 +22,8 @@ class API:
         self.password = password
         self.session = session = requests.Session()
         session.headers.update({'Accept': 'application/json'})
-        response = session.get(f'{site_url}/api')
+        url = '%s/api' % site_url
+        response = session.get(url)
         args = response.json()
         token = args['csrf_token']
         data = dict(
@@ -30,19 +31,19 @@ class API:
             password=self.password,
             csrf_token=token,
         )
-        self.response = session.post(f'{site_url}/api', data=data)
+        self.response = session.post(url, data=data)
 
     def get(self, *args, **kwargs):
         """get a response from the remote site"""
         path = '/'.join(args)
         path = path[1:] if path.startswith('/') else path
         args = urlencode(kwargs)
-        url = f'{self.site_url}/{path}?{args}'
+        url = '{self.site_url}/{path}?{args}'.format(locals())
         return self.session.get(url)
 
     def post(self, *args, **kwargs):
         """get a response from the remote site"""
         path = '/'.join(args)
         path = path[1:] if path.startswith('/') else path
-        url = f'{self.site_url}/{path}'
+        url = '{self.site_url}/{path}'.format(locals())
         return self.session.post(url, data=kwargs)

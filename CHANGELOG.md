@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add ability to test email attachments in admin app
 - make send_as use passed sender
 - add links to paths in admin app
+- remove use of fstrings to maintain v3.5 compatibility
 
 ### Added
 ## [6.14.0] - 2020-12-21
