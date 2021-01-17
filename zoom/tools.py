@@ -683,7 +683,7 @@ def get_template(template_name='default', theme='default'):
 
     elif alt_pathname and isfile(alt_pathname):
         basedir = os.path.split(alt_pathname)[0]
-        logger.info('get_template %r', alt_pathname)
+        logger.debug('get_template %r', alt_pathname)
         logger.debug('basedir %r', basedir)
         with open(alt_pathname, 'rb') as reader:
             return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
