@@ -207,6 +207,8 @@ class CollectionView(View):
         """Return a New Item form"""
         c = self.collection
         c.user.authorize('create', c)
+        if kwargs:
+            c.fields.validate(kwargs)
         form = form_for(c.fields, ButtonField('Create', cancel=c.url))
         return page(form, title='New '+c.item_title)
 
