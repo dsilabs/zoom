@@ -125,7 +125,9 @@ class CollectionView(View):
         if c.request.route[-1:] == ['index']:
             return redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
 
-        actions = user.can('create', c) and ['New'] or []
+        actions = user.can('create', c) and [
+            ('New', zoom.url_for(c.url, 'new'))
+        ] or []
 
         logger = logging.getLogger(__name__)
         if q:
