@@ -653,9 +653,12 @@ def set_current_user(request):
         raise Exception('Unable to initialize user')
 
 
-def get_user():
-    """Return the currrent user object"""
-    return zoom.system.request.user
+def get_user(key=None):
+    """Return the currrent user or a specified user"""
+    if key is None:
+        return zoom.system.request.user
+    users = zoom.get_site().users
+    return users.get(key) or users.locate(key)
 
 
 def handler(request, next_handler, *rest):

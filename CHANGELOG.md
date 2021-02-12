@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add set_site function
 - increase size of group name column
 - increase size of audit_log app name column
+- add key parameter to get_user to get specific users
 
 ### Added
 ## [6.14.0] - 2020-12-21
