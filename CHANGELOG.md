@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remove use of fstrings to maintain v3.5 compatibility
 - minor tweaks for custom collections
 - return status 500 for application exceptions
+- add get_db function
+- add set_site function
 
 ### Added
 ## [6.14.0] - 2020-12-21

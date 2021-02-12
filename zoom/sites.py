@@ -96,6 +96,11 @@ def get_site():
     return zoom.system.site
 
 
+def set_site(site=None):
+    """Set the current site"""
+    zoom.system.site = Site() if site is None else site
+
+
 def get_db(name=None):
     """Return a db object
 

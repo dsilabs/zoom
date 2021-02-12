@@ -35,7 +35,7 @@ from .page import page, Page
 from .packages import requires
 from .store import store_of
 from .records import table_of
-from .sites import get_site
+from .sites import get_site, get_db
 from .tools import home, redirect_to, load, partial
 from .users import authorize, get_user
 from .utils import Record
