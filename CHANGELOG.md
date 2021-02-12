@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - return status 500 for application exceptions
 - add get_db function
 - add set_site function
+- increase size of group name column
+- increase size of audit_log app name column
 
 ### Added
 ## [6.14.0] - 2020-12-21
