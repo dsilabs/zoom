@@ -94,3 +94,23 @@ class Site(BasicSite):
 def get_site():
     """Return the currrent site object"""
     return zoom.system.site
+
+
+def get_db(name=None):
+    """Return a db object
+
+    Returns the current site db if no name is passed. If
+    a name is passed we return the named db on the same
+    connection as the site db.
+
+    >>> set_site()
+    >>> db = get_db()
+    >>> rows = db('select count(*) from users')
+    >>> len(rows)
+    1
+
+    """
+    db = get_site().db
+    if name is not None:
+        return db.use(name)
+    return db
