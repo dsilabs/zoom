@@ -34,7 +34,7 @@ CREATE TABLE `log` (
 --
 CREATE TABLE `audit_log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `app` varchar(30) DEFAULT NULL,
+  `app` varchar(60) DEFAULT NULL,
   `user_id` int unsigned DEFAULT NULL,
   `activity` varchar(30) DEFAULT NULL,
   `subject1` varchar(30) DEFAULT NULL,
