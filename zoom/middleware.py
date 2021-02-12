@@ -634,14 +634,21 @@ def display_errors(request, handler, *rest):
             zoom.templates.template_missing
         )
 
-    except Exception:
+    except Exception as e:
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
         logger.error(msg)
 
+        as_api = request.env.get('HTTP_ACCEPT', '') == 'application/json'
+        error_status = '500 Internal Server Error'
+
         if not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
-            content = zoom.tools.load_template('friendly_error', zoom.templates.friendly_error)
-            return page(content).render(request)
+            if as_api:
+                return JSONResponse(
+                    dict(status=error_status), status=error_status)
+            content = zoom.tools.load_template(
+                'friendly_error', zoom.templates.friendly_error)
+            return page(content, status=500).render(request)
 
         content = """
         <h2>Exception</h2>
@@ -654,9 +661,19 @@ def display_errors(request, handler, *rest):
             str(request),
         )
 
+        if as_api:
+            return JSONResponse(
+                dict(
+                    message=str(e),
+                    status=error_status,
+                ),
+                status=error_status
+            )
+
         return page(
             content,
-            title='Application Error'
+            title='Application Error',
+            status='500 Internal Server Error'
         ).render(request)
 
 

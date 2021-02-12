@@ -1,6 +1,8 @@
 """
     test middleware
 """
+
+import json
 import logging
 import unittest
 
@@ -84,5 +86,23 @@ class TestDisplayError(unittest.TestCase):
     def test_display_error_as_non_admin(self):
         zoom.system.user.is_admin = False
         response = display_errors(self.request, throw)
+        self.assertTrue(response.status, 500)
         self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
 
+    def test_error_status_500_html(self):
+        zoom.system.user.is_admin = False
+        response = display_errors(self.request, throw)
+        self.assertTrue(response.status, 500)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
+
+    def test_error_status_500_json(self):
+        zoom.system.user.is_admin = True
+        self.request.env = dict(HTTP_ACCEPT='application/json') # mock
+        response = display_errors(self.request, throw)
+        self.assertTrue(response.status, 500)
+        self.assertTrue(isinstance(response, zoom.response.JSONResponse))
+        self.assertEqual(json.loads(response.content), {
+            "message": "ouch!",
+            "status": "500 Internal Server Error"
+            }
+        )

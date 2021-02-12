@@ -22,6 +22,7 @@ class View(zoom.View):
         * [text](/sample/responses/text)
         * [Component](/sample/responses/component)
         * [Missing (404)](/sample/responses/missing)
+        * [Exception (500)](/sample/responses/exception)
         """)
 
     def string(self):
@@ -43,6 +44,9 @@ class View(zoom.View):
 
     def component(self):
         return zoom.Component('<h1>Component</h1>This is a <code>Component</code> response.')
+
+    def exception(self):
+        raise Exception("Test Exception")
 
 
 main = zoom.dispatch(View)
