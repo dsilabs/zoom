@@ -203,13 +203,13 @@ class UserCollectionController(CollectionController):
                 return home('users/' + key)
 
     def activate(self, key):
-        user = zoom.system.site.users.first(username=key)
+        user = zoom.get_site().users.locate(key)
         if user:
             user.activate()
         return home('users/' + key)
 
     def deactivate(self, key):
-        user = zoom.system.site.users.first(username=key)
+        user = zoom.get_site().users.locate(key)
         if user:
             user.deactivate()
         return home('users/' + key)

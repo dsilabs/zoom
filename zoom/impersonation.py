@@ -9,8 +9,8 @@ import zoom.html as h
 def impersonate(username):
     """Impersonate a user"""
     zoom.authorize()
-    site = zoom.system.site
-    if site.users.first(username=username):
+    user = zoom.get_site().users.locate(username)
+    if user:
         session = zoom.system.request.session
         session.impersonated_user = username
         zoom.audit('start impersonating', zoom.system.request.user.username, username)
