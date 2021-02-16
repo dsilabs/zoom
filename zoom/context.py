@@ -10,3 +10,4 @@ context.request = None
 context.site = None
 context.user = None
 context.response = None
+context.providers = []

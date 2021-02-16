@@ -30,7 +30,6 @@ class TestCSRFMiddleware(unittest.TestCase):
             'REQUEST_URI': '/test/route',
             'REQUEST_METHOD': 'POST',
         }
-        zoom.system.providers = []
         zoom.system.request = request = Request(self.env)
         request.site = Site(request)
         request.site.db = setup_test()
@@ -42,7 +41,6 @@ class TestCSRFMiddleware(unittest.TestCase):
         self.request.session.destroy()
 
     def test_csrf_token_process(self):
-        """test whether the request and site are setup to process the csrf token"""
         request = self.request
         self.assertEqual(request.method, 'POST')
         self.assertEqual(request.site.csrf_validation, True)  # ensure default is to be enabled
