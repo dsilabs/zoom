@@ -11,6 +11,7 @@ python:
   - '3.6'
   - '3.7'
   - '3.8'
+  - '3.9'
 
 install:
   - pip install coveralls
@@ -29,4 +30,4 @@ script:
   - nosetests --with-coverage --cover-package=zoom --with-doctest -v zoom tests/unittests --exclude-dir=zoom/testing --exclude-dir=zoom/cli --exclude-dir=zoom/_assets
 
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.8' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.9' && $TRAVIS_MARIADB_VERSION == '10.2' ]]; then coveralls; fi
