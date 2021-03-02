@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - increase size of audit_log app name column
 - add key parameter to get_user to get specific users
 - use locate for user operations to accomodate morphed usernames
+- update tests to run against python 3.8 and 3.9
 
 ### Added
 ## [6.14.0] - 2020-12-21
