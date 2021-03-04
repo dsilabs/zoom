@@ -25,6 +25,7 @@ from .__version__ import __version__
 from .apps import App, get_app
 from .auditing import audit
 from .browse import browse
+from .collect import collection_of
 from .component import Component, DynamicComponent
 from .context import context as system
 from .forms import form, Form

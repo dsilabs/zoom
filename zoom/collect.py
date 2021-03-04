@@ -964,3 +964,8 @@ class Collection(object):
 class SilentCollection(Collection):
     """A collection of Records where we do not audit "View" events"""
     verbose = False
+
+
+def collection_of(fields, **kwargs):
+    """Returns a collection"""
+    return Collection(fields, **kwargs)
