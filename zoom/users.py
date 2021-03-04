@@ -612,6 +612,11 @@ def authorize(*roles):
     return wrapper
 
 
+def can(action, thing):
+    """Return True if current user can action thing"""
+    return get_user().can(action, thing)
+
+
 def set_current_user(request):
     """Set current user
 
