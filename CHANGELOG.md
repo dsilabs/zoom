@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add collection_of
 - add users.can
 - add uuid to browse table
+- add name parameter to store_of
 
 ### Added
 ## [6.14.0] - 2020-12-21
