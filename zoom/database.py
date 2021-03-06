@@ -617,9 +617,9 @@ class MySQLDatabase(Database):
         try:
             logger = logging.getLogger(__name__)
             if self.open:
-                logger.debug('closing %s', self.__class__.__name__)
                 self.close()
-        except OperationalError:
+                logger.debug('closed %s', self.__class__.__name__)
+        except (OperationalError, NameError):
             pass
 
 class MySQLdbDatabase(Database):   # pragma: no cover
