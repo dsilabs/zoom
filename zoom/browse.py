@@ -194,18 +194,18 @@ def browse(data, **kwargs):
         alignments = [s[1] for s in styling]
 
     column_alignments = """
-        .baselist tbody>tr>td:nth-child(%s) {
+        #%s tbody>tr>td:nth-child(%s) {
             text-align: right;
             padding-right: 20px;
         }
-        .baselist thead>tr>th:nth-child(%s) {
+        #%s thead>tr>th:nth-child(%s) {
             text-align: right;
             padding-right: 20px;
         }
     """
 
     alignment_css = ''.join(
-        column_alignments % (n+1, n+1)
+        column_alignments % (table_id, n+1, table_id, n+1)
         for n, alignment in enumerate(alignments)
         if alignment == 'right'
     )
@@ -273,10 +273,10 @@ def browse(data, **kwargs):
         }
         """
         zoom.Component(css=css, js=js).render()
-        table_tag = '<table id="{}" >'.format(table_id)
     else:
         zoom.Component(css=css).render()
-        table_tag = '<table>'
+
+    table_tag = '<table id="{}">'.format(table_id)
 
     result = '\n'.join(
         ['<div class="baselist">'] +
