@@ -83,7 +83,7 @@ def browse(data, **kwargs):
     header = kwargs.get('header')
     footer = kwargs.get('footer', '')
     sortable = kwargs.get('sortable', False)
-    table_id = kwargs.get('table_id', uuid.uuid4().hex)
+    table_id = kwargs.get('table_id', 'x'+uuid.uuid4().hex)
 
     items = list(data)
 
