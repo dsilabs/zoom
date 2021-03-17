@@ -115,7 +115,7 @@ def blog_fields():
 
 main = zoom.collect.Collection(
     blog_fields,
-    url=zoom.system.app.url,
+    url='/blog',
 )
 ```
 
@@ -142,7 +142,7 @@ def blog_fields():
 
 main = zoom.collect.Collection(
     blog_fields,
-    url=zoom.system.app.url,
+    url='/blog',
 )
 ```
 
