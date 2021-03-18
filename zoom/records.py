@@ -246,8 +246,6 @@ class RecordStore(Store):
             decimal.Decimal,
         ]
 
-        # pylint: disable=star-args
-
         for atype in datatypes:
             if atype not in valid_types:
                 msg = 'unsupported type <type %s>' % atype
@@ -454,7 +452,6 @@ class RecordStore(Store):
             [True, True]
 
         """
-        # pylint: disable=star-args
 
         if not isinstance(keys, (list, tuple)):
             keys = (keys,)
