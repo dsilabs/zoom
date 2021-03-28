@@ -32,7 +32,7 @@ class MyController(Controller):
 
     def success(self):
         success('that was great!')
-        return page(markdown('return to [index](/sample/alerts)'), title='Alerts')
+        return redirect_to('/sample/alerts')
 
     def warning(self):
         warning('that was close!')
