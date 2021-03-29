@@ -170,6 +170,10 @@ class Page(object):
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
+            tab_title=' | '.join(filter(bool, [
+                self.title,
+                request.site.title,
+            ])),
             site_url=request.site.url,
             author=request.site.owner_name,
             css=get_css,
