@@ -594,6 +594,11 @@ def capture_stdout(request, handler, *rest):
     return result
 
 
+def cause_error(request, handler, *rest):
+    """Cause an error for testing"""
+    raise Exception('Something unexpected happened!')
+
+
 def trap_errors(request, handler, *rest):
     """Trap exceptions and raise a server error
 
@@ -612,14 +617,17 @@ def trap_errors(request, handler, *rest):
     >>> status, headers, content = response.as_wsgi()
     >>> status
     '500 Internal Server Error'
-    >>> 'Exception: error!' in str(content)
+    >>> 'Server Error' in str(content)
     True
     """
     try:
         return handler(request, *rest)
     except Exception:
         status = '500 Internal Server Error'
-        return TextResponse(traceback.format_exc(), status)
+        return HTMLResponse(
+            zoom.templates.internal_server_error_500,
+            status
+        )
 
 
 def display_errors(request, handler, *rest):
