@@ -559,6 +559,7 @@ class Users(RecordStore):
         """Things to do just before inserting a new User record"""
         user.update(status='A')
         user.created = user.updated = zoom.tools.now()
+        user.created_by = user.updated_by = get_user().user_id
 
     def before_update(self, user):
         """Things to do just before updating a User record"""

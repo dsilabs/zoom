@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - add tab_title helper
 - add 500 error template
+- add created_by and updated_by to records created by User.add method
 
 ### Added
 

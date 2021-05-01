@@ -19,12 +19,14 @@ class TestUser(unittest.TestCase):
     def setUp(self):
         self.db = setup_test()
         self.users = Users(self.db)
+
         self.groups = Groups(self.db)
         zoom.system.request = zoom.utils.Bunch(
             app=zoom.utils.Bunch(
                 name=__name__,
             ),
             session=zoom.utils.Bunch(),
+            user=self.users.first(username='admin')
         )
         zoom.system.site = zoom.utils.Bunch(
             url='nosite',
@@ -41,7 +43,12 @@ class TestUser(unittest.TestCase):
         user = self.users.add('sam', 'sam', 'smith', 'sam@testco.com')
         self.assertTrue(isinstance(user, User))
         self.assertEqual(user.name, 'sam smith')
-        self.assertTrue(self.users.first(username='sam'))
+        sam = self.users.first(username='sam')
+        self.assertTrue(sam)
+        self.assertTrue(sam.created)
+        self.assertTrue(sam.created_by)
+        self.assertTrue(sam.updated)
+        self.assertTrue(sam.updated_by)
         self.users.delete(username='sam')
         self.assertFalse(self.users.first(username='sam'))
 
