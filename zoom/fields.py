@@ -246,7 +246,7 @@ class Field(object):
         ususally to be combined with other fields in the native type where
         the value is the native data type for the field type.
         """
-        return {self.name: self.value or self.default}
+        return {self.name: self.value if self.value is not None else self.default}
 
     def as_dict(self):
         return {self.name: self}
@@ -484,7 +484,7 @@ class TextField(Field):
 
     def widget(self):
 
-        value = self.value or self.default
+        value = self.value if self.value is not None else self.default
         try:
             value = websafe(value)
         except AttributeError:
@@ -1349,7 +1349,7 @@ class IntegerField(TextField):
     '2'
 
     >>> IntegerField('Count').widget()
-    '<input class="number_field" id="count" maxlength="10" name="count" size="10" type="text" value="" />'
+    '<input class="number_field" id="count" maxlength="10" name="count" size="10" type="text" value="0" />'
 
     >>> n = IntegerField('Size')
     >>> n.assign('2')
@@ -1357,6 +1357,35 @@ class IntegerField(TextField):
     2
     >>> n.evaluate()
     {'size': 2}
+
+    >>> n = IntegerField('Size')
+    >>> n.assign('0')
+    >>> n.value
+    0
+    >>> n.evaluate()
+    {'size': 0}
+    >>> n.display_value()
+    '0'
+
+    >>> n = IntegerField('Size', default=2)
+    >>> n.value
+    0
+    >>> n.assign(0)
+    >>> n.value
+    0
+    >>> n.evaluate()
+    {'size': 0}
+    >>> n.display_value()
+    '0'
+
+    >>> n = IntegerField('Size', default=2)
+    >>> n.assign(None)
+    >>> n.value
+    2
+    >>> n.evaluate()
+    {'size': 2}
+    >>> n.display_value()
+    '2'
 
     >>> n = IntegerField('Size', units='meters')
     >>> n.assign('22234')
@@ -1383,7 +1412,7 @@ class IntegerField(TextField):
 
     def display_value(self):
         units = self.units and (' ' + self.units) or ''
-        value = self.value and ('{:,}{}'.format(self.value, units)) or ''
+        value = ('{:,}{}'.format(self.value, units)) if self.value is not None else ''
         return websafe(value)
 
     def as_searchable(self):
