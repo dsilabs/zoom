@@ -46,7 +46,6 @@ class AppTestPrimitives(unittest.TestCase):
     def handle(self, request):
         handlers = (
             middleware.zoom.request.handler,
-            middleware.zoom.profiler.handler,
             middleware.reset_modules,
             middleware.capture_stdout,
             middleware.zoom.site.handler,
