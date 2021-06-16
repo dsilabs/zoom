@@ -14,8 +14,8 @@ import os
 import string
 import uuid
 
-import zoom
 import zoom.jsonz as json
+
 
 POSITIVE = [True, 1, 'True', 'yes', 'y', 'on', '1']
 NEGATIVE = [False, 0, 'False', 'no', 'n', 'off', '0']
@@ -25,9 +25,11 @@ keep_these = string.ascii_letters + string.digits + '-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+
 def create_csrf_token():
     """Create and return a canonical CSRF token; a un-segmented UUID4."""
     return uuid.uuid4().hex
+
 
 def pretty(obj):
     """return an object in a pretty form
@@ -476,6 +478,7 @@ class ItemList(list):
 
 
 def parents(path):
+    """Return list of parent directories"""
     if not os.path.isdir(path):
         return parents(os.path.split(os.path.abspath(path))[0])
     parent = os.path.abspath(os.path.join(path, os.pardir))
@@ -506,6 +509,7 @@ class Config(object):
 
     A Config with a handy get method.
 
+    >>> import zoom
     >>> config = Config(zoom.tools.zoompath('zoom', '_assets', 'web','sites','default','site.ini'))
     >>> config.get('site', 'name')
     'ZOOM'
@@ -1089,6 +1093,7 @@ def search(items, text):
         if matches(item, search_terms):
             yield item
 
+
 def generate_key():
     """make a new key
 
@@ -1097,6 +1102,7 @@ def generate_key():
     """
     new_uuid = uuid.uuid4().bytes
     return hmac.new(new_uuid, digestmod=hashlib.sha1).hexdigest()
+
 
 def existing(path, subdir=None):
     """Returns existing directories only"""
@@ -1110,6 +1116,7 @@ def existing(path, subdir=None):
         )
     if pathname and exists(pathname):
         return pathname
+
 
 def dedup(seq):
     """Remove duplicates while retaining order"""
