@@ -19,6 +19,8 @@ keep_these = string.ascii_letters + string.digits + '.-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+logger = logging.getLogger(__name__)
+
 
 def key_for(username):
     """
@@ -659,11 +661,28 @@ def set_current_user(request):
         raise Exception('Unable to initialize user')
 
 
+def get_users():
+    """Get the users store"""
+    return zoom.get_site().users
+
+
 def get_user(key=None):
     """Return the currrent user or a specified user"""
     if key is None:
         return zoom.system.request.user
-    users = zoom.get_site().users
+    users = get_users()
+    user = users.get(key)
+    if user:
+        return user
+    user = users.locate(key)
+    if user:
+        logger.warning('get_user with parameter other than user_id is deprecated.  Use locate_user instead.')
+        return user
+
+
+def locate_user(key):
+    """Locate a user"""
+    users = get_users()
     return users.get(key) or users.locate(key)
 
 

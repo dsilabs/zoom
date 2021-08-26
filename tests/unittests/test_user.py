@@ -9,7 +9,8 @@ import zoom
 import zoom.request
 from zoom.database import setup_test
 from zoom.users import (
-    User, Users, hash_password, get_current_username, set_current_user
+    User, Users, hash_password, get_current_username, set_current_user,
+    get_user, get_users, locate_user
 )
 from zoom.models import Groups
 from zoom.exceptions import UnauthorizedException
@@ -32,6 +33,7 @@ class TestUser(unittest.TestCase):
             url='nosite',
             db=self.db,
             groups=self.groups,
+            users=self.users
         )
         zoom.system.user = self.users.first(username='admin')
 
@@ -316,3 +318,16 @@ class TestUser(unittest.TestCase):
         admin = self.users.first(username='admin')
         self.assertIsNotNone(admin.last_seen)
         self.assertIsInstance(admin.last_seen, datetime.datetime)
+
+    def test_get_user_no_params(self):
+        user = get_user()
+        self.assertEqual(user.username, 'admin')
+
+    def test_get_user_with_id(self):
+        user_id = get_users().first(username='user').user_id
+        user = get_user(user_id)
+        self.assertEqual(user.username, 'user')
+
+    def test_get_user_with_username(self):
+        user = get_user('user')
+        self.assertEqual(user.username, 'user')
