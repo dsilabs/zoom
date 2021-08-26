@@ -811,7 +811,7 @@ class Record(Storage):
     def save(self):
         """save record"""
         logger = logging.getLogger(__name__)
-        id = self['__store'].put(self)
+        record_id = self['__store'].put(self)
         key = self['__store'].id_name
         logger.debug(
             'saved record %s(%s=%r) to %r',
@@ -820,7 +820,7 @@ class Record(Storage):
             self[key],
             self['__store']
         )
-        return id
+        return record_id
 
     def attributes(self):
         return get_attributes(self)
