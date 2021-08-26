@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add purge_old_job_results function
 - fix bug in IntegerField zero values
 - add get_users and locate_user
+- add SameSite cookie morsel
 
 ### Added
 

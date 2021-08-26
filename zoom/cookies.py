@@ -16,19 +16,27 @@
     >>> v.endswith('; Secure')
     True
     >>> len(v)
-    77
+    94
+    >>> 'SameSite=Strict' in str(v)
+    True
+    >>> 'Secure' in str(v)
+    True
 """
 
-from http.cookies import SimpleCookie
+from http.cookies import SimpleCookie, Morsel
 import logging
 import uuid
-
-import zoom
 
 
 SESSION_COOKIE_NAME = 'zoom_session'
 SUBJECT_COOKIE_NAME = 'zoom_subject'
 ONE_YEAR = 365 * 24 * 60 * 60
+
+class SameSiteMorsel(Morsel):
+    """Add SameSite support for Python 3.7 and older"""
+    def add_samesite_support(self):
+        if 'samesite' not in self._reserved:
+            self._reserved['samesite'] = 'SameSite'
 
 
 def new_token():
@@ -43,7 +51,7 @@ def get_cookies(raw_cookie):
     return result
 
 
-def add_value(cookie, name, value, lifespan, secure):
+def add_value(cookie, name, value, lifespan, secure, samesite='Strict'):
     """add a value to a cookie"""
     cookie[name] = value
     cookie[name]['httponly'] = True
@@ -51,6 +59,10 @@ def add_value(cookie, name, value, lifespan, secure):
     cookie[name]['expires'] = lifespan  # in seconds
     if secure:
         cookie[name]['secure'] = True
+
+    # for python3.7 and older
+    SameSiteMorsel.add_samesite_support(cookie[name])
+    cookie[name]['samesite'] = samesite
 
 
 def get_value(cookie):
@@ -62,6 +74,7 @@ def get_value(cookie):
 def set_session_cookie(response, session, subject, lifespan, secure=True):
     """construct a session cookie
 
+    >>> import zoom
     >>> response = zoom.response.HTMLResponse('my page')
     >>> set_session_cookie(response, 'sessionid', 'subjectid', 60)
     >>> 'zoom_session=sessionid' in str(response.cookie)
@@ -81,6 +94,7 @@ def set_session_cookie(response, session, subject, lifespan, secure=True):
 def handler(request, handler, *rest):
     """Cookie handler
 
+    >>> import zoom
     >>> request = zoom.utils.Bunch(
     ...     cookies=None,
     ...     session_timeout=1,
