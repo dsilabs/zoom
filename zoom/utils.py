@@ -632,9 +632,9 @@ class OrderedSet(collections.MutableSet):
             OrderedSet([2, 3])
         """
         if key in self.map:
-            key, prev, next = self.map.pop(key)
-            prev[2] = next
-            next[1] = prev
+            key, prev, _next = self.map.pop(key)
+            prev[2] = _next
+            _next[1] = prev
 
     def __iter__(self):
         end = self.end
