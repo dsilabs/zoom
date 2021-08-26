@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.16.0] - 2021-08-26
 - add tab_title helper
 - add 500 error template
 - add created_by and updated_by to records created by User.add method
@@ -12,8 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug in IntegerField zero values
 - add get_users and locate_user
 - add SameSite cookie morsel
-
-### Added
 
 ## [6.15.0] - 2021-02-06
 - add installed path to admin environment info page
