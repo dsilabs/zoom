@@ -674,7 +674,8 @@ def get_user(key=None):
     user = users.get(key)
     if user:
         return user
-    user = users.locate(key)
+    if (isinstance(key, str)):
+        user = users.locate(key)
     if user:
         logger.warning('get_user with parameter other than user_id is deprecated.  Use locate_user instead.')
         return user
