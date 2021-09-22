@@ -525,7 +525,8 @@ class MyView(zoom.View):
                 ]),
                 h.h2('Variables'),
                 zoom.html.table(
-                    list(os.environ.items())
+                    list(
+                        (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items())
                 ),
                 css = """
                     .content table { width: 100%; }
