@@ -198,9 +198,9 @@ def users_panel(db):
     return zoom.browse(rows, labels=labels, title=link_to_page('Users'))
 
 
-def callback(method, url=None, timeout=5000):
+def callback(method, url=None, timeout=15000):
     method_name = method.__name__
-    path = url or '/<dz:app_name>/' + method_name
+    path = url or '/{{app_name}}/' + method_name
     js = """
         jQuery(function($){
           setInterval(function(){
@@ -269,7 +269,7 @@ class MyView(zoom.View):
 
     def _index(self):
         self.model.site.logging = False
-        db = self.model.site.db
+        db = zoom.get_db()
 
         content = zoom.Component(
             views.index_metrics_view(db),

@@ -2,13 +2,14 @@
     admin model
 """
 
+import datetime
 import logging
 import uuid
 
 import zoom
 import zoom.mail
 from zoom.context import context
-from zoom.tools import today
+from zoom.tools import today, now
 from zoom.users import Users
 from zoom.models import Groups
 
@@ -189,7 +190,9 @@ def get_index_metrics(db):
 
     the_day = today()
     host = zoom.system.request.host
+    recently = now() - datetime.timedelta(minutes=60)
 
+    online_users = count('users where status="A" and last_seen >= %s and username not in ("guest")', recently)
     num_users = count('users where status="A"')
     num_groups = count('groups where type="U"')
     num_requests = count('log where status="C" and server=%s and timestamp>=%s', host, the_day)
@@ -198,7 +201,7 @@ def get_index_metrics(db):
     num_authorizations = count('audit_log where timestamp>=%s', the_day)
 
     metrics = [
-        ('Users', '/admin/users', num_users),
+        (f'Users online of {num_users} active users', '/admin/users', online_users),
         ('Groups', '/admin/groups', num_groups),
         ('Requests Today', '/admin/requests', num_requests),
         ('Errors Today', '/admin/errors', num_errors),
