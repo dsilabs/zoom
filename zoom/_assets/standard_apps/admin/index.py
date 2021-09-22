@@ -3,7 +3,6 @@
 """
 
 import datetime
-import json
 import os
 import sys
 import platform
@@ -271,7 +270,7 @@ class MyView(zoom.View):
         )
 
     def _index(self):
-        self.model.site.logging = False
+        zoom.get_site().logging = False
         db = zoom.get_db()
 
         content = zoom.Component(
@@ -291,16 +290,16 @@ class MyView(zoom.View):
 
     def log(self):
         """view system log"""
-        save_logging = self.model.site.logging
+        save_logging = zoom.get_site().logging
         try:
             content = callback(self._system_log)
         finally:
-            self.model.site.logging = save_logging
+            zoom.get_site().logging = save_logging
         return page(content, title='System Log')
 
     def _system_log(self):
-        self.model.site.logging = False
-        db = self.model.site.db
+        zoom.get_site().logging = False
+        db = zoom.get_db()
         data = db(
             """
             select
@@ -318,7 +317,7 @@ class MyView(zoom.View):
             when = (zoom.helpers.when(rec[-1]),)
             return rec[0:2] + user + rec[3:-1] + when + rec[-1:]
 
-        db = self.model.site.db
+        db = zoom.get_db()
         data = list(map(fmt, db("""
             select
                 *
@@ -337,7 +336,7 @@ class MyView(zoom.View):
             link = (zoom.link_to(rec[2]),)
             return entry + (rec[1],) + link + rec[3:4] + user + rec[5:]
         path_filter = '' if show_all else 'and path not like "%%\\/\\_%%"'
-        db = self.model.site.db
+        db = zoom.get_db()
         data = db("""
             select
                 id, app, path, status, user_id, address, login, timestamp, elapsed
@@ -353,19 +352,19 @@ class MyView(zoom.View):
         return page(zoom.browse(data, labels=labels), title='Requests', actions=actions)
 
     def performance(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['P'], n, limit, q), title='Performance', search=q, clear='/admin/performance')
 
     def activity(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['A'], n, limit, q), title='Activity', search=q, clear='/admin/activity')
 
     def errors(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
 
     def warnings(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['W'], n, limit, q), title='Warnings', search=q, clear='/admin/warnings')
 
     def entry(self, key):
