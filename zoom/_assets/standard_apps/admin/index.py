@@ -13,7 +13,7 @@ import zoom.apps
 import zoom.html as h
 from zoom.helpers import link_to, link_to_page
 from zoom.page import page
-from zoom.tools import load_content, today, how_long_ago
+from zoom.tools import load_content, today, how_long_ago, now
 from zoom.users import link_to_user
 
 import views
@@ -172,32 +172,29 @@ def warning_panel(db):
 def users_panel(db):
 
     host = zoom.system.request.host
+    recent = now() - datetime.timedelta(minutes=60)
 
     data = db("""
     select
         users.username,
-        max(log.timestamp) as timestamp,
-        count(*) as requests
-    from log, users
-        where log.user_id = users.id
-        and timestamp >= %s
-        and server = %s
-        and path not like "%%\\/\\_%%"
+        last_seen
+    from users
+    where
+        last_seen >= %s
     group by users.username
-    order by timestamp desc
+    order by last_seen desc
     limit 10
-    """, today() - datetime.timedelta(days=14), host)
+    """, recent)
 
     rows = []
     for rec in data:
         row = [
             link_to_user(rec[0]),
             how_long_ago(rec[1]),
-            rec[2],
         ]
         rows.append(row)
 
-    labels = 'user', 'last seen', 'requests'
+    labels = 'user', 'last seen'
     return zoom.browse(rows, labels=labels, title=link_to_page('Users'))
 
 
