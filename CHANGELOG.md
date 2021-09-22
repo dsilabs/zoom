@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- add online users metric to admin app
+- improve performance of admin app
+- add changelog page to admin app
 
 ## [6.16.1] - 2021-09-02
 - fix bug in get_user()
