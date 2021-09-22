@@ -104,7 +104,8 @@ def activity_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
-    return zoom.browse(rows, labels=labels, title=link_to_page('Requests'))
+    table_id = 'activity-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Requests'))
 
 
 def error_panel(db):
@@ -135,7 +136,8 @@ def error_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'path', 'when'
-    return zoom.browse(rows, labels=labels, title=link_to_page('Errors'))
+    table_id = 'error-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Errors'))
 
 
 def warning_panel(db):
@@ -166,7 +168,8 @@ def warning_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'path', 'when'
-    return zoom.browse(rows, labels=labels, title=link_to_page('Warnings'))
+    table_id = 'warning-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Warnings'))
 
 
 def users_panel(db):
