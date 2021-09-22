@@ -36,7 +36,7 @@ def get_format(label, values):
     if first_non_null:
         data_type = first_non_null[0]
         if label in ['id', '_id', 'userid']:
-            return '{}', 'right'
+            return '{}', 'left'
         elif label.endswith(' ID'):
             return '{}', 'right'
         elif data_type in [int, float, Decimal]:
