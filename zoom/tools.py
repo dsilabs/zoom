@@ -246,7 +246,7 @@ def how_long(time1, time2):
         result = 'over %d months' % (diff.days / 30)
     elif diff.days > 30:
         result = 'over a month'
-    elif diff.days > 14:
+    elif diff.days >= 14:
         result = '%d weeks' % (diff.days / 7)
     elif diff.days > 1:
         result = '%d days' % diff.days
