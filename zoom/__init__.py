@@ -29,7 +29,7 @@ from .collect import collection_of
 from .component import Component, DynamicComponent
 from .context import context as system
 from .forms import form, Form
-from .helpers import link_to, url_for, url_for_page
+from .helpers import link_to, url_for, url_for_page, link_to_page
 from .instances import Instance
 from .mvc import View, Controller, dispatch, DynamicView
 from .page import page, Page
