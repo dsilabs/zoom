@@ -25,6 +25,8 @@ keep_these = string.ascii_letters + string.digits + '-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+logger = logging.getLogger(__name__)
+
 
 def create_csrf_token():
     """Create and return a canonical CSRF token; a un-segmented UUID4."""
@@ -810,7 +812,6 @@ class Record(Storage):
 
     def save(self):
         """save record"""
-        logger = logging.getLogger(__name__)
         record_id = self['__store'].put(self)
         key = self['__store'].id_name
         logger.debug(
@@ -820,6 +821,22 @@ class Record(Storage):
             self[key],
             self['__store']
         )
+        return record_id
+
+    def set(self, **kwargs):
+        """set record values"""
+        key = self['__store'].id_name
+        values = dict(kwargs)
+        record_id = self['__store'].set(self[key], values)
+        logger.debug(
+            'set record %s(%s=%r) values %r to %r',
+            self.__class__.__name__,
+            key,
+            self[key],
+            values,
+            self['__store']
+        )
+        self.update(kwargs)
         return record_id
 
     def attributes(self):

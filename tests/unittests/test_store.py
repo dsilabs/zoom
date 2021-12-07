@@ -43,6 +43,55 @@ class TestStore(unittest.TestCase):
         del person['__store']
         self.assertEqual(dict(person), dict(_id=jane_id, name='Jane', age=25))
 
+    def test_set(self):
+        jane_id = self.people.put(Person(name='Jane', age=25))
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 25,
+            }
+        )
+
+        self.people.set(jane_id, dict(age=23))
+
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 23,
+            }
+        )
+
+        person = self.people.get(jane_id)
+        person.set(age=29)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 29,
+            }
+        )
+
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 29,
+            }
+        )
+
     def test_get(self):
         joe = self.people.get(self.joe_id)
         del joe['__store']

@@ -333,6 +333,12 @@ class EntityStore(Store):
 
         return id
 
+    def set(self, key, values):
+        """sets values for an existing record"""
+        record = self.get(key)
+        record.update(values)
+        return self.put(record)
+
     def get(self, keys):
         """
         retrives entities

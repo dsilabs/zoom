@@ -278,6 +278,11 @@ class RecordStore(Store):
 
         return _id
 
+    def set(self, key, values):
+        """sets values for an existing record"""
+        record = dict({self.id_name: key}, **values)
+        return self.put(record)
+
     def get(self, keys):
         # pylint: disable=trailing-whitespace
         """

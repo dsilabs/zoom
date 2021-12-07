@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add changelog page to admin app
 - show 14 days as 2 weeks in how_long function
 - use webdriver find_element instead of legacy methods
+- add set method to Record, RecordStore and EntityStore
 
 ## [6.16.1] - 2021-09-02
 - fix bug in get_user()
