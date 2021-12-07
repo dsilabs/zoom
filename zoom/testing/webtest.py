@@ -25,6 +25,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
 
 from zoom.testing.common import get_output_path
 
@@ -106,10 +107,10 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         def try_method(method, target):
             try:
-                logger.debug('trying method %s(%r)', method.__name__, target)
-                result = method(target)
+                logger.debug('trying method %s(%r)', method, target)
+                result = driver.find_element(method, target)
                 if result:
-                    logger.debug('method %s worked!', method.__name__)
+                    logger.debug('method %s worked!', method)
                     return result
             except NoSuchElementException:
                 return False
@@ -124,37 +125,37 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         if target.startswith('link='):
             try:
-                result = driver.find_element_by_link_text(target[5:])
+                result = driver.find_element(By.LINK_TEXT, target[5:])
                 logger.debug('going with %r: %r', target, result)
                 return result
             except NoSuchElementException:
                 # try lowercase version of link, to work around text-transform bug
-                result = driver.find_element_by_link_text(target[5:].lower())
+                result = driver.find_element(By.LINK_TEXT, target[5:].lower())
                 target_cache[target] = 'link=' + target[5:].lower()
                 msg = '   label %s is being cached as %s'
                 logger.info(msg, target, target_cache[target])
                 return result
 
         elif target.startswith('//'):
-            return driver.find_element_by_xpath(target)
+            return driver.find_element(By.XPATH, target)
 
         elif target.startswith('xpath='):
-            return driver.find_element_by_xpath(target[6:])
+            return driver.find_element(By.XPATH, target[6:])
 
         elif target.startswith('css='):
-            return driver.find_element_by_css_selector(target[4:])
+            return driver.find_element(By.CSS_SELECTOR, target[4:])
 
         elif target.startswith('id='):
-            return driver.find_element_by_id(target[3:])
+            return driver.find_element(By.ID, target[3:])
 
         elif target.startswith('name='):
-            return driver.find_element_by_name(target[5:])
+            return driver.find_element(By.NAME, target[5:])
 
         direct = (
-            try_method(driver.find_element_by_name, target)
-            or try_method(driver.find_element_by_id, target)
-            or try_method(driver.find_element_by_link_text, target)
-            or try_method(driver.find_element_by_link_text, target.lower())
+            try_method(By.NAME, target)
+            or try_method(By.ID, target)
+            or try_method(By.LINK_TEXT, target)
+            or try_method(By.LINK_TEXT, target.lower())
         )
 
         if direct:
@@ -208,10 +209,10 @@ class WebdriverTestPrimitives(unittest.TestCase):
         logger = logging.getLogger(__name__)
         logger.debug('called chosen: %r %r', chosen_field, values)
 
-        chosen = self.driver.find_element_by_id(chosen_field + '_chosen')
+        chosen = self.driver.find_element(By.ID, chosen_field + '_chosen')
         chosen.click() # populates the results list
         logger.debug('chosen object: %r', chosen)
-        results = chosen.find_elements_by_css_selector(".chosen-results li")
+        results = chosen.find_elements(By.CSS_SELECTOR, ".chosen-results li")
 
         logger.debug('chosen results: %r', results)
 
@@ -225,7 +226,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
                     found = True
                     break
             if found:
-                chosen.find_element_by_css_selector('input').click()
+                chosen.find_element(By.CSS_SELECTOR, 'input').click()
                 result.click()
 
     def contains(self, text):
