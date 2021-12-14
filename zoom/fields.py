@@ -1516,7 +1516,7 @@ class MoneyField(DecimalField):
     '$1,000.00'
 
     >>> from platform import system
-    >>> l = system()=='Windows' and 'eng' or 'en_GB.utf8'
+    >>> l = system()=='Windows' and 'eng' or 'en_GB.UTF-8'
     >>> f = MoneyField("Amount", locale=l)
     >>> f.display_value()
     '\\xa30.00'
