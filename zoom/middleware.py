@@ -622,7 +622,13 @@ def trap_errors(request, handler, *rest):
     """
     try:
         return handler(request, *rest)
-    except Exception:
+    except Exception as e:
+
+        logger = logging.getLogger(__name__)
+        logger.error(str(e))
+        msg = traceback.format_exc()
+        logger.error(msg)
+
         status = '500 Internal Server Error'
         return HTMLResponse(
             zoom.templates.internal_server_error_500,
