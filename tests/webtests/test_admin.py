@@ -298,3 +298,19 @@ class SystemTests(AdminTestCase):
         self.get('/admin/groups/5')
         self.assertDoesNotContain('link-to-guests')
 
+    def test_impersonate_user(self):
+        self.get('/admin')
+
+        self.add_user('Sally', 'Jones', 'sally@testco.com', 'sally')
+
+        self.get('/admin/users/sally')
+        self.click('impersonate-action')
+
+        self.assertContains('Impersonating sally')
+
+        self.click('name=link-to-stop-impersonating')
+
+        self.assertNotContains('Impersonating sally')
+
+        self.delete_user('sally')
+
