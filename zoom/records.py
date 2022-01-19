@@ -280,7 +280,7 @@ class RecordStore(Store):
 
     def set(self, key, values):
         """sets values for an existing record"""
-        record = dict({self.id_name: key}, **values)
+        record = self.record_class({self.id_name: key}, **values)
         return self.put(record)
 
     def get(self, keys):
