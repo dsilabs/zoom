@@ -757,4 +757,4 @@ def handler(request, next_handler, *rest):
 
 def get_app():
     """Return the current app"""
-    return zoom.system.request.app
+    return getattr(zoom.system.request, 'app', None)

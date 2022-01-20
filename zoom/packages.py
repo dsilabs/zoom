@@ -230,10 +230,12 @@ def get_registered_packages():
         zoom.system.site.packages,
     ]
     if zoom.system.request:
-        packages_list.extend([
-            zoom.system.request.app.common_packages,
-            zoom.system.request.app.packages,
-        ])
+        app = zoom.apps.get_app()
+        if app:
+            packages_list.extend([
+                app.common_packages,
+                app.packages,
+            ])
     for packages in packages_list:
         registered.update(packages)
     return registered
