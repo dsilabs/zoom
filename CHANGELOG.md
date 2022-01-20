@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - add stop impersonation support for sessions with user override
 - add error log entry for low level errors
+- allow packages to be included before an app has been loaded
 
 ## [6.17.0] - 2022-01-01
 - autofocus on username on login
