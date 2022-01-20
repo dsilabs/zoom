@@ -187,6 +187,15 @@ class AppProxy(object):
         self._templates_paths = None
 
     @property
+    def icon_class(self):
+        icon = self.config.get('icon')
+        is_bootstrap_icon = icon.startswith('bi-')
+        if is_bootstrap_icon:
+            zoom.requires('bootstrap-icons')
+            return 'bi ' + icon
+        return 'fa fa-' + icon
+
+    @property
     def templates_paths(self):
         """Calculate Templates Paths"""
         join = os.path.join
@@ -210,7 +219,7 @@ class AppProxy(object):
         <div class="zoom-app-as-icon">
             <a href="{self.url}">
                 <div class="zoom-app-icon">
-                    <i class="fa fa-{self.icon}" aria-hidden="true"></i>
+                    <i class="{self.icon_class}" aria-hidden="true"></i>
                 </div>
                 <div class="zoom-app-title">
                     {self.title}

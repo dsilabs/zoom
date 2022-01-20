@@ -10,9 +10,20 @@ class MyView(zoom.View):
     def index(self):
         """Index page"""
         zoom.requires('fontawesome4')
-        content = zoom.tools.load('icons.html')
-        subtitle = 'Icons available as part of FontAwesome 4<br><br>'
-        return zoom.page(content, title='Icons', subtitle=subtitle)
+        zoom.requires('bootstrap-icons')
+
+        content = '<h2>Bootstrap Icons 1.7.2</h2>'
+        content += '<p>{}</p>'.format(zoom.tools.load('bi-icons.html'))
+
+        content += '<h2>FontAwesome 4</h2>'
+        content += '<p>{}</p>'.format(zoom.tools.load('fa-icons.html'))
+
+        return zoom.page(
+            content,
+            title='Icons',
+            subtitle='Hover over icon to see name',
+            css=".content .fa, .content .bi { color: #555 }"
+        )
 
     def about(self):
         """About page"""
