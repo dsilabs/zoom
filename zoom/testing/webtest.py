@@ -73,6 +73,25 @@ class WebdriverTestPrimitives(unittest.TestCase):
             if self.headless:
                 chrome_options.add_argument('--headless')
                 chrome_options.add_argument('--no-sandbox')
+
+                # https://stackoverflow.com/a/26283818/1689770
+                chrome_options.add_argument("--start-maximized")
+
+                # https://stackoverflow.com/a/43840128/1689770
+                chrome_options.add_argument("--enable-automation")
+
+                # https://stackoverflow.com/a/43840128/1689770
+                chrome_options.add_argument("--disable-infobars")
+
+                # https://stackoverflow.com/a/50725918/1689770
+                chrome_options.add_argument("--disable-dev-shm-usage")
+
+                # https://stackoverflow.com/a/49123152/1689770
+                chrome_options.add_argument("--disable-browser-side-navigation")
+
+                # https://stackoverflow.com/questions/51959986/how-to-solve-selenium-chromedriver-timed-out-receiving-message-from-renderer-exc
+                chrome_options.add_argument("--disable-gpu")
+
             chrome_options.add_experimental_option('prefs', {
                 'credentials_enable_service': False,
                 'profile': {
