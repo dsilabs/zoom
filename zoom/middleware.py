@@ -29,7 +29,6 @@ from zoom.response import (
     JavascriptResponse,
     HTMLResponse,
     ICOResponse,
-    TextResponse,
     RedirectResponse,
     TTFResponse,
     WOFFResponse,
@@ -179,7 +178,8 @@ def serve_response(*path):
     )
     exists = os.path.exists
     isfile = os.path.isfile
-    pathname = os.path.realpath(os.path.join(*path))
+    t = os.path.join(*path)
+    pathname = os.path.realpath(t)
 
     logger = logging.getLogger(__name__)
     logger.debug('attempting to serve up file %r', pathname)
@@ -472,8 +472,6 @@ def serve_html(request, handler, *rest):
 
 
 def get_csrf_token(session):
-    """ test """
-
     """generate a csrf token
 
     >>> zoom.system.request.session = session = zoom.utils.Bunch()
@@ -492,6 +490,7 @@ def get_csrf_token(session):
             session.csrf_token = create_csrf_token()
         return session.csrf_token
     return _get_token
+
 
 def check_csrf(request, handler, *rest):
     """Check csrf token
