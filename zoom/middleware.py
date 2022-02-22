@@ -55,6 +55,7 @@ from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.tools import websafe
 from zoom.utils import create_csrf_token
+import zoom.components.flags
 
 
 def debug(request):  # pragma: no cover
@@ -738,7 +739,6 @@ def _handle(request, handler, *rest):  # pragma: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
-from zoom.components.flags import flag_trap_middleware
 
 def handle(request, handlers=None):  # pragma: no cover
     """handle a request"""
@@ -766,7 +766,7 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.render.handler,
         display_errors,
         check_csrf,
-        flag_trap_middleware,
+        zoom.components.flags.handle,
         serve_content_images,
         serve_content_files,
         zoom.apps.handler,
