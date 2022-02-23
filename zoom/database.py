@@ -56,17 +56,14 @@ def obfuscate(text):
 
 class UnknownDatabaseException(Exception):
     """exception raised when the database is unknown"""
-    pass
 
 
 class DatabaseException(Exception):
     """exception raised when a database server error occurs"""
-    pass
 
 
 class EmptyDatabaseException(Exception):
     """exception raised when a database is empty"""
-    pass
 
 
 class Result(object):
@@ -407,7 +404,6 @@ class Database(object):
 
     def get_tables(self):
         """get a list of database tables"""
-        pass
 
     @property
     def database(self):
@@ -430,6 +426,8 @@ class Database(object):
 
 
 class Sqlite3DatabaseTransaction(Database):
+
+    save_isolation_level = None
 
     def __init__(self, db):
         self.db = db
@@ -457,7 +455,7 @@ class Sqlite3Database(Database):
 
     def __init__(self, *args, **kwargs):
         """Initialize with standard sqlite3 parameters"""
-        import sqlite3
+        import sqlite3  # pylint: disable=import-outside-toplevel
 
         keyword_args = dict(
             kwargs,
@@ -508,6 +506,8 @@ class Sqlite3Database(Database):
 
 class MySQLDatabaseTransaction(Database):
 
+    save_autocommit = None
+
     def __init__(self, db):
         self.db = db
 
@@ -534,7 +534,7 @@ class MySQLDatabase(Database):
 
     def __init__(self, *args, **kwargs):
         """Initialize with standard pymysql parameters"""
-        import pymysql
+        import pymysql  # pylint: disable=import-outside-toplevel
 
         keyword_args = dict(
             kwargs,
@@ -622,30 +622,9 @@ class MySQLDatabase(Database):
         except (OperationalError, NameError):
             pass
 
-class MySQLdbDatabase(Database):   # pragma: no cover
-    """MySQLdb Database
-
-    deprecated - not avaialble for Python 3.6
-
-    use MySQLDatabase instead
-    """
-
-    paramstyle = 'pyformat'
-
-    def __init__(self, *args, **kwargs):
-        import MySQLdb
-
-        keyword_args = dict(
-            kwargs,
-            charset='utf8'
-        )
-
-        Database.__init__(self, MySQLdb.connect, *args, **keyword_args)
-
 
 def database(engine, *args, **kwargs):
     """create a database object"""
-    # pylint: disable=invalid-name
 
     if engine == 'sqlite3':
         kwargs.setdefault('isolation_level', None)  # autocommit
@@ -654,11 +633,6 @@ def database(engine, *args, **kwargs):
 
     elif engine == 'mysql':
         db = MySQLDatabase(*args, **kwargs)
-        db.autocommit(1)
-        return db
-
-    elif engine == 'mysqldb':   # pragma: no cover
-        db = MySQLdbDatabase(*args, **kwargs)
         db.autocommit(1)
         return db
 
@@ -742,7 +716,7 @@ def connect_database(config):
     return connection
 
 
-def handler(request, handler, *rest):
+def handler(request, next_handler, *rest):
     """Connect a database to the site if specified"""
     site = request.site
     database_name = site.config.get(
@@ -763,7 +737,7 @@ def handler(request, handler, *rest):
         raise zoom.exceptions.DatabaseMissingException('Database Missing')
 
     request.profiler.add('database initialized')
-    result = handler(request, *rest)
+    result = next_handler(request, *rest)
     request.profiler.add('database finished')
     return result
 
