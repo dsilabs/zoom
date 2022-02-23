@@ -262,6 +262,72 @@ class TestUser(unittest.TestCase):
         self.assertTrue(user.can('read', obj))
         self.assertTrue(user.can('edit', obj))
 
+    def test_admin_can_run_authorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('home')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_admin_cannot_run_unauthorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
+
+    def test_admin_can_run_unauthorized_in_dev(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=1
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('sample')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_user_can_run_authorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='user')
+        administrator.is_admin = False
+        my_app = get_app('home')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_user_cannot_run_unauthorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = False
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
+
+    def test_user_cannot_run_unauthorized_in_dev(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=1
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = False
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
+
     def test_user_authorize(self):
         class MyObject(object):
             def allows(self, user, action):

@@ -151,7 +151,6 @@ def get_groups(db, user):
 class User(Record):
     """Zoom User"""
 
-    # key = property(lambda a: id_for(a.username))
     @property
     def key(self):
         return key_for(self.username)
@@ -178,7 +177,6 @@ class User(Record):
 
     def initialize(self, request):
         """Initialize user based on a request"""
-        logger = logging.getLogger(__name__)
         logger.debug('initializing user %r', self.username)
 
         self.request = request
@@ -240,7 +238,6 @@ class User(Record):
     def set_password(self, password):
         """set the user password"""
         hashed = hash_password(password)
-        logger = logging.getLogger(__name__)
         logger.debug('set password for %s to %r', self.username, hashed)
         self['password'] = hashed
         self.save()
@@ -265,7 +262,6 @@ class User(Record):
 
     def login(self, request, password, remember_me=False):
         """log user in"""
-        logger = logging.getLogger(__name__)
         site = request.site
 
         if self.is_active and self.username != site.guest:
@@ -284,7 +280,6 @@ class User(Record):
 
     def logout(self):
         """log user out"""
-        logger = logging.getLogger(__name__)
         if self.is_authenticated:
             self.is_authenticated = False
             self.request.session.destroy()
@@ -369,7 +364,16 @@ class User(Record):
 
     def can_run(self, app):
         """test if user can run an app"""
-        return app and self.is_active and (app.name in self.apps or app.in_development and (self.is_developer or self.is_admin))
+        return app and (
+            self.is_active
+            and (
+                app.name in self.apps
+                or (
+                    app.in_development
+                    and (self.is_developer or self.is_admin)
+                )
+            )
+        )
 
     def can(self, action, thing):
         """test to see if user can action a thing object.
@@ -398,7 +402,6 @@ class User(Record):
 
     def add_group(self, group):
         """Make user a member of the group"""
-        logger = logging.getLogger(__name__)
         group = context.site.groups.locate(group)
         if group:
             group.add_user(self)
@@ -625,8 +628,6 @@ def set_current_user(request):
 
     Set the current user based on the current username.
     """
-    logger = logging.getLogger(__name__)
-
     username = get_current_username(request)
     if not username:
         raise Exception('No user information available')
