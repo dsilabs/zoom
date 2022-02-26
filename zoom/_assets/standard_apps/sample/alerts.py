@@ -7,7 +7,7 @@ from random import choice
 from zoom.mvc import View, Controller
 from zoom.page import page
 from zoom.tools import markdown, home, redirect_to
-from zoom.components import success, warning, error
+from zoom.alerts import success, warning, error
 
 
 class MyView(View):

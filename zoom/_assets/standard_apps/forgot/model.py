@@ -6,7 +6,7 @@ import logging
 import time
 import uuid
 
-from zoom.components import error
+from zoom.alerts import error
 from zoom.context import context
 from zoom.fill import dzfill, fill
 from zoom.mail import send

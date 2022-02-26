@@ -9,7 +9,7 @@ from zoom.tools import load_content
 from zoom.forms import Form
 from zoom.fields import EmailField, ButtonField, PasswordField
 from zoom.validators import required
-from zoom.components import error
+from zoom.alerts import error
 from zoom.tools import home
 
 import model

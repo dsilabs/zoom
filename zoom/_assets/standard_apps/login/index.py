@@ -6,7 +6,7 @@ import logging
 
 import zoom
 from zoom.tools import load_content
-from zoom.components import error
+from zoom.alerts import error
 import zoom.html as html
 
 
