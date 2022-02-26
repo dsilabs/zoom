@@ -147,6 +147,7 @@ class AppProxy(object):
     """
 
     def __init__(self, name, filename, site):
+
         self.name = name
         self.filename = filename
 
@@ -179,6 +180,7 @@ class AppProxy(object):
         self.author = get('author')
         self.version = get('version')
         self.theme = get('theme')
+        self.theme_path = existing(site.themes_path, self.theme)
         self.icon = get('icon')
         self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
@@ -198,16 +200,13 @@ class AppProxy(object):
     @property
     def templates_paths(self):
         """Calculate Templates Paths"""
-        join = os.path.join
         if self._templates_paths:
             return self._templates_paths
-        site = self.site
         if self.theme:
-            template_path = existing(join(site.themes_path, self.theme, 'templates'))
-            theme_path = existing(join(site.themes_path, self.theme))
+            template_path = existing(self.theme_path, 'templates')
             paths = list(filter(bool, [
                 template_path,
-                theme_path,
+                self.theme_path,
             ]))
         else:
             paths = []
@@ -328,7 +327,7 @@ class AppProxy(object):
                     config.read(system_config_file)
                     return config.get(section, key)
                 except BaseException:
-                    if default != None:
+                    if default is not None:
                         return default
                     else:
                         tpl = 'config setting [{}]{} not found in {} or {} or {}'
