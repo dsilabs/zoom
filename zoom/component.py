@@ -274,6 +274,9 @@ class Component(object):
     def __str__(self):
         return self.render()
 
+    def __call__(self, *args, **kwargs):
+        return self.format(*args, **kwargs)
+
 
 def render(*components):
     html_part = Component(*components).render()
@@ -317,9 +320,8 @@ class DynamicComponent(Component):
                 self.parts[k] = OrderedSet([v]) | self.parts.get(k, {})
 
 
-def load_component(component_name, *args, **kwargs):
-    """Load a component from files without defining a class"""
-    path = dirname(abspath((stack()[1])[1]))
+def _load_component(path, component_name, *args, **kwargs):
+    """Load a component from files on a path without defining a class"""
     assets = load_assets(path, component_name)
     dc = DynamicComponent()
     for k, v in assets.items():
@@ -330,6 +332,28 @@ def load_component(component_name, *args, **kwargs):
     if args or kwargs:
         return dc.format(*args, **kwargs)
     return dc
+
+
+def load_component(component_name, *args, **kwargs):
+    """Load a component from files without defining a class"""
+    path = dirname(abspath((stack()[1])[1]))
+    return _load_component(path, component_name, *args, **kwargs)
+
+
+class Components:
+    """A bunch of components"""
+
+    def __init__(self, path=None):
+        self.path = path
+
+    def __getattr__(self, name):
+        return _load_component(self.path, name)
+
+
+def get_components(path=None):
+    """Return a bunch of components"""
+    path = path or dirname(abspath((stack()[1])[1]))
+    return Components(path)
 
 
 def compose(*args, **kwargs):

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - allow packages to be included before an app has been loaded
 - add support for bootstrap icons
 - add app.theme_path member
+- add load_component and get_components functions
 
 ## [6.17.0] - 2022-01-01
 - autofocus on username on login

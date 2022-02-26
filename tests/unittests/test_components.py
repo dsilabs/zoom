@@ -6,7 +6,7 @@
 import unittest
 
 import zoom
-from zoom.component import Component, load_component
+from zoom.component import Component, load_component, get_components
 from zoom.utils import OrderedSet
 
 
@@ -207,10 +207,12 @@ class TestRender(unittest.TestCase):
 
     def test_get_components(self):
 
-        widget = load_component('widget').format(name='Joe', data=10)
+        components = get_components()
+
+        widget = components.widget(name='Joe', data=10)
         self.assertEqual(widget.render(), 'Hey Joe!')
 
-        widget = load_component('widget', name='Joe', data='10')
+        widget = components.widget(name='Joe', data=10)
         self.assertEqual(widget.render(), 'Hey Joe!')
 
         self.assertEqual(
