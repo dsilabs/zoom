@@ -6,7 +6,8 @@
 import unittest
 
 import zoom
-from zoom.component import Component
+from zoom.component import Component, load_component
+from zoom.utils import OrderedSet
 
 
 def parts():
@@ -184,4 +185,40 @@ class TestRender(unittest.TestCase):
         self.assertEqual(
             parts()['css'],
             ['.thing { color1: red; color2: blue; }']
+        )
+
+    def test_load_component(self):
+
+        widget = load_component('widget').format(name='Joe', data=10)
+        self.assertEqual(widget.render(), 'Hey Joe!')
+
+        widget = load_component('widget', name='Joe', data='10')
+        self.assertEqual(widget.render(), 'Hey Joe!')
+
+        self.assertEqual(
+            widget.parts['css'],
+            OrderedSet(['p {\n  font-size: 2rem; }\n'])
+        )
+
+        self.assertEqual(
+            widget.parts['js'],
+            OrderedSet(['var data=10;'])
+        )
+
+    def test_get_components(self):
+
+        widget = load_component('widget').format(name='Joe', data=10)
+        self.assertEqual(widget.render(), 'Hey Joe!')
+
+        widget = load_component('widget', name='Joe', data='10')
+        self.assertEqual(widget.render(), 'Hey Joe!')
+
+        self.assertEqual(
+            widget.parts['css'],
+            OrderedSet(['p {\n  font-size: 2rem; }\n'])
+        )
+
+        self.assertEqual(
+            widget.parts['js'],
+            OrderedSet(['var data=10;'])
         )

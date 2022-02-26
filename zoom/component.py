@@ -18,9 +18,9 @@
     in future releases.
 """
 
-from inspect import getfile
+from inspect import getfile, stack
 import logging
-from os.path import abspath, split, join, isfile, realpath
+from os.path import abspath, split, join, isfile, realpath, dirname
 import sys
 
 import zoom
@@ -315,6 +315,21 @@ class DynamicComponent(Component):
                 self.parts['html'].insert(0, v)
             else:
                 self.parts[k] = OrderedSet([v]) | self.parts.get(k, {})
+
+
+def load_component(component_name, *args, **kwargs):
+    """Load a component from files without defining a class"""
+    path = dirname(abspath((stack()[1])[1]))
+    assets = load_assets(path, component_name)
+    dc = DynamicComponent()
+    for k, v in assets.items():
+        if k == 'html':
+            dc.parts['html'].insert(0, v)
+        else:
+            dc.parts[k] = OrderedSet([v]) | dc.parts.get(k, {})
+    if args or kwargs:
+        return dc.format(*args, **kwargs)
+    return dc
 
 
 def compose(*args, **kwargs):
