@@ -122,16 +122,6 @@ def as_links(items, select=None, filter=None):
     return tag('ul', ''.join(links))
 
 
-def success(message):
-    compose(success=message)
-
-def warning(message):
-    compose(warning=message)
-
-def error(message):
-    compose(error=message)
-
-
 class HeaderBar(DynamicView):
     """Header Bar
 

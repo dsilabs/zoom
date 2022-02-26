@@ -318,7 +318,22 @@ class DynamicComponent(Component):
 
 
 def compose(*args, **kwargs):
-    """Compose a response - DEPRECATED"""
+    """Compose a response
+
+    Responses are composed of individual parts.  Calling this
+    function contributes a parts of a response to the current
+    response being composed.  The parts will be used in
+    the subsequent reponse as it is rendered.
+
+    Sometimes parts are not used in the next response but rather
+    in some subsequent appropriate reponse type. For example, if
+    the part being added is an error message, but the next response
+    is an image response, then the error message will not be
+    rendered.   Similarly, a redirect does not have content so
+    not parts are rendered.  When a page is eventually rendered
+    the part will be added to the page in the appropriate location
+    on the page and determined by the page renderer.
+    """
     zoom.system.parts += component(**kwargs)
     return ''.join(args)
 
