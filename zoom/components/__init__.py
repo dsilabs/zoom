@@ -171,11 +171,11 @@ def dropzone(url, **kwargs):
     """
     zoom.requires('dropzone')
 
-    id = 'dropzone_' + uuid.uuid4().hex
+    tag_id = 'dropzone_' + uuid.uuid4().hex
 
     js = """
     var %(id)s = new Dropzone("#%(id)s", {url: "%(url)s"});
-    """ % dict(id=id, url=url)
+    """ % dict(id=tag_id, url=url)
 
-    html = div(classed='dropzone', id=id, **kwargs)
-    return zoom.Component(html)#, js=js)
+    html = div(classed='dropzone', id=tag_id, **kwargs)
+    return zoom.Component(html, js=js)

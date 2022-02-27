@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add app.theme_path member
 - add load_component and get_components functions
 - add support for http HEAD method
+- fix dropzone component
 
 ## [6.17.0] - 2022-01-01
 - autofocus on username on login
