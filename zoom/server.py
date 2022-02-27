@@ -75,6 +75,8 @@ class WSGIApplication(object):
         request = Request(environ, self.instance, start_time, self.username)
         response = middleware.handle(request, self.handlers)
         status, headers, content = response.as_wsgi()
+        if request.method == 'HEAD':
+            content = b''
         start_response(status, headers)
         return [content]
 
