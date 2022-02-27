@@ -8,7 +8,7 @@ import uuid
 
 from zoom.alerts import error
 from zoom.context import context
-from zoom.fill import dzfill, fill
+from zoom.fill import dzfill
 from zoom.mail import send
 from zoom.page import page
 from zoom.store import Entity, EntityStore
@@ -20,7 +20,6 @@ class ForgotToken(Entity):
 
     @property
     def expired(self):
-        return False
         return time.time() > self.expiry
 
 
@@ -36,7 +35,7 @@ def get_tokens():
 
 def valid_token(token):
     rec = get_tokens().first(token=token)
-    return bool(rec) and not rec.expired
+    return rec and not rec.expired
 
 
 def make_message(token):
@@ -111,7 +110,7 @@ def reset_password(token, password, confirm):
     """reset the user password"""
     if not valid_token(token):
         return page(load_content('expired.md'))
-    elif not valid_new_password(password):
+    if not valid_new_password(password):
         error('Invalid password ({})'.format(valid_new_password.msg))
     elif password != confirm:
         error('Passwords do not match')
@@ -119,7 +118,7 @@ def reset_password(token, password, confirm):
         user = user_by_token(token)
         if user:
             user.set_password(password)
-            token_rec = get_tokens().delete(token=token)
+            get_tokens().delete(token=token)
             return home('complete')
         else:
             error('Invalid request')
