@@ -82,8 +82,8 @@ def last_day_of_the_month(any_date):
     >>> last_day_of_the_month(datetime.datetime(2016, 2, 1, 1, 1, 1))
     datetime.date(2016, 2, 29)
     """
-    next_month = any_date.replace(day=28) + datetime.timedelta(days=4)
-    return first_day_of_the_month(next_month) - one_day
+    month = any_date.replace(day=28) + datetime.timedelta(days=4)
+    return first_day_of_the_month(month) - one_day
 
 
 def first_day_of_next_month(any_date):
@@ -341,12 +341,13 @@ def ensure_listy(obj):
     return [obj]
 
 
-class Redirector(object):
+class Redirector:
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
-    def render(self, request):
+    def render(self, _):
         """render redirect"""
 
         location = url_for(*self.args, **self.kwargs)
@@ -404,7 +405,7 @@ def unisafe(val):
     elif isinstance(val, bytes):
         try:
             val = val.decode('utf-8')
-        except:
+        except BaseException:
             val = val.decode('Latin-1')
     elif not isinstance(val, str):
         val = str(val)
@@ -462,7 +463,7 @@ def get_markdown_converter():
             text = text[:-5]
         return text
 
-    def url_builder(label, base, end):
+    def url_builder(label, base, end): # pylint: disable=unused-argument
         return make_page_name(label) + '.html'
 
     markdown_logger = logging.getLogger('MARKDOWN')
