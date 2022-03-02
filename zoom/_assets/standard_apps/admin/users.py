@@ -215,9 +215,10 @@ class UserCollectionController(CollectionController):
         return home('users/' + key)
 
     def impersonate(self, username):
-        zoom.impersonation.impersonate(username)
-        zoom.alerts.success(f'Impersonating {username}!')
-        return zoom.home()
+        user = zoom.impersonation.impersonate(username)
+        if user:
+            zoom.alerts.success(f'Impersonating {user.username}!')
+            return zoom.home()
 
 
 def get_users_collection(request):

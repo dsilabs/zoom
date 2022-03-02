@@ -15,8 +15,9 @@ def impersonate(username):
     user = zoom.get_site().users.locate(username)
     if user:
         session = zoom.system.request.session
-        session.impersonated_user = username
+        session.impersonated_user = user.username
         zoom.audit('start impersonating', zoom.system.request.user.username, username)
+        return user
 
 
 def get_current_username(request):
