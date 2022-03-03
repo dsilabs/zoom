@@ -179,7 +179,7 @@ class AppProxy(object):
         self.enabled = get('enabled')
         self.author = get('author')
         self.version = get('version')
-        self.theme = get('theme')
+        self.theme = get('theme') or site.theme
         self.theme_path = existing(site.themes_path, self.theme)
         self.icon = get('icon')
         self.as_icon = self.get_icon_view()
