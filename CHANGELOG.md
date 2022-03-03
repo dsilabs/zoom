@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add load_component and get_components functions
 - add support for http HEAD method
 - fix dropzone component
+- add support for Windows username domains in impersonation
+- set app theme to site theme if not specified
 
 ## [6.17.0] - 2022-01-01
 - autofocus on username on login
