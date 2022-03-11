@@ -494,7 +494,7 @@ class MyView(zoom.View):
                     .content table td:first-child { width: 25%; }
                 """
             ),
-            title='Environment'
+            title='Configuration'
         )
 
     def environment(self):
