@@ -8,7 +8,6 @@ Options:
   -p, --port=<val>            The port to serve from.
   -n, --noop                  Use special debugging middleware stack.
   -u, --user=<val>            The user to run as.
-  -f, --filter=<val>          The log filter.
   -r, --reloader              Whether to use the reloader.
 
 Parameters:
