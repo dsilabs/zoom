@@ -97,63 +97,31 @@ def get_profile_data(profiler):
     return result
 
 
-def profiled(request, handler, *rest):
+def profiled(request, next_handler, *rest):
+
+    def site_profiling(request):
+        return hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling
+
     def send(message):
-        if hasattr(request, 'user') and hasattr(request, 'site') and request.site.profiling:
-            topic = 'system.debug.%s' % request.user._id
-            queue = request.site.queues.topic(topic)
-            queue.clear()
-            queue.send(message)
-            logger.debug('sent profile message to %s', topic)
-        else:
-            logger.debug('profiler data ignored')
-            if not hasattr(request, 'user'):
-                logger.debug('profile user missing')
-            if not hasattr(request, 'site'):
-                logger.debug('profile site missing')
-            elif not request.site.profiling:
-                logger.debug('profiling turned off')
+        """
+        send
 
+        Send the profile data to the page for rendering.
+        """
 
-    profiling_code = request.env.get('ZOOM_CODE_PROFILER')
+        topic = 'system.debug.%s' % request.user.user_id
+        queue = request.site.queues.topic(topic)
+        queue.clear()
+        queue.send(message)
+        logger.debug('sent profile message to %s', topic)
 
+    def is_profilable(result):
+        """
+        is_profilable
 
-    logger = logging.getLogger(__name__)
-
-    if profiling_code:
-        code_profiler = cProfile.Profile()
-        code_profiler.enable()
-
-    try:
-
-        result = handler(request, *rest)
-
-    finally:
-        if profiling_code:
-            code_profiler.disable()
-            code_profile = get_profile_data(code_profiler)
-        else:
-            code_profile = 'code profiler is off'
-
-        request.profiler.add('finished')
-
-        # TODO: move this to a debug layer that sends other things to the debugger
-        message = dict(
-            profiler_path=request.path,
-            system_profile=request.profiler.record,
-            database_profile=['no database'],
-            code_profile=code_profile,
-        )
-        if hasattr(request, 'site'):
-            if hasattr(request.site, 'db'):
-                message['database_profile'] = [(
-                    round(time * 1000),
-                    statement,
-                    values,
-                    source,
-                ) for time, statement, values, source in request.site.db.get_stats()]
-
-        result = locals().get('result', None)
+        We only profile regular HTML results.  Not individual images, JSON,
+        or other result types.
+        """
 
         # Retrieve headers from the result if it has that property.
         headers = getattr(result, 'headers', dict())
@@ -162,23 +130,87 @@ def profiled(request, handler, *rest):
             # funky with its headers object.
             logger.debug("headers isn't a dict, won't profile")
             headers = dict()
+
         # Transform headers to lower case because casing isn't invariant.
         headers = {k.lower(): v for k, v in headers.items()}
-        # Profile if this is an HTML response.
-        if 'html' in headers.get('content-type', str()):
-            send(message)
+
+        # Profile if this is an HTML response.  This is not perfect but it is
+        # a reasonable compromise until repsonses are more consistent in expressing
+        # their content type.  Looking in the cookies could also be added but
+        # it would be better if all responses were just explicit.
+        ct = getattr(result, 'content_type', headers.get('content-type', None))
+        return ct and 'html' in ct
+
+
+    profiling_code = request.env.get('ZOOM_CODE_PROFILER')
+
+    logger = logging.getLogger(__name__)
+
+    if profiling_code:
+        code_profiler = cProfile.Profile()
+        code_profiler.enable()
+
+    result = None
+    try:
+
+        result = next_handler(request, *rest)
+
+    finally:
+
+        # We wait until after the request is done to test this
+        # because the profiler is installed early enough in the
+        # stack that the site is not instantiated until we are
+        # on the way back.
+
+        if not site_profiling(request):
+            logger.debug('profiler data ignored')
+            if not hasattr(request, 'user'):
+                logger.debug('profile user missing')
+            if not hasattr(request, 'site'):
+                logger.debug('profile site missing')
+            elif not request.site.profiling:
+                logger.debug('profiling turned off')
+
         else:
-            logger.debug('ignoring profile of response type %s', type(result))
+
+            if profiling_code:
+                code_profiler.disable()
+                code_profile = get_profile_data(code_profiler)
+            else:
+                code_profile = 'code profiler is off'
+
+            request.profiler.add('finished')
+
+            # TODO: move this to a debug layer that sends other things to the debugger
+            message = dict(
+                profiler_path=request.path,
+                system_profile=request.profiler.record,
+                database_profile=['no database'],
+                code_profile=code_profile,
+            )
+            if hasattr(request, 'site'):
+                if hasattr(request.site, 'db'):
+                    message['database_profile'] = [(
+                        round(time * 1000),
+                        statement,
+                        values,
+                        source,
+                    ) for time, statement, values, source in request.site.db.get_stats()]
+
+            if is_profilable(result):
+                send(message)
+            else:
+                logger.debug('ignoring profile of response type %s', type(result))
 
         del request.profiler
     return result
 
 
-def handler(request, handler, *rest):
+def handler(request, next_handler, *rest):
     """Handle profiled requests"""
 
     if os.environ.get('ZOOM_PROFILER'):
         request.profiling = True
-        return profiled(request, handler, *rest)
+        return profiled(request, next_handler, *rest)
     else:
-        return handler(request, *rest)
+        return next_handler(request, *rest)
