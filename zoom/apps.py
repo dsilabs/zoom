@@ -33,10 +33,11 @@ DEFAULT_SETTINGS = dict(
     in_development=False,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def load_module(module, filename):
     """Dynamically load a module"""
-    logger = logging.getLogger(__name__)
 
     myhandler = \
         ImportError if sys.version_info < (3, 6) else ModuleNotFoundError
@@ -82,8 +83,6 @@ class App(object):
         def if_callable(method):
             """test if callable and return it or None"""
             return callable(method) and method
-
-        logger = logging.getLogger(__name__)
 
         isfile = os.path.isfile
         logger.debug('app called with route %r', route)
@@ -261,7 +260,6 @@ class AppProxy(object):
 
     def run(self, request):
         """run the app"""
-        logger = logging.getLogger(__name__)
         save_dir = os.getcwd()
         try:
             logger.debug('chdir to %r', self.path)
@@ -287,7 +285,6 @@ class AppProxy(object):
             return selector
 
         route = self.site.request.route
-        logger = logging.getLogger(__name__)
         logger.debug('constructing menu')
 
         menu = getattr(self.method, 'menu', [])
@@ -349,7 +346,10 @@ class AppProxy(object):
 
         def get_config(pathname):
             """read a config file"""
-            self.config_parser.read(pathname)
+            try:
+                self.config_parser.read(pathname)
+            except BaseException as e:
+                logger.error('Unable to read %r\n%s', pathname, e)
             return as_dict(self.config_parser)
 
         path = self.path
@@ -490,8 +490,6 @@ def handle(request):
         finally:
             Database.debug = saved_database_debug_setting
         return result
-
-    logger = logging.getLogger(__name__)
 
     site = request.site
     user = request.user
@@ -751,7 +749,6 @@ def helpers(request):
 
 def handler(request, next_handler, *rest):
     """Dispatch request to an application"""
-    logger = logging.getLogger(__name__)
     logger.debug('apps_handler')
     if '.' not in sys.path:
         logger.debug('adding "." to path')
