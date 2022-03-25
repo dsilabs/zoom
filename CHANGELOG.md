@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor profiler middleware
 - add html.code
 - handle config file read errors
+- add error page for unauthorized access status 403
 
 ## [6.18.0] - 2022-03-02
 - add additional chromedriver options to stabilize automated testing

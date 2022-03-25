@@ -648,6 +648,14 @@ def display_errors(request, handler, *rest):
             zoom.templates.template_missing
         )
 
+    except zoom.exceptions.UnauthorizedException:
+        return page(
+                'Your account does not have sufficient privileges to access the requested resource.'
+                ' Please contact the system administrator if you need assistance.',
+                title='Permission Required',
+                status='403 Forbidden'
+            ).render(request)
+
     except Exception as e:
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
@@ -662,7 +670,7 @@ def display_errors(request, handler, *rest):
                     dict(status=error_status), status=error_status)
             content = zoom.tools.load_template(
                 'friendly_error', zoom.templates.friendly_error)
-            return page(content, status=500).render(request)
+            return page(content, status=error_status).render(request)
 
         content = """
         <h2>Exception</h2>
@@ -687,7 +695,7 @@ def display_errors(request, handler, *rest):
         return page(
             content,
             title='Application Error',
-            status='500 Internal Server Error'
+            status=error_status
         ).render(request)
 
 

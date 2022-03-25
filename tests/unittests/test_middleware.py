@@ -60,6 +60,11 @@ class TestCSRFMiddleware(unittest.TestCase):
 def throw(request):
     raise Exception('ouch!')
 
+def forbid(request):
+    raise zoom.exceptions.UnauthorizedException('forbidden!')
+
+server_error = '500 Internal Server Error'
+forbidden = '403 Forbidden'
 
 class TestDisplayError(unittest.TestCase):
 
@@ -84,20 +89,26 @@ class TestDisplayError(unittest.TestCase):
     def test_display_error_as_non_admin(self):
         zoom.system.user.is_admin = False
         response = display_errors(self.request, throw)
-        self.assertTrue(response.status, 500)
+        self.assertEqual(response.status, server_error)
         self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
 
     def test_error_status_500_html(self):
         zoom.system.user.is_admin = False
         response = display_errors(self.request, throw)
-        self.assertTrue(response.status, 500)
+        self.assertEqual(response.status, server_error)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
+
+    def test_unauthorized(self):
+        zoom.system.user.is_admin = False
+        response = display_errors(self.request, forbid)
+        self.assertEqual(response.status, forbidden)
         self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
 
     def test_error_status_500_json(self):
         zoom.system.user.is_admin = True
         self.request.env = dict(HTTP_ACCEPT='application/json') # mock
         response = display_errors(self.request, throw)
-        self.assertTrue(response.status, 500)
+        self.assertEqual(response.status, server_error)
         self.assertTrue(isinstance(response, zoom.response.JSONResponse))
         self.assertEqual(json.loads(response.content), {
             "message": "ouch!",
