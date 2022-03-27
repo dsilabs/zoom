@@ -11,7 +11,7 @@ import zoom.html as h
 def app(request):
     """Return a page containing a list of available apps"""
 
-    zoom.requires('fontawesome4')
+    zoom.requires('fontawesome4', 'bootstrap-icons')
 
     css = """
         .app-icons ul {

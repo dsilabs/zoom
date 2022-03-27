@@ -192,7 +192,6 @@ class AppProxy(object):
         icon = self.config.get('icon')
         is_bootstrap_icon = icon.startswith('bi-')
         if is_bootstrap_icon:
-            zoom.requires('bootstrap-icons')
             return 'bi ' + icon
         return 'fa fa-' + icon
 
