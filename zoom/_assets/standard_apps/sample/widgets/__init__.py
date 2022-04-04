@@ -10,7 +10,7 @@ from zoom.widgets.cards import Card
 from zoom.widgets.metrics import Metric, MetricWidget
 from zoom.widgets.charts import ChartWidget, Chart
 
-from components.widgets_layout import WidgetsLayout
+from views.widgets_layout import WidgetsLayout
 
 
 
