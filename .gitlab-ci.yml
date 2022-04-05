@@ -12,7 +12,7 @@ whitespace:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
-tests-3.7:
+python-3.7:
   stage: test
   image: "python:3.7"
   services:
@@ -28,9 +28,41 @@ tests-3.7:
     expire_in: 1 week
     when: on_failure
 
-tests-3.9:
+python-3.8:
   stage: test
   image: "python:3.9"
+  services:
+    - mariadb:latest
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_in_gitlab_ci.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.9:
+  stage: test
+  image: "python:3.9"
+  services:
+    - mariadb:latest
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_in_gitlab_ci.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.10:
+  stage: test
+  image: "python:3.10"
   services:
     - mariadb:latest
   variables:
