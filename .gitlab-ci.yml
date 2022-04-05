@@ -12,7 +12,7 @@ whitespace:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
-tests:
+tests-3.7:
   stage: test
   image: "python:3.7"
   services:
@@ -28,7 +28,7 @@ tests:
     expire_in: 1 week
     when: on_failure
 
-tests:
+tests-3.9:
   stage: test
   image: "python:3.9"
   services:
