@@ -411,4 +411,3 @@ def impersonation_notice(*args, **kwargs):
 def version():
     """return ZoomFoundry version number"""
     return zoom.__version__
-    

@@ -2,11 +2,16 @@
     zoom.forms
 """
 
+import logging
+
 import zoom
-from zoom.helpers import tag_for, url_for
+from zoom.helpers import url_for
 from zoom.fields import Fields, MarkdownText, Hidden, Button
 from zoom.utils import create_csrf_token
 import zoom.html as html
+
+
+logger = logging.getLogger(__name__)
 
 
 def form_for(*args, **kwargs):
@@ -14,10 +19,9 @@ def form_for(*args, **kwargs):
 
     >>> print(form_for('test'))
     <form action="<dz:request_path>" class="clearfix" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
-    <input name="csrf_token" type="hidden" value="<dz:csrf_token>" />
+    <input name="csrf_token" type="hidden" value="{{csrf_token}}" />
     test
     </form>
-
 
     """
 
@@ -31,11 +35,8 @@ def form_for(*args, **kwargs):
 
     t = []
     if method == 'POST':
-        request = zoom.system.request
-        if hasattr(request, 'session'):
-            request.session.csrf_token = create_csrf_token()
         t.append(
-            html.hidden(name='csrf_token', value='<dz:csrf_token>')
+            html.hidden(name='csrf_token', value='{{csrf_token}}')
         )
 
     content = []
@@ -69,7 +70,7 @@ def form(content=None, **kwargs):
 
 def multipart_form_for(content, **keywords):
     """Returns a multipart form tag, surrounding specified content."""
-    return form_for(content, enctype="multipart/form-data", **kwargs)
+    return form_for(content, enctype="multipart/form-data", **keywords)
 
 
 def multipart_form(content, **kwargs):
@@ -84,7 +85,7 @@ class Form(Fields):
     >>> form = Form(TextField("Name"))
     >>> print(form.edit())
     <form action="" class="clearfix" enctype="application/x-www-form-urlencoded" id="zoom_form" method="POST" name="zoom_form">
-    <input name="csrf_token" type="hidden" value="<dz:csrf_token>" />
+    <input name="csrf_token" type="hidden" value="{{csrf_token}}" />
     <div class="field">
       <div class="field_label">Name</div>
       <div class="field_edit"><table class="transparent">
@@ -170,8 +171,19 @@ def delete_form(name, cancel=None):
         css=css
     )
 
+
+def get_form_token():
+    request = zoom.system.request
+    token = None
+    if request and not getattr(request, 'form_token', None):
+        token = request.form_token = create_csrf_token()
+        logger.debug('new form_token created: %s', request.form_token)
+    return token
+
+
 def helpers(request):
     """form helpers"""
     return dict(
         form=form,
+        csrf_token=get_form_token
     )

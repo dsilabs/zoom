@@ -27,9 +27,12 @@ from http.cookies import SimpleCookie, Morsel
 import logging
 import uuid
 
+import zoom
 
 SESSION_COOKIE_NAME = 'zoom_session'
 SUBJECT_COOKIE_NAME = 'zoom_subject'
+CSRF_COOKIE_NAME = 'zoom_csrf'
+
 ONE_YEAR = 365 * 24 * 60 * 60
 
 class SameSiteMorsel(Morsel):
@@ -71,13 +74,15 @@ def get_value(cookie):
     return value
 
 
-def set_session_cookie(response, session, subject, lifespan, secure=True):
+def set_session_cookie(response, session, subject, csrf, lifespan, secure=True):
     """construct a session cookie
 
     >>> import zoom
     >>> response = zoom.response.HTMLResponse('my page')
-    >>> set_session_cookie(response, 'sessionid', 'subjectid', 60)
+    >>> set_session_cookie(response, 'sessionid', 'subjectid', 'token', 60)
     >>> 'zoom_session=sessionid' in str(response.cookie)
+    True
+    >>> 'zoom_csrf=token' in str(response.cookie)
     True
     >>> 'Secure' in str(response.cookie)
     True
@@ -85,10 +90,11 @@ def set_session_cookie(response, session, subject, lifespan, secure=True):
     cookie = SimpleCookie()
     add_value(cookie, SESSION_COOKIE_NAME, session, lifespan, secure)
     add_value(cookie, SUBJECT_COOKIE_NAME, subject, ONE_YEAR, secure)
+    if csrf:
+        add_value(cookie, CSRF_COOKIE_NAME, csrf, lifespan, secure)
+    else:
+        add_value(cookie, CSRF_COOKIE_NAME, csrf, 0, secure)
     response.cookie = cookie
-
-    logger = logging.getLogger(__name__)
-    logger.debug('cookie: %r', str(cookie))
 
 
 def handler(request, handler, *rest):
@@ -109,17 +115,21 @@ def handler(request, handler, *rest):
     cookies = get_cookies(request.cookies)
     request.session_token = cookies.get(SESSION_COOKIE_NAME) or new_token()
     request.subject_token = cookies.get(SUBJECT_COOKIE_NAME) or new_token()
-    logger.debug('session token: {}'.format(request.session_token))
-    logger.debug('subject token: {}'.format(request.subject_token))
+    request.csrf_token = cookies.get(CSRF_COOKIE_NAME)
+    request.form_token = None
 
     logger.debug('cookies read')
+    logger.debug('form_token: %s csrf_token: %s', request.form_token, request.csrf_token)
 
     response = handler(request, *rest)
+
+    logger.debug('form_token: %s csrf_token: %s', request.form_token, request.csrf_token)
 
     set_session_cookie(
         response,
         request.session_token,
         request.subject_token,
+        request.form_token or request.csrf_token,
         request.session_timeout,
         request.site.secure_cookies,
     )

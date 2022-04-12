@@ -272,6 +272,8 @@ class Request(object):
 
         logger.debug('request.home: %s', self.home)
 
+        self.form_token = None
+
     @property
     def body(self):
         """access the body in raw form"""

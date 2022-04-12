@@ -53,7 +53,6 @@ import zoom.profiler
 from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.tools import websafe
-from zoom.utils import create_csrf_token
 import zoom.components.flags
 
 
@@ -471,68 +470,21 @@ def serve_html(request, handler, *rest):
         return handler(request, *rest)
 
 
-def get_csrf_token(session):
-    """generate a csrf token
-
-    >>> zoom.system.request.session = session = zoom.utils.Bunch()
-    >>> hasattr(session, 'csrf_token')
-    False
-    >>> bool(get_csrf_token(session))
-    True
-    >>> hasattr(session, 'csrf_token')
-    False
-    >>> _ = zoom.forms.form_for('test')
-    >>> hasattr(session, 'csrf_token')
-    True
-    """
-    def _get_token():
-        if not hasattr(session, 'csrf_token'):
-            session.csrf_token = create_csrf_token()
-        return session.csrf_token
-    return _get_token
-
-
 def check_csrf(request, handler, *rest):
-    """Check csrf token
-
-    >>> zoom.system.providers = []
-    >>> data = dict(csrf_token='1234', name='Pat')
-    >>> request = zoom.request.build('http://localhost/', data)
-    >>> request.session = zoom.utils.Bunch()
-    >>> request.site = zoom.sites.Site()
-    >>> result = check_csrf(request, lambda a: False)
-    >>> isinstance(result, zoom.response.RedirectResponse)
-    True
-
-    >>> data = dict(csrf_token='1234', name='Pat')
-    >>> request = zoom.request.build('http://localhost/', data)
-    >>> request.session = zoom.utils.Bunch(csrf_token='4321')
-    >>> request.site = zoom.sites.Site()
-    >>> result = check_csrf(request, lambda a: False)
-    >>> isinstance(result, zoom.response.RedirectResponse)
-    True
-
-    >>> data = dict(csrf_token='1234', name='Pat')
-    >>> request = zoom.request.build('http://localhost/', data)
-    >>> request.session = zoom.utils.Bunch(csrf_token='1234')
-    >>> request.site = zoom.sites.Site()
-    >>> result = check_csrf(request, lambda a: False)
-    >>> isinstance(result, zoom.response.RedirectResponse)
-    False
-    """
-
-    zoom.render.add_helpers(dict(csrf_token=get_csrf_token(request.session)))
+    """Check the CSRF token on POST method requests"""
 
     if request.method == 'POST':
         logger = logging.getLogger(__name__)
 
         form_token = request.data.pop('csrf_token', None)
+        if form_token:
+            logger.warning('token popped')
 
         if request.site.csrf_validation:
 
-            csrf_token = getattr(request.session, 'csrf_token', None)
+            csrf_token = request.csrf_token
 
-            logger.debug('csrf session %s form %s', csrf_token, form_token)
+            logger.debug('respond token %s form %s', csrf_token, form_token)
 
             if not (csrf_token and csrf_token == form_token):
                 if csrf_token:
@@ -541,7 +493,7 @@ def check_csrf(request, handler, *rest):
                     logger.warning('internal csrf token missing')
                 return RedirectResponse('/')
         else:
-            logger.warning('POST with csrf checking turned off')
+            logger.warning('POST with csrf token checking turned off')
 
     return handler(request, *rest)
 
