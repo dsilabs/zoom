@@ -11,13 +11,17 @@ import zoom
 import zoom.apps
 import zoom.request
 import zoom.site
+from zoom.server import reset_modules
 
 build = zoom.request.build
 join = os.path.join
 
+logger = logging.getLogger(__name__)
+
 class TestApps(unittest.TestCase):
 
     def setUp(self):
+        reset_modules()
         zoom.system.parts = zoom.component.Component()
         zoom.system.providers = []
         self.request = zoom.system.request = build('http://localhost', {})
@@ -95,9 +99,9 @@ class TestApps(unittest.TestCase):
         self.assertEqual(response.status, '200 OK')
 
     def test_load_module(self):
-        target = __file__
-        my = zoom.apps.load_module('my', target)
-        self.assertEqual(my.__file__, __file__)
+        target = zoom.tools.zoompath('zoom', '_assets', 'standard_apps', 'hello', 'app.py')
+        app = zoom.apps.load_module('app', target)
+        self.assertEqual(app.__file__, target)
 
     def test_load_module_missing(self):
         target = 'not_a_file.py'
@@ -113,11 +117,7 @@ class TestApps(unittest.TestCase):
             f.close()
         try:
             load = zoom.apps.load_module
-            if sys.version_info < (3, 6):
-                my_exception = ImportError
-            else:
-                my_exception = ModuleNotFoundError
-            self.assertRaises(my_exception, load, 'x', target)
+            self.assertRaises(ModuleNotFoundError, load, 'x', target)
         finally:
             os.remove(target)
 
@@ -143,16 +143,25 @@ class TestApps(unittest.TestCase):
         self.assertTrue(self.request.user.is_authenticated)
         self.assertTrue('<li class="dropdown">' in menu)
 
-    def test_app_menu(self):
+    def test_no_app_menu(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.menu(), '<ul></ul>')
 
+    def test_app_menu(self):
+        site = zoom.system.site
+
         pathname = zoom.tools.zoompath(self.apps_dir, 'sample', 'app.py')
+        logger.debug('creating AppProxy for %s', pathname)
         app = zoom.apps.AppProxy('Sample', pathname, site)
         app.request = self.request
+        # print(app.menu)
+        logger.debug('type(app)=%s', type(app))
+        logger.debug('type(app.method)=%s', type(app.method))
+        logger.debug('type(app.method.menu)=%s', type(app.method.menu))
+
         self.assertEquals(app.menu(), (
             '<ul>'
             '<li><a href="<dz:app_url>">Content</a></li>'
@@ -230,7 +239,6 @@ class TestApps(unittest.TestCase):
 
             self.assertEqual(result, 'foo')
 
-            self.assertTrue('.' in sys.path)
         finally:
             sys.path = path
 
@@ -246,7 +254,7 @@ class TestApps(unittest.TestCase):
         site = zoom.system.site
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         zoom.system.request.app = app = zoom.apps.AppProxy('hello', pathname, site)
-        app.request = self.request
+        app.request = self.request = zoom.system.request
         method = app.method
         response = method(self.request).render(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
