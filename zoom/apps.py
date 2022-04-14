@@ -140,7 +140,7 @@ class App(object):
         return self.process(*request.route, **request.data)
 
 
-class AppProxy(object):
+class AppProxy:
     """App Proxy
 
     Contains the various extra supporting parts of an app besides
@@ -162,6 +162,8 @@ class AppProxy(object):
             user = zoom.system.request.user
         else:
             user = Users(site.db).first(username='guest')
+
+        self._method = None
 
         default_app_name = get_default_app_name(site, user)
 
@@ -191,7 +193,6 @@ class AppProxy(object):
         self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
 
-        self._method = None
         self._templates_paths = None
 
     @property
@@ -237,7 +238,6 @@ class AppProxy(object):
         """Returns the app callable entry point"""
         if self._method is None:
             split, join = os.path.split, os.path.join
-            self.request.profiler.add('app loaded')
             module = load_module('app', self.filename)
             self._method = getattr(module, 'app')
             self.packages = zoom.packages.load(join(self.path, 'packages.json'))
@@ -270,6 +270,7 @@ class AppProxy(object):
         self.request = request
         request.app = self
         app_callable = self.method
+        self.request.profiler.add('app loaded')
         with app_context(self.path):
             response = app_callable(request)
             result = respond(response, request)
