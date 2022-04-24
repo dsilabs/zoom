@@ -32,7 +32,7 @@ def form_for(*args, **kwargs):
     t = []
     if method == 'POST':
         request = zoom.system.request
-        if hasattr(request, 'session'):
+        if hasattr(request, 'session') and not hasattr(request.session, 'csrf_token'):
             request.session.csrf_token = create_csrf_token()
         t.append(
             html.hidden(name='csrf_token', value='<dz:csrf_token>')
