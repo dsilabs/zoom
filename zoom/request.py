@@ -64,7 +64,10 @@ def get_web_vars(env):
         save = items.__setitem__
 
         if isinstance(cgi_fields[key], list):
-            value = (key, [item.value for item in cgi_fields[key]])
+            if cgi_fields[key] and cgi_fields[key][0].filename:
+                value = (key, cgi_fields[key])
+            else:
+                value = (key, [item.value for item in cgi_fields[key]])
         elif cgi_fields[key].filename:
             value = (key, cgi_fields[key])
         else:
