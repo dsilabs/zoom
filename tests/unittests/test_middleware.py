@@ -53,8 +53,8 @@ class TestCSRFMiddleware(unittest.TestCase):
         request.data_values = dict(csrf_token=token)
         check_csrf(request, noop)
         self.assertIsNotNone(getattr(request.session, 'csrf_token', None))
-        zoom.forms.form_for('test') # generates a new token
-        self.assertIsNot(request.session.csrf_token, token)
+        zoom.forms.form_for('test') # keeps same token
+        self.assertIs(request.session.csrf_token, token)
 
 
 def throw(request):

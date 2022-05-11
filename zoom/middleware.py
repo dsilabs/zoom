@@ -523,7 +523,9 @@ def check_csrf(request, handler, *rest):
 
     zoom.render.add_helpers(dict(csrf_token=get_csrf_token(request.session)))
 
-    if request.method == 'POST':
+    protected_methods = ['POST', 'PUT', 'PATCH', 'DELETE']
+
+    if request.method in protected_methods:
         logger = logging.getLogger(__name__)
 
         form_token = request.data.pop('csrf_token', None)
@@ -540,8 +542,6 @@ def check_csrf(request, handler, *rest):
                 else:
                     logger.warning('internal csrf token missing')
                 return RedirectResponse('/')
-        else:
-            logger.warning('POST with csrf checking turned off')
 
     return handler(request, *rest)
 
