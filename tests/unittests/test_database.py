@@ -169,6 +169,31 @@ class DatabaseTests(object):
                 ('1234', 50, "Hello there")
             )
 
+    def test_value(self):
+        db = self.db
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        value = db('select * from dzdb_test_table limit 1').value
+        self.assertEqual(value, '1234')
+
+    def test_map(self):
+
+        class Greeting(zoom.Record):
+            def say(self):
+                return self.notes
+
+        db = self.db
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        db("""insert into dzdb_test_table values ("4567", 90, "Goodbye")""")
+        greetings = db('select * from dzdb_test_table').map(Greeting)
+        result = []
+        for greeting in greetings:
+            result.append(greeting.say())
+        self.assertEqual(result, ['Hello there', 'Goodbye'])
+
     def test_metadata(self):
         db = self.db
         db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
