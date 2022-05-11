@@ -25,38 +25,15 @@ from zoom.context import context
 from zoom.profiler import SystemTimer
 
 
+logger = logging.getLogger(__name__)
+
+
 def make_request_id():
     """make a unique request id"""
     return uuid.uuid4().hex
 
 
-def get_web_vars(env):
-    """return web parameters as a dict"""
-
-    get = env.get
-    module = get('wsgi.version', None) and 'wsgi' or 'cgi'
-    method = get('REQUEST_METHOD')
-
-    if method not in ('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH'):
-        logger = logging.getLogger(__name__)
-        logger.warn('ignoring unsupported HTTP method %r', method)
-        return {}
-
-    if method in ('GET', 'HEAD'):
-        cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
-
-    else:
-        post_env = env.copy()
-        if module == 'wsgi':
-            body_stream = get('wsgi.input')
-        else:
-            body_stream = sys.stdin
-
-        cgi_fields = cgi.FieldStorage(
-            fp=body_stream,
-            environ=post_env,
-            keep_blank_values=True
-        )
+def cgi_to_dict(cgi_fields):
 
     items = {}
     for key in cgi_fields.keys():
@@ -84,6 +61,36 @@ def get_web_vars(env):
         save(*value)
 
     return items
+
+
+def get_web_vars(env):
+    """return web parameters as a dict"""
+
+    get = env.get
+    module = get('wsgi.version', None) and 'wsgi' or 'cgi'
+    method = get('REQUEST_METHOD')
+
+    if method not in ('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH'):
+        logger.warning('ignoring unsupported HTTP method %r', method)
+        return {}
+
+    if method in ('GET', 'HEAD'):
+        cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
+
+    else:
+        post_env = env.copy()
+        if module == 'wsgi':
+            body_stream = get('wsgi.input')
+        else:
+            body_stream = sys.stdin
+
+        cgi_fields = cgi.FieldStorage(
+            fp=body_stream,
+            environ=post_env,
+            keep_blank_values=True
+        )
+
+    return cgi_to_dict(cgi_fields)
 
 
 def get_parent_dir():
@@ -115,8 +122,6 @@ def get_instance(directory):
 
     If that doesn't work it will use the built-in instance.
     """
-
-    logger = logging.getLogger(__name__)
 
     if directory:
         if os.path.isdir(os.path.join(directory, 'sites')):
@@ -262,8 +267,6 @@ class Request(object):
             self.home = os.path.dirname(get('SCRIPT_FILENAME', ''))
             self._body = sys.stdin
 
-        logger = logging.getLogger(__name__)
-
         self.location = strim(instance)
         logger.debug('request.location: %s', self.location)
 
@@ -278,7 +281,6 @@ class Request(object):
     @property
     def body(self):
         """access the body in raw form"""
-        logger = logging.getLogger(__name__)
         if not self.body_consumed:
             logger.debug('consuming body')
             self.body_consumed = True
@@ -361,7 +363,6 @@ def build(url, data=None, instance_path=None):
 
     """
     parsed = urllib.parse.urlparse(url)
-    logger = logging.getLogger(__name__)
     logger.debug(parsed)
     request = Request(
         dict(
