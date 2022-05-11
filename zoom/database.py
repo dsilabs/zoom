@@ -106,6 +106,11 @@ class Result:
         for i in self:
             return i[0]
 
+    def map(self, myfunc=dict):
+        """Return result rows mapped with a function that accepts a dict"""
+        names = [d[0].lower() for d in self.cursor.description]
+        return map(myfunc, map(lambda row: dict(zip(names, row)), self))
+
 
 class Database(object):
     # pylint: disable=trailing-whitespace

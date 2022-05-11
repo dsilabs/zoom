@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - handle config file read errors
 - add error page for unauthorized access status 403
 - fix bug causing background process crash
-- add db value property
+- add db Result value property
+- add db Result map function
 
 ## [6.18.0] - 2022-03-02
 - add additional chromedriver options to stabilize automated testing
