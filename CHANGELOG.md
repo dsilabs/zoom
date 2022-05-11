@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug causing background process crash
 - add db Result value property
 - add db Result map function
+- add FilesField
+- set crsf token lifespan to session
 
 ## [6.18.0] - 2022-03-02
 - add additional chromedriver options to stabilize automated testing
