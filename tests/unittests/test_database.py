@@ -169,6 +169,14 @@ class DatabaseTests(object):
                 ('1234', 50, "Hello there")
             )
 
+    def test_value(self):
+        db = self.db
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        value = db('select * from dzdb_test_table limit 1').value
+        self.assertEqual(value, '1234')
+
     def test_metadata(self):
         db = self.db
         db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
