@@ -2725,6 +2725,8 @@ class FilesField(TextField):
 
     def assign(self, value):
         """Assign file values to field value"""
+        if not isinstance(value, list):
+            value = [value]
         items = []
         for val in value:
             filename = value = None
