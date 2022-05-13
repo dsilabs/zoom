@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.19.1] - 2022-05-13
+- add missing multipart for method to FilesField
 
 ## [6.19.0] - 2022-05-11
 - refactor profiler middleware

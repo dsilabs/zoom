@@ -2695,6 +2695,9 @@ class FilesField(TextField):
     _type = 'file'
     css_class = 'files_field'
 
+    def requires_multipart_form(self):
+        return True
+
     def widget(self):
         value = self.value if self.value is not None else self.default
         try:
