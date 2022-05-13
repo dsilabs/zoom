@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.19.2] - 2022-05-13
+- fix assign method for FilesField to handle single files
+
 ## [6.19.1] - 2022-05-13
 - add missing multipart for method to FilesField
 
