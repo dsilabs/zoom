@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - refactor and enhance icons app
+- add new standard apps location to apps paths
 
 ## [6.19.2] - 2022-05-13
 - fix assign method for FilesField to handle single files
