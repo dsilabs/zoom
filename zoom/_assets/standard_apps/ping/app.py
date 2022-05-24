@@ -5,5 +5,5 @@
 """
 
 
-def app(request):
-    return 'true'
+def app(_):
+    return dict(status='OK')
