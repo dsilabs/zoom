@@ -583,7 +583,14 @@ class RecordStore(Store):
 
         """
         items = kwargs.items()
-        where_clause = ' and '.join('`%s`=%s' % (k, '%s') for k, v in items)
+        where_clause = ' and '.join(
+            '`%s`%s%s' % (
+                k,
+                ' in ' if isinstance(v, (list, tuple)) else '=',
+                '%s'
+            )
+            for k, v in items
+        )
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         cmd = 'select * from ' + self.kind + ' where ' + where_clause + order_by
         result = self.db(cmd, *[v for _, v in items])

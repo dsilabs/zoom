@@ -290,6 +290,29 @@ class TestRecordStore(unittest.TestCase):
         db('drop table z_test_table')
         self.assertNotIn('z_test_table', db.get_tables())
 
+    def test_find_one_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name='Pat')
+        self.assertEqual(list(result)[0].name, 'Pat')
+
+    def test_find_multiple_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(age=25)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_values(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name=['Sam', 'Pat'])
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_and_values(self):
+        self.people.put(Person(name='Pat', age=30))
+        result = self.people.find(name=['Sam', 'Pat'], age=30)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Pat'])
+
 
 class TestKeyedRecordStore(TestRecordStore):
     """Keyed RecordStore Tests
