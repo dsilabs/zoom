@@ -258,6 +258,13 @@ class TestRecordStore(unittest.TestCase):
         names = [record.name for record in self.people]
         self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
 
+    def test_iter_limit(self):
+        self.assertEqual(3, len(self.people))
+        self.people.limit = 1
+        names = [record.name for record in self.people]
+        self.assertEqual(1, len(names))
+
+
     def test_reserved_words(self):
         db = self.db
         now = zoom.tools.now()
