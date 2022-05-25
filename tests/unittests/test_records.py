@@ -258,6 +258,13 @@ class TestRecordStore(unittest.TestCase):
         names = [record.name for record in self.people]
         self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
 
+    def test_iter_limit(self):
+        self.assertEqual(3, len(self.people))
+        self.people.limit = 1
+        names = [record.name for record in self.people]
+        self.assertEqual(1, len(names))
+
+
     def test_reserved_words(self):
         db = self.db
         now = zoom.tools.now()
@@ -300,6 +307,14 @@ class TestRecordStore(unittest.TestCase):
         result = self.people.find(age=25)
         names = [person.name for person in result]
         self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_with_limit(self):
+        self.people.put(Person(name='Pat', age=75))
+        self.people.put(Person(name='John', age=75))
+        self.people.put(Person(name='Jen', age=75))
+        self.assertEqual(3, len(self.people.find(age=75)))
+        self.people.limit = 1
+        self.assertEqual(1, len(self.people.find(age=75)))
 
     def test_find_multiple_by_values(self):
         self.people.put(Person(name='Pat', age=25))

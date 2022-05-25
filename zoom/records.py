@@ -177,6 +177,7 @@ class RecordStore(Store):
         """
 
     order_by = None
+    limit = None
 
     def __init__(self, db, record_class=dict, name=None, key='id'):
         # pylint: disable=invalid-name
@@ -592,7 +593,9 @@ class RecordStore(Store):
             for k, v in items
         )
         order_by = self.order_by and (' order by ' + self.order_by) or ''
-        cmd = 'select * from ' + self.kind + ' where ' + where_clause + order_by
+        limit = self.limit and (' limit ' + str(self.limit)) or ''
+        cmd = ('select * from ' + self.kind + ' where ' + where_clause
+               + order_by + limit)
         result = self.db(cmd, *[v for _, v in items])
         return Result(result, self)
 
@@ -724,7 +727,8 @@ class RecordStore(Store):
 
         """
         order_by = self.order_by and (' order by ' + self.order_by) or ''
-        cmd = 'select * from ' + self.kind + order_by
+        limit = self.limit and (' limit ' + str(self.limit)) or ''
+        cmd = 'select * from ' + self.kind + order_by + limit
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 
