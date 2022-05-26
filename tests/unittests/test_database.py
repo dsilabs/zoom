@@ -13,6 +13,7 @@ import unittest
 import logging
 from decimal import Decimal
 from datetime import date
+import warnings
 
 import zoom
 from zoom.database import (
@@ -22,7 +23,6 @@ from zoom.database import (
     UnknownDatabaseException,
 )
 
-import warnings
 warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
 
 logger = logging.getLogger(__name__)
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 class DatabaseTests(object):
     """test db module"""
 
+    # pylint: disable=no-member
     # pylint: disable=too-many-public-methods
     # It's reasonable in this case.
     def tearDown(self):
