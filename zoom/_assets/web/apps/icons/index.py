@@ -4,6 +4,7 @@
 
 import zoom
 
+
 class MyView(zoom.View):
     """Index View"""
 
@@ -12,17 +13,14 @@ class MyView(zoom.View):
         zoom.requires('fontawesome4')
         zoom.requires('bootstrap-icons')
 
-        content = '<h2>Bootstrap Icons 1.7.2</h2>'
-        content += '<p>{}</p>'.format(zoom.tools.load('bi-icons.html'))
-
-        content += '<h2>FontAwesome 4</h2>'
-        content += '<p>{}</p>'.format(zoom.tools.load('fa-icons.html'))
+        layout = zoom.component.load_component('layout')
 
         return zoom.page(
-            content,
-            title='Icons',
-            subtitle='Hover over icon to see name',
-            css=".content .fa, .content .bi { color: #555 }"
+            layout.format(
+                zoom.tools.load('bi-icons.html'),
+                zoom.tools.load('fa-icons.html')
+            ),
+            title='Icons'
         )
 
     def about(self):

@@ -287,12 +287,17 @@ class Site(object):
                 for p in str(get('apps', 'path')).split(';')
                 if exists(realpath(join(self.path, p)))
             ]
-            basic_apps = zoompath('zoom', '_assets', 'standard_apps')
+            basic_apps = zoompath('zoom', '_assets', 'standard_apps') # deprecated
+            standard_apps = zoompath('zoom', '_assets', 'web', 'apps')
 
             positive = zoom.utils.POSITIVE
-            if self.conf.section('apps').get('include_basics') in positive and basic_apps not in self.apps_paths:
-                logger.debug('including default apps (%r)', basic_apps)
-                self.apps_paths.append(basic_apps)
+            if self.conf.section('apps').get('include_basics') in positive:
+                if standard_apps not in self.apps_paths:
+                    logger.debug('including standard apps (%r)', basic_apps)
+                    self.apps_paths.append(standard_apps)
+                if basic_apps not in self.apps_paths:
+                    logger.debug('including default apps (%r)', basic_apps)
+                    self.apps_paths.append(basic_apps)
             else:
                 logger.debug('not including default apps')
 
