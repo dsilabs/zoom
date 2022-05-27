@@ -5,11 +5,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.20.0] - 2022-05-27
+- refactor and enhance icons app
+- add new standard apps location to apps paths
+- add support for multiple values in table find parameters
+- add support for 'limit' clause in RecordStore
+
+## [6.19.2] - 2022-05-13
+- fix assign method for FilesField to handle single files
+
+## [6.19.1] - 2022-05-13
+- add missing multipart for method to FilesField
+
+## [6.19.0] - 2022-05-11
 - refactor profiler middleware
 - add html.code
 - handle config file read errors
 - add error page for unauthorized access status 403
 - fix bug causing background process crash
+- add db Result value property
+- add db Result map function
+- add FilesField
+- set crsf token lifespan to session
 
 ## [6.18.0] - 2022-03-02
 - add additional chromedriver options to stabilize automated testing

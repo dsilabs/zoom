@@ -57,7 +57,7 @@ def reset_modules():
         for module in [x for x in sys.modules if x not in init_modules]:
             del sys.modules[module]
     else:
-        init_modules = sys.modules.keys()
+        init_modules = list(sys.modules.keys())
 
 
 class WSGIApplication(object):

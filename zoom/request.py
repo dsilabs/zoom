@@ -25,9 +25,42 @@ from zoom.context import context
 from zoom.profiler import SystemTimer
 
 
+logger = logging.getLogger(__name__)
+
+
 def make_request_id():
     """make a unique request id"""
     return uuid.uuid4().hex
+
+
+def cgi_to_dict(cgi_fields):
+
+    items = {}
+    for key in cgi_fields.keys():
+
+        save = items.__setitem__
+
+        if isinstance(cgi_fields[key], list):
+            if cgi_fields[key] and cgi_fields[key][0].filename:
+                value = (key, cgi_fields[key])
+            else:
+                value = (key, [item.value for item in cgi_fields[key]])
+        elif cgi_fields[key].filename:
+            value = (key, cgi_fields[key])
+        else:
+            value = (key, cgi_fields[key].value)
+
+        if '[' in key and key.endswith(']'):
+            # some libs append an index myfield[0], we choose to put them
+            # in a list
+            param = key[:key.find('[')]
+            items.setdefault(param, [])
+            save = items[param].append
+            value = value[1:]
+
+        save(*value)
+
+    return items
 
 
 def get_web_vars(env):
@@ -38,8 +71,7 @@ def get_web_vars(env):
     method = get('REQUEST_METHOD')
 
     if method not in ('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH'):
-        logger = logging.getLogger(__name__)
-        logger.warn('ignoring unsupported HTTP method %r', method)
+        logger.warning('ignoring unsupported HTTP method %r', method)
         return {}
 
     if method in ('GET', 'HEAD'):
@@ -58,29 +90,7 @@ def get_web_vars(env):
             keep_blank_values=True
         )
 
-    items = {}
-    for key in cgi_fields.keys():
-
-        save = items.__setitem__
-
-        if isinstance(cgi_fields[key], list):
-            value = (key, [item.value for item in cgi_fields[key]])
-        elif cgi_fields[key].filename:
-            value = (key, cgi_fields[key])
-        else:
-            value = (key, cgi_fields[key].value)
-
-        if '[' in key and key.endswith(']'):
-            # some libs append an index myfield[0], we choose to put them
-            # in a list
-            param = key[:key.find('[')]
-            items.setdefault(param, [])
-            save = items[param].append
-            value = value[1:]
-
-        save(*value)
-
-    return items
+    return cgi_to_dict(cgi_fields)
 
 
 def get_parent_dir():
@@ -112,8 +122,6 @@ def get_instance(directory):
 
     If that doesn't work it will use the built-in instance.
     """
-
-    logger = logging.getLogger(__name__)
 
     if directory:
         if os.path.isdir(os.path.join(directory, 'sites')):
@@ -259,8 +267,6 @@ class Request(object):
             self.home = os.path.dirname(get('SCRIPT_FILENAME', ''))
             self._body = sys.stdin
 
-        logger = logging.getLogger(__name__)
-
         self.location = strim(instance)
         logger.debug('request.location: %s', self.location)
 
@@ -275,7 +281,6 @@ class Request(object):
     @property
     def body(self):
         """access the body in raw form"""
-        logger = logging.getLogger(__name__)
         if not self.body_consumed:
             logger.debug('consuming body')
             self.body_consumed = True
@@ -358,7 +363,6 @@ def build(url, data=None, instance_path=None):
 
     """
     parsed = urllib.parse.urlparse(url)
-    logger = logging.getLogger(__name__)
     logger.debug(parsed)
     request = Request(
         dict(

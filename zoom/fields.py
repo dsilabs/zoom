@@ -2688,6 +2688,55 @@ class FileField(TextField):
             self.value = dict(filename=value.filename, value=value.value)
 
 
+class FilesField(TextField):
+    """ FileField that can handle multiple files """
+
+    value = default = 'None'
+    _type = 'file'
+    css_class = 'files_field'
+
+    def requires_multipart_form(self):
+        return True
+
+    def widget(self):
+        value = self.value if self.value is not None else self.default
+        try:
+            value = websafe(value)
+        except AttributeError:
+            value = value
+        valid_attributes = (
+            'id', 'size', 'maxlength',
+            'placeholder', 'title'
+        )
+        attributes = dict(
+            (k, getattr(self, k))
+            for k in (list(self.__dict__.keys()) +
+                      list(self.__class__.__dict__.keys()))
+            if k in valid_attributes
+        )
+        attributes['multiple'] = 'multiple'
+        return html.input(
+            type=self._type,
+            Class=self.css_class,
+            name=self.name,
+            value=value,
+            **attributes
+        )
+
+    def assign(self, value):
+        """Assign file values to field value"""
+        if not isinstance(value, list):
+            value = [value]
+        items = []
+        for val in value:
+            filename = value = None
+            if hasattr(val, 'filename'):
+                filename = val.filename
+                value = val.value
+                items.append(dict(filename=filename, value=value))
+        self.value = items
+
+
 class DataURIAttachmentsField(Field):  # pragma: no cover
     """An Attachments field - DEPRECATED
 

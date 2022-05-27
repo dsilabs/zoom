@@ -258,6 +258,13 @@ class TestRecordStore(unittest.TestCase):
         names = [record.name for record in self.people]
         self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
 
+    def test_iter_limit(self):
+        self.assertEqual(3, len(self.people))
+        self.people.limit = 1
+        names = [record.name for record in self.people]
+        self.assertEqual(1, len(names))
+
+
     def test_reserved_words(self):
         db = self.db
         now = zoom.tools.now()
@@ -289,6 +296,37 @@ class TestRecordStore(unittest.TestCase):
 
         db('drop table z_test_table')
         self.assertNotIn('z_test_table', db.get_tables())
+
+    def test_find_one_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name='Pat')
+        self.assertEqual(list(result)[0].name, 'Pat')
+
+    def test_find_multiple_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(age=25)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_with_limit(self):
+        self.people.put(Person(name='Pat', age=75))
+        self.people.put(Person(name='John', age=75))
+        self.people.put(Person(name='Jen', age=75))
+        self.assertEqual(3, len(self.people.find(age=75)))
+        self.people.limit = 1
+        self.assertEqual(1, len(self.people.find(age=75)))
+
+    def test_find_multiple_by_values(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name=['Sam', 'Pat'])
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_and_values(self):
+        self.people.put(Person(name='Pat', age=30))
+        result = self.people.find(name=['Sam', 'Pat'], age=30)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Pat'])
 
 
 class TestKeyedRecordStore(TestRecordStore):

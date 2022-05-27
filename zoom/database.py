@@ -66,9 +66,8 @@ class EmptyDatabaseException(Exception):
     """exception raised when a database is empty"""
 
 
-class Result(object):
+class Result:
     """database query result"""
-    # pylint: disable=too-few-public-methods
 
     def __init__(self, cursor, array_size=ARRAY_SIZE):
         self.cursor = cursor
@@ -100,6 +99,17 @@ class Result(object):
         """return first item in result"""
         for i in self:
             return i
+
+    @property
+    def value(self):
+        """return first value of first item in result"""
+        for i in self:
+            return i[0]
+
+    def map(self, myfunc=dict):
+        """Return result rows mapped with a function that accepts a dict"""
+        names = [d[0].lower() for d in self.cursor.description]
+        return map(myfunc, map(lambda row: dict(zip(names, row)), self))
 
 
 class Database(object):
@@ -455,7 +465,7 @@ class Sqlite3Database(Database):
 
     def __init__(self, *args, **kwargs):
         """Initialize with standard sqlite3 parameters"""
-        import sqlite3  # pylint: disable=import-outside-toplevel
+        import sqlite3
 
         keyword_args = dict(
             kwargs,
@@ -534,7 +544,7 @@ class MySQLDatabase(Database):
 
     def __init__(self, *args, **kwargs):
         """Initialize with standard pymysql parameters"""
-        import pymysql  # pylint: disable=import-outside-toplevel
+        import pymysql
 
         keyword_args = dict(
             kwargs,
