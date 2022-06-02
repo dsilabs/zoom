@@ -183,6 +183,7 @@ def users_panel(db):
     from users
     where
         last_seen >= %s
+        and username != 'guest'
     group by users.username
     order by last_seen desc
     limit 10
