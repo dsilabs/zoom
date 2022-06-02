@@ -83,7 +83,7 @@ def activity_panel(db):
         log.timestamp,
         log.elapsed
     from log left join users on log.user_id = users.id
-    where server = %s and path not like "%%\\/\\_%%"
+    where server = %s
     and log.status = 'C'
     order by timestamp desc
     limit 15
