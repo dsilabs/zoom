@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- add quiet logging completion of ajax requests
+- update admin overview to use quiet logging
 
 ## [6.20.0] - 2022-05-27
 - refactor and enhance icons app

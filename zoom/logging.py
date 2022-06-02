@@ -81,6 +81,8 @@ def handler(request, handler, *rest):
     finally:
         if request.method == 'HEAD':
             request.profiler.time('log request', add_entry, request, 'H', 'complete')
+        elif '/_' in request.path:
+            request.profiler.time('log quiet request', add_entry, request, 'Q', 'quiet complete')
         else:
             request.profiler.time('log request', add_entry, request, 'C', 'complete')
         root_logger.removeHandler(log_handler)
