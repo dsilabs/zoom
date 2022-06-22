@@ -256,9 +256,9 @@ class User(Record):
         self.last_seen = zoom.tools.now()
         self.get('__store').db('update users set last_seen=%s where id=%s', self.last_seen, self._id)
 
-    def is_member(self, group):
-        """determine if user is a member of a group"""
-        return group in self.groups
+    def is_member(self, *groups):
+        """determine if user is a member of at least one group"""
+        return any(group in self.groups for group in groups)
 
     def login(self, request, password, remember_me=False):
         """log user in"""
