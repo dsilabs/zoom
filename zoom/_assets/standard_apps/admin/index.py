@@ -43,8 +43,7 @@ def log_data(db, status, n, limit, q):
         offset {offset}
         """.format(
             limit=int(limit),
-            offset=offset,
-            statuses=statuses
+            offset=offset
         )
     data = db(cmd, statuses, host)
     data = [
