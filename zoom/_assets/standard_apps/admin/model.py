@@ -269,7 +269,7 @@ def send_password(user, password):
 def admin_crud_policy():
     """Authourization policy for Admin app collections
     """
-    def _policy(item, user, action):
+    def _policy(_, user, action):
         """Policy rules for shared collection"""
 
         def can_crud(user):

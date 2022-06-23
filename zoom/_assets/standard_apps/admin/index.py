@@ -181,7 +181,6 @@ def warning_panel(db):
 
 def users_panel(db):
 
-    host = zoom.system.request.host
     recent = now() - datetime.timedelta(minutes=60)
 
     data = db("""
@@ -416,7 +415,6 @@ class MyView(zoom.View):
         """Return the configuration page"""
         get = zoom.system.site.config.get
         site = zoom.system.site
-        request = zoom.system.request
         app = zoom.system.request.app
         system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
         main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
@@ -544,7 +542,7 @@ class MyView(zoom.View):
             title='Environment'
         )
 
-    def about(self, *a):
+    def about(self):
         return page(load_content('about.md', version=zoom.__version__ + ' Community Edition'))
 
 

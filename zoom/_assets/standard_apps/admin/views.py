@@ -4,7 +4,6 @@
 
 from zoom.mvc import DynamicView
 from zoom.component import Component
-# from zoom.render import render
 from model import get_index_metrics
 
 
@@ -28,16 +27,7 @@ class MetricView(DynamicView):
     @property
     def title(self):
         return 'tooltip'
-    # @property
-    # def title(self):
-    #     if self.name == 'Requests':
-    #         return 'The number of successfully completed requests today'
-    #     elif self.name == 'Authorizations':
-    #         return 'The number of authorization changes made today'
-    #     elif self.name == 'Errors':
-    #         return 'The number of errors that have occurred today'
-    #     return ''
-    #
+
 
 class MetricsView(DynamicView):
 
@@ -51,10 +41,3 @@ class TestView(DynamicView):
 
 def index_metrics_view(db):
     return MetricsView(get_index_metrics(db))
-    # return '{}'.format(Component([
-    #         MetricView(('test', '/admin/users', 10)),
-    #         MetricView(('test2', '/admin/users', 20)),
-    #     ],
-    #     '<div class="clearfix"></div>'
-    # ))
-    # return TestView()

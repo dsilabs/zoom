@@ -2,10 +2,8 @@
     zoom.site
 """
 
-import datetime
 import logging
 import os
-import platform
 
 import zoom
 import zoom.apps
