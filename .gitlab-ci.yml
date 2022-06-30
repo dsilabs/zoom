@@ -16,7 +16,7 @@ tests:
   stage: test
   image: "python:3.7"
   services:
-    - mariadb:latest
+    - mariadb:10.7
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
