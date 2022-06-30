@@ -19,6 +19,7 @@ import views
 import users
 import groups
 
+
 def log_data(db, status, n, limit, q):
     """retreive log data"""
 
@@ -43,8 +44,7 @@ def log_data(db, status, n, limit, q):
         offset {offset}
         """.format(
             limit=int(limit),
-            offset=offset,
-            statuses=statuses
+            offset=offset
         )
     data = db(cmd, statuses, host)
     data = [
@@ -82,9 +82,11 @@ def activity_panel(db):
         log.path,
         log.timestamp,
         log.elapsed
-    from log left join users on log.user_id = users.id
-    where server = %s
-    and log.status = 'C'
+    from log force index (log_timestamp), users
+    where
+        log.user_id = users.id
+        and server = %s
+        and log.status = 'C'
     order by timestamp desc
     limit 15
     """, host)
@@ -117,12 +119,15 @@ def error_panel(db):
             username,
             path,
             timestamp
-        from log left join users on log.user_id = users.id
-        where log.status in ("E") and timestamp>=%s
-        and server = %s
+        from log force index (log_timestamp), users
+        where
+            log.user_id = users.id
+            and log.status = "E"
+            and server = %s
+            and timestamp >= %s
         order by log.id desc
         limit 10
-        """, today(), host)
+        """, host, today())
 
     rows = []
     for rec in data:
@@ -149,12 +154,15 @@ def warning_panel(db):
             username,
             path,
             timestamp
-        from log inner join users on log.user_id = users.id
-        where log.status in ("W") and timestamp>=%s
-        and server = %s
+        from log force index (log_timestamp), users
+        where
+            log.user_id = users.id
+            and log.status = "W"
+            and server = %s
+            and timestamp >= %s
         order by log.id desc
         limit 10
-        """, today(), host)
+        """, host, today())
 
     rows = []
     for rec in data:
@@ -173,7 +181,6 @@ def warning_panel(db):
 
 def users_panel(db):
 
-    host = zoom.system.request.host
     recent = now() - datetime.timedelta(minutes=60)
 
     data = db("""
@@ -404,12 +411,10 @@ class MyView(zoom.View):
         """
         return page(content, title='Log Entry', css=css)
 
-
     def configuration(self):
         """Return the configuration page"""
         get = zoom.system.site.config.get
         site = zoom.system.site
-        request = zoom.system.request
         app = zoom.system.request.app
         system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
         main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
@@ -528,7 +533,7 @@ class MyView(zoom.View):
                     list(
                         (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items())
                 ),
-                css = """
+                css="""
                     .content table { width: 100%; }
                     .content table td { vertical-align: top; width: 70%; }
                     .content table td:first-child { width: 25%; }
@@ -537,11 +542,8 @@ class MyView(zoom.View):
             title='Environment'
         )
 
-    def about(self, *a):
+    def about(self):
         return page(load_content('about.md', version=zoom.__version__ + ' Community Edition'))
 
 
-def main(route, request):
-    """main program"""
-    view = MyView(request)
-    return view(*request.route[1:], **request.data)
+main = zoom.dispatch(MyView)

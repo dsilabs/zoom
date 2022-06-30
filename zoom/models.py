@@ -672,7 +672,7 @@ class SystemAttachment(Record):
 Attachment = SystemAttachment
 
 
-def handler(request, handler, *rest):
+def handler(request, next_handler, *rest):
     request.site.groups = Groups(request.site.db)
     request.site.users = Users(request.site.db)
-    return handler(request, *rest)
+    return next_handler(request, *rest)

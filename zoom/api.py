@@ -38,12 +38,12 @@ class API:
         path = '/'.join(args)
         path = path[1:] if path.startswith('/') else path
         args = urlencode(kwargs)
-        url = '{self.site_url}/{path}?{args}'.format(locals())
+        url = f'{self.site_url}/{path}?{args}'
         return self.session.get(url)
 
     def post(self, *args, **kwargs):
         """get a response from the remote site"""
         path = '/'.join(args)
         path = path[1:] if path.startswith('/') else path
-        url = '{self.site_url}/{path}'.format(locals())
+        url = f'{self.site_url}/{path}'
         return self.session.post(url, data=kwargs)

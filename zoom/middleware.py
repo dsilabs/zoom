@@ -650,11 +650,11 @@ def display_errors(request, handler, *rest):
 
     except zoom.exceptions.UnauthorizedException:
         return page(
-                'Your account does not have sufficient privileges to access the requested resource.'
-                ' Please contact the system administrator if you need assistance.',
-                title='Permission Required',
-                status='403 Forbidden'
-            ).render(request)
+            'Your account privileges are not sufficient to access the requested resource.'
+            ' Please contact the system administrator if you need assistance.',
+            title='Permission Required',
+            status='403 Forbidden'
+        ).render(request)
 
     except Exception as e:
         msg = traceback.format_exc()

@@ -8,7 +8,6 @@
 """
 
 import os
-import logging
 
 import zoom
 from zoom.site import Site as BasicSite

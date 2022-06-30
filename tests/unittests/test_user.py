@@ -202,6 +202,18 @@ class TestUser(unittest.TestCase):
         self.assertFalse(user.is_member('administrators'))
         self.assertFalse(user.is_member('notagroup'))
 
+    def test_user_is_member_many(self):
+        user = self.users.first(username='admin')
+        self.assertTrue(user.is_member('users', 'administrators'))
+        self.assertTrue(user.is_member('notagroup', 'administrators'))
+        self.assertTrue(user.is_member('users', 'notagroup'))
+        self.assertFalse(user.is_member('notagroup', 'notagroup2'))
+        user = self.users.first(username='user')
+        self.assertTrue(user.is_member('users', 'administrators'))
+        self.assertTrue(user.is_member('notagroup', 'users'))
+        self.assertTrue(user.is_member('users', 'notagroup'))
+        self.assertFalse(user.is_member('notagroup', 'notagroup2'))
+
     def test_user_link(self):
         user = self.users.first(username='user')
         self.assertEqual(user._id, 2)

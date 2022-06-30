@@ -709,7 +709,7 @@ def apps_menu(request):
         exclude.append('content')
 
     apps = [
-        app for app in sorted(site.apps, key=calc_position)
+        app for app in sorted(sorted(site.apps, key=lambda a: a.title), key=calc_position)
         if app.name not in exclude and app.visible
         and app.name in user.apps
     ]

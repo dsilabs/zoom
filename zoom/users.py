@@ -256,9 +256,9 @@ class User(Record):
         self.last_seen = zoom.tools.now()
         self.get('__store').db('update users set last_seen=%s where id=%s', self.last_seen, self._id)
 
-    def is_member(self, group):
-        """determine if user is a member of a group"""
-        return group in self.groups
+    def is_member(self, *groups):
+        """determine if user is a member of at least one group"""
+        return any(group in self.groups for group in groups)
 
     def login(self, request, password, remember_me=False):
         """log user in"""
@@ -560,27 +560,27 @@ class Users(RecordStore):
 
         return user
 
-    def before_insert(self, user):
+    def before_insert(self, user):  # pylint: disable-parameters-differ
         """Things to do just before inserting a new User record"""
         user.update(status='A')
         user.created = user.updated = zoom.tools.now()
         user.created_by = user.updated_by = get_user().user_id
 
-    def before_update(self, user):
+    def before_update(self, user):  # pylint: disable=arguments-differ
         """Things to do just before updating a User record"""
         user.updated = zoom.tools.now()
 
-    def after_update(self, user):
+    def after_update(self, user):  # pylint: disable=arguments-differ
         """Things to do immediately after a user update"""
         audit('update user', user.username)
 
-    def after_insert(self, user):
+    def after_insert(self, user):  # pylint: disable=arguments-differ
         """Things to do immediately after inserting a new user"""
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
         audit('create user', user.username)
 
-    def before_delete(self, user):
+    def before_delete(self, user):  # pylint: disable=arguments-differ
         """Things to do immediately before deleting a user"""
         user.remove_groups()
         audit('delete user', user.username)
