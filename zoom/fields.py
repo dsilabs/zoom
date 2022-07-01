@@ -1412,7 +1412,7 @@ class IntegerField(TextField):
 
     def display_value(self):
         units = self.units and (' ' + self.units) or ''
-        value = ('{:,}{}'.format(self.value, units)) if self.value is not None else ''
+        value = ('{:,}{}'.format(self.value, units)) if isinstance(self.value, int) else ''
         return websafe(value)
 
     def as_searchable(self):

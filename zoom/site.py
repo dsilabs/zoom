@@ -2,10 +2,8 @@
     zoom.site
 """
 
-import datetime
 import logging
 import os
-import platform
 
 import zoom
 import zoom.apps
@@ -31,7 +29,6 @@ DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
 class ConfigSection(zoom.utils.Record):
     """site configuration section"""
-    pass
 
 
 class SiteConfig(object):
@@ -173,7 +170,6 @@ def locate_theme(path, name):
 
 class Site(object):
     """a Zoom site"""
-    # pylint: disable=too-many-instance-attributes, too-few-public-methods
 
     def __init__(self, request):
 
@@ -185,7 +181,6 @@ class Site(object):
         self.__apps = None
         self.__settings = None
 
-        # TODO: consider getting site to do this calculation instead of reqeust
         site_path = request.site_path
         if os.path.exists(site_path):
 
