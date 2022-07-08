@@ -12,6 +12,8 @@ class TestBackground(unittest.TestCase):
 
     def setUp(self):
         zoom.system.site = zoom.sites.Site()
+        if getattr(zoom.system, 'request', None):
+            del zoom.system.request
 
     def test_purge(self):
 
