@@ -157,7 +157,7 @@ class AppProxy:
         self.name = name
         self.filename = filename
 
-        request = getattr(zoom.system, 'request')
+        request = getattr(zoom.system, 'request', None)
         if request:
             user = zoom.system.request.user
         else:
