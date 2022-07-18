@@ -191,7 +191,7 @@ class Page(object):
 
     def header(self):
         """return page header"""
-        if self.title or self.subtitle or self.actions or self.search:
+        if self.title or self.subtitle or self.actions or self.search is not None:
             return PageHeader(page=self)
 
     def render(self, request):
