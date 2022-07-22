@@ -197,7 +197,7 @@ def load_app_background_jobs(app):
         os.chdir(base_dir)
 
         # Remove our modification from the import path.
-        del sys.path[-1]
+        sys.path.remove(app.path)
 
     # Un-initialize the _job_set global to prevent weird behaviour in the case
     # of app code importing symbols from their background.py modules.
