@@ -593,7 +593,7 @@ class RecordStore(Store):
             for k, v in items
         )
         order_by = self.order_by and (' order by ' + self.order_by) or ''
-        limit = self.limit and (' limit ' + str(self.limit)) or ''
+        limit = self.limit is not None and (' limit ' + str(self.limit)) or ''
         cmd = ('select * from ' + self.kind + ' where ' + where_clause
                + order_by + limit)
         result = self.db(cmd, *[v for _, v in items])
