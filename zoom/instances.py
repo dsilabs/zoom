@@ -59,7 +59,7 @@ class Instance(object):
         # Use the provided path, the default path specified in the environment,
         # or the internal instance path.
         self.path = path or default_instance_path or \
-                zoom.tools.zoompath('web')
+                zoom.tools.zoompath('zoom', '_assets', 'web')
 
     def create(self):
         """Create a new instance"""
@@ -83,7 +83,7 @@ class Instance(object):
     def sites_path(self):
         """the path to the sites of the instance
 
-        >>> instance_directory = zoom.tools.zoompath('web')
+        >>> instance_directory = zoom.tools.zoompath('zoom', '_assets', 'web')
         >>> instance = Instance(instance_directory)
         >>> instance.sites_path == instance_directory + '/sites'
         True
@@ -141,6 +141,11 @@ class Instance(object):
                     ))
                 )
         return result
+
+    def run_background_jobs(self):
+        """Run background jobs for all sites in an instance"""
+        for site in self.get_sites(skip_fails=True).values():
+            site.run_background_jobs()
 
     def __str__(self):  # pragma: nocover
         return 'Instance %r contains %s sites:\n%s' % (

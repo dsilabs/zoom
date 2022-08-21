@@ -26,7 +26,7 @@ class TestApps(unittest.TestCase):
         zoom.system.site = zoom.site.Site(self.request)
         zoom.system.site.db = self.db
         self.request.site = zoom.system.site
-        self.apps_dir = zoom.tools.zoompath('web', 'apps')
+        self.apps_dir = zoom.tools.zoompath('zoom', '_assets', 'standard_apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
             name='app',
             title='App',
@@ -36,6 +36,7 @@ class TestApps(unittest.TestCase):
             keywords='one,two',
             theme=None,
             packages={},
+            common_packages={},
         )
         self.request.user = zoom.users.Users(self.db).first(username='user')
 
@@ -45,11 +46,10 @@ class TestApps(unittest.TestCase):
     def test_app_process_index(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample', {})
-            request.site = zoom.site.Site(self.request)
-            request.site.db = zoom.database.setup_test()
+            request.site = zoom.sites.Site()
             response = app(request)
             self.assertEqual(type(response), zoom.Page)
         finally:
@@ -58,20 +58,20 @@ class TestApps(unittest.TestCase):
     def test_app_process_method(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/about', {})
             request.site = zoom.site.Site(self.request)
             request.site.db = zoom.database.setup_test()
             response = app(request)
-            self.assertEqual(type(response), zoom.Page)
+            self.assertEqual(type(response), str)
         finally:
             os.chdir(save_dir)
 
     def test_app_process_module(self):
         save_dir = os.getcwd()
         try:
-            os.chdir(zoom.tools.zoompath('web/apps/sample'))
+            os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/parts', {})
             request.site = zoom.site.Site(self.request)
@@ -80,15 +80,6 @@ class TestApps(unittest.TestCase):
             self.assertEqual(type(response), zoom.Page)
         finally:
             os.chdir(save_dir)
-
-    def test_respond_text(self):
-        response = zoom.apps.respond('test', self.request)
-        self.assertEqual(response.status, '200 OK')
-        self.assertEqual(response.content, 'test')
-
-    def test_respond_none(self):
-        response = zoom.apps.respond(None, self.request)
-        self.assertEqual(response, None)
 
     def test_noapp(self):
         app = zoom.apps.NoApp()
@@ -140,7 +131,10 @@ class TestApps(unittest.TestCase):
         self.assertFalse(self.request.user.is_authenticated)
         self.assertEqual(menu, (
             '<div class="system-menu">'
-            '<ul><li><a href="/logout" name="link-to-logout">Logout</a></li></ul>'
+            '<ul>'
+            '<li><a href="/profile" name="link-to-profile">Profile</a></li>'
+            '<li><a href="/logout" name="link-to-logout">Logout</a></li>'
+            '</ul>'
             '</div>'
             )
         )
@@ -151,12 +145,12 @@ class TestApps(unittest.TestCase):
 
     def test_app_menu(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.menu(), '<ul></ul>')
 
-        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'sample', 'app.py')
         app = zoom.apps.AppProxy('Sample', pathname, site)
         app.request = self.request
         self.assertEquals(app.menu(), (
@@ -165,31 +159,35 @@ class TestApps(unittest.TestCase):
             '<li><a href="<dz:app_url>/fields">Fields</a></li>'
             '<li><a href="<dz:app_url>/collection">Collection</a></li>'
             '<li><a href="<dz:app_url>/components">Components</a></li>'
+            '<li><a href="<dz:app_url>/widgets">Widgets</a></li>'
+            '<li><a href="<dz:app_url>/charts">Charts</a></li>'
             '<li><a href="<dz:app_url>/alerts">Alerts</a></li>'
+            '<li><a href="<dz:app_url>/flags">Flags</a></li>'
             '<li><a href="<dz:app_url>/parts">Parts</a></li>'
             '<li><a href="<dz:app_url>/tools">Tools</a></li>'
-            '<li><a href="<dz:app_url>/missing">Missing</a></li>'
+            '<li><a href="<dz:app_url>/responses">Responses</a></li>'
+            '<li><a href="<dz:app_url>/background">Background</a></li>'
             '<li><a href="<dz:app_url>/about">About</a></li>'
             '</ul>'
         ))
 
     def test_app_description(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.description, 'The Hello app.')
 
     def test_app_keywords(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(app.keywords, 'The, Hello, app.')
 
     def test_app_str(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
         self.assertEquals(str(app), '<a href="/Hello" name="link-to-hello">Hello</a>')
@@ -201,11 +199,16 @@ class TestApps(unittest.TestCase):
 
     def test_respond_str(self):
         response = zoom.apps.respond('test', self.request)
+        self.assertEqual(response.status, '200 OK')
         self.assertEqual(type(response), zoom.response.HTMLResponse)
 
     def test_respond_component(self):
         response = zoom.apps.respond(zoom.Component('my html', css='my css'), self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
+
+    def test_respond_none(self):
+        response = zoom.apps.respond(None, self.request)
+        self.assertEqual(response, None)
 
     def test_respond_list(self):
         response = zoom.apps.respond(['one', 'two'], self.request)
@@ -241,7 +244,7 @@ class TestApps(unittest.TestCase):
 
     def test_app_proxy_call(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         zoom.system.request.app = app = zoom.apps.AppProxy('hello', pathname, site)
         app.request = self.request
         method = app.method
@@ -250,7 +253,7 @@ class TestApps(unittest.TestCase):
 
     def test_app_proxy_process(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('hello', pathname, site)
         response = app.run(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
@@ -258,55 +261,80 @@ class TestApps(unittest.TestCase):
 
     def test_handle(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'hello', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('hello', pathname, site)
         response = app.run(self.request)
         self.assertEqual(type(response), zoom.response.HTMLResponse)
         self.assertTrue('<!DOCTYPE html>' in response.content)
 
-    def call(self, uri, as_username='admin', tag='content'):
+    def call(self, uri, as_username='admin', tag='content', adjust=None):
         def clear():
             clearable = ('app', 'index')
             for module in clearable:
                 if module in sys.modules:
                     del sys.modules[module]
-        request = build('http://localhost/' + uri, {})
+        request = build('http://localhost' + uri, {})
+        request.uri = uri
         request.profiler = set()
         request.site = zoom.system.site
         request.user = zoom.users.Users(self.db).first(username=as_username)
+        request.user.is_authenticated = as_username != 'guest'
         zoom.system.user = request.user
         clear()
+        if adjust:
+            adjust(request)
         response = zoom.apps.handle(request)
         if isinstance(response, zoom.response.HTMLResponse):
             return zoom.render.render('{{' + tag + '}}')
         else:
             return response
 
-    def test_handle_redirect_to_index(self):
-        response = self.call('home', 'guest')
-        self.assertTrue(response.headers['Location'] == '/')
+    def test_handle_unauth_guest(self):
+        response = self.call('/home', 'guest')
+        self.assertEqual(
+            response.headers['Location'],
+            '/login?original_url=http%3A%2F%2Flocalhost%2Fhome'
+        )
 
     def test_handle_insufficient_privileges(self):
-        response = self.call('admin', 'user')
-        self.assertTrue(response.headers['Location'] == '/')
+        response = self.call('/admin', 'user')
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '/'
+        )
 
-    # def test_handle_missing_app(self):
-    #     response = self.call('aaa')
-    #     self.assertEqual(response.status, '302 Found')
+    def test_handle_insufficient_privileges_with_auth(self):
+        def add_auth_function(request):
+            request.site.auth_app_name = 'authorize'
+        response = self.call('/admin', 'user', adjust=add_auth_function)
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '/authorize?original_url=http%3A%2F%2Flocalhost%2Fadmin'
+        )
 
-    # def test_handle_default_app(self):
-    #     response = self.call('aaa')
-    #     self.assertEqual(response, None)
+    def test_handle_missing_app(self):
+        response = self.call('/aaa', as_username='admin')
+        self.assertEqual(response.status, '302 Found')
+        self.assertEqual(
+            response.headers['Location'],
+            '<dz:abs_site_url>/app'
+        )
+
+    def test_handle_default_app(self):
+        response = self.call('aaa', as_username='guest')
+        self.assertEqual(response, None)
 
     def test_read_config(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'sample', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'sample', 'app.py')
         app = zoom.apps.AppProxy('Sample', pathname, site)
         self.assertTrue(app.read_config('settings', 'title', 'notfound'), 'Sample')
 
     def test_read_config_missing(self):
         site = zoom.system.site
-        pathname = zoom.tools.zoompath('web', 'apps', 'ping', 'app.py')
+        pathname = zoom.tools.zoompath(self.apps_dir, 'ping', 'app.py')
         app = zoom.apps.AppProxy('Ping', pathname, site)
         self.assertTrue(app.read_config('settings', 'icon', 'notfound'), 'cube')
 

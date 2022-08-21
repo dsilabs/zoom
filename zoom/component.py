@@ -18,12 +18,14 @@
     in future releases.
 """
 
+from inspect import getfile, stack
 import logging
-import threading
+from os.path import abspath, split, join, isfile, realpath, dirname
 import sys
 
 import zoom
-from zoom.utils import OrderedSet
+from zoom.utils import OrderedSet, kind
+from zoom.tools import load, pug, sass, websafe
 
 
 class Component(object):
@@ -127,9 +129,13 @@ class Component(object):
         self.parts = {
             'html': [],
         }
+        self.load_assets()
         for arg in flatten(args):
             self += arg
         self += kwargs
+
+    def load_assets(self):
+        """load static assets"""
 
     def __iadd__(self, other):
         """add something to a component
@@ -185,7 +191,7 @@ class Component(object):
                 if key == 'html':
                     part.extend(value)
                 else:
-                    part |= value
+                    part |= filter(bool, value)
         return self
 
     def __add__(self, other):
@@ -217,15 +223,156 @@ class Component(object):
         zoom.system.parts += self
         return ''.join(map(str, self.parts['html']))
 
+    def format(self, *args, **kwargs):
+        """Return formatted object component"""
+
+        def js_fill(template, *args, **kwargs):
+            """fills a js template based on the parameters"""
+            def filler(name, *_, **__):
+                tpl = '{' + name + '}'
+                result = tpl.format(*args, **kwargs)
+                return result
+            result = zoom.fill.dollar_fill(template, filler)
+            return result
+
+        def css_fill(template, *args, **kwargs):
+            """fills a css template based on the parameters"""
+            def filler(name, *_, **__):
+                tpl = '{' + name + '}'
+                result = tpl.format(*args, **kwargs)
+                return result
+            result = zoom.fill.dollar_fill(template, filler)
+            return result
+
+        result = {}
+        for k, v in self.parts.items():
+            if k == 'html':
+                tpl = ''.join(map(str, v))
+                try:
+                    result[k] = tpl.format(*args, **kwargs)
+                except TypeError as e:
+                    msg = str(e)
+                    if 'unsupported format' in msg:
+                        raise Exception(msg + '<pre>' + websafe(tpl) + '</pre>')
+                    raise
+                except KeyError as e:
+                    msg = str(e)
+                    raise Exception(msg + '<pre>\n' + websafe(tpl) + '</pre>')
+            elif k == 'js':
+                result[k] = ''.join(
+                    js_fill(segment, *args, **kwargs) for segment in v
+                )
+            elif k == 'css':
+                result[k] = ''.join(
+                    css_fill(segment, *args, **kwargs) for segment in v
+                )
+            else:
+                result[k] = ''.join(map(str, v))
+
+        return Component() + result
+
     def __str__(self):
         return self.render()
+
+    def __call__(self, *args, **kwargs):
+        return self.format(*args, **kwargs)
+
+
+def render(*components):
+    html_part = Component(*components).render()
+    return html_part
 
 
 component = Component
 
 
+def load_assets(path, name):
+    """Return file based component assets for a named component"""
+    assets = {}
+    for ext in ['html', 'css', 'js', 'pug', 'sass']:
+        pathname = join(
+            path, name + '.' + ext
+        )
+        if isfile(pathname):
+            if ext == 'pug':
+                basedir = realpath(split(pathname)[0])
+                content = load(pathname)
+                result = pug(content, options=dict(basedir=basedir))
+                assets['html'] = result
+            elif ext == 'sass':
+                result = sass(pathname)
+                assets['css'] = result
+            else:
+                assets[ext] = load(pathname)
+    return assets
+
+
+class DynamicComponent(Component):
+    """A component that loads its parts from the file system"""
+
+    def load_assets(self):
+        path = split(abspath(getfile(self.__class__)))[0]
+        assets = load_assets(path, kind(self))
+        for k, v in assets.items():
+            if k == 'html':
+                self.parts['html'].insert(0, v)
+            else:
+                self.parts[k] = OrderedSet([v]) | self.parts.get(k, {})
+
+
+def _load_component(path, component_name, *args, **kwargs):
+    """Load a component from files on a path without defining a class"""
+    assets = load_assets(path, component_name)
+    dc = DynamicComponent()
+    for k, v in assets.items():
+        if k == 'html':
+            dc.parts['html'].insert(0, v)
+        else:
+            dc.parts[k] = OrderedSet([v]) | dc.parts.get(k, {})
+    if args or kwargs:
+        return dc.format(*args, **kwargs)
+    return dc
+
+
+def load_component(component_name, *args, **kwargs):
+    """Load a component from files without defining a class"""
+    path = dirname(abspath((stack()[1])[1]))
+    return _load_component(path, component_name, *args, **kwargs)
+
+
+class Components:
+    """A bunch of components"""
+
+    def __init__(self, path=None):
+        self.path = path
+
+    def __getattr__(self, name):
+        return _load_component(self.path, name)
+
+
+def get_components(path=None):
+    """Return a bunch of components"""
+    path = path or dirname(abspath((stack()[1])[1]))
+    return Components(path)
+
+
 def compose(*args, **kwargs):
-    """Compose a response - DEPRECATED"""
+    """Compose a response
+
+    Responses are composed of individual parts.  Calling this
+    function contributes a parts of a response to the current
+    response being composed.  The parts will be used in
+    the subsequent reponse as it is rendered.
+
+    Sometimes parts are not used in the next response but rather
+    in some subsequent appropriate reponse type. For example, if
+    the part being added is an error message, but the next response
+    is an image response, then the error message will not be
+    rendered.   Similarly, a redirect does not have content so
+    not parts are rendered.  When a page is eventually rendered
+    the part will be added to the page in the appropriate location
+    on the page and determined by the page renderer.
+    """
     zoom.system.parts += component(**kwargs)
     return ''.join(args)
 
@@ -266,7 +413,7 @@ def handler(request, handler, *rest):
             request.session.system_errors = []
         request.session.system_errors = list(error_alerts)
 
-    stdout = sys.stdout.getvalue()
+    stdout = sys.stdout.getvalue() # pylint: disable=no-member
     if stdout:
         renderable = (
             isinstance(result.content, str) and '{*stdout*}' in result.content

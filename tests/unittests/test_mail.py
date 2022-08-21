@@ -5,6 +5,7 @@ import datetime
 import unittest
 from unittest import mock
 
+import zoom
 from zoom.request import Request
 from zoom.site import Site
 import zoom.mail as mail
@@ -57,7 +58,7 @@ class TestMail(unittest.TestCase):
         )
 
     def test_get_default_sender(self):
-        site = Site(Request(dict(SERVER_NAME='default'), instance='default'))
+        site = zoom.sites.Site()
         self.assertEqual(
             mail.get_default_sender(site),
             ('ZOOM Support', 'alerts@testco.com')

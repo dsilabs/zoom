@@ -98,6 +98,9 @@ def as_links(items, select=None, filter=None):
             if not filter or filter(link_item):
                 yield link_item
 
+    if items is None:
+        return ''
+
     links = []
 
     for link_item in as_link_items(items):
@@ -117,16 +120,6 @@ def as_links(items, select=None, filter=None):
             )
         )
     return tag('ul', ''.join(links))
-
-
-def success(message):
-    compose(success=message)
-
-def warning(message):
-    compose(warning=message)
-
-def error(message):
-    compose(error=message)
 
 
 class HeaderBar(DynamicView):
@@ -171,18 +164,18 @@ def dropzone(url, **kwargs):
 
     >>> zoom.system.site = zoom.sites.Site()
     >>> zoom.system.site.packages = {}
-    >>> zoom.system.request = zoom.utils.Bunch(app=zoom.utils.Bunch(name='hello', packages={}))
+    >>> zoom.system.request = zoom.utils.Bunch(app=zoom.utils.Bunch(name='hello', packages={}, common_packages={}))
     >>> c = dropzone('/app/files')
     >>> isinstance(c, zoom.Component)
     True
     """
     zoom.requires('dropzone')
 
-    id = 'dropzone_' + uuid.uuid4().hex
+    tag_id = 'dropzone_' + uuid.uuid4().hex
 
     js = """
     var %(id)s = new Dropzone("#%(id)s", {url: "%(url)s"});
-    """ % dict(id=id, url=url)
+    """ % dict(id=tag_id, url=url)
 
-    html = div(classed='dropzone', id=id, **kwargs)
-    return zoom.Component(html)#, js=js)
+    html = div(classed='dropzone', id=tag_id, **kwargs)
+    return zoom.Component(html, js=js)

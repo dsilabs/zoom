@@ -8,6 +8,8 @@ import datetime
 import zoom
 import zoom.html as html
 from zoom.snippets import snippet
+import zoom.impersonation
+
 
 def username():
     """Returns the username."""
@@ -55,7 +57,7 @@ def standard_zoom_tail_tags():
     return ''.join('{{%s}}' % tag for tag in tags)
 
 def tag_for(name, *a, **k):
-    """create a zoom tag
+    """create a dz tag
 
     >>> tag_for('name')
     '<dz:name>'
@@ -70,6 +72,29 @@ def tag_for(name, *a, **k):
             '{}={!r}'.format(k, v) for k, v in sorted(k.items())
         )) or ''
     )
+
+
+def ztag(name, *args, **kwargs):
+    """return a zoom tag
+
+    >>> ztag('name')
+    '{{name}}'
+
+    >>> ztag('name', 'upper', 2)
+    "{{name 'upper' 2}}"
+
+    >>> ztag('name', 10, 'test', default=1)
+    "{{name 10 'test' default=1}}"
+    """
+    return ''.join([
+        '{{',
+        name,
+        args and (' ' + ' '.join(map(repr, args))) or '',
+        kwargs and (' ' + ' '.join(
+            '{}={!r}'.format(k, v) for k, v in sorted(kwargs.items())
+        )) or '',
+        '}}',
+    ])
 
 
 def url_for(*a, **k):
@@ -272,12 +297,17 @@ def link_to(label, *args, **kwargs):
     '<a href="http://company.com?q=test" name="link-to-http-company-com">http://company.com</a>'
     """
     nargs = args or [label]
+    options = {}
+    classed = kwargs.pop('classed', None)
+    if classed:
+        options['classed'] = classed
     return html.tag(
         'a', label,
         href=url_for(*nargs, **kwargs),
         name='link-to-' + zoom.utils.id_for(
             str(label).replace('.', '-').replace(':', '-')
         ),
+        **options,
     )
 
 
@@ -371,3 +401,14 @@ def when(date, since=None):
         )
     else:
         return 'never'
+
+
+def impersonation_notice(*args, **kwargs):
+    """Impersonation Notice Helper"""
+    return zoom.impersonation.get_impersonation_notice()
+
+
+def version():
+    """return ZoomFoundry version number"""
+    return zoom.__version__
+    

@@ -1,5 +1,8 @@
-"""This file is the index view for our app. It's set up to serve a few pages by
-default."""
+"""
+    App Index
+
+    Provides the main index for the app.
+"""
 
 import zoom
 
@@ -19,3 +22,4 @@ class IndexView(zoom.View):
         )
 
 main = zoom.dispatch(IndexView)
+

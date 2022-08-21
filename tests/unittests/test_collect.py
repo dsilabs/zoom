@@ -3,6 +3,7 @@
 """
 
 import logging
+import re
 import sys
 import unittest
 import difflib
@@ -153,11 +154,14 @@ VIEW_UPDATED_JOE_LIST = """<div class="baselist">
 </div>"""
 
 def assert_same(t1, t2):
+    def clean(t):
+        return re.sub('table id=".*"', 'table', t)
+
     try:
-        assert t1 == t2
+        assert clean(t1) == clean(t2)
     except:
-        s1 = t1.splitlines()
-        s2 = t2.splitlines()
+        s1 = clean(t1).splitlines()
+        s2 = clean(t2).splitlines()
         print('\n'.join(difflib.context_diff(s1, s2)))
         raise
 
@@ -190,11 +194,14 @@ class FakeRequest(object):
 
 class FakeSite(object):
     def __init__(self, **kwargs):
+        self.packages = {}
         self.__dict__.update(kwargs)
 
 
 class FakeApp(object):
     def __init__(self, **kwargs):
+        self.common_packages = {}
+        self.packages = {}
         self.__dict__.update(kwargs)
 
 
@@ -451,7 +458,7 @@ class TestCollect(unittest.TestCase):
         self.assert_response(VIEW_TWO_RECORD_LIST)
 
         response = self.collect('delete', 'joe').content
-        assert 'Are you sure' in response
+        assert 'Are you sure' in str(response)
         self.assert_response(VIEW_TWO_RECORD_LIST)
 
         self.collect('delete', 'joe', **{'confirm': 'no'})

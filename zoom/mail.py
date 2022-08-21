@@ -15,13 +15,14 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.audio import MIMEAudio
 from email.mime.multipart import MIMEMultipart
-from email.utils import formataddr
+from email.utils import formataddr, formatdate, make_msgid
 
 import zoom
 from zoom.context import context
 from zoom.store import EntityStore
 from zoom.tools import ensure_listy, now
 from zoom.utils import Record
+from zoom.tools import get_template
 
 
 __all__ = (
@@ -40,29 +41,6 @@ class AttachmentDataException(Exception):
 class SystemMail(Record):
     """system message"""
     pass
-
-
-BODY_TPL = """
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-<BODY>
-<table width="100%">
- <tr>
-  <td align="left">
-  <img src="{logo_url}" alt="banner logo">
-  </td>
- </tr>
- <tr>
-  <td align="left">
-    <font face="helvetica,arial,freesans,clean,sans-serif" size="2">
-    {message}
-    </font>
-  </td>
- </tr>
-</table>
-</BODY>
-</HTML>
-"""
 
 
 class Attachment(object):
@@ -105,7 +83,9 @@ def get_mail_store(site):
 
 
 def format_as_html(text, logo_url):
-    return BODY_TPL.format(logo_url=logo_url, message=text)
+    site = zoom.get_site()
+    template = get_template('email_template', theme=site.theme)
+    return template.format(logo_url=logo_url, message=text)
 
 
 def display_email_address(email):
@@ -163,6 +143,8 @@ def compose(sender, reply_to, recipients, subject, body, attachments, style, log
     email['Subject'] = subject
     email['From'] = formataddr(sender)
     email['To'] = display_email_address(recipients)
+    email['Message-ID'] = make_msgid()
+    email['Date'] = formatdate()
     if sender != reply_to:
         email['Reply-To'] = formataddr(reply_to)
     email.preamble = (
@@ -316,7 +298,7 @@ def expedite(site, sender, recipients, subject, body,
     logger = logging.getLogger(__name__)
 
     email = compose(
-        get_default_sender(site),
+        sender,
         sender,
         recipients,
         subject,
@@ -346,6 +328,7 @@ def expedite(site, sender, recipients, subject, body,
             disconnect(server)
     else:
         logger.error('unable to connect to mail server')
+
 
 def post(put, sender, recipients, subject,
          body, attachments=None, style='plain'):

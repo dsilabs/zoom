@@ -47,7 +47,7 @@ class MyView(View):
         )
 
     def show(self, *args, **kwargs):
-        """Show a page"""
+        """Render a page"""
         path = '/'.join(args) if args else None
         template = 'default'
 
@@ -58,7 +58,7 @@ class MyView(View):
             path = '/'.join(path.split('/')[1:])
 
         content = load_page(path)
-        if content:
+        if content is not None:
             return zoom.page(content, template=template)
         return None
 

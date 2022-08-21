@@ -176,6 +176,9 @@ class RecordStore(Store):
 
         """
 
+    order_by = None
+    limit = None
+
     def __init__(self, db, record_class=dict, name=None, key='id'):
         # pylint: disable=invalid-name
         self.db = db
@@ -244,8 +247,6 @@ class RecordStore(Store):
             decimal.Decimal,
         ]
 
-        # pylint: disable=star-args
-
         for atype in datatypes:
             if atype not in valid_types:
                 msg = 'unsupported type <type %s>' % atype
@@ -277,6 +278,11 @@ class RecordStore(Store):
             self.after_insert(record)
 
         return _id
+
+    def set(self, key, values):
+        """sets values for an existing record"""
+        record = self.record_class({self.id_name: key}, **values)
+        return self.put(record)
 
     def get(self, keys):
         # pylint: disable=trailing-whitespace
@@ -365,7 +371,7 @@ class RecordStore(Store):
 
     def _delete(self, ids):
         if ids:
-            affected = self.get(ids)
+            affected = list(self.get(ids))
 
             for rec in affected:
                 self.before_delete(rec)
@@ -452,7 +458,6 @@ class RecordStore(Store):
             [True, True]
 
         """
-        # pylint: disable=star-args
 
         if not isinstance(keys, (list, tuple)):
             keys = (keys,)
@@ -539,7 +544,7 @@ class RecordStore(Store):
         Find keys that meet search critieria
         """
         items = kwargs.items()
-        clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
+        clause = ' and '.join('`%s`=%s' % (k, '%s') for k, v in items)
         cmd = ' '.join([
             'select distinct',
             self.key,
@@ -579,8 +584,18 @@ class RecordStore(Store):
 
         """
         items = kwargs.items()
-        where_clause = ' and '.join('%s=%s' % (k, '%s') for k, v in items)
-        cmd = 'select * from ' + self.kind + ' where ' + where_clause
+        where_clause = ' and '.join(
+            '`%s`%s%s' % (
+                k,
+                ' in ' if isinstance(v, (list, tuple)) else '=',
+                '%s'
+            )
+            for k, v in items
+        )
+        order_by = self.order_by and (' order by ' + self.order_by) or ''
+        limit = self.limit is not None and (' limit ' + str(self.limit)) or ''
+        cmd = ('select * from ' + self.kind + ' where ' + where_clause
+               + order_by + limit)
         result = self.db(cmd, *[v for _, v in items])
         return Result(result, self)
 
@@ -711,7 +726,9 @@ class RecordStore(Store):
             105
 
         """
-        cmd = 'select * from '+self.kind
+        order_by = self.order_by and (' order by ' + self.order_by) or ''
+        limit = self.limit and (' limit ' + str(self.limit)) or ''
+        cmd = 'select * from ' + self.kind + order_by + limit
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 

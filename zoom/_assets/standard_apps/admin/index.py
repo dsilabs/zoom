@@ -3,21 +3,22 @@
 """
 
 import datetime
-import json
 import os
 import sys
 import platform
 
 import zoom
+import zoom.apps
 import zoom.html as h
 from zoom.helpers import link_to, link_to_page
 from zoom.page import page
-from zoom.tools import load_content, today, how_long_ago
+from zoom.tools import load_content, today, how_long_ago, now
 from zoom.users import link_to_user
 
 import views
 import users
 import groups
+
 
 def log_data(db, status, n, limit, q):
     """retreive log data"""
@@ -43,8 +44,7 @@ def log_data(db, status, n, limit, q):
         offset {offset}
         """.format(
             limit=int(limit),
-            offset=offset,
-            statuses=statuses
+            offset=offset
         )
     data = db(cmd, statuses, host)
     data = [
@@ -55,13 +55,17 @@ def log_data(db, status, n, limit, q):
             ),
             item[1],
             zoom.helpers.who(item[2]),
-        ] + list(item[3:])
+            item[3],
+            item[4],
+            zoom.link_to(item[5]),
+            how_long_ago(item[6]),
+        ] + list(item[6:])
         for item in data
         if q in repr(item)
     ]
     labels = (
         'id', 'status', 'user', 'address', 'app',
-        'path', 'timestamp', 'elapsed'
+        'path', 'when', 'timestamp', 'elapsed'
     )
     return zoom.browse(data, labels=labels)
 
@@ -78,9 +82,11 @@ def activity_panel(db):
         log.path,
         log.timestamp,
         log.elapsed
-    from log left join users on log.user_id = users.id
-    where server = %s and path not like "%%\\/\\_%%"
-    and log.status = 'C'
+    from log force index (log_timestamp), users
+    where
+        log.user_id = users.id
+        and server = %s
+        and log.status = 'C'
     order by timestamp desc
     limit 15
     """, host)
@@ -91,7 +97,7 @@ def activity_panel(db):
             link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
-            rec[3],
+            zoom.link_to(rec[3]),
             how_long_ago(rec[4]),
             rec[4],
             rec[5],
@@ -99,7 +105,8 @@ def activity_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'address', 'path', 'when', 'timestamp', 'elapsed'
-    return zoom.browse(rows, labels=labels, title=link_to_page('Requests'))
+    table_id = 'activity-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Requests'))
 
 
 def error_panel(db):
@@ -112,12 +119,15 @@ def error_panel(db):
             username,
             path,
             timestamp
-        from log left join users on log.user_id = users.id
-        where log.status in ("E") and timestamp>=%s
-        and server = %s
+        from log force index (log_timestamp), users
+        where
+            log.user_id = users.id
+            and log.status = "E"
+            and server = %s
+            and timestamp >= %s
         order by log.id desc
         limit 10
-        """, today(), host)
+        """, host, today())
 
     rows = []
     for rec in data:
@@ -130,44 +140,77 @@ def error_panel(db):
         rows.append(row)
 
     labels = 'id', 'user', 'path', 'when'
-    return zoom.browse(rows, labels=labels, title=link_to_page('Errors'))
+    table_id = 'error-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Errors'))
 
 
-def users_panel(db):
+def warning_panel(db):
 
     host = zoom.system.request.host
 
     data = db("""
+        select
+            log.id,
+            username,
+            path,
+            timestamp
+        from log force index (log_timestamp), users
+        where
+            log.user_id = users.id
+            and log.status = "W"
+            and server = %s
+            and timestamp >= %s
+        order by log.id desc
+        limit 10
+        """, host, today())
+
+    rows = []
+    for rec in data:
+        row = [
+            link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
+            link_to_user(rec[1]),
+            rec[2],
+            how_long_ago(rec[3]),
+        ]
+        rows.append(row)
+
+    labels = 'id', 'user', 'path', 'when'
+    table_id = 'warning-panel-table'
+    return zoom.browse(rows, table_id=table_id, labels=labels, title=link_to_page('Warnings'))
+
+
+def users_panel(db):
+
+    recent = now() - datetime.timedelta(minutes=60)
+
+    data = db("""
     select
         users.username,
-        max(log.timestamp) as timestamp,
-        count(*) as requests
-    from log, users
-        where log.user_id = users.id
-        and timestamp >= %s
-        and server = %s
-        and path not like "%%\\/\\_%%"
+        last_seen
+    from users
+    where
+        last_seen >= %s
+        and username != 'guest'
     group by users.username
-    order by timestamp desc
+    order by last_seen desc
     limit 10
-    """, today() - datetime.timedelta(days=14), host)
+    """, recent)
 
     rows = []
     for rec in data:
         row = [
             link_to_user(rec[0]),
             how_long_ago(rec[1]),
-            rec[2],
         ]
         rows.append(row)
 
-    labels = 'user', 'last seen', 'requests'
+    labels = 'user', 'last seen'
     return zoom.browse(rows, labels=labels, title=link_to_page('Users'))
 
 
-def callback(method, url=None, timeout=5000):
+def callback(method, url=None, timeout=15000):
     method_name = method.__name__
-    path = url or '/<dz:app_name>/' + method_name
+    path = url or '/{{app_name}}/' + method_name
     js = """
         jQuery(function($){
           setInterval(function(){
@@ -184,7 +227,7 @@ def callback(method, url=None, timeout=5000):
         timeout=timeout
     )
     content = '<div id="%(method_name)s">%(initial_value)s</div>' % dict(
-        initial_value=method(),
+        initial_value=method().content,
         method_name=method_name
     )
     return zoom.Component(content, js=js)
@@ -235,9 +278,8 @@ class MyView(zoom.View):
         )
 
     def _index(self):
-        # return None
-        self.model.site.logging = False
-        db = self.model.site.db
+        zoom.get_site().logging = False
+        db = zoom.get_db()
 
         content = zoom.Component(
             views.index_metrics_view(db),
@@ -245,9 +287,10 @@ class MyView(zoom.View):
                 feed1=activity_panel(db),
                 feed2=users_panel(db),
                 feed3=error_panel(db),
+                feed4=warning_panel(db),
             ),
         )
-        return content
+        return zoom.partial(content)
 
     def clear(self):
         """Clear the search"""
@@ -255,16 +298,16 @@ class MyView(zoom.View):
 
     def log(self):
         """view system log"""
-        save_logging = self.model.site.logging
+        save_logging = zoom.get_site().logging
         try:
             content = callback(self._system_log)
         finally:
-            self.model.site.logging = save_logging
+            zoom.get_site().logging = save_logging
         return page(content, title='System Log')
 
     def _system_log(self):
-        self.model.site.logging = False
-        db = self.model.site.db
+        zoom.get_site().logging = False
+        db = zoom.get_db()
         data = db(
             """
             select
@@ -280,9 +323,9 @@ class MyView(zoom.View):
         def fmt(rec):
             user = (zoom.helpers.who(rec[2]),)
             when = (zoom.helpers.when(rec[-1]),)
-            return rec[0:2] + user + rec[3:-1] + when
+            return rec[0:2] + user + rec[3:-1] + when + rec[-1:]
 
-        db = self.model.site.db
+        db = zoom.get_db()
         data = list(map(fmt, db("""
             select
                 *
@@ -291,16 +334,17 @@ class MyView(zoom.View):
             limit 100"""
         )))
 
-        labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When'
+        labels = 'ID', 'App', 'By Whom', 'Activity', 'Subject 1', 'Subject 2', 'When', 'Timestamp'
         return page(zoom.browse(data, labels=labels), title='Activity')
 
     def requests(self, show_all=False):
         def fmt(rec):
             entry = (link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),)
             user = (zoom.helpers.who(rec[4]),)
-            return entry + rec[1:4] + user + rec[5:]
+            link = (zoom.link_to(rec[2]),)
+            return entry + (rec[1],) + link + rec[3:4] + user + rec[5:]
         path_filter = '' if show_all else 'and path not like "%%\\/\\_%%"'
-        db = self.model.site.db
+        db = zoom.get_db()
         data = db("""
             select
                 id, app, path, status, user_id, address, login, timestamp, elapsed
@@ -316,16 +360,20 @@ class MyView(zoom.View):
         return page(zoom.browse(data, labels=labels), title='Requests', actions=actions)
 
     def performance(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['P'], n, limit, q), title='Performance', search=q, clear='/admin/performance')
 
     def activity(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['A'], n, limit, q), title='Activity', search=q, clear='/admin/activity')
 
     def errors(self, n=0, limit=50, q=''):
-        db = self.model.site.db
+        db = zoom.get_db()
         return page(log_data(db, ['E'], n, limit, q), title='Errors', search=q, clear='/admin/errors')
+
+    def warnings(self, n=0, limit=50, q=''):
+        db = zoom.get_db()
+        return page(log_data(db, ['W'], n, limit, q), title='Warnings', search=q, clear='/admin/warnings')
 
     def entry(self, key):
 
@@ -364,23 +412,96 @@ class MyView(zoom.View):
         return page(content, title='Log Entry', css=css)
 
     def configuration(self):
-        if zoom.system.request.site.profiling:
-            if zoom.system.request.profiling:
-                profiling_message = 'Yes'
-            else:
-                profiling_message = 'No <span class="hint">(environment variable missing)</span>'
-        else:
-            profiling_message = 'No'
+        """Return the configuration page"""
+        get = zoom.system.site.config.get
+        site = zoom.system.site
+        app = zoom.system.request.app
+        system_apps = get('apps', 'system', ','.join(zoom.apps.DEFAULT_SYSTEM_APPS))
+        main_apps = get('apps', 'main', ','.join(zoom.apps.DEFAULT_MAIN_APPS))
 
         items = zoom.packages.get_registered_packages()
-        packages = '<dt>combined</dt><dd>{}</dd>'.format(
-            zoom.html.pre(json.dumps(items, indent=4, sort_keys=True))
+        packages = (
+            (
+                key,
+                '<br>'.join(
+                    '{resources}'.format(
+                        resources='<br>'.join(resources)
+                    ) for resource_type, resources
+                    in sorted(parts.items(), key=lambda a: ['requires', 'styles', 'libs'].index(a[0]))
+                )
+            ) for key, parts in sorted(items.items())
         )
-        return page(load_content('configuration.md').format(
-            request=self.model,
-            packages=packages,
-            profiling=profiling_message,
-        ))
+
+        return page(
+            zoom.Component(
+                h.h2('Site'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'name',
+                        'path',
+                        'owner_name',
+                        'owner_email',
+                        'owner_url',
+                        'admin_email',
+                        'csrf_validation',
+                    )
+                ]),
+                h.h2('Users'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'guest',
+                        'administrators_group',
+                        'developers_group',
+                    )
+                ]),
+                h.h2('Apps'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    (
+                        'index_app_name',
+                        'home_app_name',
+                        'login_app_name',
+                        'auth_app_name',
+                        'locate_app_name',
+                    )
+                ] + [
+                    ('app.path', app.path),
+                    ('apps_paths', '<br>'.join(site.apps_paths)),
+                    ('main_apps', main_apps),
+                    ('system_apps', system_apps),
+                ]),
+                h.h2('Theme'),
+                zoom.html.table([
+                    ('name', site.theme),
+                    ('path', site.theme_path),
+                    ('comments', site.theme_comments),
+                ]),
+                h.h2('Sessions'),
+                zoom.html.table([(k, getattr(site, k)) for k in
+                    ('secure_cookies',)
+                ]),
+                h.h2('Monitoring'),
+                zoom.html.table([
+                    ('logging', site.logging),
+                    ('profiling', site.profiling),
+                    ('app_database', site.monitor_app_database),
+                    ('system_database', site.monitor_system_database),
+                ]),
+                h.h2('Errors'),
+                zoom.html.table([
+                    ('users', get('errors', 'users', False)),
+                ]),
+                h.h2('Packages'),
+                zoom.html.table(
+                    packages,
+                ),
+                css = """
+                    .content table { width: 100%; }
+                    .content table td { vertical-align: top; width: 70%; }
+                    .content table td:first-child { width: 25%; }
+                """
+            ),
+            title='Configuration'
+        )
 
     def environment(self):
         return page(
@@ -388,6 +509,7 @@ class MyView(zoom.View):
                 h.h2('Zoom'),
                 zoom.html.table([
                     ('Version', zoom.__version__ + ' Community Edition'),
+                    ('Installed Path', zoom.tools.zoompath()),
                 ]),
                 h.h2('Python'),
                 zoom.html.table([
@@ -408,9 +530,10 @@ class MyView(zoom.View):
                 ]),
                 h.h2('Variables'),
                 zoom.html.table(
-                    list(os.environ.items())
+                    list(
+                        (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items())
                 ),
-                css = """
+                css="""
                     .content table { width: 100%; }
                     .content table td { vertical-align: top; width: 70%; }
                     .content table td:first-child { width: 25%; }
@@ -419,11 +542,8 @@ class MyView(zoom.View):
             title='Environment'
         )
 
-    def about(self, *a):
-        return page(load_content('about.md'))
+    def about(self):
+        return page(load_content('about.md', version=zoom.__version__ + ' Community Edition'))
 
 
-def main(route, request):
-    """main program"""
-    view = MyView(request)
-    return view(*request.route[1:], **request.data)
+main = zoom.dispatch(MyView)

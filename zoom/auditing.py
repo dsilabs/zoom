@@ -4,11 +4,11 @@
 
 import zoom
 
-def audit(action, subject1, subject2='', user=None):
+def audit(action, subject1, subject2='', user=None, app_name=None):
     """audit an action"""
     db = zoom.system.site.db
     user_id = user.user_id if user else zoom.system.user.user_id
-    app_name = zoom.system.request.app.name
+    app = app_name or zoom.system.request.app.name
     cmd = """
     insert into audit_log (
         app,
@@ -21,7 +21,7 @@ def audit(action, subject1, subject2='', user=None):
     """
     db(
         cmd,
-        app_name,
+        app,
         user_id,
         action,
         subject1,

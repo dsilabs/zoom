@@ -11,7 +11,7 @@ import zoom.html as h
 def app(request):
     """Return a page containing a list of available apps"""
 
-    zoom.requires('fontawesome4')
+    zoom.requires('fontawesome4', 'bootstrap-icons')
 
     css = """
         .app-icons ul {
@@ -49,16 +49,20 @@ def app(request):
         .zoom-app-icon .fa {
             font-size: 2em;
         }
+        .zoom-app-icon .bi {
+            font-size: 2rem;
+            line-height: 2rem;
+        }
     """
 
     if len(request.route) > 1 or request.data:
         return zoom.home()
 
-    skip = 'home', 'logout', 'login'
+    skip = 'home', 'logout', 'login', 'settings'
     content = h.div(
         h.ul(
             a.as_icon for a in sorted(request.site.apps, key=lambda a: a.title.lower())
             if a.name not in skip and a.visible and request.user.can_run(a)
         ), classed='app-icons'
-    )
+    ) + '<div style="clear:both"></div>'
     return zoom.page(content, css=css)

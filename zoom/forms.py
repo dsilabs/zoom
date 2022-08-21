@@ -23,15 +23,16 @@ def form_for(*args, **kwargs):
 
     params = kwargs.copy()
     name = params.pop('form_name', 'zoom_form')
-    id = params.pop('id', 'zoom_form')
+    _id = params.pop('id', 'zoom_form')
     method = params.pop('method', 'POST')
     action = params.pop('action', '<dz:request_path>')
     enctype = params.pop('enctype', 'application/x-www-form-urlencoded')
+    classed = params.pop('classed', 'clearfix')
 
     t = []
     if method == 'POST':
         request = zoom.system.request
-        if hasattr(request, 'session'):
+        if hasattr(request, 'session') and not hasattr(request.session, 'csrf_token'):
             request.session.csrf_token = create_csrf_token()
         t.append(
             html.hidden(name='csrf_token', value='<dz:csrf_token>')
@@ -54,10 +55,10 @@ def form_for(*args, **kwargs):
         '\n' + '\n'.join(t + content) + '\n',
         action=action,
         name=name,
-        id=name,
+        id=_id,
         method=method,
         enctype=enctype,
-        classed='clearfix'
+        classed=classed,
     )
 
 
@@ -117,6 +118,7 @@ class Form(Fields):
 
         self.action = kwargs.get('action', '')
         self.form_name = kwargs.get('form_name', 'zoom_form')
+        self.form_id = kwargs.get('form_id', 'zoom_form')
         self.method = kwargs.get('method', 'POST')
 
     def edit(self):
@@ -124,7 +126,7 @@ class Form(Fields):
         return form_for(
             fields,
             action=self.action,
-            id=self.form_name,
+            id=self.form_id,
             form_name=self.form_name,
             method=self.method,
             enctype=self.enctype,
@@ -133,16 +135,40 @@ class Form(Fields):
 
 def delete_form(name, cancel=None):
     """produce a delete form"""
-    return Form(
-        MarkdownText('Are you sure you want to delete **%s**?' % name),
-        Hidden(name='confirm', value='no'),
-        Button(
-            'Yes, I\'m sure.  Please delete.',
-            name='delete_button',
-            cancel=cancel or url_for('..')
-        )
-    ).edit()
-
+    css = """
+    .delete-card {
+        border: thin solid #ddd;
+        margin: 10% auto;
+        width: 50%;
+        padding: 3em;
+        background: white;
+        box-shadow: 3px 3px 3px #ddd;
+    }
+    .delete-card p {
+        font-size: 1.8rem;
+    }
+    @media (max-width: 600px) {
+        .delete-card {
+            padding: 1em;
+            width: 100%;
+        }
+    }
+    """
+    return zoom.Component(
+        html.div(
+            Form(
+                MarkdownText('Are you sure you want to delete **%s**?' % name),
+                Hidden(name='confirm', value='no'),
+                Button(
+                    'Yes, I\'m sure.  Please delete.',
+                    name='delete_button',
+                    cancel=cancel or url_for('..')
+                )
+            ).edit(),
+            classed='delete-card'
+        ),
+        css=css
+    )
 
 def helpers(request):
     """form helpers"""

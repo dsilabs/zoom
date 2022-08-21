@@ -1,0 +1,26 @@
+<head>
+<style>
+    {css}
+</style>
+</head>
+<body>
+<h1>ZoomFoundry</h1>
+<div class="info">
+    <p><span>Version .........:</span> <span>{version}</span></p>
+    <p><span>Host ............:</span> <span>{request.host}</span></p>
+    <p><span>Server&nbsp;name .....:</span> <span>{node}</span></p>
+    <p><span>Protocol ........:</span> <span>{request.protocol}</span></p>
+    <p><span>URI .............:</span> <span>{request.path}</span></p>
+    <p><span>Date ............:</span> <span>{date}</span></p>
+    <p><span>Client&nbsp;IP .......:</span> <span>{request.ip_address}</span></p>
+    <p><span>Module ..........:</span> <span>{request.module}</span></p>
+    <p><span>Elapsed .........:</span> <span>{elapsed:0.2f} ms</span></p>
+</div>
+<div id="footer">
+    <div id="center">
+        <img src="https://www.dynamic-solutions.com/images/dynamicsolutions.png">
+        Request ID: {request.request_id}<br/>
+        &copy; <a href="https://www.dynamic-solutions.com">Dynamic Solutions Inc.</a> {date.year}
+    </div>
+</div>
+</body>

@@ -11,7 +11,12 @@ requires = [
     'faker',
     'docopt',
     'werkzeug',
-    'croniter'
+    'croniter',
+    'pypugjs>=5.9.1',
+    'libsass>=0.19.4',
+    'pytz==2020.1',
+    'pytzdata==2019.3',
+    'requests>=2.25.1'
 ]
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -31,7 +36,7 @@ setuptools.setup(
     description="A dynamic Web Framework that promotes modularity and rapid prototyping",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/dsilabs/zoom",
+    url="https://github.com/ZoomFoundry/ZoomFoundry",
     packages=['zoom'],
     install_requires=requires,
     entry_points={
@@ -47,8 +52,9 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',

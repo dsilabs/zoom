@@ -333,6 +333,12 @@ class EntityStore(Store):
 
         return id
 
+    def set(self, key, values):
+        """sets values for an existing record"""
+        record = self.get(key)
+        record.update(values)
+        return self.put(record)
+
     def get(self, keys):
         """
         retrives entities
@@ -428,7 +434,7 @@ class EntityStore(Store):
 
     def _delete(self, ids):
         if ids:
-            affected = self.get(ids)
+            affected = list(self.get(ids))
 
             for rec in affected:
                 self.before_delete(rec)
@@ -878,7 +884,7 @@ class EntityStore(Store):
         return '<EntityStore({})>'.format(self.klass.__name__)
 
 
-def store_of(klass, db=None):
+def store_of(klass, db=None, name=None):
     """Returns a store of the given entity class
 
     The klass parameter can be a subclass of zoom.Model or
@@ -897,6 +903,13 @@ def store_of(klass, db=None):
     >>> person = people.first(name='Sally')
     >>> person['age']
     55
+
+    >>> class Thing(Entity): pass
+    >>> things = store_of(Thing, site.db, 'person')
+    >>> thing = things.first(name='Sam')
+    >>> thing.age
+    25
+
     """
     db = db or zoom.system.site.db
-    return EntityStore(db, klass)
+    return EntityStore(db, klass, kind=name)

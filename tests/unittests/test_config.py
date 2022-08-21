@@ -3,7 +3,7 @@
 """
 
 import os
-from os.path import join, split, abspath, exists, dirname
+from os.path import join, abspath, dirname
 import unittest
 import logging
 
@@ -19,21 +19,9 @@ class TestConfig(unittest.TestCase):
     # method names are more useful for testing
 
     def test_create(self):
-
-        def find_config(directory):
-            """climb the directory tree looking for config"""
-            pathname = join(directory, 'dz.conf')
-            if exists(pathname):
-                return directory
-            parent, _ = split(directory)
-            if parent != '/':
-                return find_config(parent)
-
         logger = logging.getLogger('zoom.unittest.test_config')
-        site_dir = abspath(join(dirname(__file__), '..', '..', 'web', 'sites', 'localhost'))
+        site_dir = zoom.tools.zoompath('zoom/_assets/web/sites/localhost')
         logger.debug(site_dir)
-        # standard_config_file = join(split(__file__)[0], config_location)
-        # config_location = find_config(abspath('.'))
         config = Config(site_dir, 'site.ini')
         logger.debug(config.config_pathname)
         logger.debug(config.default_config_pathname)
@@ -68,7 +56,7 @@ class TestConfig(unittest.TestCase):
 
     def test_section_failover_when_site_config_missing(self):
 
-        site_dir = zoom.tools.zoompath('web', 'sites', 'temptestsite')
+        site_dir = zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'temptestsite')
         try:
             os.mkdir(site_dir)
             config = Config(site_dir, 'site.ini')

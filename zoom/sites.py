@@ -8,10 +8,10 @@
 """
 
 import os
-import logging
 
 import zoom
 from zoom.site import Site as BasicSite
+from zoom.background import run_background_jobs
 
 # The default path for sites is configurable based on an environment variable,
 # which we read eagerly here to ensure we don't provide app code an opportunity
@@ -46,10 +46,10 @@ class Site(BasicSite):
         # Resolve the site path from a parameter, environment variable, or
         # logical default.
         path = path or default_site_path or \
-                zoom.tools.zoompath('web', 'sites', 'localhost')
+                zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
-        
+
         # prepare a fake request adapter to satisfy the legacy api
         rest, name = os.path.split(path)
         instance, _ = os.path.split(rest)
@@ -79,6 +79,42 @@ class Site(BasicSite):
             result.extend(app.background_jobs)
         return result
 
+    def run_background_jobs(self):
+        """Run background jobs for a site"""
+        self.activate()
+        for app in self.apps:
+            run_background_jobs(app)
+
     def activate(self):
         """Activate this site in Zoom's thread-local context."""
         zoom.system.site = self
+
+
+def get_site():
+    """Return the currrent site object"""
+    return zoom.system.site
+
+
+def set_site(site=None):
+    """Set the current site"""
+    zoom.system.site = Site() if site is None else site
+
+
+def get_db(name=None):
+    """Return a db object
+
+    Returns the current site db if no name is passed. If
+    a name is passed we return the named db on the same
+    connection as the site db.
+
+    >>> set_site()
+    >>> db = get_db()
+    >>> rows = db('select count(*) from users')
+    >>> len(rows)
+    1
+
+    """
+    db = get_site().db
+    if name is not None:
+        return db.use(name)
+    return db

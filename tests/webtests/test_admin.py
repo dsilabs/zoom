@@ -140,3 +140,177 @@ class SystemTests(AdminTestCase):
             self.get('/admin/groups')
             self.assertDoesNotContain('special_group')
 
+    def test_add_remove_subgroup(self):
+
+        self.get('/admin')
+
+        # group 5 = content managers
+        self.get('/admin/groups')
+        self.assertContains('link-to-guests')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+        self.get('/admin/groups/5/edit')
+        self.assertDoesNotContain('link-to-guests')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('subgroups', ['guests'])
+            self.click('id=save_button')
+            self.assertContains('link-to-guests')
+
+        finally:
+            # remove the subgroup we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+    def test_add_remove_role(self):
+
+        self.get('/admin')
+
+        # group 5 = content managers
+        self.get('/admin/groups')
+        self.assertContains('link-to-guests')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+        self.get('/admin/groups/5/edit')
+        self.assertDoesNotContain('link-to-guests')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('subgroups', ['guests'])
+            self.click('id=save_button')
+            self.assertContains('link-to-guests')
+
+        finally:
+            # remove the role we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+    def test_add_remove_app(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('apps', ['Register'])
+            self.click('id=save_button')
+            self.assertContains('Register')
+
+        finally:
+            # remove the app we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="apps_chosen"]/ul/li[1]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
+    def test_add_remove_several_apps(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('Register')
+
+        # add an app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Register'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+
+        # add anpther app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Forgot'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+        self.assertContains('Forgot')
+
+        # add one more app
+        self.get('/admin/groups/5/edit')
+        self.chosen('apps', ['Sample'])
+        self.click('id=save_button')
+        self.assertContains('Register')
+        self.assertContains('Forgot')
+        self.assertContains('Sample')
+
+        # remove one of the apps we just added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[2]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertContains('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertContains('Sample')
+
+        # remove another one of the apps we just added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[2]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertContains('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertDoesNotContain('Sample')
+
+        # remove final app added
+        self.get('/admin/groups/5/edit')
+        element = self.find('//*[@id="apps_chosen"]/ul/li[1]/a')
+        element.click()
+        self.click('id=save_button')
+        self.assertDoesNotContain('Forgot')
+        self.assertDoesNotContain('Register')
+        self.assertDoesNotContain('Sample')
+
+    def test_add_remove_user(self):
+
+        # group 5 = content managers
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guest')
+
+        try:
+            self.get('/admin/groups/5/edit')
+            self.chosen('users', ['guest'])
+            self.click('id=save_button')
+            self.assertContains('link-to-guest')
+
+        finally:
+            # remove the user we just added
+            self.get('/admin/groups/5/edit')
+            element = self.find('//*[@id="users_chosen"]/ul/li[1]/a')
+            element.click()
+            self.click('id=save_button')
+
+        self.get('/admin/groups/5')
+        self.assertDoesNotContain('link-to-guests')
+
+    def test_impersonate_user(self):
+        self.get('/admin')
+
+        self.add_user('Sally', 'Jones', 'sally@testco.com', 'sally')
+
+        self.get('/admin/users/sally')
+        self.click('impersonate-action')
+
+        self.assertContains('Impersonating sally')
+
+        self.click('name=link-to-stop-impersonating')
+
+        self.assertNotContains('Impersonating sally')
+
+        self.delete_user('sally')
+

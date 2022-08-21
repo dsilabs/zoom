@@ -12,11 +12,14 @@ import unittest
 import zoom
 import zoom.middleware as middleware
 
+from zoom.testing.common import get_output_path
+
 
 def get_path():
-    default_test_path = zoom.tools.zoompath('web', 'sites', 'localhost')
+    default_test_path = zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
     path = os.environ.get('ZOOM_TEST_PATH', default_test_path)
     return path
+
 
 class AppTestPrimitives(unittest.TestCase):
     """AppTest Primitives"""
@@ -37,10 +40,12 @@ class AppTestPrimitives(unittest.TestCase):
     def setUp(self):
         self.site = zoom.sites.Site(self.path)
 
+    def tearDown(self):
+        del self.site
+
     def handle(self, request):
         handlers = (
             middleware.zoom.request.handler,
-            middleware.zoom.profiler.handler,
             middleware.reset_modules,
             middleware.capture_stdout,
             middleware.zoom.site.handler,
@@ -126,7 +131,7 @@ class AppTestPrimitives(unittest.TestCase):
         if filename is None:
 
             join = os.path.join
-            test_output_directory = join('tests', 'output')
+            test_output_directory = get_output_path()
             if not os.path.isdir(test_output_directory):
                 os.mkdir(test_output_directory)
 
@@ -143,6 +148,33 @@ class AppTestPrimitives(unittest.TestCase):
     def contains(self, text):
         """return True if response contains text"""
         return text in self.response.content
+
+    def url_matches(self, location, target):
+        return (
+            location == target or (
+            location == self.url + self.base_url + target
+            )
+        )
+
+    def assertRedirectResponse(self, location=None):
+        """Pass if response is a redirect"""
+        status = self.response.status
+        if status not in ['302 Found']:
+            raise AssertionError('expected Redirect but got %r' % status)
+        url = self.response.headers.get('Location')
+        if location and not self.url_matches(url, location):
+            msg = 'redirect location is %r instead of %r as expected'
+            raise AssertionError(msg % (url, location))
+
+    def assertNotRedirectResponse(self, location=None):
+        """Pass if response is a redirect"""
+        status = self.response.status
+        if location is None and status in ['302 Found']:
+            raise AssertionError('unexpected redirect')
+        url = self.response.headers.get('Location')
+        if location is not None and self.url_matches(url, location):
+            msg = 'redirect location is %r'
+            raise AssertionError(msg % url)
 
     def assertContains(self, text):
         """Pass if response contains text"""
@@ -174,15 +206,9 @@ class AppTestPrimitives(unittest.TestCase):
                     code, self.response.status))
 
     def assertRedirected(self, location=None):
-        def matches(location, target):
-            return (
-                location == target or (
-                location == self.url + self.base_url + target
-                )
-            )
         if not self.redirected:
             raise AssertionError('not redirected as expected')
-        if location and not matches(self.redirected, location):
+        if location and not self.url_matches(self.redirected, location):
             msg = 'redirected to %r instead of %r as expected'
             raise AssertionError(msg % (self.redirected, location))
 

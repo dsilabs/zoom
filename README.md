@@ -1,7 +1,6 @@
 # README
 
 [![Build Status](https://travis-ci.org/dsilabs/zoom.svg?branch=master)](https://travis-ci.org/dsilabs/zoom)
-[![Coverage Status](https://coveralls.io/repos/github/dsilabs/zoom/badge.svg?branch=master)](https://coveralls.io/github/dsilabs/zoom?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ZoomFoundry is a dynamic Python Web framework written specifically for Python 3 that
@@ -38,9 +37,9 @@ All set?  Okay, here we go!
     This will install a new Python package and corresponding CLI command; `zoom`.
 
 1. Once you have ZoomFoundry installed, you'll first want to create and populate a
-    Zoom *instance directory*.<br><br> Zoom is multi-tenant, meaning it can serve 
-    multiple sites at the same time; an instance directory contains a set of Zoom 
-    *sites* and resources shared between them. Run:
+    ZoomFoundry *instance directory*.<br><br> ZoomFoundry is multi-tenant, meaning
+    it can serve multiple sites at the same time; an instance directory contains a
+    set of ZoomFoundry *sites* and resources shared between them. Run:
     ```shell
     $ zoom init ~/my-zoom-instance
     ```
@@ -48,23 +47,23 @@ All set?  Okay, here we go!
     This will walk you through setting up your instance, including creating a
     default site and database.
 
-    *Don't like wizards?* Every option Zoom commands prompt you with have a
+    *Don't like wizards?* Every option zoom commands prompt you with have a
     corresponding command line option: see the help with `zoom -h`.
 
 1. Serve the created instance. <br><br>
     Run the following to start the built-in server, pointed at the instance you just
     created.
     ```shell
-    $ zoom serve -p 80 ~/my-zoom-instance
+    $ zoom serve ~/my-zoom-instance
     ```
 
 ### Creating the Blog App
-To create a new app with Zoom, just run:
+To create a new app with ZoomFoundry, just run:
 ```shell
 zoom new app blog ~/my-zoom-instance
 ```
 
-*Don't mind a `cd`?* Zoom commands only require you to specify the path to an instance
+*Don't mind a `cd`?* ZoomFoundry commands only require you to specify the path to an instance
 directory if you aren't already inside one. You could replace the above with:
 ```shell
 cd ~/my-zoom-instance && zoom new app blog
@@ -73,12 +72,12 @@ cd ~/my-zoom-instance && zoom new app blog
 You've just created an app called `blog` at `~/my-zoom-instance/apps/blog`. Take a second to check it out.
 To see the app in action, check out `http://localhost/blog` after running:
 ```shell
-zoom serve -p 80 ~/my-zoom-instance
+zoom serve ~/my-zoom-instance
 ```
 
 This is the most basic app, which basically takes a request object as the sole parameter and returns a response, in this case, a page response.
 
-To do a more advanced app, Zoom provides an App class that handles basic routing, other services, and calls other parts of your app.  To use it just create an instance of it in your `app.py` file, like this:
+To do a more advanced app, ZoomFoundry provides an App class that handles basic routing, other services, and calls other parts of your app.  To use it just create an instance of it in your `app.py` file, like this:
 
 ```python
 """
@@ -92,7 +91,7 @@ app = zoom.App()
 
 Now when you run your app you should get a "Page Not Found" status 404 page.  This is happening because we haven't provided any pages for the app.  To do that create an `index.py` file to provided the app content.
 
-With our blog app, we're going to use a Zoom collection.  A Zoom collection is a collection of any type of field related data that you would like to store.  It provides all the things you would typically expect of a basic data collection app including browsing records, searching, editing and displaying information.
+With our blog app, we're going to use a ZoomFoundry collection.  A ZoomFoundry collection is a quick way of creating an app to manager any type of field related data that you would like to store.  It provides all the things you would typically expect of a basic data collection app including browsing records, searching, editing and displaying information.
 
 In our case, we'd like to store blog posts.  For this example, for each blog entry we'll store a name, a description, the blog post body, and a published date.
 
@@ -116,7 +115,7 @@ def blog_fields():
 
 main = zoom.collect.Collection(
     blog_fields,
-    url=zoom.system.app.url,
+    url=zoom.get_app().url,
 )
 ```
 
@@ -143,7 +142,7 @@ def blog_fields():
 
 main = zoom.collect.Collection(
     blog_fields,
-    url=zoom.system.app.url,
+    url=zoom.get_app().url,
 )
 ```
 
@@ -151,19 +150,18 @@ Now, run it and try adding some data.
 
 What, what?!  Where's the data model step?  How do I create my tables?!  Where is my data stored?  What about migrations?
 
-For now, Zoom will handle all of this for you.  Rest assured, your data is being stored in the MySQL database, but it's being stored in an entity store with a dynamic schema so you can add and remove fields from your collection at will and Zoom will just take care of it.
+For now, ZoomFoundry will handle all of this for you.  Rest assured, your data is being stored in the MySQL database, but it's being stored in an entity store with a dynamic schema so you can add and remove fields from your collection at will and ZoomFoundry will just take care of it.
 
-Zoom can use traditional tables as well, of course, but for prototyping and many other types of work a dynamic schema works very well.
+ZoomFoundry can use traditional tables as well, of course, but for prototyping and many other types of work a dynamic schema works very well.
 
 That's as far as we'll go with the app right now.  In the future we'll provide more of the features people have come to expect from a blog app.
 
 
 ## Contributing
-To contribute your own code to Zoom you'll need to setup a development
-environment.
+To contribute your own code to ZoomFoundry you'll need to setup a development environment.
 
 ### Setting Up The Easy way
-The simplest way to hack on Zoom is to use one of our
+The simplest way to hack on ZoomFoundry is to use one of our
 [Vagrant boxes](https://github.com/dsilabs/vagrant-zoom) or
 [Docker containers](https://github.com/dsilabs/docker-zoom-tiny).
 
@@ -178,7 +176,7 @@ and running nosetests.
 $ nosetests
 ```
 
-This will run the unittests, doctests and sidetests.  If your box is not
+This will run the unittests, doctests and webtests.  If your box is not
 setup for sidetests (which uses webdriver, and various other libraries) you
 can skip them by specifying only the other directories for tests.
 ```shell

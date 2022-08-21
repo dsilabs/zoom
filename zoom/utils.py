@@ -14,8 +14,8 @@ import os
 import string
 import uuid
 
-import zoom
 import zoom.jsonz as json
+
 
 POSITIVE = [True, 1, 'True', 'yes', 'y', 'on', '1']
 NEGATIVE = [False, 0, 'False', 'no', 'n', 'off', '0']
@@ -25,9 +25,13 @@ keep_these = string.ascii_letters + string.digits + '-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
 
+logger = logging.getLogger(__name__)
+
+
 def create_csrf_token():
     """Create and return a canonical CSRF token; a un-segmented UUID4."""
     return uuid.uuid4().hex
+
 
 def pretty(obj):
     """return an object in a pretty form
@@ -304,7 +308,55 @@ class ItemList(list):
     Joe      12    125
     Sally    13    135
 
+    >>> data = [
+    ...     [10000, 'Joe', 12, 125],
+    ...     [10001, 'Sally', 13, 135],
+    ... ]
+    >>> items = ItemList(data, labels=['_id', 'Name', 'Score', 'Points'])
+    >>> print(items)
+    _id   Name  Score Points
+    ----- ----- ----- ------
+    10000 Joe      12    125
+    10001 Sally    13    135
 
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [10000, 'Joe', now - datetime.date(1980, 1, 20)],
+    ...     [10001, 'Sally', now - datetime.date(1984, 9, 20)],
+    ... ]
+    >>> items = ItemList(data, labels=['_id', 'Name', 'Age'])
+    >>> print(items)
+    _id   Name  Age
+    ----- ----- -------------------
+    10000 Joe   14622 days, 0:00:00
+    10001 Sally 12917 days, 0:00:00
+
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [10000, 'Joe', now - datetime.date(1980, 1, 20)],
+    ...     [10001, 'Sally', now - datetime.date(1984, 9, 20)],
+    ... ]
+    >>> items = ItemList(data, labels=['user_id', 'Name', 'Age'])
+    >>> print(items)
+    user_id Name  Age
+    ------- ----- -------------------
+      10000 Joe   14622 days, 0:00:00
+      10001 Sally 12917 days, 0:00:00
+
+    >>> import datetime
+    >>> now = datetime.date(2020, 2, 1)
+    >>> data = [
+    ...     [9000, 'Greens', 1234],
+    ...     [10000, 'Browns', 1203],
+    ... ]
+    >>> items = ItemList(data, labels=['id', 'customer', 'invoice_number'])
+    >>> print(items)
+    id    customer invoice_number
+    ----- -------- --------------
+     9000 Greens             1234
+    10000 Browns             1203
     """
     def __init__(self, *args, **kwargs):
         self.labels = kwargs.pop('labels', None)
@@ -329,14 +381,22 @@ class ItemList(list):
             )[:1]
             if first_non_null:
                 data_type = first_non_null[0]
-                if data_type in [int, float, decimal.Decimal]:
+                if label in ['_id', 'userid']:
+                    return '{:>{width}}'
+                elif label == 'id':
+                    return '{:>{width}}'
+                elif label.endswith('_id'):
+                    return '{:>{width}}'
+                elif label.endswith('_number'):
+                    return '{:>{width}}'
+                elif data_type in [int, float, decimal.Decimal]:
                     return '{:{width},}'
                 elif data_type in [datetime.date]:
                     return '{:%Y-%m-%d}'
+                elif data_type in [datetime.timedelta]:
+                    return '{:}'
                 elif data_type in [datetime.datetime]:
                     return '{:%Y-%m-%d %H:%M:%S}'
-                elif label in ['_id', 'userid']:
-                    return '{:10}'
             return '{:<{width}}'
 
         def nvl(value):
@@ -420,6 +480,7 @@ class ItemList(list):
 
 
 def parents(path):
+    """Return list of parent directories"""
     if not os.path.isdir(path):
         return parents(os.path.split(os.path.abspath(path))[0])
     parent = os.path.abspath(os.path.join(path, os.pardir))
@@ -450,7 +511,8 @@ class Config(object):
 
     A Config with a handy get method.
 
-    >>> config = Config(zoom.tools.zoompath('web','sites','default','site.ini'))
+    >>> import zoom
+    >>> config = Config(zoom.tools.zoompath('zoom', '_assets', 'web','sites','default','site.ini'))
     >>> config.get('site', 'name')
     'ZOOM'
 
@@ -572,9 +634,9 @@ class OrderedSet(collections.MutableSet):
             OrderedSet([2, 3])
         """
         if key in self.map:
-            key, prev, next = self.map.pop(key)
-            prev[2] = next
-            next[1] = prev
+            key, prev, _next = self.map.pop(key)
+            prev[2] = _next
+            _next[1] = prev
 
     def __iter__(self):
         end = self.end
@@ -750,8 +812,7 @@ class Record(Storage):
 
     def save(self):
         """save record"""
-        logger = logging.getLogger(__name__)
-        id = self['__store'].put(self)
+        record_id = self['__store'].put(self)
         key = self['__store'].id_name
         logger.debug(
             'saved record %s(%s=%r) to %r',
@@ -760,7 +821,23 @@ class Record(Storage):
             self[key],
             self['__store']
         )
-        return id
+        return record_id
+
+    def set(self, **kwargs):
+        """set record values"""
+        key = self['__store'].id_name
+        values = dict(kwargs)
+        record_id = self['__store'].set(self[key], values)
+        logger.debug(
+            'set record %s(%s=%r) values %r to %r',
+            self.__class__.__name__,
+            key,
+            self[key],
+            values,
+            self['__store']
+        )
+        self.update(kwargs)
+        return record_id
 
     def attributes(self):
         return get_attributes(self)
@@ -783,12 +860,24 @@ class Record(Storage):
         try:
             value = dict.__getitem__(self, name)
             if hasattr(value, '__get__'):
-                return value.__get__(self)
+                getter = getattr(value, '__get__')
+                if getter is not None:
+                    return getter(self)
+                else:
+                    return value
             else:
                 return value
         except KeyError as k:
             try:
-                return self.__class__.__dict__[name].__get__(self)
+                value = self.__class__.__dict__[name]
+                if hasattr(value, '__get__'):
+                    getter = getattr(value, '__get__')
+                    if getter:
+                        return getter(self)
+                    else:
+                        return value
+                else:
+                    return value
             except KeyError as k:
                 raise k
 
@@ -1021,6 +1110,7 @@ def search(items, text):
         if matches(item, search_terms):
             yield item
 
+
 def generate_key():
     """make a new key
 
@@ -1029,6 +1119,7 @@ def generate_key():
     """
     new_uuid = uuid.uuid4().bytes
     return hmac.new(new_uuid, digestmod=hashlib.sha1).hexdigest()
+
 
 def existing(path, subdir=None):
     """Returns existing directories only"""
@@ -1042,6 +1133,7 @@ def existing(path, subdir=None):
         )
     if pathname and exists(pathname):
         return pathname
+
 
 def dedup(seq):
     """Remove duplicates while retaining order"""

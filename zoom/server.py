@@ -57,7 +57,7 @@ def reset_modules():
         for module in [x for x in sys.modules if x not in init_modules]:
             del sys.modules[module]
     else:
-        init_modules = sys.modules.keys()
+        init_modules = list(sys.modules.keys())
 
 
 class WSGIApplication(object):
@@ -75,6 +75,8 @@ class WSGIApplication(object):
         request = Request(environ, self.instance, start_time, self.username)
         response = middleware.handle(request, self.handlers)
         status, headers, content = response.as_wsgi()
+        if request.method == 'HEAD':
+            content = b''
         start_response(status, headers)
         return [content]
 
@@ -114,7 +116,7 @@ def application(environ, start_response):
 
     >>> save_dir = os.getcwd()
     >>> try:
-    ...     env = dict(DOCUMENT_ROOT=zoom.tools.zoompath('web', 'www'))
+    ...     env = dict(DOCUMENT_ROOT=zoom.tools.zoompath('zoom', '_assets', 'web', 'www'))
     ...     response = application(env, lambda a, b: None)
     ... finally:
     ...     os.chdir(save_dir)

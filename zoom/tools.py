@@ -5,13 +5,20 @@
 import datetime
 import logging
 import os
+import uuid
 
+import sass as libsass
 from markdown import Markdown
+from pypugjs.ext.html import process_pugjs as pug
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
 from zoom.utils import trim, dedup
 from zoom.render import apply_helpers
+
+# Needed for access to zoom.system, which is circular if imported directly
+# here.
+import zoom
 
 one_day = datetime.timedelta(1)
 one_week = one_day * 7
@@ -75,8 +82,8 @@ def last_day_of_the_month(any_date):
     >>> last_day_of_the_month(datetime.datetime(2016, 2, 1, 1, 1, 1))
     datetime.date(2016, 2, 29)
     """
-    next_month = any_date.replace(day=28) + datetime.timedelta(days=4)
-    return first_day_of_the_month(next_month) - one_day
+    month = any_date.replace(day=28) + datetime.timedelta(days=4)
+    return first_day_of_the_month(month) - one_day
 
 
 def first_day_of_next_month(any_date):
@@ -157,6 +164,9 @@ def how_long(time1, time2):
     >>> how_long(now, now + one_hour / 3)
     '20 minutes'
 
+    >>> how_long(now, now + one_hour)
+    '1 hour'
+
     >>> how_long(now, now + one_day / 3)
     '8 hours'
 
@@ -236,14 +246,16 @@ def how_long(time1, time2):
         result = 'over %d months' % (diff.days / 30)
     elif diff.days > 30:
         result = 'over a month'
-    elif diff.days > 14:
+    elif diff.days >= 14:
         result = '%d weeks' % (diff.days / 7)
     elif diff.days > 1:
         result = '%d days' % diff.days
     elif diff.days == 1:
         result = '1 day'
-    elif diff.seconds > 3600:
+    elif diff.seconds > 7200:
         result = '%d hours' % int(diff.seconds / 3600)
+    elif int(diff.seconds) >= 3600:
+        result = '1 hour'
     elif diff.seconds > 60:
         result = '%d minutes' % int(diff.seconds / 60)
     elif diff.seconds > 0:
@@ -271,8 +283,21 @@ def how_long_ago(anytime, since=None):
     '10 minutes ago'
 
     """
+
+    def as_datetime(anytime):
+        """Convert value to datetime"""
+        if isinstance(anytime, datetime.datetime):
+            return anytime
+        elif isinstance(anytime, datetime.date):
+            return datetime.datetime(anytime.year, anytime.month, anytime.day)
+        elif anytime is None:
+            msg = 'date, datetime or timestamp required (None passed)'
+            raise TypeError(msg)
+        else:
+            return datetime.datetime.fromtimestamp(anytime)
+
     right_now = since or now()
-    if anytime < right_now:
+    if as_datetime(anytime) < right_now:
         return how_long(anytime, right_now) + ' ago'
     else:
         return how_long(right_now, anytime) + ' from now'
@@ -316,12 +341,13 @@ def ensure_listy(obj):
     return [obj]
 
 
-class Redirector(object):
+class Redirector:
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
-    def render(self, request):
+    def render(self, _):
         """render redirect"""
 
         location = url_for(*self.args, **self.kwargs)
@@ -338,6 +364,12 @@ class Redirector(object):
 def redirect_to(*args, **kwargs):
     """Return a redirect response for a URL."""
     return Redirector(*args, **kwargs)
+
+
+def partial(*args, **kwargs):
+    """Return a partial HTML response."""
+    content = zoom.Component(*args, **kwargs)
+    return zoom.response.HTMLResponse(content.render())
 
 
 def home(view=None):
@@ -373,7 +405,7 @@ def unisafe(val):
     elif isinstance(val, bytes):
         try:
             val = val.decode('utf-8')
-        except:
+        except BaseException:
             val = val.decode('Latin-1')
     elif not isinstance(val, str):
         val = str(val)
@@ -431,7 +463,7 @@ def get_markdown_converter():
             text = text[:-5]
         return text
 
-    def url_builder(label, base, end):
+    def url_builder(label, base, end): # pylint: disable=unused-argument
         return make_page_name(label) + '.html'
 
     markdown_logger = logging.getLogger('MARKDOWN')
@@ -463,23 +495,82 @@ def load(pathname, encoding='utf-8'):
     with open(pathname, encoding=encoding) as reader:
         return reader.read()
 
+def safe_format(__content, *args, **kwargs):
+    """
+    Perform a brace-style string format, leaving double curly braces
+    unchanged (they would normally be treated as an escape of a single brace).
+
+    >>> '{{a}} {b}'.format(b=1)
+    '{a} 1'
+    >>> safe_format('{{a}} {b}', b=1)
+    '{{a}} 1'
+    """
+    # XXX: This approach trades runtime efficiency for implementation
+    # simplicity. It could be improved in the future.
+
+    # Create (functionally) universally unique tokens to replace double curly
+    # braces during the format.
+    open_helper = uuid.uuid4().hex
+    close_helper = uuid.uuid4().hex
+
+    # Swap double curly braces for their tokens, format, then restore them.
+    content = close_helper.join(open_helper.join(
+        __content.split('{{')
+    ).split('}}'))
+    content = content.format(*args, **kwargs)
+    content = '{{'.join('}}'.join(content.split(
+        close_helper
+    )).split(open_helper))
+    return content
+
+
+def apply_helpers_and_format(template, *args, **kwargs):
+    """
+    Apply keyword arguments as Zoom helpers to `template`, then all provided
+    arguments except for `template` as standard brace-style format parameters,
+    in that order.
+
+    Missing format parameters result in a `KeyError`, while un-matched helpers
+    are left as is (presumably to be filled later in the request).
+
+    >>> apply_helpers_and_format('{{a}} {{b "B"}} {c} {{d}}', a='A', c='C')
+    'A B C {{d}}'
+
+    >>> apply_helpers_and_format('{{a}} {{b "B"}} {c} {{d}}', a='A', c='C', d='{{e}}', e='{{a}}')
+    'A B C A'
+
+    >>> apply_helpers_and_format('{a}')
+    Traceback (most recent call last):
+        ...
+    KeyError: 'a'
+
+    """
+    after_helpers = apply_helpers(template, None, [kwargs])
+    return safe_format(after_helpers, *args, **kwargs)
+
 
 def load_content(pathname, *args, **kwargs):
-    """Load a content file and use it to format parameters
+    """
+    Load the content template from the given file, then apply the remaining
+    arguments as helpers and standard brace-style format parameters. See
+    `zoom.tools.apply_helpers_and_format()` for behaviour.
     """
     isfile = os.path.isfile
 
     if not isfile(pathname):
-        for extension in ['html', 'md', 'txt']:
+        for extension in ['html', 'md', 'txt', 'pug']:
             if isfile(pathname + '.' + extension):
                 pathname = pathname + '.' + extension
                 break
 
     template = load(pathname)
     if template:
-        content = apply_helpers(template, None, [kwargs]).format(*args, **kwargs)
+        content = apply_helpers_and_format(template, *args, **kwargs)
         if pathname.endswith('.html'):
             result = content
+        elif pathname.endswith('.pug'):
+            basedir = os.path.realpath(os.path.split(pathname)[0])
+            result = pug(content, options=dict(basedir=basedir))
         else:
             result = markdown(content)
         return result
@@ -518,8 +609,6 @@ def load_template(name, default=None):
                     source = None
 
                 t = load(pathname)
-                # print(t)
-                # t = 'got it'
 
                 if source and pathname[-5:].lower() == '.html':
                     result = (
@@ -533,7 +622,8 @@ def load_template(name, default=None):
                 return result
 
         logger = logging.getLogger(__name__)
-        logger.warning('template missing: %r', name)
+        if default is None:
+            logger.warning('template missing: %r', name)
         logger.debug('templates paths: %r', templates_paths)
 
         if default:
@@ -549,8 +639,11 @@ def load_template(name, default=None):
         return default or '<!-- template %s-->' % comment
 
     site = zoom.system.request.site
-    app = zoom.system.request.app
-    templates_paths = dedup(app.templates_paths + site.templates_paths)
+
+    app = getattr(zoom.system.request, 'app', None)
+    app_templates_paths = app.templates_paths if app else []
+
+    templates_paths = dedup(app_templates_paths + site.templates_paths)
 
     if not '.' in name:
         name = name + '.html'
@@ -561,42 +654,61 @@ def load_template(name, default=None):
             'Templates are located in theme folders.'
         )
 
-    # return 'got stuff'
     return site.templates.setdefault(name, load_template_file(name, default))
 
 def get_template(template_name='default', theme='default'):
-    """Get site page template"""
+    """Get site template"""
 
     logger = logging.getLogger(__name__)
     path = zoom.system.site.themes_path
+    isfile = os.path.isfile
 
     pathname = os.path.realpath(
         os.path.join(path, theme, template_name + '.html')
     )
-    if os.path.isfile(pathname):
+    alt_pathname = pathname.endswith('.html') and pathname[:-4] + 'pug'
+    default_pathname = os.path.realpath(
+        os.path.join(
+            zoom.tools.zoompath(
+                'zoom/_assets/web/themes/default',
+                template_name + '.pug'
+            )
+        )
+    )
+    logger.debug('default_pathname: %r', alt_pathname)
+
+    if isfile(pathname):
         logger.debug('get_template %r', pathname)
         with open(pathname, 'rb') as reader:
             return reader.read().decode('utf8')
+
+    elif alt_pathname and isfile(alt_pathname):
+        basedir = os.path.split(alt_pathname)[0]
+        logger.debug('get_template %r', alt_pathname)
+        logger.debug('basedir %r', basedir)
+        with open(alt_pathname, 'rb') as reader:
+            return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
+
+    elif default_pathname and isfile(default_pathname):
+        basedir = os.path.split(default_pathname)[0]
+        logger.debug('get_template %r', default_pathname)
+        logger.debug('basedir %r', basedir)
+        with open(default_pathname, 'rb') as reader:
+            return zoom.tools.pug(reader.read().decode('utf8'), basedir=basedir)
+
     else:
         if template_name == 'default':
-            logger.error(
-                'default template %s missing',
-                os.path.realpath(pathname),
-            )
+            logger.error('default template %s missing', pathname)
             raise zoom.exceptions.ThemeTemplateMissingException(
                 'Default template missing %r' % pathname
             )
-        logger.warning(
-            'template %r missing',
-            pathname,
-        )
         return get_template('default', theme)
 
 def zoompath(*args):
     """Returns the location of a standard Zoom asset
 
     >>> import os
-    >>> theme_path = zoompath('web', 'themes', 'default')
+    >>> theme_path = zoompath('zoom', '_assets', 'web', 'themes', 'default')
     >>> os.path.exists(theme_path)
     True
 
@@ -615,3 +727,21 @@ def hide_helpers(content):
 def restore_helpers(content):
     """Restores content helpers to their usual form"""
     return content.replace('[[raw!', '{{').replace('-raw]]', '}}')
+
+
+def sass(text):
+    """Convert SASS to CSS
+
+    >>> tpl = '''
+    ... .fancy
+    ...   color: red
+    ... '''
+    >>> sass(tpl)
+    '.fancy {\\n  color: red; }\\n'
+
+    """
+    if text.endswith('.sass'):
+        out = libsass.compile(filename=text)
+    else:
+        out = libsass.compile(string=text, indented=True)
+    return out

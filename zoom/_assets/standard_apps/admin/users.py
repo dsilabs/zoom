@@ -5,7 +5,6 @@
 import uuid
 
 import zoom
-from zoom.components import success
 from zoom.collect import CollectionView, CollectionController, RawSearch
 from zoom.context import context
 from zoom.forms import Form
@@ -13,11 +12,13 @@ from zoom.users import User, Users
 from zoom.tools import home
 import zoom.validators as v
 import zoom.fields as f
+import zoom.impersonation
 
 from fields import UserGroupsField
 import model
 
 def user_fields(request):
+    """Return user fields"""
     # username_available = Validator('taken', valid_username(db))
     # not_registered = Validator('already registered', email_unknown_test)
 
@@ -27,11 +28,16 @@ def user_fields(request):
         # f.TextField('Email', v.required, v.valid_email, not_registered(request)),
         f.EmailField('Email', v.required, v.valid_email),
         f.PhoneField('Phone', v.valid_phone, hint='optional'),
-        ])
+    ])
 
-    account_fields = f.Section('Account', [
-        # f.TextField('Username', v.required, v.valid_username, username_available(request)),
-        f.TextField('Username', v.required, v.valid_username),
+    if request.route[-1] == 'new':
+        account_fields = f.Section('Account', [
+            f.TextField('Username', v.required, v.valid_username),
+            f.CheckboxField('Send invitation'),
+        ])
+    else:
+        account_fields = f.Section('Account', [
+            f.TextField('Username', v.required, v.valid_username),
         ])
 
     security_fields = f.Section('Security', [
@@ -49,7 +55,8 @@ def user_fields(request):
 def get_reset_password_form(key):
     reset_password_form = Form(
         f.TextField('New Password', v.required),
-        f.ButtonField('Save Password', cancel='/admin/users/' + key)
+        f.CheckboxField('Email Password', value=True),
+        f.ButtonField('Save Password', cancel='/admin/users/' + key),
     )
     return reset_password_form
 
@@ -90,16 +97,17 @@ def user_activity_logs(user, weeks=12):
         (a[1],who(a[2]),a[3],a[4],a[5],when(a[6])
     ) for a in auth_data], labels=labels)
 
-    activity_data = db("""
-        select
-            id, timestamp, path, status, address, elapsed, message
-        from log
-        where
-            user_id=%s
-            and server=%s
-        order by timestamp desc
-        limit 50
-    """,
+    activity_data = db(
+        """
+            select
+                id, timestamp, path, status, address, elapsed, message
+            from log
+            where
+                user_id=%s
+                and server=%s
+            order by timestamp desc
+            limit 50
+        """,
         user.user_id,
         zoom.system.request.host
     )
@@ -136,6 +144,7 @@ class UserCollectionView(CollectionView):
             page.actions.insert(0, 'Reset Password')
             if user.is_active:
                 page.actions.insert(0, 'Deactivate')
+                page.actions.insert(0, 'Impersonate')
             else:
                 page.actions.insert(0, 'Activate')
             return page
@@ -176,6 +185,8 @@ class UserCollectionController(CollectionController):
 
     def after_insert(self, record):
         model.update_user_groups(record)
+        if record.send_invitation:
+            model.send_invitation(record)
 
     def save_password_button(self, key, *args, **data):
         form = get_reset_password_form(key)
@@ -184,20 +195,31 @@ class UserCollectionController(CollectionController):
             if user:
                 new_password = form.evaluate()['new_password']
                 user.set_password(new_password)
-                success('password updated')
+                message = 'password updated'
+                if form.evaluate()['email_password']:
+                    model.send_password(user, new_password)
+                    message += ' and sent'
+                zoom.alerts.success(message)
                 return home('users/' + key)
 
     def activate(self, key):
-        user = zoom.system.site.users.first(username=key)
+        user = zoom.get_site().users.locate(key)
         if user:
             user.activate()
         return home('users/' + key)
 
     def deactivate(self, key):
-        user = zoom.system.site.users.first(username=key)
+        user = zoom.get_site().users.locate(key)
         if user:
             user.deactivate()
         return home('users/' + key)
+
+    def impersonate(self, username):
+        user = zoom.impersonation.impersonate(username)
+        if user:
+            zoom.alerts.success(f'Impersonating {user.username}!')
+            return zoom.home()
+
 
 def get_users_collection(request):
     db = request.site.db

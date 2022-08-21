@@ -15,7 +15,7 @@ from platform import system
 
 import zoom
 from zoom.component import component
-from zoom.utils import name_for
+from zoom.utils import name_for, id_for
 from zoom.tools import (
     websafe,
     markdown,
@@ -142,6 +142,7 @@ class Field(object):
     validators = []
     wrap = ' nowrap'
     browse = True
+    alignment = 'left'
     field_layout = FieldLayout()
 
     def __init__(self, label='', *validators, **keywords):
@@ -245,7 +246,7 @@ class Field(object):
         ususally to be combined with other fields in the native type where
         the value is the native data type for the field type.
         """
-        return {self.name: self.value or self.default}
+        return {self.name: self.value if self.value is not None else self.default}
 
     def as_dict(self):
         return {self.name: self}
@@ -483,7 +484,7 @@ class TextField(Field):
 
     def widget(self):
 
-        value = self.value or self.default
+        value = self.value if self.value is not None else self.default
         try:
             value = websafe(value)
         except AttributeError:
@@ -573,29 +574,6 @@ class MemoField(Field):
             Class=self.css_class,
         )
 
-    def edit(self):
-        widget = self.widget()
-        if self.hint or self.msg:
-            table_start = (
-                '<table class="transparent" width="100%">'
-                '<tr><td width=10%>'
-            )
-            table_middle = '</td><td>'
-            table_end = '</td></tr></table>'
-            return self.layout(
-                self.label,
-                ''.join([
-                    table_start,
-                    widget,
-                    table_middle,
-                    self.render_msg(),
-                    self.render_hint(),
-                    table_end
-                ])
-            )
-        else:
-            return self.layout(self.label, widget)
-
     def show(self):
         return (
             self.visible and
@@ -615,15 +593,6 @@ class MarkdownField(MemoField):
     >>> f.display_value()
     '<p>test <strong>one</strong> 23</p>'
 
-    >>> target = (
-    ...     '<div class="field">\\n'
-    ...     '  <div class="field_label">Notes</div>\\n'
-    ...     '  <div class="field_edit"><textarea class="memo_field" cols="60" id="notes" name="notes" rows="6" size="10">test **one** 23</textarea></div>\\n'
-    ...     '</div>\\n'
-    ... )
-    >>> f.edit() == target
-    True
-
     """
     def display_value(self):
         return markdown(self.value)
@@ -633,12 +602,13 @@ class EditField(MemoField):
     """Large textedit.
 
     >>> EditField('Notes').widget()
-    '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
+    '<textarea class="edit_field" cols="80" height="6" id="notes" name="notes" size="10"></textarea>'
     """
     value = ''
     height = 6
     size = 10
     css_class = 'edit_field'
+    cols = 80
 
     def widget(self):
         return html.tag(
@@ -648,18 +618,16 @@ class EditField(MemoField):
             id=self.id,
             size=self.size,
             height=self.height,
+            cols=self.cols,
             Class=self.css_class,
         )
-
-    def edit(self):
-        return self.layout(self.label, self.widget())
 
 
 class MarkdownEditField(EditField):
     """Large markdown edit field
 
     >>> MarkdownEditField('Notes').widget()
-    '<textarea class="edit_field" height="6" id="notes" name="notes" size="10"></textarea>'
+    '<textarea class="edit_field" cols="80" height="6" id="notes" name="notes" size="10"></textarea>'
     """
     def display_value(self):
         return markdown(websafe(self.value))
@@ -1330,6 +1298,7 @@ class NumberField(TextField):
     css_class = 'number_field'
     units = ''
     converter = int
+    alignment = 'right'
 
     def assign(self, value):
         try:
@@ -1380,7 +1349,7 @@ class IntegerField(TextField):
     '2'
 
     >>> IntegerField('Count').widget()
-    '<input class="number_field" id="count" maxlength="10" name="count" size="10" type="text" value="" />'
+    '<input class="number_field" id="count" maxlength="10" name="count" size="10" type="text" value="0" />'
 
     >>> n = IntegerField('Size')
     >>> n.assign('2')
@@ -1388,6 +1357,35 @@ class IntegerField(TextField):
     2
     >>> n.evaluate()
     {'size': 2}
+
+    >>> n = IntegerField('Size')
+    >>> n.assign('0')
+    >>> n.value
+    0
+    >>> n.evaluate()
+    {'size': 0}
+    >>> n.display_value()
+    '0'
+
+    >>> n = IntegerField('Size', default=2)
+    >>> n.value
+    0
+    >>> n.assign(0)
+    >>> n.value
+    0
+    >>> n.evaluate()
+    {'size': 0}
+    >>> n.display_value()
+    '0'
+
+    >>> n = IntegerField('Size', default=2)
+    >>> n.assign(None)
+    >>> n.value
+    2
+    >>> n.evaluate()
+    {'size': 2}
+    >>> n.display_value()
+    '2'
 
     >>> n = IntegerField('Size', units='meters')
     >>> n.assign('22234')
@@ -1414,7 +1412,7 @@ class IntegerField(TextField):
 
     def display_value(self):
         units = self.units and (' ' + self.units) or ''
-        value = self.value and ('{:,}{}'.format(self.value, units)) or ''
+        value = ('{:,}{}'.format(self.value, units)) if isinstance(self.value, int) else ''
         return websafe(value)
 
     def as_searchable(self):
@@ -1518,7 +1516,7 @@ class MoneyField(DecimalField):
     '$1,000.00'
 
     >>> from platform import system
-    >>> l = system()=='Windows' and 'eng' or 'en_GB.utf8'
+    >>> l = system()=='Windows' and 'eng' or 'en_GB.UTF-8'
     >>> f = MoneyField("Amount", locale=l)
     >>> f.display_value()
     '\\xa30.00'
@@ -1630,7 +1628,7 @@ class DateField(Field):
     representations of those dates formatted according to the specified
     format.
 
-    >>> DateField("Start Date").widget()
+    >>> str(DateField("Start Date").widget())
     '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="" />'
 
     >>> from datetime import date, datetime
@@ -1679,7 +1677,7 @@ class DateField(Field):
     >>> failed
     True
 
-    >>> DateField("Start Date", value=date(2015,1,1)).widget()
+    >>> str(DateField("Start Date", value=date(2015,1,1)).widget())
     '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
 
     """
@@ -1702,18 +1700,19 @@ class DateField(Field):
 
     def display_value(self, alt_format=None):
         # pylint: disable=E1101
-        format = alt_format or self.format
+        display_format = alt_format or self.format
         if self.value:
             strftime = datetime.datetime.strftime
             try:
-                result = strftime(self.evaluate()[self.name], format)
+                result = strftime(self.evaluate()[self.name], display_format)
             except ValueError:
                 result = self.value
         else:
-            result = self.default and self.default.strftime(format) or ''
+            result = self.default and self.default.strftime(display_format) or ''
         return result
 
     def widget(self):
+        zoom.requires('jquery-ui')
         value = self.display_value(self.input_format)
         parameters = dict(
             name=self.name,
@@ -1724,20 +1723,26 @@ class DateField(Field):
             Class=self.css_class,
         )
         js = []
+        js.append("""
+            $('.date_field').datepicker({
+                dateFormat: 'M d, yy',
+                changeMonth: true,
+                changeYear: true
+            })
+        """)
         if self.min != None:
             js.append("""
-            $(function(){
-                $('#%s').datepicker('option', 'minDate', '%s');
-            });
+            $('#%s').datepicker('option', 'minDate', '%s');
             """ % (self.id, self.min.strftime(self.input_format)))
 
         if self.max != None:
             js.append("""
-            $(function(){
-                $('#%s').datepicker('option', 'maxDate', '%s');
-            });
+            $('#%s').datepicker('option', 'maxDate', '%s');
             """ % (self.id, self.max.strftime(self.input_format)))
-        return html.tag('input', **parameters)
+        return zoom.Component(
+            html.tag('input', **parameters),
+            js=js,
+        )
 
     def show(self):
         return self.visible and bool(self.value) and self.layout(self.label, self.display_value()) or ''
@@ -1783,6 +1788,20 @@ class BirthdateField(DateField):
     size = maxlength = 12
     css_class = 'birthdate_field'
 
+    def widget(self):
+        return zoom.Component(
+            DateField.widget(self),
+            js = """
+                $('.birthdate_field')
+                    .datepicker({
+                        dateFormat: 'M d, yy',
+                        changeMonth: true,
+                        changeYear: true,
+                        yearRange: '-120:+00'
+                    });
+            """
+        )
+
 
 class CheckboxesField(Field):
     """Checkboxes field.
@@ -1790,26 +1809,61 @@ class CheckboxesField(Field):
     >>> cb = CheckboxesField('Select', value='One', values=['One','Two','Three'], hint='test hint')
     >>> print(cb.widget())
     <ul class="checkbox_field">
-    <li><input checked class="checkbox_field" type="checkbox" id="select" name="select" value="One" /><div>One</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Two" /><div>Two</div></li>
-    <li><input class="checkbox_field" type="checkbox" id="select" name="select" value="Three" /><div>Three</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-one" name="select" value="One" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-two" name="select" value="Two" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
     </ul>
+
+    >>> values = [('One', '1'), ('Two', '2'), 'Three']
+    >>> cb = CheckboxesField('Select', value='1', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input checked class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
+    >>> values = [('One', '1'), ('Two', 2), 'Three']
+    >>> cb = CheckboxesField('Select', value='One', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input checked class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
+    >>> values = [('One', '1'), ('Two', 2), 'Three']
+    >>> cb = CheckboxesField('Select', value='2', values=values, hint='test hint')
+    >>> print(cb.widget())
+    <ul class="checkbox_field">
+    <li><input class="checkbox_field" type="checkbox" id="select-1" name="select" value="1" /><div>One</div></li>
+    <li><input checked class="checkbox_field" type="checkbox" id="select-2" name="select" value="2" /><div>Two</div></li>
+    <li><input class="checkbox_field" type="checkbox" id="select-three" name="select" value="Three" /><div>Three</div></li>
+    </ul>
+
     """
 
     def widget(self):
+        current_value = self.value or self.default
+        current_values = list(map(str, ensure_listy(current_value)))
         result = []
-        for value in self.values:
-            checked = value in self.value and 'checked' or ''
+        for option in self.values:
+            if type(option) in (list, tuple) and len(option) == 2:
+                text, value = option
+            else:
+                text = value = option
+            checked = ((str(value) in current_values) or (text in current_values)) and 'checked' or ''
+            tag_id = id_for('-'.join([self.id, str(value)]))
             tag = html.tag(
                 'input',
                 checked,
                 name=self.name,
-                id=self.id,
+                id=tag_id,
                 Type='checkbox',
                 Class='checkbox_field',
                 value=value,
-                )
-            result.append('<li>%s<div>%s</div></li>\n' % (tag, value))
+            )
+            result.append('<li>%s<div>%s</div></li>\n' % (tag, text))
         result = '<ul class="checkbox_field">\n%s</ul>' % (''.join(result))
         return result
 
@@ -2190,7 +2244,7 @@ class PulldownField(TextField):
         found = False
         result.append(self.select_layout.format(**dict(place=self.placeholder, classed=self.css_class, name=name)))
         for option in self.options:
-            if type(option) in (list, tuple) and len(option)==2:
+            if type(option) in (list, tuple) and len(option) == 2:
                 label, value = option
             else:
                 label, value = option, option
@@ -2208,9 +2262,19 @@ class PulldownField(TextField):
 
 class ChosenSelectField(PulldownField):
     css_class = 'chosen'
-    libs = ['/static/zoom/chosen/chosen.jquery.js']
-    styles = ['/static/zoom/chosen/chosen.css']
     select_layout = '<select data-placeholder="{place}" class="{classed}" name="{name}" id="{name}">\n'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        zoom.requires('chosen')
+
+
+class TimezoneField(ChosenSelectField):
+
+    @property
+    def options(self):
+        import pytz
+        return pytz.all_timezones
 
 
 class MultiselectField(TextField):
@@ -2504,8 +2568,7 @@ class ChosenMultiselectField(MultiselectField):
             self.placeholder = 'Select ' + self.label
 
     def widget(self):
-        libs = ['/static/zoom/chosen/chosen.jquery.js']
-        styles = ['/static/zoom/chosen/chosen.css']
+        zoom.requires('chosen')
         if self.value == None:
             current_values = self.default
         else:
@@ -2525,7 +2588,7 @@ class ChosenMultiselectField(MultiselectField):
             else:
                 result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
         result.append('</select>')
-        return component(result, libs=libs, styles=styles)
+        return ''.join(result)
 
 
 class RangeSliderField(IntegerField):
@@ -2623,6 +2686,55 @@ class FileField(TextField):
     def assign(self, value):
         if hasattr(value, 'filename'):
             self.value = dict(filename=value.filename, value=value.value)
+
+
+class FilesField(TextField):
+    """ FileField that can handle multiple files """
+
+    value = default = 'None'
+    _type = 'file'
+    css_class = 'files_field'
+
+    def requires_multipart_form(self):
+        return True
+
+    def widget(self):
+        value = self.value if self.value is not None else self.default
+        try:
+            value = websafe(value)
+        except AttributeError:
+            value = value
+        valid_attributes = (
+            'id', 'size', 'maxlength',
+            'placeholder', 'title'
+        )
+        attributes = dict(
+            (k, getattr(self, k))
+            for k in (list(self.__dict__.keys()) +
+                      list(self.__class__.__dict__.keys()))
+            if k in valid_attributes
+        )
+        attributes['multiple'] = 'multiple'
+        return html.input(
+            type=self._type,
+            Class=self.css_class,
+            name=self.name,
+            value=value,
+            **attributes
+        )
+
+    def assign(self, value):
+        """Assign file values to field value"""
+        if not isinstance(value, list):
+            value = [value]
+        items = []
+        for val in value:
+            filename = value = None
+            if hasattr(val, 'filename'):
+                filename = val.filename
+                value = val.value
+                items.append(dict(filename=filename, value=value))
+        self.value = items
 
 
 class DataURIAttachmentsField(Field):  # pragma: no cover

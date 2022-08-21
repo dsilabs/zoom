@@ -1,0 +1,7 @@
+{
+    "common_package_test": {
+        "libs": [
+            "/static/zoom/test.js"
+        ]
+    }
+}

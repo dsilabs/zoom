@@ -6,7 +6,7 @@ import sys
 import uuid
 import logging
 
-from pymysql.err import OperationalError
+from pymysql.err import OperationalError, InternalError
 
 from zoom.database import database
 from zoom.cli.utils import collect_options, copy_boilerplate, finish
@@ -126,8 +126,20 @@ def do_database_creation(argument_source, collected=dict()):
     if engine == 'mysql':
         try:
             db = database(**collected)
-        except OperationalError as err:
-            finish(True, 'Error: invalid database credentials (%s)'%str(err))
+        except (OperationalError, InternalError) as err:
+            if not collected['password']:
+                # The user may be attempting to initialize as a root user with
+                # no configured password. pymysql doesn't let us authenticate
+                # in that case, so we provide a (hopefully) helpful error.
+                finish(True, 
+                    'Error: invalid database credentials (authentication with'
+                    ' empty passwords isn\'t supported)'
+                )
+            else:
+                # Otherwise we provide a more generic error.
+                finish(True, 'Error: invalid database credentials (%s)'%(
+                    str(err)
+                ))
         # If this database already exists drop it if this operation is forced
         # or die.
         if db_name in db.get_databases():

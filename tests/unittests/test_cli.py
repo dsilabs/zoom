@@ -31,8 +31,8 @@ def invoke(*args, stdin=str(), return_proc=False, **kwargs):
     python_alias = 'python' if os.name == 'nt' else 'python3'
     log.debug('run: %s', args)
     process = Popen(
-        ' '.join((python_alias, *args)), 
-        shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, 
+        ' '.join((python_alias, *args)),
+        shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE,
         **kwargs
     )
     if return_proc:
@@ -50,7 +50,7 @@ def invoke(*args, stdin=str(), return_proc=False, **kwargs):
     return process.returncode, out.decode(), err.decode()
 
 class TestCLI(unittest.TestCase):
-    
+
     def setUp(self):
         try:
             shutil.rmtree(TEST_DIR)
@@ -75,7 +75,7 @@ class TestCLI(unittest.TestCase):
         code, out, err = invoke('zoom -h new')
         self.assertTrue(not err and not code, 'No error')
         self.assertTrue(
-            agnostic_contains(out, new_handler.__doc__), 
+            agnostic_contains(out, new_handler.__doc__),
             'Help provided'
         )
 
@@ -93,7 +93,7 @@ class TestCLI(unittest.TestCase):
         code, out, err = invoke('zoom new app "%s"'%path0)
         self.assertTrue(not code, 'Process succeeds')
         self.assertTrue(
-            os.path.exists(path0) and os.path.isdir(path0), 
+            os.path.exists(path0) and os.path.isdir(path0),
             'Parent directory created'
         )
         self.assertTrue(
@@ -108,13 +108,19 @@ class TestCLI(unittest.TestCase):
             '.', 'sites', 'themes', 'apps'
         ))
         self.assertTrue(False not in dirs_created, 'Directories created')
-        
+
+    def test_init_failure_rollback(self):
+        path = os.path.join(TEST_DIR, 'web1')
+        code, out, err = invoke('zoom init "%s" -u fakeuser -p nosuchpassword')
+        self.assertTrue(code, 'Process fails')
+        self.assertTrue(not os.path.exists(path), 'Rollback deleted fragment')
+
     def test_pip_install(self):
         lib_path = os.path.join(TEST_DIR, 'libs')
         cwd = os.path.abspath('.')
         os.mkdir(lib_path)
         code, out, err = invoke(
-            '-m pip install --target=%s %s'%(lib_path, cwd), 
+            '-m pip install --target=%s %s'%(lib_path, cwd),
             cwd=TEST_DIR
         )
         self.assertTrue(not code, 'No error code')
@@ -131,7 +137,7 @@ class TestCLI(unittest.TestCase):
             env=child_env, cwd=os.path.dirname(cwd)
         )
         self.assertTrue(
-            lib_path in location_check[1], 
+            lib_path in location_check[1],
             'Sanity check; correct lib. path used for child env.'
         )
 
@@ -141,7 +147,7 @@ class TestCLI(unittest.TestCase):
         )
 
         self.assertTrue(
-            not code and agnostic_contains(out, MAIN_USAGE), 
+            not code and agnostic_contains(out, MAIN_USAGE),
             'Module-style invocation works'
         )
 

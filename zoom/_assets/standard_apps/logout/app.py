@@ -5,7 +5,7 @@
 import logging
 
 from zoom.tools import redirect_to
-from zoom.components import warning
+from zoom.alerts import warning
 from zoom.response import RedirectResponse
 
 

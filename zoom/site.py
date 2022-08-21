@@ -2,10 +2,8 @@
     zoom.site
 """
 
-import datetime
 import logging
 import os
-import platform
 
 import zoom
 import zoom.apps
@@ -18,6 +16,8 @@ from zoom.tools import zoompath
 
 
 isdir = os.path.isdir
+isfile = os.path.isfile
+split = os.path.split
 realpath = os.path.realpath
 join = os.path.join
 exists = os.path.exists
@@ -29,7 +29,6 @@ DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
 class ConfigSection(zoom.utils.Record):
     """site configuration section"""
-    pass
 
 
 class SiteConfig(object):
@@ -141,9 +140,36 @@ class SiteConfig(object):
         return self.section(name)
 
 
+def locate_theme(path, name):
+    """return a valid theme directory or None"""
+
+    def valid_theme(pathname):
+        for ext in ['html', 'pug', 'md']:
+            if isfile(join(pathname, 'default.{}'.format(ext))):
+                return True
+
+    logger = logging.getLogger(__name__)
+
+    if name != 'default':
+        possibility = path, name
+        if valid_theme(join(*possibility)):
+            logger.debug('using theme %s', join(*possibility))
+            return possibility
+
+    possibility = path, 'default'
+    if valid_theme(join(*possibility)):
+        logger.debug('using theme %s', join(*possibility))
+        return possibility
+
+    default_path = zoompath('zoom', '_assets', 'web', 'themes')
+    possibility = default_path, 'default'
+    if valid_theme(join(*possibility)):
+        logger.debug('using theme %s', join(*possibility))
+        return possibility
+
+
 class Site(object):
     """a Zoom site"""
-    # pylint: disable=too-many-instance-attributes, too-few-public-methods
 
     def __init__(self, request):
 
@@ -155,7 +181,6 @@ class Site(object):
         self.__apps = None
         self.__settings = None
 
-        # TODO: consider getting site to do this calculation instead of reqeust
         site_path = request.site_path
         if os.path.exists(site_path):
 
@@ -167,6 +192,7 @@ class Site(object):
             get = self.config.get
             self.url = get('site', 'url', '')
             self.title = get('site', 'name', self.name)
+            self.system = get('site', 'system', self.name)
             self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
             self.csrf_validation = get('site', 'csrf_validation', True) in zoom.utils.POSITIVE
             self.tracking_id = get('site', 'tracking_id', '')
@@ -176,6 +202,12 @@ class Site(object):
             self.owner_url = get('site', 'owner_url', DEFAULT_OWNER_URL)
             self.owner_email = get('site', 'owner_email', 'info@testco.com')
             self.admin_email = get('site', 'admin_email', 'admin@testco.com')
+
+            self.home_app_name = get('apps', 'home', 'home')
+            self.index_app_name = get('apps', 'index', 'content')
+            self.login_app_name = get('apps', 'login', '')
+            self.auth_app_name = get('apps', 'authorize', '')
+            self.locate_app_name = get('apps', 'locate', '')
 
             self.smtp_host = get('mail', 'smtp_host', '')
             self.smtp_port = get('mail', 'smtp_port', '')
@@ -199,11 +231,31 @@ class Site(object):
                 get('sessions', 'secure_cookies', True)
             )
 
-            theme_dir = get('theme', 'path', join(instance, 'themes'))
-            self.themes_path = realpath(join(self.path, theme_dir))
-            self.theme = get('theme', 'name', 'default')
-            self.theme_path = os.path.join(theme_dir, self.theme)
-            self.default_theme_path = existing(theme_dir, 'default')
+            theme_dir = realpath(get('theme', 'path', join(instance, 'themes')))
+            theme = get('theme', 'name', 'default')
+
+            # establish main theme
+            location = locate_theme(theme_dir, theme)
+            if not location:
+                raise zoom.exceptions.ThemeTemplateMissingException(
+                    'theme %r not found in %r' % (theme, theme_dir)
+                )
+            self.themes_path, self.theme = location
+            self.theme_path = join(self.themes_path, self.theme)
+
+            # establish default theme
+            if self.theme == 'default':
+                # same as main theme
+                self.default_theme_path = self.theme_path
+            else:
+                default_location = locate_theme(theme_dir, 'default')
+                if not default_location:
+                    raise zoom.exceptions.ThemeTemplateMissingException(
+                        'theme %r not found in %r' % (theme, theme_dir)
+                    )
+                self.default_theme_path = default_location[0]
+
+            # theme options
             self.theme_comments = get('theme', 'comments', 'name')
             self.default_template = (
                 get('theme', 'template', 'default')
@@ -230,12 +282,17 @@ class Site(object):
                 for p in str(get('apps', 'path')).split(';')
                 if exists(realpath(join(self.path, p)))
             ]
-            basic_apps = zoompath('zoom', '_assets', 'standard_apps')
+            basic_apps = zoompath('zoom', '_assets', 'standard_apps') # deprecated
+            standard_apps = zoompath('zoom', '_assets', 'web', 'apps')
 
             positive = zoom.utils.POSITIVE
-            if self.conf.section('apps').get('include_basics') in positive and basic_apps not in self.apps_paths:
-                logger.debug('including default apps (%r)', basic_apps)
-                self.apps_paths.insert(0, basic_apps)
+            if self.conf.section('apps').get('include_basics') in positive:
+                if standard_apps not in self.apps_paths:
+                    logger.debug('including standard apps (%r)', basic_apps)
+                    self.apps_paths.append(standard_apps)
+                if basic_apps not in self.apps_paths:
+                    logger.debug('including default apps (%r)', basic_apps)
+                    self.apps_paths.append(basic_apps)
             else:
                 logger.debug('not including default apps')
 
@@ -243,10 +300,10 @@ class Site(object):
                 get('data', 'path', join(self.path, 'data'))
             )
 
-            self.logging = get('monitoring', 'logging', True) in zoom.utils.POSITIVE
-            self.profiling = get('monitoring', 'profiling', False) in zoom.utils.POSITIVE
-            self.monitor_app_database = get('monitoring', 'app_database', True) != '0'
-            self.monitor_system_database = get('monitoring', 'system_database', False) != '0'
+            self.logging = get('monitoring', 'logging', True) in positive
+            self.profiling = get('monitoring', 'profiling', False) in positive
+            self.monitor_app_database = get('monitoring', 'app_database', False) in positive
+            self.monitor_system_database = get('monitoring', 'system_database', False) in positive
 
             logger.debug('instance path: %r', instance)
             logger.debug('site path: %r', site_path)
@@ -283,7 +340,7 @@ class Site(object):
 
     @property
     def apps(self):
-        """Return list of apps installed on this site"""
+        """Return list of apps available to this site"""
         if self.__apps is None:
             result = []
             names = []
@@ -317,6 +374,7 @@ class Site(object):
     def helpers(self):
         """provide helpers"""
         return dict(
+            system=self.system,
             site_name=self.title,
             site_url=self.url,
             abs_site_url=self.abs_url,

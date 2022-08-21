@@ -14,15 +14,12 @@ Options:
                               ticks. Defaults to 1 second.
 """
 
-import os
 import time
 import logging
 
 from docopt import docopt
 
-from zoom.sites import Site
 from zoom.instances import Instance
-from zoom.background import run_background_jobs
 from zoom.cli.common import LOGGING_OPTIONS, setup_logging
 from zoom.cli.utils import resolve_path_with_context, describe_options, \
     finish, is_instance_dir
@@ -40,7 +37,7 @@ def run():
         arguments.get('<path>') or '.', instance=True
     )
     if not is_instance_dir(instance_path):
-        finish(True, 'Error: "%s" is not a Zoom instance'%instance_path)
+        finish(True, 'Error: "%s" is not a Zoom instance' % instance_path)
     instance = Instance(instance_path)
 
     # Parse and comprehend options.
@@ -52,31 +49,27 @@ def run():
         delay = int(delay)
     except ValueError:
         finish(True, 'Error: invalid timeout or delay')
-    
+
     indefinite = repeat or timeout == 0
     only_once = timeout == -1
 
     # State runtime options.
     if indefinite:
-        logger.info('Will repeat indefinitely with delay %d second(s)', delay)
+        logger.debug('will repeat indefinitely with delay %d second(s)', delay)
     elif only_once:
-        logger.info('Will execute once')
+        logger.debug('will scan once')
     else:
-        logger.info(
-            'Will repeat for %s second(s) with delay %s seconds(s)', 
+        logger.debug(
+            'will repeat for %s second(s) with delay %s seconds(s)',
             timeout, delay
         )
-    
+
     # Mark start.
     start_time = time.time()
     try:
         while True:
-            # For each site in this instance, run those jobs.
-            for site in instance.get_sites(skip_fails=True).values():
-                site.activate()
 
-                for app in site.apps:
-                    run_background_jobs(site, app)
+            instance.run_background_jobs()
 
             # Check whether we're done.
             if not indefinite and only_once:
@@ -91,7 +84,8 @@ def run():
             while sleep_time < delay:
                 time.sleep(1)
                 sleep_time += 1
-    except KeyboardInterrupt: pass
 
-    print('\rStopped')
+    except KeyboardInterrupt:
+        print('\rstopped')
+
 run.__doc__ = __doc__%describe_options(LOGGING_OPTIONS)

@@ -11,11 +11,13 @@ zoom database -e mysql -H mariadb -u root -p root create zoomtest
 export ZOOM_TEST_DATABASE_HOST=mariadb
 export ZOOM_TEST_DATABASE_USER=root
 export ZOOM_TEST_DATABASE_PASSWORD=root
-export ZOOM_DATABASE_HOST=mariadb
 
-echo "host=mariadb" >> web/sites/localhost/site.ini
-echo "user=root" >> web/sites/localhost/site.ini
-echo "password=root" >> web/sites/localhost/site.ini
+export ZOOM_DEFAULT_INSTANCE=$(pwd)/zoom/_assets/web
+export ZOOM_DEFAULT_SITE_INI=$ZOOM_DEFAULT_INSTANCE/sites/localhost/site.ini
+
+echo "host=mariadb" >> $ZOOM_DEFAULT_SITE_INI
+echo "user=root" >> $ZOOM_DEFAULT_SITE_INI
+echo "password=root" >> $ZOOM_DEFAULT_SITE_INI
 
 # install google chrome
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -40,8 +42,8 @@ apt-get update && apt-get install -y --no-install-recommends \
 export LC_ALL=C
 
 # run zoom server
-zoom server -p 8000 web &
+zoom serve -p 8000 $ZOOM_DEFAULT_INSTANCE &
 
-cat web/sites/localhost/site.ini
+cat $ZOOM_DEFAULT_SITE_INI
 
 nosetests --with-doctest --with-coverage --cover-package=zoom -vx zoom tests/unittests tests/apptests tests/webtests --exclude-dir=zoom/testing --exclude-dir=zoom/cli

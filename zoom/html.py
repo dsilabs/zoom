@@ -104,6 +104,13 @@ def pre(content):
         return tag('pre', content)
     return ''
 
+
+def code(content):
+    if content:
+        return tag('code', content)
+    return ''
+
+
 def div(*content, **kwargs):
     """generates an HTML div tag
 

@@ -1,0 +1,22 @@
+
+// hamburger menu navigation
+.navbar.navbar-zoom
+  .navbar-inner
+    .container
+      .navbar-header
+        button.navbar-toggle(type=button data-toggle=collapse data-target=".navbar-collapse")
+          .icon-bar
+          .icon-bar
+          .icon-bar
+
+      .navbar-collapse.collapse
+        .nav.navbar-nav.navbar-left
+          .main-menu
+            {{main_menu}}
+
+        .nav.navbar-nav.navbar-right
+          .system-menu-outer {{system_menu}}
+
+.nav2
+  .container
+    .app-menu {{app_menu}}

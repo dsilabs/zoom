@@ -2,14 +2,13 @@
     Test the request module
 """
 
-import http.cookies
+import cgi
 import io
 import json
-import logging
 import sys
 import unittest
 
-from zoom.request import Request
+from zoom.request import Request, cgi_to_dict
 
 
 class TestCGIRequest(unittest.TestCase):
@@ -57,6 +56,28 @@ class TestCGIRequest(unittest.TestCase):
         request = Request(self.env)
         result = {'also': 'another', 'parameter': 'value'}
         self.assertEqual(request.data, result)
+
+    def test_get_with_duplicates(self):
+        env = dict(
+            REQUEST_METHOD='GET',
+            QUERY_STRING='parameter=one&parameter=two'
+        )
+        request = Request(env)
+        expected = {
+            'parameter': ['one', 'two']
+        }
+        self.assertEqual(request.data, expected)
+
+    def test_get_with_indexed_values(self):
+        env = dict(
+            REQUEST_METHOD='GET',
+            QUERY_STRING='parameter[1]=one&parameter[2]=two'
+        )
+        request = Request(env)
+        expected = {
+            'parameter': ['two', 'one'],
+        }
+        self.assertEqual(sorted(request.data), sorted(expected))
 
     def get_post_request(self, body):
         sys.stdin = body
@@ -136,6 +157,76 @@ class TestCGIRequest(unittest.TestCase):
         request = Request(self.env)
         result = {}
         self.assertEqual(request.data, result)
+
+    def test_cgi_to_dict_with_files(self):
+        fs1 = cgi.FieldStorage()
+        fs2 = cgi.FieldStorage()
+        fs_file1 = cgi.FieldStorage()
+        fs_file2 = cgi.FieldStorage()
+        fs_file3 = cgi.FieldStorage()
+        fs_csrf = cgi.FieldStorage()
+
+        fs_file1.name = fs_file2.name = fs_file3.name = 'files'
+        fs_file1.filename, fs_file1.value = 'test1.txt', b'this is binary'
+        fs_file2.filename, fs_file2.value = 'test2.txt', b'this is also binary'
+        fs_file3.filename, fs_file3.value = 'test3.txt', b'and more binary'
+        fs_csrf.name, fs_csrf.value = 'csrf_token', 'testcsrftoken2039239'
+        fs1.list = [fs_csrf, fs_file1, fs_file2, fs_file3]
+
+        result = cgi_to_dict(fs1)
+        self.assertEqual(
+            result,
+            {
+                'files': [fs_file1, fs_file2, fs_file3],
+                'csrf_token': 'testcsrftoken2039239',
+            }
+        )
+        fs2.list = [fs_csrf, fs_file1]
+        result = cgi_to_dict(fs2)
+        self.assertEqual(
+            result,
+            {
+                'files': fs_file1,
+                'csrf_token': 'testcsrftoken2039239',
+            }
+        )
+
+    def test_cgi_to_dict_without_files(self):
+        fs1 = cgi.FieldStorage()
+        fs2 = cgi.FieldStorage()
+        fs_item1 = cgi.FieldStorage()
+        fs_item2 = cgi.FieldStorage()
+        fs_item3 = cgi.FieldStorage()
+        fs_csrf = cgi.FieldStorage()
+        fs_item1.name = fs_item2.name = fs_item3.name = 'other'
+        fs_item1.value = b'this is binary'
+        fs_item2.value = b'this is also binary'
+        fs_item3.value = b'and more binary'
+        fs_csrf.name, fs_csrf.value = 'csrf_token', 'testcsrftoken2039239'
+        fs1.list = [fs_csrf, fs_item1, fs_item2, fs_item3]
+
+        result = cgi_to_dict(fs1)
+        self.assertEqual(
+            result,
+            {
+                'other': [
+                    b'this is binary',
+                    b'this is also binary',
+                    b'and more binary'
+                ],
+                'csrf_token': 'testcsrftoken2039239',
+            }
+        )
+        fs2.list = [fs_csrf, fs_item1]
+        result = cgi_to_dict(fs2)
+        self.assertEqual(
+            result,
+            {
+                'other': b'this is binary',
+                'csrf_token': 'testcsrftoken2039239',
+            }
+        )
+
 
 
 class TestWSGIRequest(TestCGIRequest):

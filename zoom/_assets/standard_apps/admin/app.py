@@ -8,6 +8,6 @@ app = App()
 app.menu = (
     'Overview', 'Users', 'Groups', 'Apps',
     'Jobs', 'Database', 'Mail',
-    'Requests', 'Activity', 'Errors', 'Audit',
+    'Requests', 'Activity', 'Errors', 'Warnings', 'Audit',
     'Configuration', 'Environment', 'About'
 )

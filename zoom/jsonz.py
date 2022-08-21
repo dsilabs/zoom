@@ -10,7 +10,19 @@ import json
 import datetime
 from decimal import Decimal
 from datetime import datetime, date
+from sys import version_info
 
+
+def _decode_datetime(text):
+    return datetime.fromisoformat(text)
+
+def _decode_datetime_pre_37(text):
+    try:
+        return datetime.strptime(text, '%Y-%m-%dT%H:%M:%S.%f')
+    except ValueError:
+        return datetime.strptime(text, '%Y-%m-%dT%H:%M:%S')
+
+decode_datetime = _decode_datetime if version_info[:2] >= (3, 7) else _decode_datetime_pre_37
 
 def loads(text):
     """load JSON from a string"""
@@ -21,7 +33,7 @@ def loads(text):
         if '__type__' in obj:
             t = obj['__type__']
             if t == 'datetime':
-                return datetime.strptime(obj['value'], '%Y-%m-%dT%H:%M:%S.%f')
+                return decode_datetime(obj['value'])
             elif t == 'date':
                 return datetime.strptime(obj['value'], '%Y-%m-%d').date()
             elif t == 'decimal':

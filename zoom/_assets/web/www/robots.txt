@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /login
+Disallow: /register
+Disallow: /terms.html
+Disallow: /privacy.html
+Disallow: /themes/
+Disallow: /files/

@@ -48,7 +48,8 @@ COMMANDS = {
     'describe': describe,
     'run': run
 }
-DEPRECATED_COMMANDS = ('database', 'setup', 'server')
+DEPRECATED_COMMANDS = 'server',
+EXPERIMENTAL_COMMANDS = 'init', 'assign', 'describe'
 
 def main():
     """The CLI entry point callable. Handles dispatch to per-command handlers,
@@ -66,7 +67,12 @@ def main():
             finish(True, 'Invalid command: %s\n'%command, __doc__)
         elif command in DEPRECATED_COMMANDS:
             print(
-                'Warning: the %s command is deprecated'%command,
+                'Warning: the %s command is deprecated' % command,
+                file=sys.stderr
+            )
+        elif command in EXPERIMENTAL_COMMANDS:
+            print(
+                'Warning: the %s command is experimental' % command,
                 file=sys.stderr
             )
 

@@ -125,7 +125,9 @@ class CollectionView(View):
         if c.request.route[-1:] == ['index']:
             return redirect_to('/'+'/'.join(c.request.route[:-1]), **kwargs)
 
-        actions = user.can('create', c) and ['New'] or []
+        actions = user.can('create', c) and [
+            ('New', zoom.url_for(c.url, 'new'))
+        ] or []
 
         logger = logging.getLogger(__name__)
         if q:
@@ -180,7 +182,8 @@ class CollectionView(View):
             labels=c.get_labels(),
             columns=c.get_columns(),
             fields=c.fields,
-            footer=footer
+            footer=footer,
+            sortable=c.sortable,
         )
 
         return page(content, title=title, actions=actions, search=q)
@@ -206,6 +209,8 @@ class CollectionView(View):
         """Return a New Item form"""
         c = self.collection
         c.user.authorize('create', c)
+        if kwargs:
+            c.fields.validate(kwargs)
         form = form_for(c.fields, ButtonField('Create', cancel=c.url))
         return page(form, title='New '+c.item_title)
 
@@ -221,10 +226,12 @@ class CollectionView(View):
             user.authorize('read', record)
 
             actions = []
-            if user.can('update', record):
-                actions.append(action_for(record, 'Edit'))
             if user.can('delete', record):
                 actions.append(action_for(record, 'Delete'))
+            if user.can('update', record):
+                actions.append(action_for(record, 'Edit'))
+            if user.can('create', record):
+                actions.append(action_for(record, 'New'))
             c.fields.initialize(c.model(record))
 
             if 'updated' in record and 'updated_by' in record:
@@ -480,7 +487,7 @@ class CollectionController(Controller):
         """Delete an image field"""
         record = locate(self.collection, key)
         if record:
-            del record[name]
+            record[name] = None
             record.save()
             return redirect_to(zoom.helpers.url_for(record.url, 'edit'))
 
@@ -838,6 +845,8 @@ class Collection(object):
         self.route = None
         self.search_engine = get('search_engine', BasicSearch)
         self.many_records = 50
+        self.sorter = get('sorter', None)
+        self.sortable = get('sortable', False)
 
         if 'policy' in kwargs:
             self.allows = get('policy')
@@ -955,3 +964,8 @@ class Collection(object):
 class SilentCollection(Collection):
     """A collection of Records where we do not audit "View" events"""
     verbose = False
+
+
+def collection_of(fields, **kwargs):
+    """Returns a collection"""
+    return Collection(fields, **kwargs)

@@ -10,6 +10,7 @@ import datetime
 import re
 import unittest
 
+import zoom
 from zoom.fill import parts_re, _fill, fill as viewfill
 
 today = datetime.datetime.today()
@@ -308,3 +309,43 @@ class TestFill(unittest.TestCase):
         tpl2 = 'foo <!-- comm --> bar %s  another <!-- test --> comment'
         t2 = tpl2 % filler('date')
         self.assertEqual(t1, t2)
+
+    def test_fill_multi(self):
+        css = '.thing { color1: $(( color1 )); color2: $(( color2 )); }'
+        def callback(name, *args, **kwargs):
+            return dict(first_name='Sam', last_name='Smith').get(name, 'unknown')
+        template = 'Hello {{first_name}}'
+        self.assertEqual(
+            zoom.fill.custom_fill('{{', '}}', template, callback),
+            'Hello Sam'
+        )
+        template = 'Hello {{first_name}} {{last_name}}'
+        self.assertEqual(
+            zoom.fill.custom_fill('{{', '}}', template, callback),
+            'Hello Sam Smith'
+        )
+        template = 'Hello $(( first_name ))'
+        self.assertEqual(
+            zoom.fill.custom_fill('\$\(\( ', ' \)\)', template, callback),
+            'Hello Sam'
+        )
+        template = 'Hello ${{ first_name }} ${{ last_name }}'
+        self.assertEqual(
+            zoom.fill.custom_fill('\${{\s*?', '\s*?}}', template, callback),
+            'Hello Sam Smith'
+        )
+        template = 'Hello $(( first_name )) $(( last_name ))'
+        self.assertEqual(
+            zoom.fill.custom_fill('\$\(\(\s*?', '\s*?\)\)', template, callback),
+            'Hello Sam Smith'
+        )
+
+    def test_dollar_fill(self):
+        def callback(name, *args, **kwargs):
+            return dict(first_name='Sam', last_name='Smith').get(name, 'unknown')
+        template = 'Hello $(( first_name )) $(( last_name ))'
+        self.assertEqual(
+            zoom.fill.dollar_fill(template, callback),
+            'Hello Sam Smith'
+        )
+

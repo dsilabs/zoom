@@ -55,7 +55,7 @@ def files_exist(root, files):
 def is_instance_dir(path):
     """Return whether the given path heuristically appears to be a Zoom
     instance directory."""
-    return directories_exist(path, ('apps', 'themes', 'sites'))
+    return os.path.isdir(os.path.join(path, 'sites'))
 
 def is_site_dir(path):
     """Return whether the given path heuristically appears to be a Zoom site
@@ -84,7 +84,7 @@ def resolve_path_with_context(path, path_ext=str(), instance=False, site=False):
     If a context directory of one of the given types specified in kwargs isn't
     found, return only the path. If one is found, return it with the given path
     extension.
-    
+
     Usage example: when creating a new site, if the destination path is an
     instance directory, create it in dest/sites instead. Also used to rely on
     CWD to determine sites/instances commands are supposed to be operating
@@ -96,10 +96,10 @@ def resolve_path_with_context(path, path_ext=str(), instance=False, site=False):
         if (instance and is_instance_dir(dir_path)) \
                 or (site and is_site_dir(dir_path)):
             return os.path.join(dir_path, path_ext)
-        
+
         # ...otherwise move to the parent directory.
         next_dir_path = os.path.dirname(dir_path)
-        if dir_path == next_dir_path: 
+        if dir_path == next_dir_path:
             # We reached the filesystem root.
             break
         dir_path = next_dir_path
@@ -133,14 +133,14 @@ def describe_options(options):
                 lines.append(line_start + word)
             else:
                 lines[-1] = line + ' ' + word
-        
+
         return ('\n'.join(lines)).strip()
 
     # Transform options into string represenations and return the full set.
     return '\n'.join(('  -%s, --%s%s%s%s.'%(
         option[0], option[1], str() if is_boolean_flag(option) else '=<val>',
         ' '*(
-            17 + (6 if is_boolean_flag(option) else 0) - 
+            17 + (6 if is_boolean_flag(option) else 0) -
             (len(option[0]) + len(option[1]))
         ),
         format_description(option[2])
@@ -179,7 +179,7 @@ def collect_options(argument_source, options):
     previous option. Returns a dict."""
     # Create the value retriever.
     get_value = wizard_value_getter(argument_source)
-    
+
     # Iterate each option, resolving their values.
     collected = dict()
     for option in options:

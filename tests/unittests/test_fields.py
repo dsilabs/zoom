@@ -158,7 +158,7 @@ class TestEditField(unittest.TestCase, TextTests):
         TextTests.setUp(self, EditField)
         self.show_css_class = 'textarea'
         self.widget_template = (
-            '<textarea class="{self.css_class}" height="6" '
+            '<textarea class="{self.css_class}" cols="80" height="6" '
             'id="field1" name="field1" size="10">{text}</textarea>'
         )
 
@@ -214,7 +214,7 @@ class DateTests(object):
         f = self.field_type('Field1')
         f.initialize({'field1': self.basic_text})
         t = self.widget_template.format(self=self, text=self.basic_text)
-        self.compare(t, f.widget())
+        self.compare(t, str(f.widget()))
 
     def test_display_value(self):
         f = self.field_type('Field1')

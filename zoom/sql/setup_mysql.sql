@@ -34,7 +34,7 @@ CREATE TABLE `log` (
 --
 CREATE TABLE `audit_log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `app` varchar(30) DEFAULT NULL,
+  `app` varchar(60) DEFAULT NULL,
   `user_id` int unsigned DEFAULT NULL,
   `activity` varchar(30) DEFAULT NULL,
   `subject1` varchar(30) DEFAULT NULL,
@@ -81,7 +81,7 @@ create table if not exists `attributes` (
 CREATE TABLE `groups` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `type` char(1) default NULL,
-  `name` char(20) default NULL,
+  `name` char(60) default NULL,
   `description` char(60) default NULL,
   `admin_group_id` int unsigned default NULL,
   PRIMARY KEY  (`id`),

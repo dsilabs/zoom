@@ -9,8 +9,10 @@ import zoom
 import zoom.request
 from zoom.database import setup_test
 from zoom.users import (
-    User, Users, hash_password, get_current_username, set_current_user
+    User, Users, hash_password, get_current_username, set_current_user,
+    get_user, get_users, locate_user
 )
+from zoom.models import Groups
 from zoom.exceptions import UnauthorizedException
 
 class TestUser(unittest.TestCase):
@@ -18,14 +20,61 @@ class TestUser(unittest.TestCase):
     def setUp(self):
         self.db = setup_test()
         self.users = Users(self.db)
+
+        self.groups = Groups(self.db)
         zoom.system.request = zoom.utils.Bunch(
             app=zoom.utils.Bunch(
                 name=__name__,
-            )
+            ),
+            session=zoom.utils.Bunch(),
+            user=self.users.first(username='admin')
         )
+        zoom.system.site = zoom.utils.Bunch(
+            url='nosite',
+            db=self.db,
+            groups=self.groups,
+            users=self.users
+        )
+        zoom.system.user = self.users.first(username='admin')
 
     def tearDown(self):
         self.db.close()
+
+    def test_add(self):
+        self.assertFalse(self.users.first(username='sam'))
+        user = self.users.add('sam', 'sam', 'smith', 'sam@testco.com')
+        self.assertTrue(isinstance(user, User))
+        self.assertEqual(user.name, 'sam smith')
+        sam = self.users.first(username='sam')
+        self.assertTrue(sam)
+        self.assertTrue(sam.created)
+        self.assertTrue(sam.created_by)
+        self.assertTrue(sam.updated)
+        self.assertTrue(sam.updated_by)
+        self.users.delete(username='sam')
+        self.assertFalse(self.users.first(username='sam'))
+
+    def test_add_invalid(self):
+        self.assertFalse(self.users.first(username='sam'))
+        with self.assertRaises(Exception):
+            self.users.add('sam', '', 'smith', 'sam@testco.com')
+        try:
+            self.users.add('sam', '', 'smith', 'sam@testco.com')
+        except BaseException as e:
+            self.assertEqual(str(e), 'minimum length 2')
+        with self.assertRaises(Exception):
+            self.users.add('sam', 'sam', 'smith', 'sam')
+        try:
+            self.users.add('sam', 'sam', 'smith', 'sam')
+        except BaseException as e:
+            self.assertEqual(str(e), 'enter a valid email address')
+        with self.assertRaises(Exception):
+            self.users.add('sam', 'sam', 'smith', 'sam@test.co', '123')
+        try:
+            self.users.add('sam', 'sam', 'smith', 'sam@test.co', '123')
+        except BaseException as e:
+            self.assertEqual(str(e), 'enter valid phone number')
+        self.assertFalse(self.users.first(username='sam'))
 
     def test_get_user(self):
         user = self.users.get(1)
@@ -153,6 +202,18 @@ class TestUser(unittest.TestCase):
         self.assertFalse(user.is_member('administrators'))
         self.assertFalse(user.is_member('notagroup'))
 
+    def test_user_is_member_many(self):
+        user = self.users.first(username='admin')
+        self.assertTrue(user.is_member('users', 'administrators'))
+        self.assertTrue(user.is_member('notagroup', 'administrators'))
+        self.assertTrue(user.is_member('users', 'notagroup'))
+        self.assertFalse(user.is_member('notagroup', 'notagroup2'))
+        user = self.users.first(username='user')
+        self.assertTrue(user.is_member('users', 'administrators'))
+        self.assertTrue(user.is_member('notagroup', 'users'))
+        self.assertTrue(user.is_member('users', 'notagroup'))
+        self.assertFalse(user.is_member('notagroup', 'notagroup2'))
+
     def test_user_link(self):
         user = self.users.first(username='user')
         self.assertEqual(user._id, 2)
@@ -165,6 +226,21 @@ class TestUser(unittest.TestCase):
             user.link,
             '<a href="mysite.com/app/admin/users/user" name="link-to-user">user</a>'
         )
+
+    def test_user_user_id(self):
+        user = self.users.first(username='user')
+        self.assertEqual(user._id, 2)
+        self.assertEqual(user.user_id, 2)
+
+    def test_user_nt_user_id(self):
+        user = self.users.first(username='user')
+        user.username = 'domain\\user'
+        self.assertEqual(user.key, 'domain-user')
+
+    def test_user_email_user_id(self):
+        user = self.users.first(username='user')
+        user.username = 'user@testco.com'
+        self.assertEqual(user.key, 'user-at-testco.com')
 
     def test_user_activate(self):
         user = self.users.first(username='user')
@@ -197,6 +273,72 @@ class TestUser(unittest.TestCase):
         user = self.users.first(username='admin')
         self.assertTrue(user.can('read', obj))
         self.assertTrue(user.can('edit', obj))
+
+    def test_admin_can_run_authorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('home')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_admin_cannot_run_unauthorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
+
+    def test_admin_can_run_unauthorized_in_dev(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=1
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = True
+        my_app = get_app('sample')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_user_can_run_authorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='user')
+        administrator.is_admin = False
+        my_app = get_app('home')
+        self.assertTrue(administrator.can_run(my_app))
+
+    def test_user_cannot_run_unauthorized(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=0
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = False
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
+
+    def test_user_cannot_run_unauthorized_in_dev(self):
+        def get_app(name):
+            return zoom.utils.Bunch(
+                name=name,
+                in_development=1
+            )
+        administrator = self.users.first(username='admin')
+        administrator.is_admin = False
+        my_app = get_app('sample')
+        self.assertFalse(administrator.can_run(my_app))
 
     def test_user_authorize(self):
         class MyObject(object):
@@ -254,3 +396,16 @@ class TestUser(unittest.TestCase):
         admin = self.users.first(username='admin')
         self.assertIsNotNone(admin.last_seen)
         self.assertIsInstance(admin.last_seen, datetime.datetime)
+
+    def test_get_user_no_params(self):
+        user = get_user()
+        self.assertEqual(user.username, 'admin')
+
+    def test_get_user_with_id(self):
+        user_id = get_users().first(username='user').user_id
+        user = get_user(user_id)
+        self.assertEqual(user.username, 'user')
+
+    def test_get_user_with_username(self):
+        user = get_user('user')
+        self.assertEqual(user.username, 'user')

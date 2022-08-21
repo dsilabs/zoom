@@ -29,7 +29,6 @@ from zoom.response import (
     JavascriptResponse,
     HTMLResponse,
     ICOResponse,
-    TextResponse,
     RedirectResponse,
     TTFResponse,
     WOFFResponse,
@@ -55,6 +54,7 @@ from zoom.page import page
 from zoom.helpers import tag_for
 from zoom.tools import websafe
 from zoom.utils import create_csrf_token
+import zoom.components.flags
 
 
 def debug(request):  # pragma: no cover
@@ -136,12 +136,12 @@ def serve_redirects(request, handler, *rest):
 def serve_response(*path):
     """Serve up various respones with their correct response type
 
-    >>> zoom_js = zoom.tools.zoompath('web/www/static/zoom/zoom.js')
+    >>> zoom_js = zoom.tools.zoompath('zoom/_assets/web/www/static/zoom/zoom.js')
     >>> response = serve_response(zoom_js)
     >>> isinstance(response, JavascriptResponse)
     True
 
-    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> zoom_path = zoom.tools.zoompath('zoom', '_assets', 'web')
     >>> response = serve_response(zoom_path, 'www/static/zoom/nada.js')
     >>> isinstance(response, JavascriptResponse)
     False
@@ -151,7 +151,7 @@ def serve_response(*path):
     >>> response.status
     '404 Not Found'
 
-    >>> zoom_path = zoom.tools.zoompath('web')
+    >>> zoom_path = zoom.tools.zoompath('zoom', '_assets', 'web')
     >>> response = serve_response(zoom_path, 'www/static/zoom/images')
     >>> isinstance(response, JavascriptResponse)
     False
@@ -167,6 +167,7 @@ def serve_response(*path):
         gif=PNGResponse,
         ico=ICOResponse,
         css=CSSResponse,
+        sass=CSSResponse,
         js=JavascriptResponse,
         ttf=TTFResponse,
         json=JSONResponse,
@@ -175,26 +176,48 @@ def serve_response(*path):
         map=BinaryResponse,
         svg=SVGResponse,
     )
-    pathname = os.path.realpath(os.path.join(*path))
+    exists = os.path.exists
+    isfile = os.path.isfile
+    t = os.path.join(*path)
+    pathname = os.path.realpath(t)
+
     logger = logging.getLogger(__name__)
     logger.debug('attempting to serve up file %r', pathname)
-    if os.path.exists(pathname):
+
+    if not isfile(pathname) and pathname.endswith('.css'):
+        alt_pathname = pathname[:-3] + 'sass'
+        logger.debug('trying alt_pathname %r', alt_pathname)
+        if isfile(alt_pathname):
+            pathname = alt_pathname
+        else:
+            raise Exception('not a file')
+
+    if exists(pathname):
         pathnamel = pathname.lower()
         _, file_type = os.path.splitext(pathnamel)
         file_type = file_type[1:]
         response_type = known_types.get(file_type)
         if response_type:
 
-            with open(pathname, 'rb') as f:
-                data = f.read()
-
             if file_type == 'json':
+
+                with open(pathname, 'rb') as f:
+                    data = f.read()
+
                 # JSONResponse expects an object which it will seriaize
                 # so this unserializaing / reserializing an extra step
                 # which may be unnecessary.  For now, we'll use the
                 # JSONResponse as designed but we may eventually want to
                 # create a different response type in this case.
                 data = zoom.jsonz.loads(data)
+
+            elif file_type == 'sass':
+                logger.debug('rendering sass file response %r', pathname)
+                data = zoom.tools.sass(pathname).encode('utf8')
+
+            else:
+                with open(pathname, 'rb') as f:
+                    data = f.read()
 
             return response_type(data)
 
@@ -261,7 +284,7 @@ def serve_static(request, handler, *rest):
             join(request.instance, 'static'),
             join(request.instance, 'www', 'static'),
             join(request.instance, '..', 'static'),
-            zoom.tools.zoompath('zoom', '_assets', 'www', 'static'),
+            zoom.tools.zoompath('zoom', '_assets', 'web', 'www', 'static'),
         ]))
         for location in locations:
             pathname = join(location, *request.route[1:])
@@ -293,13 +316,20 @@ def serve_themes(request, handler, *rest):
     False
     """
 
+    def existing(*path):
+        """Return existing file pathname or none"""
+        pathname = os.path.join(*path)
+        if pathname and os.path.isfile(pathname):
+            return pathname
+
     path = request.path[1:]
     site = request.site
-    existing = zoom.utils.existing
 
     pathname = path and (
         existing(site.theme_path, path) or
-        existing(site.default_theme_path, path)
+        existing(site.theme_path, path[:-4]+'.sass') or
+        existing(site.default_theme_path, path) or
+        existing(site.default_theme_path, path[:-4]+'.sass')
     )
     if pathname:
         return serve_response(pathname)
@@ -309,23 +339,52 @@ def serve_themes(request, handler, *rest):
         return handler(request, *rest)
 
 
-def serve_images(request, handler, *rest):
-    """Serve an image file
+def serve_content_images(request, handler, *rest):
+    """Serve Images from the Content app
 
-    >>> url = 'http://localhost/images/banner_logo.png'
+    Direct a request for an image to the content app.
+
+    >>> site = zoom.sites.Site()
+    >>> url = 'http://localhost/images/some-image.png'
     >>> request = zoom.request.build(url)
-    >>> request.site = zoom.sites.Site()
-    >>> result = serve_images(request, lambda a: False)
-    >>> isinstance(result, PNGResponse)
+    >>> request.path == '/images/some-image.png'
     True
+    >>> response = serve_content_images(request, lambda a: None)
+    >>> request.path
+    '/content/images/some-image.png'
 
-    >>> url = 'http://localhost/notimages/banner_logo.png'
-    >>> request = zoom.request.build(url)
-    >>> serve_images(request, lambda a: False)
-    False
     """
     if request.path.startswith('/images/'):
-        return serve_response(request.site_path, 'content', request.path[1:])
+        logger = logging.getLogger(__name__)
+        request.path = '/content' + request.path
+        request.route = request.path.split('/')[1:]
+        logger.debug('calling content app for image (%r, %r)', request.path, request.route)
+        return handler(request, *rest)
+    else:
+        return handler(request, *rest)
+
+
+def serve_content_files(request, handler, *rest):
+    """Serve Files from the Content app
+
+    Direct a request for a file to the content app.
+
+    >>> site = zoom.sites.Site()
+    >>> url = 'http://localhost/files/some-file.pdf'
+    >>> request = zoom.request.build(url)
+    >>> request.path == '/files/some-file.pdf'
+    True
+    >>> response = serve_content_files(request, lambda a: None)
+    >>> request.path
+    '/content/files/some-file.pdf'
+
+    """
+    if request.path.startswith('/files/'):
+        logger = logging.getLogger(__name__)
+        request.path = '/content' + request.path
+        request.route = request.path.split('/')[1:]
+        logger.debug('calling content app for file (%r, %r)', request.path, request.route)
+        return handler(request, *rest)
     else:
         return handler(request, *rest)
 
@@ -372,7 +431,7 @@ def serve_favicon(request, handler, *rest):
     """
     if request.path == '/favicon.ico':
         pathname = zoom.tools.zoompath(
-            'web', 'themes', 'default', 'images', 'favicon.ico'
+            'zoom', '_assets', 'web', 'themes', 'default', 'images', 'favicon.ico'
         )
         return serve_response(pathname)
     else:
@@ -432,6 +491,7 @@ def get_csrf_token(session):
         return session.csrf_token
     return _get_token
 
+
 def check_csrf(request, handler, *rest):
     """Check csrf token
 
@@ -463,7 +523,9 @@ def check_csrf(request, handler, *rest):
 
     zoom.render.add_helpers(dict(csrf_token=get_csrf_token(request.session)))
 
-    if request.method == 'POST':
+    protected_methods = ['POST', 'PUT', 'PATCH', 'DELETE']
+
+    if request.method in protected_methods:
         logger = logging.getLogger(__name__)
 
         form_token = request.data.pop('csrf_token', None)
@@ -480,8 +542,6 @@ def check_csrf(request, handler, *rest):
                 else:
                     logger.warning('internal csrf token missing')
                 return RedirectResponse('/')
-        else:
-            logger.warning('POST with csrf checking turned off')
 
     return handler(request, *rest)
 
@@ -525,12 +585,18 @@ def capture_stdout(request, handler, *rest):
         printed_output = sys.stdout.getvalue()
         sys.stdout.close()
         sys.stdout = real_stdout
-        if 'result' in locals() and isinstance(result.content, str) and '{*stdout*}' in result.content:
+        content = 'result' in locals() and getattr(result, 'content', None)
+        if isinstance(content, str) and '{*stdout*}' in result.content:
             result.content = result.content.replace(
                 '{*stdout*}', websafe(printed_output))
     logger = logging.getLogger(__name__)
     logger.debug('captured stdout')
     return result
+
+
+def cause_error(request, handler, *rest):
+    """Cause an error for testing"""
+    raise Exception('Something unexpected happened!')
 
 
 def trap_errors(request, handler, *rest):
@@ -551,49 +617,60 @@ def trap_errors(request, handler, *rest):
     >>> status, headers, content = response.as_wsgi()
     >>> status
     '500 Internal Server Error'
-    >>> 'Exception: error!' in str(content)
+    >>> 'Server Error' in str(content)
     True
     """
     try:
         return handler(request, *rest)
-    except Exception:
+    except Exception as e:
+
+        logger = logging.getLogger(__name__)
+        logger.error(str(e))
+        msg = traceback.format_exc()
+        logger.error(msg)
+
         status = '500 Internal Server Error'
-        return TextResponse(traceback.format_exc(), status)
+        return HTMLResponse(
+            zoom.templates.internal_server_error_500,
+            status
+        )
 
 
 def display_errors(request, handler, *rest):
     """Display errors for developers
 
-    >>> request = zoom.request.build('http://localhost')
-    >>> request.app = zoom.utils.Bunch(theme='default', templates_paths=[])
-    >>> request.host = 'localhost'
-    >>> request.site = zoom.sites.Site()
-    >>> request.site.theme = 'default'
-    >>> request.site.request = request
-    >>> zoom.system.request = request
-    >>> zoom.system.site = request.site
-    >>> zoom.system.user = request.site.users.first(username='admin')
-    >>> zoom.system.user.is_admin = True
-    >>> def throw(request):
-    ...     raise Exception('ouch!')
-    >>> response = display_errors(request, throw)
-    >>> isinstance(response, HTMLResponse)
-    True
-    >>> zoom.system.user.is_admin = False
-    >>> response = display_errors(request, throw)
-    >>> isinstance(response, HTMLResponse)
-    True
     """
     try:
         return handler(request, *rest)
-    except Exception:
+
+    except zoom.exceptions.ThemeTemplateMissingException:
+        return zoom.response.HTMLResponse(
+            zoom.templates.template_missing
+        )
+
+    except zoom.exceptions.UnauthorizedException:
+        return page(
+            'Your account privileges are not sufficient to access the requested resource.'
+            ' Please contact the system administrator if you need assistance.',
+            title='Permission Required',
+            status='403 Forbidden'
+        ).render(request)
+
+    except Exception as e:
         msg = traceback.format_exc()
         logger = logging.getLogger(__name__)
         logger.error(msg)
 
+        as_api = request.env.get('HTTP_ACCEPT', '') == 'application/json'
+        error_status = '500 Internal Server Error'
+
         if not (hasattr(zoom.system, 'user') and zoom.system.user.is_admin):
-            content = zoom.tools.load_template('friendly_error', zoom.templates.friendly_error)
-            return page(content).render(request)
+            if as_api:
+                return JSONResponse(
+                    dict(status=error_status), status=error_status)
+            content = zoom.tools.load_template(
+                'friendly_error', zoom.templates.friendly_error)
+            return page(content, status=error_status).render(request)
 
         content = """
         <h2>Exception</h2>
@@ -606,9 +683,19 @@ def display_errors(request, handler, *rest):
             str(request),
         )
 
+        if as_api:
+            return JSONResponse(
+                dict(
+                    message=str(e),
+                    status=error_status,
+                ),
+                status=error_status
+            )
+
         return page(
             content,
-            title='Application Error'
+            title='Application Error',
+            status=error_status
         ).render(request)
 
 
@@ -659,7 +746,6 @@ def _handle(request, handler, *rest):  # pragma: no cover
     """invoke the next handler"""
     return handler(request, *rest)
 
-from zoom.components.flags import flag_trap_middleware
 
 def handle(request, handlers=None):  # pragma: no cover
     """handle a request"""
@@ -681,12 +767,15 @@ def handle(request, handlers=None):  # pragma: no cover
         zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,
+        zoom.impersonation.handler,
         zoom.component.handler,
         zoom.users.handler,
         zoom.render.handler,
         display_errors,
         check_csrf,
-        flag_trap_middleware,
+        zoom.components.flags.handle,
+        serve_content_images,
+        serve_content_files,
         zoom.apps.handler,
         not_found,
     )
@@ -697,6 +786,6 @@ DEBUGGING_HANDLERS = (
     trap_errors,
     serve_favicon,
     serve_static,
-    serve_images,
+    serve_content_images,
     debug,
 )

@@ -1,0 +1,12 @@
+@media print {
+  #main_menu, #system_menu, #bottom, .user_info, .app-menu, .actions, .search, .footer, .button {
+    display: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: black;
+  }
+}
+
+/*# sourceMappingURL=print.css.map */

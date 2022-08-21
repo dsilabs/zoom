@@ -3,12 +3,17 @@
 """
 
 import decimal
-import uuid
 
 import zoom
 import zoom.html as h
 import zoom.components as c
 
+
+def use_common_package(message):
+    zoom.requires('common_package_test')
+    return zoom.Component(
+        h.tag('div', message, id='common_package_test')
+    )
 
 
 def view():
@@ -46,6 +51,7 @@ def view():
         c.dropzone('/sample/components'),
         hr,
 
+        use_common_package('not updated yet')
     )
 
     return zoom.page(content, title='Components')

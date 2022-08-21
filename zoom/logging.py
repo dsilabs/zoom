@@ -22,7 +22,7 @@ def add_entry(request, status, entry):
             hasattr(request, 'app') and request.app.name or None,
             request.path,
             status,
-            hasattr(request, 'user') and request.user._id or None,
+            hasattr(request, 'user') and request.user.user_id or None,
             request.ip_address,
             request.remote_user,
             request.host,
@@ -79,6 +79,11 @@ def handler(request, handler, *rest):
     try:
         result = handler(request, *rest)
     finally:
-        request.profiler.time('log request', add_entry, request, 'C', 'complete')
+        if request.method == 'HEAD':
+            request.profiler.time('log request', add_entry, request, 'H', 'complete')
+        elif '/_' in request.path:
+            request.profiler.time('log quiet request', add_entry, request, 'Q', 'quiet complete')
+        else:
+            request.profiler.time('log request', add_entry, request, 'C', 'complete')
         root_logger.removeHandler(log_handler)
     return result

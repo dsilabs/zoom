@@ -45,6 +45,14 @@ class PageCollection(zoom.collect.CollectionModel):
     def abs_path(self):
         return zoom.helpers.url_for(zoom.system.site.abs_url, self.path)
 
+    @property
+    def who(self):
+        return zoom.helpers.who(self.updated_by)
+
+    @property
+    def when(self):
+        return zoom.helpers.when(self.updated)
+
 
 class PageStore(EntityStore):
     """Page EntityStore"""
@@ -89,8 +97,8 @@ def page_fields():
 
 class MyCollectionView(zoom.collect.CollectionView):
 
-    def edit(self, key):
-        page = zoom.collect.CollectionView.edit(self, key)
+    def edit(self, key, **data):
+        page = zoom.collect.CollectionView.edit(self, key, **data)
         page.css = '.content .field_label { min-width: 15%; width: 15%; }'
         return page
 
@@ -103,6 +111,8 @@ main = zoom.collect.Collection(
     page_fields,
     model=PageCollection,
     view=MyCollectionView,
+    labels=['Title', 'Path', 'Description', 'Who', 'When'],
+    columns=['link', 'path', 'description', 'who', 'when']
     # store=PageStore,
 )
 main.order = lambda a: a.path

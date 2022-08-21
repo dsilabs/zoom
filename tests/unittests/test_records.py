@@ -8,7 +8,8 @@ from decimal import Decimal
 from datetime import date, time, datetime
 import unittest
 
-from zoom.records import Record, RecordStore
+import zoom
+from zoom.records import Record, RecordStore, table_of
 from zoom.database import setup_test
 
 
@@ -82,6 +83,55 @@ class TestRecordStore(unittest.TestCase):
                 self.id_name: jane_id,
                 'name': 'Jane',
                 'age': 25,
+            }
+        )
+
+    def test_set(self):
+        jane_id = self.people.put(Person(name='Jane', age=25))
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 25,
+            }
+        )
+
+        self.people.set(jane_id, dict(age=23))
+
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 23,
+            }
+        )
+
+        person = self.people.get(jane_id)
+        person.set(age=29)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 29,
+            }
+        )
+
+        person = self.people.get(jane_id)
+        del person['__store']
+        self.assertEqual(
+            dict(person),
+            {
+                self.id_name: jane_id,
+                'name': 'Jane',
+                'age': 29,
             }
         )
 
@@ -186,6 +236,97 @@ class TestRecordStore(unittest.TestCase):
         self.assertEqual(3, len(self.people))
         self.people.zap()
         self.assertEqual(0, len(self.people))
+
+    def test_iter(self):
+        self.assertEqual(3, len(self.people))
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Joe', 'Sam', 'Ann'])
+
+    def test_iter_ordered(self):
+        self.assertEqual(3, len(self.people))
+        self.people.order_by = 'name'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Ann', 'Joe', 'Sam'])
+
+        self.people.order_by = 'age'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Sam', 'Ann', 'Joe'])
+
+    def test_iter_ordered_desc(self):
+        self.assertEqual(3, len(self.people))
+        self.people.order_by = 'name desc'
+        names = [record.name for record in self.people]
+        self.assertEqual(names, ['Sam', 'Joe', 'Ann'])
+
+    def test_iter_limit(self):
+        self.assertEqual(3, len(self.people))
+        self.people.limit = 1
+        names = [record.name for record in self.people]
+        self.assertEqual(1, len(names))
+
+
+    def test_reserved_words(self):
+        db = self.db
+        now = zoom.tools.now()
+
+        # note: column is a reserved word
+
+        self.assertNotIn('z_test_table', db.get_tables())
+        db("""
+           create table z_test_table (
+             `item` int not null auto_increment,
+             `column` text(20),
+             `created` timestamp,
+            PRIMARY KEY (`item`)
+           )
+        """)
+        self.assertIn('z_test_table', db.get_tables())
+
+        table = table_of(dict, db=db, name='z_test_table', key='item')
+
+        self.assertIsNone(table.first(item=1))
+
+        table.put(dict(column='test', created=now))
+
+        self.assertIsNotNone(table.first(column='test'))
+
+        table.delete(column='test')
+
+        self.assertIsNone(table.first(column='test'))
+
+        db('drop table z_test_table')
+        self.assertNotIn('z_test_table', db.get_tables())
+
+    def test_find_one_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name='Pat')
+        self.assertEqual(list(result)[0].name, 'Pat')
+
+    def test_find_multiple_by_value(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(age=25)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_with_limit(self):
+        self.people.put(Person(name='Pat', age=75))
+        self.people.put(Person(name='John', age=75))
+        self.people.put(Person(name='Jen', age=75))
+        self.assertEqual(3, len(self.people.find(age=75)))
+        self.people.limit = 1
+        self.assertEqual(1, len(self.people.find(age=75)))
+
+    def test_find_multiple_by_values(self):
+        self.people.put(Person(name='Pat', age=25))
+        result = self.people.find(name=['Sam', 'Pat'])
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Sam', 'Pat'])
+
+    def test_find_multiple_by_value_and_values(self):
+        self.people.put(Person(name='Pat', age=30))
+        result = self.people.find(name=['Sam', 'Pat'], age=30)
+        names = [person.name for person in result]
+        self.assertEqual(names, ['Pat'])
 
 
 class TestKeyedRecordStore(TestRecordStore):

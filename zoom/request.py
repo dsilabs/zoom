@@ -3,7 +3,7 @@
 """
     zoom.request
 
-    Web requsets.
+    Web requests.
 """
 
 import os
@@ -19,8 +19,13 @@ from timeit import default_timer as timer
 import zoom
 import zoom.utils
 import zoom.cookies
+import zoom.exceptions
+
 from zoom.context import context
 from zoom.profiler import SystemTimer
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_request_id():
@@ -28,33 +33,7 @@ def make_request_id():
     return uuid.uuid4().hex
 
 
-def get_web_vars(env):
-    """return web parameters as a dict"""
-
-    get = env.get
-    module = get('wsgi.version', None) and 'wsgi' or 'cgi'
-    method = get('REQUEST_METHOD')
-
-    if method not in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']:
-        logger = logging.getLogger(__name__)
-        logger.warn('ignoring unsupported HTTP method %r', method)
-        return {}
-
-    if method == 'GET':
-        cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
-
-    else:
-        post_env = env.copy()
-        if module == 'wsgi':
-            body_stream = get('wsgi.input')
-        else:
-            body_stream = sys.stdin
-
-        cgi_fields = cgi.FieldStorage(
-            fp=body_stream,
-            environ=post_env,
-            keep_blank_values=True
-        )
+def cgi_to_dict(cgi_fields):
 
     items = {}
     for key in cgi_fields.keys():
@@ -62,7 +41,10 @@ def get_web_vars(env):
         save = items.__setitem__
 
         if isinstance(cgi_fields[key], list):
-            value = (key, [item.value for item in cgi_fields[key]])
+            if cgi_fields[key] and cgi_fields[key][0].filename:
+                value = (key, cgi_fields[key])
+            else:
+                value = (key, [item.value for item in cgi_fields[key]])
         elif cgi_fields[key].filename:
             value = (key, cgi_fields[key])
         else:
@@ -81,6 +63,36 @@ def get_web_vars(env):
     return items
 
 
+def get_web_vars(env):
+    """return web parameters as a dict"""
+
+    get = env.get
+    module = get('wsgi.version', None) and 'wsgi' or 'cgi'
+    method = get('REQUEST_METHOD')
+
+    if method not in ('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH'):
+        logger.warning('ignoring unsupported HTTP method %r', method)
+        return {}
+
+    if method in ('GET', 'HEAD'):
+        cgi_fields = cgi.FieldStorage(environ=env, keep_blank_values=1)
+
+    else:
+        post_env = env.copy()
+        if module == 'wsgi':
+            body_stream = get('wsgi.input')
+        else:
+            body_stream = sys.stdin
+
+        cgi_fields = cgi.FieldStorage(
+            fp=body_stream,
+            environ=post_env,
+            keep_blank_values=True
+        )
+
+    return cgi_to_dict(cgi_fields)
+
+
 def get_parent_dir():
     """get the directory above the current directory"""
     return os.path.split(os.path.abspath(os.getcwd()))[0]
@@ -94,13 +106,7 @@ def get_library_instance():
     to run using the built-in instance.  This is most common
     in development environments.
     """
-    return os.path.realpath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'web'
-        )
-    )
+    return zoom.tools.zoompath('zoom/_assets/web')
 
 
 def get_instance(directory):
@@ -108,21 +114,31 @@ def get_instance(directory):
 
     This function will first check to see if the instance directory passed
     contains a sites directory, the miniumum bar to be considered an instance
-    directory.  If so, it returns it's absolute path.
+    directory.  If so, it returns it's absolute path.  If not, it raises
+    an exception.
 
-    If not, it will attempt to locate a Zoom configuration file which
-    specifies the instance path.
+    If no directory is passed it will attempt to locate a Zoom configuration
+    file (zoom.conf or .zoomrc) which specifies the instance path.
 
-    If none of the above methods succeed it raises an exception.
+    If that doesn't work it will use the built-in instance.
     """
 
-    logger = logging.getLogger(__name__)
+    if directory:
+        if os.path.isdir(os.path.join(directory, 'sites')):
+            # user wants to run a specific instance overriding the config files
+            instance = os.path.realpath(directory)
+            logger.debug('instance: %s', instance)
+            return instance
+        else:
+            raise zoom.exceptions.NotAnInstanceExecption(
+                '%s is not an instance' % directory)
 
-    if directory and os.path.isdir(os.path.join(directory, 'sites')):
-        # user wants to run a specific instance overriding the config files
-        instance = os.path.realpath(directory)
-        logger.debug('instance: %s', instance)
-        return instance
+    else:
+        if os.path.isdir(os.path.join('.', 'sites')):
+            # or, we may be in an instance directory now
+            instance = os.path.realpath('.')
+            logger.debug('instance: %s', instance)
+            return instance
 
     config_file = (
         zoom.utils.locate_config('zoom.conf') or
@@ -251,8 +267,6 @@ class Request(object):
             self.home = os.path.dirname(get('SCRIPT_FILENAME', ''))
             self._body = sys.stdin
 
-        logger = logging.getLogger(__name__)
-
         self.location = strim(instance)
         logger.debug('request.location: %s', self.location)
 
@@ -267,7 +281,6 @@ class Request(object):
     @property
     def body(self):
         """access the body in raw form"""
-        logger = logging.getLogger(__name__)
         if not self.body_consumed:
             logger.debug('consuming body')
             self.body_consumed = True
@@ -350,7 +363,6 @@ def build(url, data=None, instance_path=None):
 
     """
     parsed = urllib.parse.urlparse(url)
-    logger = logging.getLogger(__name__)
     logger.debug(parsed)
     request = Request(
         dict(

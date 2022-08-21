@@ -19,6 +19,22 @@ default_packages = {
             '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'
         ]
     },
+    'bootstrap4.5': {
+        'libs': [
+            '/static/zoom/bootstrap/bootstrap4.5/js/bootstrap.bundle.min.js',
+        ],
+        'styles': [
+            '/static/zoom/bootstrap/bootstrap4.5/css/bootstrap.min.css'
+        ],
+        'requires': [
+            'jquery',
+        ]
+    },
+    "bootstrap-icons": {
+        "styles": [
+            "//cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+        ]
+    },
     'd3': {
         'libs': [
             'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js',
@@ -35,6 +51,25 @@ default_packages = {
             'd3',
         ]
     },
+    "chartjs": {
+        "libs": [
+            "//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"
+        ],
+        "styles": [
+            "//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css"
+        ]
+    },
+    "chosen": {
+        "libs": [
+            "/static/zoom/chosen/chosen.jquery.min.js"
+        ],
+        "styles": [
+            "/static/zoom/chosen/chosen.min.css"
+        ],
+        'requires': [
+            'jquery',
+        ]
+    },
     'cookieconsent': {
         'libs': [
             '/static/zoom/cookieconsent.js',
@@ -46,10 +81,13 @@ default_packages = {
     },
     'datatables': {
         'libs': [
-            '//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js',
+            '//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js',
             ],
         'styles': [
-            '//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css',
+            '//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css',
+        ],
+        'requires': [
+            'jquery'
         ]
     },
     'datatables.buttons': {
@@ -77,7 +115,7 @@ default_packages = {
     },
     'fontawesome4': {
         'styles': [
-            '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+            '/static/zoom/fontawesome4/css/font-awesome.min.css'
         ]
     },
     'fontawesome': {
@@ -109,6 +147,25 @@ default_packages = {
         ],
         'requires': [
             'jquery'
+        ],
+    },
+    'pivot-table': {
+        'libs': [
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/plotly.js/1.33.1/plotly.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.cs.min.js",
+            "//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/export_renderers.min.js"
+        ],
+        'styles': [
+            '//cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css'
+        ],
+        'requires': [
+            'jquery',
+            'jquery-ui',
+            'c3'
         ],
     },
     'spin': {
@@ -166,7 +223,7 @@ def get_registered_packages():
     >>> import zoom.request
     >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
     >>> zoom.system.site = zoom.site.Site(zoom.system.request)
-    >>> zoom.system.request.app = zoom.utils.Bunch(packages={})
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
 
     >>> packages = get_registered_packages()
     >>> 'c3' in packages
@@ -176,8 +233,14 @@ def get_registered_packages():
     packages_list = [
         default_packages,
         zoom.system.site.packages,
-        zoom.system.request.app.packages,
     ]
+    if zoom.system.request:
+        app = zoom.apps.get_app()
+        if app:
+            packages_list.extend([
+                app.common_packages,
+                app.packages,
+            ])
     for packages in packages_list:
         registered.update(packages)
     return registered

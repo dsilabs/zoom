@@ -14,7 +14,8 @@ parts_re = (
 )
 tag_parts = re.compile(parts_re)
 
-pattern_tpl = r'%s([a-z0-9_]+)\s*(.*?)%s'
+name_re = '[a-z0-9_.]+'
+pattern_tpl = r'%s(' + name_re + r')\s*(.*?)%s'
 patterns = {}
 
 
@@ -75,7 +76,7 @@ def _fill(tag_start, tag_end, text, callback):
 
 
 def fill(text, callback):
-    """fill a tag in the double handlebars style
+    """fill tags in the double handlebars style
 
     >>> def filler(name, *args, **kwargs):
     ...     if name == 'name':
@@ -86,6 +87,7 @@ def fill(text, callback):
     ...             return name.lower()
     ...         else:
     ...             return name
+    ...
     >>> fill('Hello {{name}}!', filler)
     'Hello James!'
     >>> fill('Hello {{name language=\"french\"}}!', filler)
@@ -111,10 +113,44 @@ def fill(text, callback):
     >>> fill('Hello{{name ""}}!', values.get )
     'Hello!'
 
+    >>> class Thing:
+    ...     name = 'Widget'
+    >>> thing = Thing()
+    >>> thing.name
+    'Widget'
+    >>> def fill_this(template, *args, **kwargs):
+    ...     def filler(name, *a, **k):
+    ...         tpl = ('{'+name+'}')
+    ...         result = tpl.format(*args, **kwargs)
+    ...         return result
+    ...     return fill(template, filler)
+    >>> fill_this('A {{thing.name}}, {{person}}!', thing=thing, person='Ann')
+    'A Widget, Ann!'
+
     """
     return dzfill(_fill('{{', '}}', text, callback), callback)
 
 
+def custom_fill(tag_start, tag_end, text, callback):
+    """fill tags in a custom style
+
+    >>> def fill2(*args, **kwargs):
+    ...     return custom_fill('\$\(\( ', '\)\)', *args, **kwargs)
+    >>> def callback(name, *args, **kwargs):
+    ...     return dict(first_name='Sam', last_name='Jones').get(name, 'unknown')
+    >>> fill2('Hello $(( first_name ))', callback)
+    'Hello Sam'
+    >>> fill2('Hello $(( first_name )) $(( last_name ))', callback)
+    'Hello Sam Jones'
+    """
+    return _fill(tag_start, tag_end, text, callback)
+
+
 def dzfill(text, callback):
-    """fill a tag in the <dz: style"""
+    """fill tags in the <dz: style"""
     return _fill('<dz:', '>', text, callback)
+
+def dollar_fill(text, callback):
+    """fill templates in the dollar style"""
+    start, end = '\$\(\(\s*?', '\s*?\)\)'
+    return custom_fill(start, end, text, callback)

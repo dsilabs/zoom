@@ -66,10 +66,11 @@ def apply_helpers(template, obj, providers):
 
                 logger.debug('no help for %r', (name, args, kwargs))
 
-            except TypeError:
+            except TypeError as e:
                 a1 = ' '.join(str(a) for a in args)
                 k1 = ' '.join('{}={!r}'.format(k, v) for k, v in kwargs.items())
-                return 'error filling {}{} {}{}{}'.format('{{', name, a1, k1, '}}')
+                logger.error(str(e))
+                return 'error filling {}{!r} {!r}{!r}{}'.format('{{', name, a1, k1, '}}')
 
         return _filler
 

@@ -13,6 +13,7 @@ import unittest
 import logging
 from decimal import Decimal
 from datetime import date
+import warnings
 
 import zoom
 from zoom.database import (
@@ -22,7 +23,6 @@ from zoom.database import (
     UnknownDatabaseException,
 )
 
-import warnings
 warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
 
 logger = logging.getLogger(__name__)
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 class DatabaseTests(object):
     """test db module"""
 
+    # pylint: disable=no-member
     # pylint: disable=too-many-public-methods
     # It's reasonable in this case.
     def tearDown(self):
@@ -169,6 +170,31 @@ class DatabaseTests(object):
                 ('1234', 50, "Hello there")
             )
 
+    def test_value(self):
+        db = self.db
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        value = db('select * from dzdb_test_table limit 1').value
+        self.assertEqual(value, '1234')
+
+    def test_map(self):
+
+        class Greeting(zoom.Record):
+            def say(self):
+                return self.notes
+
+        db = self.db
+        db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
+           NUMERIC(10,2), NOTES TEXT)""")
+        db("""insert into dzdb_test_table values ("1234", 50, "Hello there")""")
+        db("""insert into dzdb_test_table values ("4567", 90, "Goodbye")""")
+        greetings = db('select * from dzdb_test_table').map(Greeting)
+        result = []
+        for greeting in greetings:
+            result.append(greeting.say())
+        self.assertEqual(result, ['Hello there', 'Goodbye'])
+
     def test_metadata(self):
         db = self.db
         db("""create table dzdb_test_table (ID CHAR(10), AMOUNT
@@ -209,9 +235,9 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -220,8 +246,8 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > %s', 20
         )
@@ -230,7 +256,7 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < %(amount)s', dict(amount=20)
         )
@@ -239,7 +265,7 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%%1"'
         )
@@ -248,10 +274,210 @@ class DatabaseTests(object):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%%2" and amount > %s', 20
         )
+
+    def test_execute_many_from_empty_list_of_tuples(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_tuples(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                (4, 50.10, '20.00', 'notes 4'),
+                (5, 60.10, '20.00', 'notes 5'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+             5   60.1     20 notes 5
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_one_tuple(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%s, %s, %s, %s)', [
+                (4, 50.10, '20.00', 'notes 4'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_empty_list_of_dicts(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_dicts(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+                dict(id=4, amount=50.10, salary='20.00', notes='notes 4'),
+                dict(id=5, amount=60.10, salary='20.00', notes='notes 5'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+             5   60.1     20 notes 5
+            """,
+            'select * from test_table'
+        )
+
+    def test_execute_many_from_list_of_one_dict(self):
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            'select * from test_table'
+        )
+
+        self.db.execute_many(
+            'insert into test_table values (%(id)s, %(amount)s, %(salary)s, %(notes)s)', [
+                dict(id=4, amount=50.10, salary='20.00', notes='notes 4'),
+            ]
+        )
+
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+             4   50.1     20 notes 4
+            """,
+            'select * from test_table'
+        )
+
+    def test_column_name_reserved(self):
+        db = self.db
+        self.assertNotIn('z_test_table', db.get_tables())
+        db("""
+           create table z_test_table (
+             `id` integer,
+             `column` text(20),
+             `created` timestamp
+           )
+        """)
+        self.assertIn('z_test_table', db.get_tables())
+        db('drop table z_test_table')
+        self.assertNotIn('z_test_table', db.get_tables())
 
 
 class TestSqlite3Database(unittest.TestCase, DatabaseTests):
@@ -313,9 +539,9 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -324,8 +550,8 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > ?', 20
         )
@@ -334,7 +560,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < :amount', dict(amount=20)
         )
@@ -343,7 +569,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%1"'
         )
@@ -352,7 +578,7 @@ class TestSqlite3Database(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%2" and amount > ?', 20
         )
@@ -599,9 +825,9 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             1   10.2     50 notes 1
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table'
         )
@@ -610,8 +836,8 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
-            3    40.1     20 notes 3
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
             """,
             'select * from test_table where amount > %s', 20
         )
@@ -620,7 +846,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where amount < %(amount)s', dict(amount=20)
         )
@@ -629,7 +855,7 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            1    10.2     50 notes 1
+             1   10.2     50 notes 1
             """,
             'select * from test_table where notes like "%%1"'
         )
@@ -638,9 +864,32 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             """
             id amount salary notes
             -- ------ ------ -------
-            2    30.2     75 notes 2
+             2   30.2     75 notes 2
             """,
             'select * from test_table where notes like "%%2" and amount > %s', 20
+        )
+
+    def test_make_select_statement(self):
+        from zoom.sqltools import make_table_select, less_than, gt
+        cmd = make_table_select('test_table', amount=less_than(20))
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             1   10.2     50 notes 1
+            """,
+            *cmd
+        )
+
+        cmd = make_table_select('test_table', amount=gt(20))
+        self.assertQueryResult(
+            """
+            id amount salary notes
+            -- ------ ------ -------
+             2   30.2     75 notes 2
+             3   40.1     20 notes 3
+            """,
+            *cmd
         )
 
 

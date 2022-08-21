@@ -7,7 +7,7 @@ import logging
 import sys
 
 import zoom
-from zoom.component import Component
+from zoom.component import render
 from zoom.components import as_actions
 from zoom.response import HTMLResponse
 from zoom.mvc import DynamicView
@@ -108,7 +108,7 @@ class Page(object):
 
             return errors + warnings + successes
 
-        def get(part, formatter='{}', joiner='\n'):
+        def get(part, formatter='{}', joiner='\n  '):
             parts = zoom.system.parts.parts.get(part, OrderedSet())
             page_part = getattr(self, part, '')
             if page_part:
@@ -116,12 +116,12 @@ class Page(object):
                     parts |= page_part
                 else:
                     parts |= [page_part]
-            return parts and joiner.join(
+            return parts and joiner + joiner.join(
                 formatter.format(part) for part in parts
             ) + '\n' or ''
 
         def get_css():
-            wrapper = '<style>\n{}\n</style>'
+            wrapper = '\n  <style>\n{}\n</style>'
             content = get('css')
             return content and wrapper.format(content) or ''
 
@@ -170,6 +170,10 @@ class Page(object):
         return dict(
             {'page_' + k: v for k, v in self.__dict__.items()},
             page_title=request.site.title,
+            tab_title=' | '.join(filter(bool, [
+                self.title,
+                request.site.title,
+            ])),
             site_url=request.site.url,
             author=request.site.owner_name,
             css=get_css,
@@ -187,7 +191,7 @@ class Page(object):
 
     def header(self):
         """return page header"""
-        if self.title or self.subtitle or self.actions or self.search:
+        if self.title or self.subtitle or self.actions or self.search is not None:
             return PageHeader(page=self)
 
     def render(self, request):
@@ -196,7 +200,7 @@ class Page(object):
         logger = logging.getLogger(__name__)
         logger.debug('rendering page')
 
-        self.content = Component(self.header(), self.content, *self.args).render()
+        self.content = render(self.header(), self.content, *self.args)
 
         app_theme = request.app.theme if hasattr(request, 'app') else None
         site_theme = request.site.theme

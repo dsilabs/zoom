@@ -1,0 +1,10 @@
+
+.content .pvtUi {
+    /* border: solid 1px white; */
+    font: 10px sans-serif;
+    line-height: 12px;
+    overflow: scroll;
+    position: absolute;
+    text-indent: 2px;
+    border: thin solid grey;
+}

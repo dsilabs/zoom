@@ -56,22 +56,18 @@ def obfuscate(text):
 
 class UnknownDatabaseException(Exception):
     """exception raised when the database is unknown"""
-    pass
 
 
 class DatabaseException(Exception):
     """exception raised when a database server error occurs"""
-    pass
 
 
 class EmptyDatabaseException(Exception):
     """exception raised when a database is empty"""
-    pass
 
 
-class Result(object):
+class Result:
     """database query result"""
-    # pylint: disable=too-few-public-methods
 
     def __init__(self, cursor, array_size=ARRAY_SIZE):
         self.cursor = cursor
@@ -103,6 +99,17 @@ class Result(object):
         """return first item in result"""
         for i in self:
             return i
+
+    @property
+    def value(self):
+        """return first value of first item in result"""
+        for i in self:
+            return i[0]
+
+    def map(self, myfunc=dict):
+        """Return result rows mapped with a function that accepts a dict"""
+        names = [d[0].lower() for d in self.cursor.description]
+        return map(myfunc, map(lambda row: dict(zip(names, row)), self))
 
 
 class Database(object):
@@ -175,9 +182,11 @@ class Database(object):
     def __getattr__(self, name):
         if self.__connection is None:
             self.__connection = self.__factory(*self.__args, **self.__keywords)
+            logger = logging.getLogger(__name__)
+            logger.debug('opening %s', self.__class__.__name__)
         return getattr(self.__connection, name)
 
-    def translate(self, command, *args):
+    def translate(self, command, *args, many=False):
         """translate sql dialects
 
         The Python db API standard does not attempt to unify parameter passing
@@ -194,10 +203,14 @@ class Database(object):
             return isinstance(obj, collections.Sequence)
 
         if self.paramstyle == 'qmark':
-            if len(args) == 1 and hasattr(args[0], 'items') and args[0]:
+            if not many and len(args) == 1 and hasattr(args[0], 'items') and args[0]:
                 # a dict-like thing
                 placeholders = {key: ':%s' % key for key in args[0]}
                 cmd = command % placeholders, args[0]
+            elif many and len(args) >= 1 and hasattr(args[0], 'items') and args[0]:
+                # a dict-like thing
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args
             elif len(args) >= 1 and issequenceform(args[0]):
                 # a list of tuple-like things
                 placeholders = ['?'] * len(args[0])
@@ -209,10 +222,14 @@ class Database(object):
             return cmd
 
         elif self.paramstyle == 'named':
-            if len(args) == 1 and hasattr(args[0], 'items'):
+            if not many and len(args) == 1 and hasattr(args[0], 'items'):
                 # a dict-like thing
                 placeholders = {key: ':%s' % key for key in args[0]}
                 cmd = command % placeholders, args[0]
+            elif many and len(args) >= 1 and hasattr(args[0], 'items'):
+                # a dict-like thing
+                placeholders = {key: ':%s' % key for key in args[0]}
+                cmd = command % placeholders, args
             elif len(args) >= 1 and issequenceform(args[0]):
                 # a list of tuple-like things
                 placeholders = [':%d' % (n+1) for n in range(len(args[0]))]
@@ -224,7 +241,8 @@ class Database(object):
             return cmd
 
         else:
-            params = len(args) == 1 and \
+            params = not many and \
+                len(args) == 1 and \
                 hasattr(args[0], 'items') and \
                 args[0] or \
                 args
@@ -248,7 +266,8 @@ class Database(object):
             )
 
         start = timeit.default_timer()
-        command, params = self.translate(command, *args)
+        many = method == cursor.executemany
+        command, params = self.translate(command, *args, many=many)
         try:
             method(command, params)
         except Exception as error:
@@ -281,6 +300,8 @@ class Database(object):
 
     def execute_many(self, command, sequence):
         """execute a SQL command with a sequence of parameters"""
+        if not sequence:
+            return None
         cursor = self.cursor()
         return self._execute(cursor, cursor.executemany, command, *sequence)
 
@@ -393,7 +414,6 @@ class Database(object):
 
     def get_tables(self):
         """get a list of database tables"""
-        pass
 
     @property
     def database(self):
@@ -416,6 +436,8 @@ class Database(object):
 
 
 class Sqlite3DatabaseTransaction(Database):
+
+    save_isolation_level = None
 
     def __init__(self, db):
         self.db = db
@@ -493,6 +515,8 @@ class Sqlite3Database(Database):
 
 
 class MySQLDatabaseTransaction(Database):
+
+    save_autocommit = None
 
     def __init__(self, db):
         self.db = db
@@ -603,36 +627,14 @@ class MySQLDatabase(Database):
         try:
             logger = logging.getLogger(__name__)
             if self.open:
-                logger.debug('closing %s connection with del',
-                    self.__class__.__name__)
                 self.close()
-        except OperationalError:
+                logger.debug('closed %s', self.__class__.__name__)
+        except (OperationalError, NameError):
             pass
-
-class MySQLdbDatabase(Database):   # pragma: no cover
-    """MySQLdb Database
-
-    deprecated - not avaialble for Python 3.6
-
-    use MySQLDatabase instead
-    """
-
-    paramstyle = 'pyformat'
-
-    def __init__(self, *args, **kwargs):
-        import MySQLdb
-
-        keyword_args = dict(
-            kwargs,
-            charset='utf8'
-        )
-
-        Database.__init__(self, MySQLdb.connect, *args, **keyword_args)
 
 
 def database(engine, *args, **kwargs):
     """create a database object"""
-    # pylint: disable=invalid-name
 
     if engine == 'sqlite3':
         kwargs.setdefault('isolation_level', None)  # autocommit
@@ -641,11 +643,6 @@ def database(engine, *args, **kwargs):
 
     elif engine == 'mysql':
         db = MySQLDatabase(*args, **kwargs)
-        db.autocommit(1)
-        return db
-
-    elif engine == 'mysqldb':   # pragma: no cover
-        db = MySQLdbDatabase(*args, **kwargs)
         db.autocommit(1)
         return db
 
@@ -729,7 +726,7 @@ def connect_database(config):
     return connection
 
 
-def handler(request, handler, *rest):
+def handler(request, next_handler, *rest):
     """Connect a database to the site if specified"""
     site = request.site
     database_name = site.config.get(
@@ -750,7 +747,7 @@ def handler(request, handler, *rest):
         raise zoom.exceptions.DatabaseMissingException('Database Missing')
 
     request.profiler.add('database initialized')
-    result = handler(request, *rest)
+    result = next_handler(request, *rest)
     request.profiler.add('database finished')
     return result
 

@@ -19,5 +19,5 @@ class MissingSiteTests(WebdriverTestCase):
 
     def test_site_missing(self):
         self.get('/')
-        self.assertContains('ZOOM')
+        self.assertContains('ZoomFoundry')
         self.assertContains('127.0.0.1')

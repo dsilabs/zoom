@@ -1,8 +1,4 @@
-"""
-    zoom.apps
-
-    handles requests by locating and calling a suitable app
-"""
+""" zoom.apps handles requests by locating and calling a suitable app """
 
 import configparser
 import imp
@@ -10,8 +6,10 @@ import importlib
 import logging
 import os
 import sys
+import urllib
 
 import zoom
+import zoom.components.apps
 from zoom.components import as_links
 from zoom.database import Database
 import zoom.html as html
@@ -19,8 +17,9 @@ from zoom.utils import existing
 from zoom.users import Users
 from zoom.background import load_app_background_jobs
 
-DEFAULT_SYSTEM_APPS = ['register', 'profile', 'login', 'logout']
-DEFAULT_MAIN_APPS = ['home', 'admin', 'apps', 'info']
+
+DEFAULT_SYSTEM_APPS = ['register', 'profile', 'settings', 'login', 'logout']
+DEFAULT_MAIN_APPS = ['home', 'admin', 'apps']
 DEFAULT_SETTINGS = dict(
     title='',
     icon='cube',
@@ -34,10 +33,11 @@ DEFAULT_SETTINGS = dict(
     in_development=False,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def load_module(module, filename):
     """Dynamically load a module"""
-    logger = logging.getLogger(__name__)
 
     myhandler = \
         ImportError if sys.version_info < (3, 6) else ModuleNotFoundError
@@ -70,11 +70,11 @@ class App(object):
     expects.
     """
 
-    def __init__(self):
-        self.menu = []
+    def __init__(self, menu=None):
+        self.menu = [] if menu is None else menu
         self.request = None
 
-    def static(self, *args, **kwargs):
+    def static(self, *args):
         return zoom.middleware.serve_response('static', *args)
 
     def process(self, *route, **data):
@@ -83,8 +83,6 @@ class App(object):
         def if_callable(method):
             """test if callable and return it or None"""
             return callable(method) and method
-
-        logger = logging.getLogger(__name__)
 
         isfile = os.path.isfile
         logger.debug('app called with route %r', route)
@@ -121,7 +119,7 @@ class App(object):
             view = if_callable(getattr(source, 'view', None))
             controller = if_callable(getattr(source, 'controller', None))
         else:
-            main = app = view = None
+            main = app = view = controller = None
 
         return (
             main and main(rest, self.request) or
@@ -148,6 +146,7 @@ class AppProxy(object):
     """
 
     def __init__(self, name, filename, site):
+
         self.name = name
         self.filename = filename
 
@@ -172,13 +171,15 @@ class AppProxy(object):
         self.link = zoom.helpers.link_to(self.title, self.url)
         self.request = None
         self.packages = {}
+        self.common_packages = {}
 
         get = self.config.get
         self.visible = get('visible') not in zoom.utils.NEGATIVE
         self.enabled = get('enabled')
         self.author = get('author')
         self.version = get('version')
-        self.theme = get('theme')
+        self.theme = get('theme') or site.theme
+        self.theme_path = existing(site.themes_path, self.theme)
         self.icon = get('icon')
         self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
@@ -187,18 +188,23 @@ class AppProxy(object):
         self._templates_paths = None
 
     @property
+    def icon_class(self):
+        icon = self.config.get('icon')
+        is_bootstrap_icon = icon.startswith('bi-')
+        if is_bootstrap_icon:
+            return 'bi ' + icon
+        return 'fa fa-' + icon
+
+    @property
     def templates_paths(self):
         """Calculate Templates Paths"""
-        join = os.path.join
         if self._templates_paths:
             return self._templates_paths
-        site = self.site
         if self.theme:
-            template_path = existing(join(site.themes_path, self.theme, 'templates'))
-            theme_path = existing(join(site.themes_path, self.theme))
+            template_path = existing(self.theme_path, 'templates')
             paths = list(filter(bool, [
                 template_path,
-                theme_path,
+                self.theme_path,
             ]))
         else:
             paths = []
@@ -210,7 +216,7 @@ class AppProxy(object):
         <div class="zoom-app-as-icon">
             <a href="{self.url}">
                 <div class="zoom-app-icon">
-                    <i class="fa fa-{self.icon}" aria-hidden="true"></i>
+                    <i class="{self.icon_class}" aria-hidden="true"></i>
                 </div>
                 <div class="zoom-app-title">
                     {self.title}
@@ -223,9 +229,12 @@ class AppProxy(object):
     def method(self):
         """Returns the app callable entry point"""
         if self._method is None:
+            split, join = os.path.split, os.path.join
             self.request.profiler.add('app loaded')
             self._method = getattr(load_module('app', self.filename), 'app')
-            self.packages = zoom.packages.load(os.path.join(self.path, 'packages.json'))
+            self.packages = zoom.packages.load(join(self.path, 'packages.json'))
+            apps_dir = split(self.path)[0]
+            self.common_packages = zoom.packages.load(join(apps_dir, 'packages.json'))
         return self._method
 
     @property
@@ -250,7 +259,6 @@ class AppProxy(object):
 
     def run(self, request):
         """run the app"""
-        logger = logging.getLogger(__name__)
         save_dir = os.getcwd()
         try:
             logger.debug('chdir to %r', self.path)
@@ -267,6 +275,7 @@ class AppProxy(object):
 
     def menu(self):
         """generate an app menu"""
+
         def by_name(name):
             """Returns a function that selects an item by name"""
             def selector(item):
@@ -275,15 +284,19 @@ class AppProxy(object):
             return selector
 
         route = self.site.request.route
-        logger = logging.getLogger(__name__)
         logger.debug('constructing menu')
+
         menu = getattr(self.method, 'menu', [])
+        if callable(menu):
+            menu = menu()  #pylint: disable=not-callable
+
         selected = (
             len(route) > 2 and route[0] == 'content' and route[2] or
             len(route) > 1 and route[1] or
             len(route) == 1 and route[0] != 'content' and 'index'
         )
         logger.debug('selected: %s', selected)
+
         result = as_links(menu, select=by_name(selected))
         return result
 
@@ -301,16 +314,16 @@ class AppProxy(object):
         try:
             config.read(local_config_file)
             return config.get(section, key)
-        except:
+        except BaseException:
             try:
                 config.read(shared_config_file)
                 return config.get(section, key)
-            except:
+            except BaseException:
                 try:
                     config.read(system_config_file)
                     return config.get(section, key)
-                except:
-                    if default != None:
+                except BaseException:
+                    if default is not None:
                         return default
                     else:
                         tpl = 'config setting [{}]{} not found in {} or {} or {}'
@@ -332,7 +345,10 @@ class AppProxy(object):
 
         def get_config(pathname):
             """read a config file"""
-            self.config_parser.read(pathname)
+            try:
+                self.config_parser.read(pathname)
+            except BaseException as e:
+                logger.error('Unable to read %r\n%s', pathname, e)
             return as_dict(self.config_parser)
 
         path = self.path
@@ -375,6 +391,8 @@ class NoApp(object):
     title = ''
     description = ''
     keywords = ''
+    common_packages = {}
+    packages = {}
 
     def run(self, request):
         status = '404 Not Found'
@@ -387,13 +405,14 @@ def respond(content, request):
     """construct a response"""
 
     html_response = zoom.response.HTMLResponse
+    json_response = zoom.response.JSONResponse
 
     if content:
         if isinstance(content, zoom.response.Response):
             result = content
 
-        elif isinstance(content, zoom.Component):
-            result = html_response(content.render())
+        elif isinstance(content, (str, zoom.Component)):
+            result = zoom.Page(content).render(request)
 
         elif hasattr(content, 'render') and content.render:
             result = content.render(request)
@@ -401,8 +420,8 @@ def respond(content, request):
         elif isinstance(content, (list, set, tuple)):
             result = html_response(''.join(content))
 
-        elif isinstance(content, str):
-            result = html_response(content)
+        elif isinstance(content, (dict, )):
+            result = json_response(content)
 
         else:
             result = html_response('OK')
@@ -425,10 +444,32 @@ def load_app(site, name):
 def get_default_app_name(site, user):
     """get the default app for the currrent user"""
     if user.is_authenticated:
-        default_app = site.config.get('apps', 'home', 'home')
+        default_app = site.home_app_name
     else:
-        default_app = site.config.get('apps', 'index', 'content')
+        default_app = site.index_app_name
     return default_app
+
+
+def make_source_url(app_name, request):
+    """URL to pass to recovery apps"""
+    original_url = ''.join([
+        request.protocol,
+        '://',
+        request.host,
+        request.path
+    ])
+    params = dict(
+        original_url=original_url,
+    )
+    if request.referrer:
+        params['original_referrer_url'] = request.referrer
+    url = ''.join([
+        '/',
+        app_name,
+        '?',
+        urllib.parse.urlencode(params)
+    ])
+    return url
 
 
 def handle(request):
@@ -449,9 +490,12 @@ def handle(request):
             Database.debug = saved_database_debug_setting
         return result
 
-    logger = logging.getLogger(__name__)
-
+    site = request.site
     user = request.user
+    if user.is_authenticated:
+        logger.debug('user is authenticated')
+    else:
+        logger.debug('user is a guest')
     app_name = request.route and request.route[0] or None
     redirect_response = zoom.response.RedirectResponse
 
@@ -487,6 +531,11 @@ def handle(request):
     if not app:
         logger.debug('app %r not found in site.apps_paths', app_name)
         logger.debug('site.apps_paths: %r', request.site.apps_paths)
+
+        if site.locate_app_name:
+            locate_url = make_source_url(site.locate_app_name, request)
+            logger.debug('redirecting to %r', locate_url)
+            return redirect_response(locate_url)
 
         app_name = get_default_app_name(request.site, request.user)
         logger.debug('default app is %r', app_name)
@@ -527,8 +576,11 @@ def handle(request):
         logger.debug('running requested app')
         return run_app(app)
 
-    elif user.is_guest:
+    elif not user.is_authenticated:
         logger.debug('redirecting to login')
+        if site.login_app_name:
+            login_url = make_source_url(site.login_app_name, request)
+            return redirect_response(login_url)
         return redirect_response('/login')
 
     else:
@@ -537,6 +589,11 @@ def handle(request):
             'redirecting to default'
         )
         logger.warning(msg, user.username, app_name, app.path)
+
+        if site.auth_app_name:
+            auth_url = make_source_url(site.auth_app_name, request)
+            return redirect_response(auth_url)
+
         return redirect_response('/')
 
 
@@ -544,8 +601,8 @@ def get_system_apps(request):
     """Returns a list containing the system apps.
 
     System apps are apps that appear in the system menu, which is usually found
-    at the top left of a web site.  The system menu typically includes apps such
-    as login, logout, profile and register.
+    at the top right of a web site.  The system menu typically includes apps such
+    as login, logout, profile, settings and register.
 
     This list can be defined in the site.ini file in the [apps] section using the
     key `system`.  A example is provided in the default site.ini file.
@@ -564,7 +621,7 @@ def system_menu_items(request):
     """Returns the system menu."""
     return html.li([
         app.link for app in get_system_apps(request)
-        if app.visible and app.name != request.app.name
+        if app.visible
     ])
 
 
@@ -626,6 +683,49 @@ def main_menu(request):
     return '<ul>%s</ul>' % main_menu_items(request)
 
 
+def apps_menu(request):
+    """Returns a menu of available apps"""
+
+    def calc_position(app):
+        """position of app"""
+        name = app.name
+        return names.index(name) if name in names else 9999
+
+    site = request.site
+    user = request.user
+    get = site.config.get
+
+    names = get('apps', 'apps', '')
+    names = names and [s.strip() for s in names.split(',')] or []
+
+    system_apps = list(get_system_apps(request))
+    main_apps = list(get_main_apps(request))
+    exclude = list(a.name for a in system_apps + main_apps)
+
+    if not 'content' in names:
+        exclude.append('content')
+
+    apps = [
+        app for app in sorted(sorted(site.apps, key=lambda a: a.title), key=calc_position)
+        if app.name not in exclude and app.visible
+        and app.name in user.apps
+    ]
+
+    menu_item = zoom.components.apps.AppMenuItem()
+    active_app = request.app.name
+
+    return html.div(
+        html.ul(
+            menu_item.format(
+                app=app,
+                active=' active' if app.name == active_app else ''
+            ) for app in apps
+            if app.name in user.apps and
+            app.visible and app.name not in exclude
+        ), classed='apps-menu'
+    )
+
+
 def helpers(request):
     """return a dict of app helpers"""
     app = request.app
@@ -641,20 +741,24 @@ def helpers(request):
         system_menu=system_menu(request),
         main_menu_items=main_menu_items(request),
         main_menu=main_menu(request),
+        apps_menu=apps_menu(request),
         page_name=len(request.route) > 1 and request.route[1] or '',
     )
 
 
 def handler(request, next_handler, *rest):
     """Dispatch request to an application"""
-    logger = logging.getLogger(__name__)
     logger.debug('apps_handler')
     if '.' not in sys.path:
         logger.debug('adding "." to path')
         sys.path.insert(0, '.')
     response = handle(request)
     if isinstance(response, zoom.response.RedirectResponse):
-        logger.debug('app redirecting to %s' % response.headers['Location'])
+        logger.debug('app redirecting to %s', response.headers['Location'])
     else:
-        logger.debug('app responded with type %s' % type(response))
+        logger.debug('app responded with type %s', type(response))
     return response or next_handler(request, *rest)
+
+def get_app():
+    """Return the current app"""
+    return getattr(zoom.system.request, 'app', None)

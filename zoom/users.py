@@ -12,12 +12,14 @@ from zoom.exceptions import UnauthorizedException
 from zoom.records import Record, RecordStore
 from zoom.helpers import link_to, url_for
 from zoom.auth import validate_password, hash_password
-
+from zoom.impersonation import get_impersonated_username
 
 chars = ''.join(map(chr, range(256)))
 keep_these = string.ascii_letters + string.digits + '.-_ '
 delete_these = chars.translate(str.maketrans(chars, chars, keep_these))
 allowed = str.maketrans(keep_these, keep_these, delete_these)
+
+logger = logging.getLogger(__name__)
 
 
 def key_for(username):
@@ -37,20 +39,24 @@ def key_for(username):
         >>> key_for(1234)
         '1234'
         >>> key_for('this %$&#@^is##-$&*!it')
-        'this-is-it'
+        'this--at-is-it'
         >>> key_for('test-this')
         'test-this'
         >>> key_for('test.this')
         'test.this'
         >>> key_for('test\\\\this')
         'test-this'
+        >>> key_for('test@this.com')
+        'test-at-this.com'
 
     """
     def _key_for(text):
         return str(text).strip().translate(allowed).lower().replace(' ', '-')
 
     if '\\' in str(username):
-        username = username.replace('\\','-')
+        username = username.replace('\\', '-')
+    if '@' in str(username):
+        username = username.replace('@', '-at-')
 
     return _key_for(username)
 
@@ -65,6 +71,7 @@ def get_current_username(request):
     return (
         getattr(request, 'username', None) or
         site.config.get('users', 'override', '') or
+        get_impersonated_username() or
         getattr(request.session, 'username', None) or
         request.remote_user or
         site.guest or
@@ -107,7 +114,6 @@ def get_groups(db, user):
     >>> 'administrators' in groups
     True
     """
-    logger = logging.getLogger(__name__)
 
     def get_memberships(group, memberships, depth=0):
         """get group memberships"""
@@ -133,13 +139,9 @@ def get_groups(db, user):
         'SELECT group_id, subgroup_id FROM subgroups ORDER BY subgroup_id'
     ))
 
-    # memberships = []
     groups = set()
     for group in my_groups:
-        # memberships += get_memberships(group, subgroups)
         groups |= get_memberships(group, subgroups)
-
-    # groups = my_groups + memberships
 
     named_groups = sorted(all_groups[g] for g in set(groups))
 
@@ -149,14 +151,13 @@ def get_groups(db, user):
 class User(Record):
     """Zoom User"""
 
-    # key = property(lambda a: id_for(a.username))
     @property
     def key(self):
         return key_for(self.username)
 
     def __init__(self, *args, **kwargs):
         Record.__init__(self, *args, **kwargs)
-        self.is_admin = False
+        self.is_admin = self.is_administrator = False
         self.is_developer = False
         self.is_authenticated = False
         self.__groups = None
@@ -176,7 +177,6 @@ class User(Record):
 
     def initialize(self, request):
         """Initialize user based on a request"""
-        logger = logging.getLogger(__name__)
         logger.debug('initializing user %r', self.username)
 
         self.request = request
@@ -192,6 +192,7 @@ class User(Record):
         )
 
         self.is_admin = self.is_member(site.administrators_group)
+        self.is_administrator = self.is_admin
         self.is_developer = self.is_member(site.developers_group)
 
         if self.is_developer:
@@ -237,7 +238,6 @@ class User(Record):
     def set_password(self, password):
         """set the user password"""
         hashed = hash_password(password)
-        logger = logging.getLogger(__name__)
         logger.debug('set password for %s to %r', self.username, hashed)
         self['password'] = hashed
         self.save()
@@ -256,13 +256,12 @@ class User(Record):
         self.last_seen = zoom.tools.now()
         self.get('__store').db('update users set last_seen=%s where id=%s', self.last_seen, self._id)
 
-    def is_member(self, group):
-        """determine if user is a member of a group"""
-        return group in self.groups
+    def is_member(self, *groups):
+        """determine if user is a member of at least one group"""
+        return any(group in self.groups for group in groups)
 
     def login(self, request, password, remember_me=False):
         """log user in"""
-        logger = logging.getLogger(__name__)
         site = request.site
 
         if self.is_active and self.username != site.guest:
@@ -281,7 +280,6 @@ class User(Record):
 
     def logout(self):
         """log user out"""
-        logger = logging.getLogger(__name__)
         if self.is_authenticated:
             self.is_authenticated = False
             self.request.session.destroy()
@@ -366,7 +364,16 @@ class User(Record):
 
     def can_run(self, app):
         """test if user can run an app"""
-        return app and self.is_active and (app.name in self.apps or app.in_development and (self.is_developer or self.is_admin))
+        return app and (
+            self.is_active
+            and (
+                app.name in self.apps
+                or (
+                    app.in_development
+                    and (self.is_developer or self.is_admin)
+                )
+            )
+        )
 
     def can(self, action, thing):
         """test to see if user can action a thing object.
@@ -395,7 +402,6 @@ class User(Record):
 
     def add_group(self, group):
         """Make user a member of the group"""
-        logger = logging.getLogger(__name__)
         group = context.site.groups.locate(group)
         if group:
             group.add_user(self)
@@ -496,6 +502,7 @@ class Users(RecordStore):
       when_updated ........: 'over a month ago'
       when_last_seen ......: 'never'
       updated_by_link .....: 'admin'
+      is_administrator ....: False
       is_authenticated ....: False
 
 
@@ -509,32 +516,83 @@ class Users(RecordStore):
             key='id'
             )
 
-    def before_insert(self, user):
+    def add(
+            self,
+            username,
+            first_name,
+            last_name,
+            email,
+            phone='',
+        ):
+        """Add user record to the database"""
+
+        def validate(value, validator):
+            """validate a value"""
+            if not validator(value):
+                raise Exception(validator.msg)
+
+        def username_not_taken(username):
+            return self.first(username=username) is None
+
+        v = zoom.validators
+        username_available = v.Validator('username taken', username_not_taken)
+        rules = (
+            (username, v.valid_username),
+            (first_name, v.valid_name),
+            (last_name, v.valid_name),
+            (email, v.valid_email),
+            (phone, v.valid_phone),
+            (username, username_available),
+        )
+
+        for value, rule in rules:
+            validate(value, rule)
+
+        user = User(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+        )
+
+        self.put(user)
+
+        return user
+
+    def before_insert(self, user):  # pylint: disable-parameters-differ
         """Things to do just before inserting a new User record"""
         user.update(status='A')
         user.created = user.updated = zoom.tools.now()
+        user.created_by = user.updated_by = get_user().user_id
 
-    def before_update(self, user):
+    def before_update(self, user):  # pylint: disable=arguments-differ
         """Things to do just before updating a User record"""
         user.updated = zoom.tools.now()
 
-    def after_insert(self, user):
-        """Things to do right after inserting a new user"""
+    def after_update(self, user):  # pylint: disable=arguments-differ
+        """Things to do immediately after a user update"""
+        audit('update user', user.username)
+
+    def after_insert(self, user):  # pylint: disable=arguments-differ
+        """Things to do immediately after inserting a new user"""
         user.remove_groups()  # avoid accidental authourizations
         user.add_group('users')
+        audit('create user', user.username)
 
-    def before_delete(self, user):
-        """Things to do right before deleting a user"""
+    def before_delete(self, user):  # pylint: disable=arguments-differ
+        """Things to do immediately before deleting a user"""
         user.remove_groups()
+        audit('delete user', user.username)
 
     def locate(self, key):
-        users = context.site.users
-        user = users.first(username=key)
-        if user:
-            return user
-        alternate_key = key.replace('-', '\\')
-        user = users.first(username=alternate_key)
-        if user:
+        """Locate a user by username or user_id"""
+        user = key and (
+            self.first(username=key) or
+            self.first(username=key.replace('-', '\\')) or
+            self.first(username=key.replace('-at-', '@'))
+        )
+        if user and user.key == key:
             return user
 
 
@@ -560,13 +618,16 @@ def authorize(*roles):
     return wrapper
 
 
+def can(action, thing):
+    """Return True if current user can action thing"""
+    return get_user().can(action, thing)
+
+
 def set_current_user(request):
     """Set current user
 
     Set the current user based on the current username.
     """
-    logger = logging.getLogger(__name__)
-
     username = get_current_username(request)
     if not username:
         raise Exception('No user information available')
@@ -599,6 +660,32 @@ def set_current_user(request):
         request.profiler.add('user initialized')
     else:
         raise Exception('Unable to initialize user')
+
+
+def get_users():
+    """Get the users store"""
+    return zoom.get_site().users
+
+
+def get_user(key=None):
+    """Return the currrent user or a specified user"""
+    if key is None:
+        return zoom.system.request.user
+    users = get_users()
+    user = users.get(key)
+    if user:
+        return user
+    if isinstance(key, str):
+        user = users.locate(key)
+    if user:
+        logger.warning('get_user with parameter other than user_id is deprecated.  Use locate_user instead.')
+        return user
+
+
+def locate_user(key):
+    """Locate a user"""
+    users = get_users()
+    return users.get(key) or users.locate(key)
 
 
 def handler(request, next_handler, *rest):
