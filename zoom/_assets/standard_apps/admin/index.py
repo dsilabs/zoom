@@ -543,7 +543,7 @@ class MyView(zoom.View):
         )
 
     def about(self):
-        return page(load_content('about.md', version=zoom.__version__ + ' Community Edition'))
+        return page(load_content('about.md', version=zoom.__version__ + ' Community Edition (Stable)'))
 
 
 main = zoom.dispatch(MyView)
