@@ -491,7 +491,7 @@ def load(pathname, encoding='utf-8'):
     """Read a file and return the contents"""
 
     logger = logging.getLogger(__name__)
-    logger.debug('load %r', pathname)
+    #logger.debug('load %r', pathname)
     with open(pathname, encoding=encoding) as reader:
         return reader.read()
 
