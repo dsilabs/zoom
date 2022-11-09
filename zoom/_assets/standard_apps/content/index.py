@@ -49,7 +49,7 @@ class MyView(View):
     def show(self, *args, **kwargs):
         """Render a page"""
         path = '/'.join(args) if args else None
-        template = 'default'
+        template = 'content'
 
         if path is None or path == 'content/index.html':
             path = ''

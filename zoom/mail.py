@@ -15,7 +15,7 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.audio import MIMEAudio
 from email.mime.multipart import MIMEMultipart
-from email.utils import formataddr
+from email.utils import formataddr, formatdate, make_msgid
 
 import zoom
 from zoom.context import context
@@ -143,6 +143,8 @@ def compose(sender, reply_to, recipients, subject, body, attachments, style, log
     email['Subject'] = subject
     email['From'] = formataddr(sender)
     email['To'] = display_email_address(recipients)
+    email['Message-ID'] = make_msgid()
+    email['Date'] = formatdate()
     if sender != reply_to:
         email['Reply-To'] = formataddr(reply_to)
     email.preamble = (

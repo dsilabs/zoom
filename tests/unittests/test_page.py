@@ -19,3 +19,9 @@ class TestPage(unittest.TestCase):
 
         page = zoom.Page('Moved temporarily', status='302 Found')
         self.assertEqual(page.status, '302 Found')
+
+    def test_search_appears_when_empty(self):
+        page = zoom.Page('some content', search='')
+        self.assertIsNotNone(
+            page.header()
+        )

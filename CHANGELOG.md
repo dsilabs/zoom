@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update admin overview to use quiet logging
 - add support for multiple groups in User.is_member
 - speed up admin index page
+- add message id and date to email headers
+- produce page title when search is empty
+- use content template by default for content pages
 
 ## [6.20.0] - 2022-05-27
 - refactor and enhance icons app
