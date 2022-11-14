@@ -9,6 +9,7 @@ import zoom
 from zoom import html
 from zoom.buckets import Bucket
 from zoom.logging import log_activity
+from zoom.response import JSONResponse
 
 from files import get_markdown_linker
 
@@ -131,7 +132,7 @@ class ImageManager(zoom.Controller):
             item_id=a.image_id,
             url=zoom.helpers.url_for('get-image', item_id=a.image_id),
         ) for a in images]
-        return zoom.jsonz.dumps(t)
+        return JSONResponse(t)
 
     def get_image(self, *a, **kwargs):  # pylint: disable=W0613
         """return one of the images"""
@@ -177,7 +178,7 @@ class ImageManager(zoom.Controller):
             zoom.system.user.link, image.access_link
         ))
 
-        return item_id
+        return JSONResponse(item_id)
 
     def remove_image(self, *_, **kwargs):
         """remove a dropzone image"""
@@ -199,8 +200,8 @@ class ImageManager(zoom.Controller):
             bucket = Bucket(path)
             if item_id in bucket.keys():
                 bucket.delete(item_id)
-                return 'ok'
-            return 'empty'
+                return JSONResponse('ok')
+            return JSONResponse('empty')
 
 
 main = zoom.dispatch(ImageManager)
