@@ -153,7 +153,7 @@ class ImageManager(zoom.Controller):
 
         dummy = zoom.Record(
             filename='dummy.png',
-            file=io.StringIO('test'),
+            file=io.BytesIO(b'test'),
         )
 
         # put the uploaded image data in a bucket
