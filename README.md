@@ -107,10 +107,10 @@ import zoom.fields as f
 
 def blog_fields():
     return f.Fields(
-    f.TextField('Name'),
-    f.MemoField('Description'),
-    f.EditField('Body'),
-    f.DateField('Date Published'),
+        f.TextField('Name'),
+        f.MemoField('Description'),
+        f.EditField('Body'),
+        f.DateField('Date Published'),
     )
 
 main = zoom.collect.Collection(
@@ -133,11 +133,11 @@ import zoom.fields as f
 
 def blog_fields():
     return f.Fields(
-    f.TextField('Name'),
-    f.TextField('Author'),
-    f.MemoField('Description'),
-    f.EditField('Body'),
-    f.DateField('Date Published'),
+        f.TextField('Name'),
+        f.TextField('Author'),
+        f.MemoField('Description'),
+        f.EditField('Body'),
+        f.DateField('Date Published'),
     )
 
 main = zoom.collect.Collection(
@@ -177,7 +177,7 @@ $ nosetests
 ```
 
 This will run the unittests, doctests and webtests.  If your box is not
-setup for sidetests (which uses webdriver, and various other libraries) you
+setup for [selenium](https://selenium-python.readthedocs.io/installation.html) (which uses webdriver, and various other libraries) you
 can skip them by specifying only the other directories for tests.
 ```shell
 $ nosetests zoom tests/unittests
