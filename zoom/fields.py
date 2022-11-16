@@ -3226,13 +3226,17 @@ class ImagesField(Field):  # pragma: no cover
         logger = logging.getLogger(__name__)
         logger.debug('csrf_token for ImagesField %s', csrf_token)
 
+        tag_id = 'dropzone_' + uuid.uuid4().hex
+
         result = zoom.Component(
             html.div(
-                zoom.components.dropzone(
+                html.div(
                     self.url,
                     field_name=self.name,
                     field_value=self.value or self.default,
                     token=csrf_token,
+                    id=tag_id,
+                    classed='dropzone'
                 ),
                 classed='images-field'
             ),
