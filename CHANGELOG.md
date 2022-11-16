@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add message id and date to email headers
 - produce page title when search is empty
 - use content template by default for content pages
+- fix images manager of content app
 
 ## [6.20.0] - 2022-05-27
 - refactor and enhance icons app
