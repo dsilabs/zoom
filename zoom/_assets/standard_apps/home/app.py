@@ -50,7 +50,7 @@ def app(request):
             font-size: 2em;
         }
         .zoom-app-icon .bi {
-            font-size: 3rem;
+            font-size: 2em;
             line-height: 2rem;
         }
     """
