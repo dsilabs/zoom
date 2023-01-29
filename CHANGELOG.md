@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - use content template by default for content pages
 - fix images manager of content app
 - refactor module loading for Python 3.9
+- promote locate_user to top level function
 
 ## [6.20.0] - 2022-05-27
 - refactor and enhance icons app
