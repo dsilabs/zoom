@@ -155,6 +155,11 @@ def always(job_fn):
     """decorator to schedule a job to run on every execution cycle"""
     return cron('* * * * *')(job_fn)
 
+def repeatedly(job_fn):
+    """decorator to schedule a job to run every time it is called"""
+    return cron(None)(job_fn)
+
+
 # Discovery.
 def load_app_background_jobs(app):
     """Load the background jobs for the given app from that apps background.py
@@ -307,8 +312,9 @@ def run_background_jobs(app):
 
         job.load()
 
-        if tick_time < job.next_run:
-            continue
+        if job.schedule:
+            if tick_time < job.next_run:
+                continue
 
         # Execute the job.
         logger.info('running background job %s', job.qualified_name)
