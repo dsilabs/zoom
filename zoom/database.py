@@ -681,6 +681,7 @@ def connect_database(config):
             engine=engine,
             host=host,
             user=user,
+            port=int(get('port', 3306))
         )
         if password:
             parameters['passwd'] = password

@@ -633,6 +633,22 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         )
         self.db.debug = True
 
+    def test_custom_port(self):
+        get = os.environ.get
+        def connect_custom_port(port):
+            return database(
+                'mysql',
+                host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+                user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+                passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
+                port=port,
+                db='zoomtest'
+            )
+        db = connect_custom_port(3306)
+        del db
+        from pymysql.err import OperationalError
+        self.assertRaises(OperationalError, lambda: connect_custom_port(3307))
+
     def test_get_column_names(self):
         db = self.db
         db('create table dzdb_test_table (ID CHAR(10), AMOUNT NUMERIC(10,2), DTADD date, NOTES TEXT)')
