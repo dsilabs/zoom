@@ -114,6 +114,8 @@ class TestRecordStore(unittest.TestCase):
 
         person = self.people.get(jane_id)
         person.set(age=29)
+        self.assertEqual(person.age, 29)
+        self.assertEqual(person['age'], 29)
         del person['__store']
         self.assertEqual(
             dict(person),
