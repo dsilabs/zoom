@@ -1697,6 +1697,7 @@ class DateField(Field):
         if system() != 'Windows' else
         '{:%Y-%m-%d %m-%d-%Y %A %B %#d %Y}'
     )
+    autocomplete = "off"
 
     def display_value(self, alt_format=None):
         # pylint: disable=E1101
@@ -1721,6 +1722,7 @@ class DateField(Field):
             value=value,
             Type='text',
             Class=self.css_class,
+            autocomplete=self.autocomplete
         )
         js = []
         js.append("""

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - add support for custom MySQL port
+- supress autocomplete by default on date fields
 
 ## [6.21.0] - 2023-05-01
 - add quiet logging completion of ajax requests
