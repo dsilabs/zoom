@@ -196,7 +196,7 @@ class DateTests(object):
         self.alt_text = '2017-08-20'
         self.widget_template = (
             '<input class="{self.css_class}" type="text" '
-            'id="field1" maxlength="12" name="field1" '
+            'autocomplete="off" id="field1" maxlength="12" name="field1" '
             'value="{text}" />'
         )
         self.display_template = '{text}'

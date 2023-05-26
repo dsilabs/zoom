@@ -1629,7 +1629,7 @@ class DateField(Field):
     format.
 
     >>> str(DateField("Start Date").widget())
-    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="" />'
+    '<input class="date_field" type="text" autocomplete="off" id="start_date" maxlength="12" name="start_date" value="" />'
 
     >>> from datetime import date, datetime
 
@@ -1678,7 +1678,7 @@ class DateField(Field):
     True
 
     >>> str(DateField("Start Date", value=date(2015,1,1)).widget())
-    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
+    '<input class="date_field" type="text" autocomplete="off" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
 
     """
 
