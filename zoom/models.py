@@ -574,11 +574,14 @@ class Group(Record):
             result = {group_id}
             if depth < 10:
                 for grp_id, sgrp_id in group_subgroup_ids:
-                    if (group_id == sgrp_id
-                        and grp_id not in result
-                        and grp_id in all_groups):
-                        result |= find_all_subgroups(grp_id, group_subgroup_ids,
-                                                     depth + 1)
+                    if (group_id == grp_id
+                        and sgrp_id not in result
+                        and sgrp_id in all_groups):
+                        result |= find_all_subgroups(
+                            sgrp_id,
+                            group_subgroup_ids,
+                            depth + 1
+                        )
             return result
 
         db = self['__store'].db
