@@ -564,6 +564,36 @@ class Group(Record):
             if supergroup:
                 supergroup.remove_subgroup(self)
 
+    def get_all_subgroups(self, names=False):
+        """ Returns all subgroup IDs from the group, use the boolean 'names'
+        parameter to return group names instead. """
+
+        def find_all_subgroups(group_id, group_subgroup_ids, depth=0):
+            """ Recursive function to find all subgroup ids to a max depth
+            of 10. """
+            result = {group_id}
+            if depth < 10:
+                for grp_id, sgrp_id in group_subgroup_ids:
+                    if (group_id == sgrp_id
+                        and grp_id not in result
+                        and grp_id in all_groups):
+                        result |= find_all_subgroups(grp_id, group_subgroup_ids,
+                                                     depth + 1)
+            return result
+
+        db = self['__store'].db
+        group_subgroup_ids = list(db(
+            'select `group_id`, `subgroup_id` from `subgroups` '
+            'order by `subgroup_id`'))
+        all_groups = dict(db(
+            'select `id`, `name` from `groups`'
+        ))
+        all_subgroup_ids = find_all_subgroups(self.group_id, group_subgroup_ids)
+
+        return sorted(
+            all_groups[_id] if names else _id for _id in all_subgroup_ids
+        )
+
 
 class Groups(RecordStore):
 
