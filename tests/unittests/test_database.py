@@ -739,7 +739,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         db1 = connect_database(config)
         create_data(db1, 'z_test_table1')
 
-        # in Travis this is already done
         db1('create database if not exists zoomtest2')
 
         db2 = db1.use('zoomtest2')
@@ -756,7 +755,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             db2('drop table z_test_table2')
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db1('drop database if exists zoomtest2')
 
     def test_get_databases(self):
@@ -765,19 +763,16 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         databases = db.get_databases()
         assert 'zoomtest' in databases
 
-        # in Travis this is already done
         db('create database if not exists zoomtest2')
         try:
 
             assert 'zoomtest2' in db.get_databases()
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db('drop database if exists zoomtest2')
             assert 'zoomtest2' not in db.get_databases()
 
     def test_create_and_delete_test_tables(self):
-        # in Travis this is already done
         self.db('create database if not exists zoomtest2')
 
         db = self.db.use('zoomtest2')
@@ -793,7 +788,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             assert 'account' not in db.get_tables()
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db('drop database if exists zoomtest2')
             assert 'zoomtest2' not in db.get_databases()
 

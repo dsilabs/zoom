@@ -1,6 +1,5 @@
 # README
 
-[![Build Status](https://travis-ci.org/dsilabs/zoom.svg?branch=master)](https://travis-ci.org/dsilabs/zoom)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ZoomFoundry is a dynamic Python Web framework written specifically for Python 3 that
