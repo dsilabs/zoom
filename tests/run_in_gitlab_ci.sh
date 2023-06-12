@@ -15,6 +15,8 @@ export ZOOM_TEST_DATABASE_PASSWORD=root
 export ZOOM_DEFAULT_INSTANCE=$(pwd)/zoom/_assets/web
 export ZOOM_DEFAULT_SITE_INI=$ZOOM_DEFAULT_INSTANCE/sites/localhost/site.ini
 
+export ZOOM_TEST_LOG=$ZOOM_DEFAULT_INSTANCE
+
 echo "host=mariadb" >> $ZOOM_DEFAULT_SITE_INI
 echo "user=root" >> $ZOOM_DEFAULT_SITE_INI
 echo "password=root" >> $ZOOM_DEFAULT_SITE_INI

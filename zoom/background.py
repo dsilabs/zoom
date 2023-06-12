@@ -155,6 +155,11 @@ def always(job_fn):
     """decorator to schedule a job to run on every execution cycle"""
     return cron('* * * * *')(job_fn)
 
+def repeatedly(job_fn):
+    """decorator to schedule a job to run every time it is called"""
+    return cron(None)(job_fn)
+
+
 # Discovery.
 def load_app_background_jobs(app):
     """Load the background jobs for the given app from that apps background.py
@@ -172,7 +177,7 @@ def load_app_background_jobs(app):
 
     # Add CWD to import path so we can import background modules after we chdir
     # into app directories.
-    sys.path.append('.')
+    sys.path.insert(0, app.path)
     # Remove any existing background module from sys.modules (probably this
     # module), to prevent that cache from trapping the import we're about to
     # do.
@@ -197,7 +202,7 @@ def load_app_background_jobs(app):
         os.chdir(base_dir)
 
         # Remove our modification from the import path.
-        del sys.path[-1]
+        sys.path.remove(app.path)
 
     # Un-initialize the _job_set global to prevent weird behaviour in the case
     # of app code importing symbols from their background.py modules.
@@ -269,13 +274,30 @@ def purge_old_job_results():
     logger.debug('finished purging old background job results')
 
 
+def reset_modules():
+    """reset the modules to a known starting set
+
+    memorizes the modules currently in use and then removes any other
+    modules when called again
+    """
+    # pylint: disable=global-variable-undefined, invalid-name
+    global init_modules
+    if 'init_modules' in globals():
+        for module in [x for x in sys.modules if x not in init_modules]:
+            del sys.modules[module]
+    else:
+        init_modules = list(sys.modules.keys())
+
+
 def run_background_jobs(app):
+
+    reset_modules()
 
     site = zoom.system.site
 
     jobs_list = app.background_jobs
-    if not len(jobs_list):
-        return
+    if not jobs_list:
+        return None
 
     logger.debug(
         'scanning %d background jobs for %s/%s',
@@ -290,9 +312,9 @@ def run_background_jobs(app):
 
         job.load()
 
-        if tick_time < job.next_run:
-            # logger.info('skipping background job %s', job.qualified_name)
-            continue
+        if job.schedule:
+            if tick_time < job.next_run:
+                continue
 
         # Execute the job.
         logger.info('running background job %s', job.qualified_name)

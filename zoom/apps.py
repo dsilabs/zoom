@@ -36,26 +36,34 @@ DEFAULT_SETTINGS = dict(
 logger = logging.getLogger(__name__)
 
 
+class app_context:
+    """App Context Manager"""
+
+    def __init__(self, path):
+        self.path = path
+        self.save_dir = os.getcwd()
+
+    def __enter__(self):
+        sys.path.insert(0, self.path)
+        os.chdir(self.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.save_dir)
+        sys.path.remove(self.path)
+
+
 def load_module(module, filename):
     """Dynamically load a module"""
 
-    myhandler = \
-        ImportError if sys.version_info < (3, 6) else ModuleNotFoundError
-
-    try:
-        pathname = os.path.realpath(filename)
-        if os.path.exists(pathname):
-            logger.debug('loading module %r', pathname)
+    pathname = os.path.realpath(filename)
+    if os.path.exists(pathname):
+        if module in sys.modules:
+            del sys.modules[module]
+        path = os.path.dirname(pathname)
+        with app_context(path):
             importlib.invalidate_caches()
-            return imp.load_source(module, pathname)
-        logger.warning('load_module file missing %r', pathname)
-        return None
-    except myhandler as err:
-        msg = '%s while loading {!r} from {!r}' % myhandler.__name__
-        cwd = os.getcwd()
-        logger.error(msg.format((module, filename), cwd))
-        logger.error('%s: %s', myhandler.__name__, err)
-        raise
+            m = importlib.import_module(module)
+            return m
 
 
 class App(object):
@@ -112,7 +120,6 @@ class App(object):
 
         filename = '{}.py'.format(module)
         if isfile(filename):
-            logger.debug('file %s exists', filename)
             source = load_module(module, os.path.realpath(filename))
             main = if_callable(getattr(source, 'main', None))
             app = if_callable(getattr(source, 'app', None))
@@ -133,7 +140,7 @@ class App(object):
         return self.process(*request.route, **request.data)
 
 
-class AppProxy(object):
+class AppProxy:
     """App Proxy
 
     Contains the various extra supporting parts of an app besides
@@ -150,11 +157,13 @@ class AppProxy(object):
         self.name = name
         self.filename = filename
 
-        request = getattr(zoom.system, 'request')
+        request = getattr(zoom.system, 'request', None)
         if request:
             user = zoom.system.request.user
         else:
             user = Users(site.db).first(username='guest')
+
+        self._method = None
 
         default_app_name = get_default_app_name(site, user)
 
@@ -184,7 +193,6 @@ class AppProxy(object):
         self.as_icon = self.get_icon_view()
         self.in_development = get('in_development')
 
-        self._method = None
         self._templates_paths = None
 
     @property
@@ -230,8 +238,8 @@ class AppProxy(object):
         """Returns the app callable entry point"""
         if self._method is None:
             split, join = os.path.split, os.path.join
-            self.request.profiler.add('app loaded')
-            self._method = getattr(load_module('app', self.filename), 'app')
+            module = load_module('app', self.filename)
+            self._method = getattr(module, 'app')
             self.packages = zoom.packages.load(join(self.path, 'packages.json'))
             apps_dir = split(self.path)[0]
             self.common_packages = zoom.packages.load(join(apps_dir, 'packages.json'))
@@ -259,18 +267,13 @@ class AppProxy(object):
 
     def run(self, request):
         """run the app"""
-        save_dir = os.getcwd()
-        try:
-            logger.debug('chdir to %r', self.path)
-            os.chdir(self.path)
-            self.request = request
-            request.app = self
-            app_callable = self.method
+        self.request = request
+        request.app = self
+        app_callable = self.method
+        self.request.profiler.add('app loaded')
+        with app_context(self.path):
             response = app_callable(request)
             result = respond(response, request)
-        finally:
-            logger.debug('chdir back to %r', save_dir)
-            os.chdir(save_dir)
         return result
 
     def menu(self):
@@ -749,15 +752,13 @@ def helpers(request):
 def handler(request, next_handler, *rest):
     """Dispatch request to an application"""
     logger.debug('apps_handler')
-    if '.' not in sys.path:
-        logger.debug('adding "." to path')
-        sys.path.insert(0, '.')
     response = handle(request)
     if isinstance(response, zoom.response.RedirectResponse):
         logger.debug('app redirecting to %s', response.headers['Location'])
     else:
         logger.debug('app responded with type %s', type(response))
     return response or next_handler(request, *rest)
+
 
 def get_app():
     """Return the current app"""

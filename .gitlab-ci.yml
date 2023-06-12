@@ -12,9 +12,41 @@ whitespace:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
-tests:
+python-3.7:
   stage: test
   image: "python:3.7"
+  services:
+    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_in_gitlab_ci.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.8:
+  stage: test
+  image: "python:3.9"
+  services:
+    - mariadb:10.7
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_in_gitlab_ci.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.9:
+  stage: test
+  image: "python:3.9"
   services:
     - mariadb:10.7
   variables:
