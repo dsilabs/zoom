@@ -66,23 +66,15 @@ class TestData(AppTestCase):
 
 class TestGroup(TestData):
 
-    def test_get_all_subgroups(self):
+    def test_get_subgroup_ids(self):
 
         groups = zoom.get_site().groups
         testgroup1 = groups.first(name='testgroup1')
 
-        subgroup_ids = []
-        subgroup_names = []
+        subgroup_ids = set()
         for group in TEST_GROUPS:
             name = group[0]
-            subgroup_ids.append(groups.first(name=name).group_id)
-            subgroup_names.append(name)
+            subgroup_ids.add(groups.first(name=name).group_id)
 
-        result_ids = testgroup1.get_all_subgroups()
+        result_ids = testgroup1.get_subgroup_ids()
         self.assertEqual(result_ids, subgroup_ids)
-
-        result_names = testgroup1.get_all_subgroups(names=True)
-        self.assertEqual(result_names, subgroup_names)
-
-
-
