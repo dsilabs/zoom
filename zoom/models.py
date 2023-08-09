@@ -136,6 +136,34 @@ class Subgroups(RecordStore):
         )
 
 
+def recursive_group_search(group_id, kind='subgroups'):
+    """ Uses a recursive function to find all related group IDs (subgroups or
+    rolls) of a given group ID. Searches for 'subgroups' by default, and
+    searches for 'roles' if specified """
+    db = zoom.get_db()
+    cols = ['`group_id`', '`subgroup_id`']
+    if kind == 'roles':
+        cols.reverse()
+    cols_str = ', '.join(cols)
+    cmd = 'select ' + cols_str + ' from `subgroups` order by ' + cols[1]
+    group_id_pairs = list(db(cmd))
+    all_group_ids = [_id for _id, in list(db('select `id` from `groups`'))]
+
+    def find_group_ids(grp_id, depth=0):
+        """ Recursive function to find all subgroup or role ids to a max
+        recusion depth of 10 """
+        result = {grp_id}
+        if depth < 10:
+            for group_id1, group_id2 in group_id_pairs:
+                if (grp_id == group_id1
+                    and group_id2 not in result
+                    and group_id2 in all_group_ids):
+                    result |= find_group_ids(group_id2, depth + 1)
+        return result
+
+    return find_group_ids(group_id).difference({group_id})
+
+
 class Group(Record):
     """Zoom Users Group
 
@@ -565,32 +593,9 @@ class Group(Record):
                 supergroup.remove_subgroup(self)
 
     def get_subgroup_ids(self):
-        """ Returns all subgroup IDs for the group, to a maxium of depth of 10
-        """
-        def find_subgroups_ids(group_id, all_subgroup_ids, depth=0):
-            """ Recursive function to find all subgroup ids to a max depth
-            of 10. """
-            result = {group_id}
-            if depth < 10:
-                for grp_id, sgrp_id in all_subgroup_ids:
-                    if (group_id == grp_id
-                        and sgrp_id not in result
-                        and sgrp_id in all_group_ids):
-                        result |= find_subgroups_ids(
-                            sgrp_id,
-                            all_subgroup_ids,
-                            depth + 1
-                        )
-            return result
-
-        db = self['__store'].db
-        all_subgroup_ids = list(db(
-            'select `group_id`, `subgroup_id` from `subgroups` '
-            'order by `subgroup_id`'))
-        all_group_ids = [_id for _id, in list(db(
-            'select `id` from `groups`'
-        ))]
-        return find_subgroups_ids(self.group_id, all_subgroup_ids)
+        """ Returns all subgroup IDs for the group, to a maxium recursion
+        depth of 10"""
+        return recursive_group_search(self.group_id)
 
 
 class Groups(RecordStore):
