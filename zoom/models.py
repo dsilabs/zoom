@@ -136,18 +136,17 @@ class Subgroups(RecordStore):
         )
 
 
-def recursive_group_search(group_id, kind='subgroups'):
+def recursive_group_search(group_id, reverse=False):
     """ Uses a recursive function to find all related group IDs (subgroups or
     rolls) of a given group ID. Searches for 'subgroups' by default, and
-    searches for 'roles' if specified """
+    searches for 'roles' if the reverse search is True """
     db = zoom.get_db()
     cols = ['`group_id`', '`subgroup_id`']
-    if kind == 'roles':
+    if reverse:
         cols.reverse()
     cols_str = ', '.join(cols)
     cmd = 'select ' + cols_str + ' from `subgroups` order by ' + cols[1]
     group_id_pairs = list(db(cmd))
-    all_group_ids = [_id for _id, in list(db('select `id` from `groups`'))]
 
     def find_group_ids(grp_id, depth=0):
         """ Recursive function to find all subgroup or role ids to a max
@@ -156,8 +155,7 @@ def recursive_group_search(group_id, kind='subgroups'):
         if depth < 10:
             for group_id1, group_id2 in group_id_pairs:
                 if (grp_id == group_id1
-                    and group_id2 not in result
-                    and group_id2 in all_group_ids):
+                    and group_id2 not in result):
                     result |= find_group_ids(group_id2, depth + 1)
         return result
 
