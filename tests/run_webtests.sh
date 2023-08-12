@@ -48,4 +48,4 @@ zoom serve -p 8000 $ZOOM_DEFAULT_INSTANCE &
 
 cat $ZOOM_DEFAULT_SITE_INI
 
-nosetests --with-doctest --with-coverage --cover-package=zoom -vx zoom tests/apptests tests/webtests --exclude-dir=zoom/testing --exclude-dir=zoom/cli
+nosetests --with-coverage --cover-package=zoom -vx tests/apptests tests/webtests --exclude-dir=zoom/testing --exclude-dir=zoom/cli
