@@ -76,7 +76,7 @@ python-3.8-web:
     expire_in: 1 week
     when: on_failure
 
-python-3.8-unit:
+python-3.9-unit:
   stage: test
   image: "python:3.9"
   services:
@@ -92,7 +92,7 @@ python-3.8-unit:
     expire_in: 1 week
     when: on_failure
 
-python-3.8-web:
+python-3.9-web:
   stage: test
   image: "python:3.9"
   services:
