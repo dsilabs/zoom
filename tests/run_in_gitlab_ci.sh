@@ -27,9 +27,14 @@ sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 apt-get -y update
 apt-get install -y google-chrome-stable
 
+# get corresponding URL for webdriver
+URL="https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
+chromedriver_url=$(curl -s https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['channels']['Stable']['downloads']['chrome'][0]['url'])")
+echo $chromedriver_url
+
 # install chromedriver
 apt-get install -yqq unzip
-wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+wget -O /tmp/chromedriver.zip $chromedriver_url
 unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
 # set display port to avoid crash
