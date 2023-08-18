@@ -28,9 +28,9 @@ apt-get -y update
 apt-get install -y google-chrome-stable
 
 # install chromedriver
-apt-get install -yqq unzip
-wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
-unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+wget -O /tmp/chromedriver.zip $(python3 get_chromedriver_url.py)
+unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/
+mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
 
 # set display port to avoid crash
 export DISPLAY=:99
