@@ -435,6 +435,11 @@ class MarkdownText(object):
         """
         return {}
 
+    def requires_multipart_form(self):
+        """return True if a multipart form is required for this field
+        """
+        return False
+
 
 class TextField(Field):
     """Text Field
