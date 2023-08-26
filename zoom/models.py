@@ -564,7 +564,7 @@ class Group(Record):
             if supergroup:
                 supergroup.remove_subgroup(self)
 
-    def get_related_group_ids(self, reverse=False):
+    def get_related_group_ids(self, reverse=False, max_depth=10):
         """get_related_group_ids
 
         Returns a list of group ids for a group.  By default it returns
@@ -583,7 +583,7 @@ class Group(Record):
             """ Recursive function to find all subgroup or role ids to a max
             recusion depth of 10 """
             result = {grp_id}
-            if depth < 10:
+            if depth < max_depth:
                 for group_id1, group_id2 in group_id_pairs:
                     if (grp_id == group_id1
                         and group_id2 not in result):
@@ -592,10 +592,9 @@ class Group(Record):
 
         return find_group_ids(self.group_id).difference({self.group_id})
 
-    def get_subgroup_ids(self):
-        """ Returns all subgroup IDs for the group, to a maxium recursion
-        depth of 10"""
-        return self.get_related_group_ids()
+    def get_subgroup_ids(self, max_depth=10):
+        """ Returns all subgroup IDs for the group """
+        return self.get_related_group_ids(max_depth)
 
 
 class Groups(RecordStore):
