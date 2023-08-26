@@ -585,8 +585,7 @@ class Group(Record):
             result = {grp_id}
             if depth < max_depth:
                 for group_id1, group_id2 in group_id_pairs:
-                    if (grp_id == group_id1
-                        and group_id2 not in result):
+                    if (grp_id == group_id1 and group_id2 not in result):
                         result |= find_group_ids(group_id2, depth + 1)
             return result
 
@@ -594,7 +593,7 @@ class Group(Record):
 
     def get_subgroup_ids(self, max_depth=10):
         """ Returns all subgroup IDs for the group """
-        return self.get_related_group_ids(max_depth)
+        return self.get_related_group_ids(max_depth=max_depth)
 
 
 class Groups(RecordStore):
