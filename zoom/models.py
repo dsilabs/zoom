@@ -594,6 +594,10 @@ class Group(Record):
         """ Returns all subgroup IDs for the group """
         return self.get_related_group_ids(max_depth=max_depth)
 
+    def get_supergroup_ids(self, max_depth=10):
+        """ Returns all supergroup IDs for the group """
+        return self.get_related_group_ids(reverse=True, max_depth=max_depth)
+
 
 class Groups(RecordStore):
 

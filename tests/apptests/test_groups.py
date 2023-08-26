@@ -91,3 +91,29 @@ class TestGroup(TestData):
 
         result_ids = testgroup5.get_subgroup_ids()
         self.assertEqual(result_ids, subgroup_ids)
+
+    def test_get_supergroup_ids(self):
+
+        groups = zoom.get_site().groups
+        testgroup = groups.first(name='testgroup6')
+
+        supergroup_ids = set(
+            groups.first(name=f'testgroup{n}').group_id
+            for n in [5, 2, 1]
+        )
+
+        result_ids = testgroup.get_supergroup_ids(max_depth=10)
+        self.assertEqual(result_ids, supergroup_ids)
+
+    def test_get_supergroup_with_depth_specified(self):
+
+        groups = zoom.get_site().groups
+        testgroup = groups.first(name='testgroup6')
+
+        supergroup_ids = set(
+            groups.first(name=f'testgroup{n}').group_id
+            for n in [5, 2]
+        )
+
+        result_ids = testgroup.get_supergroup_ids(max_depth=2)
+        self.assertEqual(result_ids, supergroup_ids)
