@@ -27,20 +27,17 @@ class TestData(AppTestCase):
                 Group(name=name, type=_type, admin_group_id=admin_id)
             )
 
-        testgroup1 = zoom.get_site().groups.first(name='testgroup1')
-        testgroup2 = zoom.get_site().groups.first(name='testgroup2')
-        testgroup3 = zoom.get_site().groups.first(name='testgroup3')
-        testgroup4 = zoom.get_site().groups.first(name='testgroup4')
-        testgroup5 = zoom.get_site().groups.first(name='testgroup5')
-        testgroup6 = zoom.get_site().groups.first(name='testgroup6')
-        testgroup7 = zoom.get_site().groups.first(name='testgroup7')
+        groups = zoom.get_site().groups
 
-        testgroup1.add_subgroup(testgroup2)
-        testgroup1.add_subgroup(testgroup3)
-        testgroup2.add_subgroup(testgroup4)
-        testgroup2.add_subgroup(testgroup5)
-        testgroup5.add_subgroup(testgroup6)
-        testgroup4.add_subgroup(testgroup7)
+        def add_subgroups(group_name, subgroup_names):
+            for subgroup_name in subgroup_names:
+                groups.first(name=group_name).add_subgroup(
+                    groups.first(name=subgroup_name))
+
+        add_subgroups('testgroup1', ['testgroup2', 'testgroup3'])
+        add_subgroups('testgroup2', ['testgroup4', 'testgroup5'])
+        add_subgroups('testgroup4', ['testgroup7'])
+        add_subgroups('testgroup5', ['testgroup6'])
 
     def teardown_data(self):
 
