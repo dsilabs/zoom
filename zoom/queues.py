@@ -10,6 +10,7 @@ import datetime
 import platform
 import logging
 
+import zoom
 from zoom.store import Record, EntityStore
 import zoom.jsonz as json
 
@@ -64,7 +65,7 @@ def response_topic_name(topic, id):
 def setup_test():
     from zoom.database import setup_test
     db = setup_test()
-    return Queues(db)
+    return get_queues(db)
 
 
 class TopicIterator(object):
@@ -656,3 +657,15 @@ def handler(request, handler, *rest):
     logger.debug('queues initialized for %s', site.name)
     result = handler(request, *rest)
     return result
+
+
+def get_queues(db=None) -> Queues:
+    db = db or zoom.get_db()
+    return Queues(db)
+
+
+def get_topic(topic, newest=None, db=None) -> Topic:
+    return get_queues(db).topic(topic, newest)
+
+
+get_queue = get_topic

@@ -4,8 +4,6 @@
     Test the records module
 """
 
-from decimal import Decimal
-from datetime import date, time, datetime
 import unittest
 
 import zoom

@@ -216,8 +216,9 @@ class CollectionView(View):
 
     def show(self, key):
         """Show a record"""
-        def action_for(record, name):
-            return name, '/'.join([record.url, id_for(name)])
+
+        def action_for(obj, name):
+            return name, '/'.join([obj.url, id_for(name)])
 
         c = self.collection
         user = c.user
@@ -231,7 +232,7 @@ class CollectionView(View):
             if user.can('update', record):
                 actions.append(action_for(record, 'Edit'))
             if user.can('create', record):
-                actions.append(action_for(record, 'New'))
+                actions.append(action_for(c, 'New'))
             c.fields.initialize(c.model(record))
 
             if 'updated' in record and 'updated_by' in record:
