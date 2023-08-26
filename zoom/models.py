@@ -580,8 +580,7 @@ class Group(Record):
         group_id_pairs = list(db(cmd))
 
         def find_group_ids(grp_id, depth=0):
-            """ Recursive function to find all subgroup or role ids to a max
-            recusion depth of 10 """
+            """find all related group ids to a max depth of 10"""
             result = {grp_id}
             if depth < max_depth:
                 for group_id1, group_id2 in group_id_pairs:
