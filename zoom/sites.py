@@ -118,3 +118,8 @@ def get_db(name=None):
     if name is not None:
         return db.use(name)
     return db
+
+
+def db(*args, **kwargs):
+    """Run a database command and return the result"""
+    return get_db(*args, **kwargs)
