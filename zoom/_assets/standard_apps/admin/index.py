@@ -528,10 +528,19 @@ class MyView(zoom.View):
                     ('Machine', platform.machine()),
                     ('Archtitecture', ' '.join(platform.architecture()))
                 ]),
-                h.h2('Variables'),
+                h.h2('OS Variables'),
                 zoom.html.table(
-                    list(
-                        (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items())
+                    sorted(list(
+                        (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items()
+                    ))
+                ),
+                h.h2('Request Variables'),
+                zoom.html.table(
+                    sorted(list(
+                        (k, v)
+                        for k, v in zoom.system.request.env.items()
+                        if not callable(v)
+                    ))
                 ),
                 css="""
                     .content table { width: 100%; }
