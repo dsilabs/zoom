@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - limit path column being inserted to size of column
 - add top level db function
 - add request environment variables to admin environment view
+- add audit logging to Group add_user method
+- add Group remvoe_user method
 
 ## [6.21.0] - 2023-05-01
 - add quiet logging completion of ajax requests

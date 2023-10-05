@@ -155,3 +155,24 @@ class TestGroup(unittest.TestCase):
         self.assertEqual(group.app_names, set())
 
         groups.delete(name=group_name)
+
+    def test_add_remove_user(self):
+        groups = self.groups
+
+        groups.add('testgroup1')
+        try:
+            group = groups.first(name='testgroup1')
+            user = zoom.system.site.users.first(username='user')
+            group.remove_user(user)  # just to reset it
+            self.assertEqual(group.user_ids, [])
+
+            group.add_user(user)
+
+            self.assertEqual(group.user_ids, [2])
+
+            group.remove_user(user)
+
+            self.assertEqual(group.user_ids, [])
+
+        finally:
+            groups.delete(name='testgroup1')
