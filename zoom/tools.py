@@ -10,6 +10,8 @@ import uuid
 import sass as libsass
 from markdown import Markdown
 from pypugjs.ext.html import process_pugjs as pug
+import pytz
+
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -24,6 +26,12 @@ one_day = datetime.timedelta(1)
 one_week = one_day * 7
 one_hour = datetime.timedelta(hours=1)
 one_minute = datetime.timedelta(minutes=1)
+
+
+def get_timezone(zone):
+    """Return a timezone object given a time zone string
+    """
+    return pytz.timezone(zone)
 
 
 def now():

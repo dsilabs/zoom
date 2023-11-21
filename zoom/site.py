@@ -12,7 +12,7 @@ from zoom.context import context
 import zoom.helpers
 from zoom.helpers import link_to, mail_to
 from zoom.utils import dedup, existing
-from zoom.tools import zoompath
+from zoom.tools import zoompath, get_timezone
 
 
 isdir = os.path.isdir
@@ -167,7 +167,6 @@ def locate_theme(path, name):
         logger.debug('using theme %s', join(*possibility))
         return possibility
 
-
 class Site(object):
     """a Zoom site"""
 
@@ -195,6 +194,7 @@ class Site(object):
             self.system = get('site', 'system', self.name)
             self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
             self.csrf_validation = get('site', 'csrf_validation', True) in zoom.utils.POSITIVE
+            self.timezone = get_timezone(get('site', 'timezone', 'UTC'))
             self.tracking_id = get('site', 'tracking_id', '')
 
             self.owner = get('site', 'owner', 'Company Name')

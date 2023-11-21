@@ -24,3 +24,8 @@ class TestSite(unittest.TestCase):
         self.assertTrue(site.profiling)
         self.assertTrue(site.monitor_app_database)
         self.assertFalse(site.monitor_system_database)
+
+    def test_timezone_attribute(self):
+        site = zoom.sites.Site()
+        self.assertIsNotNone(site.timezone)
+        self.assertEqual(site.timezone.zone, 'UTC')
