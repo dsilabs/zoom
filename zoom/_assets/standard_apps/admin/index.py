@@ -10,9 +10,9 @@ import platform
 import zoom
 import zoom.apps
 import zoom.html as h
-from zoom.helpers import link_to, link_to_page
+from zoom.helpers import link_to, link_to_page, when
 from zoom.page import page
-from zoom.tools import load_content, today, how_long_ago, now
+from zoom.tools import load_content, today, now
 from zoom.users import link_to_user
 
 import views
@@ -58,7 +58,7 @@ def log_data(db, status, n, limit, q):
             item[3],
             item[4],
             zoom.link_to(item[5]),
-            how_long_ago(item[6]),
+            when(item[6]),
         ] + list(item[6:])
         for item in data
         if q in repr(item)
@@ -98,7 +98,7 @@ def activity_panel(db):
             link_to_user(rec[1]),
             rec[2],
             zoom.link_to(rec[3]),
-            how_long_ago(rec[4]),
+            when(rec[4]),
             rec[4],
             rec[5],
         ]
@@ -135,7 +135,7 @@ def error_panel(db):
             link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
-            how_long_ago(rec[3]),
+            when(rec[3]),
         ]
         rows.append(row)
 
@@ -170,7 +170,7 @@ def warning_panel(db):
             link_to(str(rec[0]), '/admin/entry/' + str(rec[0])),
             link_to_user(rec[1]),
             rec[2],
-            how_long_ago(rec[3]),
+            when(rec[3]),
         ]
         rows.append(row)
 
@@ -200,7 +200,7 @@ def users_panel(db):
     for rec in data:
         row = [
             link_to_user(rec[0]),
-            how_long_ago(rec[1]),
+            when(rec[1]),
         ]
         rows.append(row)
 
