@@ -8,7 +8,7 @@ import datetime
 import zoom
 import zoom.tools
 import zoom.html as html
-from zoom.snippets import snippet
+from zoom.snippets import get_snippet
 import zoom.impersonation
 
 
@@ -413,4 +413,7 @@ def impersonation_notice(*args, **kwargs):
 def version():
     """return ZoomFoundry version number"""
     return zoom.__version__
-    
+
+
+def snippet(name, default='', *args, **kwargs):
+    return get_snippet(name, default, *args, **kwargs)

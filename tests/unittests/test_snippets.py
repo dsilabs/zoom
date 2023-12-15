@@ -6,13 +6,7 @@ import unittest
 
 import zoom
 
-from zoom.snippets import *
-from zoom.database import Database
-
-# dbhost  = 'database'
-# dbname  = 'test'
-# dbuser  = 'testuser'
-# dbpass  = 'password'
+from zoom.snippets import get_snippet, Snippet
 
 class TestSnippets(unittest.TestCase):
 
@@ -36,16 +30,16 @@ class TestSnippets(unittest.TestCase):
 
         assert(len(snippets.all())==4)
 
-        self.assertEqual(snippet('name'), '')
-        self.assertEqual(snippet('address'), 'my addr')
-        self.assertEqual(snippet('address'), 'my addr')
-        self.assertEqual(snippet('address'), 'my addr')
-        self.assertEqual(snippet('address'), 'my addr')
-        self.assertEqual(snippet('address'), 'my addr')
-        self.assertEqual(snippet('twitter'), 'my twitter')
-        self.assertEqual(snippet('twitter'), 'my twitter')
-        self.assertEqual(snippet('twitter'), 'my twitter')
-        self.assertEqual(snippet('twitter'), 'my twitter')
+        self.assertEqual(get_snippet('name'), '')
+        self.assertEqual(get_snippet('address'), 'my addr')
+        self.assertEqual(get_snippet('address'), 'my addr')
+        self.assertEqual(get_snippet('address'), 'my addr')
+        self.assertEqual(get_snippet('address'), 'my addr')
+        self.assertEqual(get_snippet('address'), 'my addr')
+        self.assertEqual(get_snippet('twitter'), 'my twitter')
+        self.assertEqual(get_snippet('twitter'), 'my twitter')
+        self.assertEqual(get_snippet('twitter'), 'my twitter')
+        self.assertEqual(get_snippet('twitter'), 'my twitter')
 
         s = snippets.first(name='address')
         print(s)
@@ -60,8 +54,8 @@ class TestSnippets(unittest.TestCase):
 
     def test_many_updates(self):
         snippets = self.snippets
-        for name in ['one','two','three','four','five']:
-            for variant in ['a','b','c','d','e','f','g']:
+        for name in ['one', 'two', 'three', 'four', 'five']:
+            for variant in ['a', 'b', 'c', 'd', 'e', 'f', 'g']:
                 snippets.put(Snippet(
                     name=name,
                     variant=variant,
@@ -71,11 +65,11 @@ class TestSnippets(unittest.TestCase):
         print(snippets.all())
 
         c = 10
-        for n in range(c):
-            for name in sorted(['one','two','three','four'], reverse=True):
-                for variant in ['a','b','c','d','e','f','g']:
+        for _ in range(c):
+            for name in sorted(['one', 'two', 'three', 'four'], reverse=True):
+                for variant in ['a', 'b', 'c', 'd', 'e', 'f', 'g']:
                     self.assertEqual(
-                        snippet(
+                        get_snippet(
                             name,
                             variant=variant
                         ),

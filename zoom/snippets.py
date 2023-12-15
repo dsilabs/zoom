@@ -45,7 +45,11 @@ class SystemSnippet(zoom.utils.Record):
 Snippet = SystemSnippet
 
 
-def snippet(name, default='', variant=None):
+def get_snippets(db=None):
+    return zoom.store_of(Snippet, db=db)
+
+
+def get_snippet(name, default='', variant=None):
     snippets = get_snippets()
 
     snippet = snippets.first(name=name, variant=variant)
@@ -57,6 +61,3 @@ def snippet(name, default='', variant=None):
         result = default
 
     return result
-
-def get_snippets(db=None):
-    return zoom.store_of(Snippet, db=db)
