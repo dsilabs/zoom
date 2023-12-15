@@ -444,6 +444,7 @@ class MyView(zoom.View):
                         'owner_url',
                         'admin_email',
                         'csrf_validation',
+                        'timezone',
                     )
                 ]),
                 h.h2('Users'),
