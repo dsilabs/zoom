@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - add site timezone attribute
+- add site time zone auto adjustments
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
