@@ -12,7 +12,7 @@ from zoom.context import context
 import zoom.helpers
 from zoom.helpers import link_to, mail_to
 from zoom.utils import dedup, existing
-from zoom.tools import zoompath, get_timezone
+from zoom.tools import zoompath, get_timezone, get_timezone_offset
 
 
 isdir = os.path.isdir
@@ -195,6 +195,7 @@ class Site(object):
             self.link = '<a href="{}">{}</a>'.format(self.url, self.name)
             self.csrf_validation = get('site', 'csrf_validation', True) in zoom.utils.POSITIVE
             self.timezone = get_timezone(get('site', 'timezone', 'UTC'))
+            self.timezone_offset = get_timezone_offset(self.timezone)
             self.tracking_id = get('site', 'tracking_id', '')
 
             self.owner = get('site', 'owner', 'Company Name')

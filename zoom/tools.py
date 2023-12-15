@@ -34,9 +34,26 @@ def get_timezone(zone):
     return pytz.timezone(zone)
 
 
+def get_timezone_offset(timezone):
+    """Return the timezone offset as a timedelta"""
+    utc_dt = datetime.datetime.now(pytz.utc)
+    local_dt = utc_dt.astimezone(timezone)
+    offset = local_dt.utcoffset()
+    return offset
+
+
 def now():
     """Return the current datetime"""
-    return datetime.datetime.now()
+    return datetime.datetime.utcnow()
+
+
+def localtime(timestamp):
+    site = zoom.system.site
+    if site:
+        local_time = timestamp + site.timezone_offset
+    else:
+        local_time = timestamp
+    return local_time
 
 
 def today():
@@ -214,7 +231,7 @@ def how_long(time1, time2):
     >>> how_long(today(), now + one_week)
     '7 days'
 
-    >>> how_long(now, time.time())
+    >>> how_long(time.time(), time.time())
     'a moment'
 
     >>> failed = False

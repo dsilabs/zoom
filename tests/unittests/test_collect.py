@@ -8,6 +8,7 @@ import sys
 import unittest
 import difflib
 from decimal import Decimal
+from datetime import timedelta
 
 import faker
 import zoom
@@ -217,6 +218,7 @@ class TestCollect(unittest.TestCase):
             url='',
             logging=False,
             users=self.users,
+            timezone_offset = timedelta(0)
         )
         self.request = context.request = FakeRequest(
             '/myapp',
