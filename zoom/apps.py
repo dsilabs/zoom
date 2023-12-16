@@ -689,6 +689,14 @@ def main_menu(request):
     return '<ul>%s</ul>' % main_menu_items(request)
 
 
+def get_config_names(request):
+    site = request.site
+    get = site.config.get
+    names = get('apps', 'config', '')
+    names = names and [s.strip() for s in names.split(',')] or []
+    return list(names)
+
+
 def apps_menu(request):
     """Returns a menu of available apps"""
 
@@ -706,7 +714,8 @@ def apps_menu(request):
 
     system_apps = list(get_system_apps(request))
     main_apps = list(get_main_apps(request))
-    exclude = list(a.name for a in system_apps + main_apps)
+    config_apps = get_config_names(request)
+    exclude = list(a.name for a in system_apps + main_apps) + config_apps
 
     if not 'content' in names:
         exclude.append('content')
@@ -732,6 +741,41 @@ def apps_menu(request):
     )
 
 
+def config_menu(request):
+    """Returns a menu of available config apps"""
+
+    def calc_position(app):
+        """position of app"""
+        name = app.name
+        return names.index(name) if name in names else 9999
+
+    site = request.site
+    user = request.user
+    get = site.config.get
+
+    names = get('apps', 'config', '')
+    names = names and [s.strip() for s in names.split(',')] or []
+
+    apps = [
+        app for app in sorted(sorted(site.apps, key=lambda a: a.title), key=calc_position)
+        if app.name in names and app.visible
+        and app.name in user.apps
+    ]
+
+    menu_item = zoom.components.apps.AppMenuItem()
+    active_app = request.app.name
+
+    return html.div(
+        html.ul(
+            menu_item.format(
+                app=app,
+                active=' active' if app.name == active_app else ''
+            ) for app in apps
+            if app.name in user.apps and app.visible
+        ), classed='config-menu'
+    )
+
+
 def helpers(request):
     """return a dict of app helpers"""
     app = request.app
@@ -748,6 +792,7 @@ def helpers(request):
         main_menu_items=main_menu_items(request),
         main_menu=main_menu(request),
         apps_menu=apps_menu(request),
+        config_menu=config_menu(request),
         page_name=len(request.route) > 1 and request.route[1] or '',
     )
 

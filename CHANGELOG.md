@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add site timezone attribute
 - add site time zone auto adjustments
 - recongize fa prefix as fontawesome icons
+- add config menu
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
