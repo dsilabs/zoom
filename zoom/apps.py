@@ -195,6 +195,13 @@ class AppProxy:
         self._templates_paths = None
 
     @property
+    def badges(self):
+        app_badges = self.config.get('badges')
+        if not app_badges:
+            return ''
+        return ''.join(html.badge(i) for i in app_badges.split(','))
+
+    @property
     def icon_class(self):
         icon = self.config.get('icon')
         is_bootstrap_icon = icon.startswith('bi-')
@@ -660,6 +667,14 @@ def get_main_apps(request):
         load_app(request.site, name) for name in names
         ])
     return apps
+
+
+def badges(app):
+    if not app.badges:
+        return ''
+    return ''.join(
+        html.badge(label) for label in app.badges
+    )
 
 
 def main_menu_items(request):
