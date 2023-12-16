@@ -201,6 +201,9 @@ class AppProxy:
         is_bootstrap_icon = icon.startswith('bi-')
         if is_bootstrap_icon:
             return 'bi ' + icon
+        is_fontawesome_icon = icon.startswith('fa-')
+        if is_fontawesome_icon:
+            return 'fa ' + icon
         return 'fa fa-' + icon
 
     @property
