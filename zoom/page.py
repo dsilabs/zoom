@@ -106,7 +106,7 @@ class Page(object):
             warnings = get_alert('warning', 'warning')
             errors = get_alert('error', 'danger')
 
-            return errors + warnings + successes
+            return html.div(errors, warnings, successes, classed='alerts')
 
         def get(part, formatter='{}', joiner='\n  '):
             parts = zoom.system.parts.parts.get(part, OrderedSet())

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - recongize fa prefix as fontawesome icons
 - add config menu
 - add app badges
+- wrap alerts in div
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
