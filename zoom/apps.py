@@ -1,7 +1,6 @@
 """ zoom.apps handles requests by locating and calling a suitable app """
 
 import configparser
-import imp
 import importlib
 import logging
 import os
