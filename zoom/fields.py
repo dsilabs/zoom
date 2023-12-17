@@ -7,7 +7,6 @@
 import locale
 import logging
 import os
-import types
 import datetime
 from decimal import Decimal
 import uuid
@@ -21,7 +20,6 @@ from zoom.tools import (
     markdown,
     is_listy,
     ensure_listy,
-    load_content,
 )
 import zoom.html as html
 from zoom.validators import (
@@ -35,37 +33,6 @@ from zoom.validators import (
 
 def locate_view(name):
     return os.path.join(os.path.dirname(__file__), 'views', name + '.html')
-
-
-def layout_field(label, content, edit=True):
-    """
-        Layout a field (usually as part of a form).
-
-        >>> print(
-        ...     layout_field(
-        ...         'Name',
-        ...         '<input type=text value="John Doe">',
-        ...         True
-        ...     )
-        ... )
-        <div class="field">
-          <div class="field_label">Name</div>
-          <div class="field_edit"><input type=text value="John Doe"></div>
-        </div>
-        <BLANKLINE>
-
-        >>> print(layout_field('Name', 'John Doe', False))
-        <div class="field">
-          <div class="field_label">Name</div>
-          <div class="field_show">John Doe</div>
-        </div>
-        <BLANKLINE>
-    """
-    # pylint: disable=W0612
-
-    pathname = os.path.join(os.path.dirname(__file__), 'views', 'field.html')
-    mode = bool(edit) and 'edit' or 'show'
-    return load_content(**locals())
 
 
 def args_to_dict(values=None, **kwargs):
@@ -106,10 +73,14 @@ def args_to_dict(values=None, **kwargs):
     return values or kwargs
 
 
-class FieldLayout(object):
+def load_view(name):
+    return zoom.tools.load(locate_view(name))
 
-    field_template = zoom.tools.load(locate_view('field'))
-    hint_template = zoom.tools.load(locate_view('hint'))
+
+class FieldLayout:
+
+    field_template = load_view('field')
+    hint_template = load_view('hint')
 
     def __call__(self, label, content, edit=True):
         mode = 'edit' if edit else 'show'
@@ -645,7 +616,7 @@ class PhoneField(TextField):
     '<input class="text_field" id="phone" name="phone" size="20" type="text" value="" />'
 
     """
-    size=20
+    size = 20
     validators = [valid_phone]
 
 
@@ -741,7 +712,7 @@ class Fields(object):
     """
 
     def __init__(self, *args):
-        if len(args) == 1 and type(args[0]) in [list, tuple]:
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
             self.fields = args[0]
         else:
             self.fields = list(args)
@@ -805,7 +776,7 @@ class Fields(object):
             for field in self.fields:
                 field.initialize(values)
 
-    def update(self,*a,**k):
+    def update(self, *a, **k):
         """Update Field values
 
         >>> from zoom.utils import pp
@@ -910,7 +881,7 @@ class Fields(object):
         """
         result = {}
         for field in self.fields:
-            result = dict(result,**field.evaluate())
+            result = dict(result, **field.evaluate())
         return result
 
     def __iter__(self):
@@ -1075,9 +1046,9 @@ class Buttons(Field):
     '<input class="button" type="submit" id="save_button" name="save_button" value="Save" />&nbsp;<a href="/app/id">cancel</a>'
     """
 
-    def __init__(self, captions=['Save'], **keywords):
+    def __init__(self, labels, **keywords):
         Field.__init__(self, **keywords)
-        self.captions = captions
+        self.labels = labels or ['Save']
 
     def show(self):
         return ""
@@ -1091,10 +1062,10 @@ class Buttons(Field):
                 'input',
                 Type='submit',
                 Class='button',
-                name=name_for(caption + ' button'),
-                id=name_for(caption + ' button'),
-                value=caption
-            ) for caption in self.captions
+                name=name_for(label + ' button'),
+                id=name_for(label + ' button'),
+                value=label
+            ) for label in self.labels
         ]
         if hasattr(self, 'cancel'):
             buttons.append(
@@ -1307,10 +1278,10 @@ class NumberField(TextField):
 
     def assign(self, value):
         try:
-            if type(value) == str:
+            if isinstance(value, str):
                 value = ''.join(c for c in value if c in '0123456789.-')
             self.value = self.converter(value)
-        except:
+        except BaseException:
             self.value = None
 
     def widget(self):
@@ -1412,7 +1383,7 @@ class IntegerField(TextField):
     def assign(self, value):
         try:
             self.value = int(value)
-        except:
+        except BaseException:
             self.value = self.default
 
     def display_value(self):
@@ -1629,7 +1600,6 @@ class DateField(Field):
     will typically be dates, while dates coming in from forms will
     typically be strings.
 
-    DateFields always evaluate to date types and always display as string
     representations of those dates formatted according to the specified
     format.
 
@@ -1737,12 +1707,12 @@ class DateField(Field):
                 changeYear: true
             })
         """)
-        if self.min != None:
+        if self.min is not None:
             js.append("""
             $('#%s').datepicker('option', 'minDate', '%s');
             """ % (self.id, self.min.strftime(self.input_format)))
 
-        if self.max != None:
+        if self.max is not None:
             js.append("""
             $('#%s').datepicker('option', 'maxDate', '%s');
             """ % (self.id, self.max.strftime(self.input_format)))
@@ -1756,9 +1726,9 @@ class DateField(Field):
 
     def evaluate(self):
         if self.value:
-            if type(self.value) == datetime.datetime:
+            if isinstance(self.value, datetime.datetime):
                 value = self.value.date()
-            elif type(self.value) == datetime.date:
+            elif isinstance(self.value, datetime.date):
                 value = self.value
             else:
                 strptime = datetime.datetime.strptime
@@ -1798,7 +1768,7 @@ class BirthdateField(DateField):
     def widget(self):
         return zoom.Component(
             DateField.widget(self),
-            js = """
+            js="""
                 $('.birthdate_field')
                     .datepicker({
                         dateFormat: 'M d, yy',
@@ -1855,7 +1825,7 @@ class CheckboxesField(Field):
         current_values = list(map(str, ensure_listy(current_value)))
         result = []
         for option in self.values:
-            if type(option) in (list, tuple) and len(option) == 2:
+            if isinstance(option, (list, tuple)) and len(option) == 2:
                 text, value = option
             else:
                 text = value = option
@@ -1982,8 +1952,8 @@ class CheckboxField(TextField):
         'True'
 
     """
-    options = ['yes','no']
-    truthy = [True,'True','yes','on']
+    options = ['yes', 'no']
+    truthy = [True, 'True', 'yes', 'on']
     default = None
     value = None
 
@@ -1996,11 +1966,11 @@ class CheckboxField(TextField):
         tag = html.tag(
             'input',
             checked,
-            name = self.name,
-            id = self.id,
+            name=self.name,
+            id=self.id,
             Type='checkbox',
             Class='checkbox_field',
-            )
+        )
         return tag
 
     def display_value(self):
@@ -2009,7 +1979,7 @@ class CheckboxField(TextField):
     def show(self):
         return self.layout(self.label, self.display_value(), False)
 
-    def update(self,**values):
+    def update(self, **values):
         for value in values:
             if value.lower() == self.name.lower():
                 self.assign(values[value])
@@ -2071,7 +2041,7 @@ class RadioField(TextField):
         result = []
         name = self.name
         for option in self.values:
-            if type(option) in (list, tuple) and len(option) == 2:
+            if isinstance(option, (list, tuple)) and len(option) == 2:
                 text, value = option
             else:
                 text = value = option
@@ -2220,7 +2190,7 @@ class PulldownField(TextField):
 
     def evaluate(self):
         for option in self.options:
-            if type(option) in (list, tuple) and len(option) == 2:
+            if isinstance(option, (list, tuple)) and len(option) == 2:
                 label, value = option
                 if self.value == label:
                     return {self.name: value}
@@ -2230,19 +2200,19 @@ class PulldownField(TextField):
         t = self.value is None and self.default or self.value
         if t:
             for option in self.options:
-                if type(option) in (list, tuple) and len(option)==2:
+                if isinstance(option, (list, tuple)) and len(option) == 2:
                     label, value = option
                     if str(t) == str(value):
                         return label
         return t
 
-    def assign(self,new_value):
-        self.value = new_value
+    def assign(self, value):
+        self.value = value
         for option in self.options:
-            if type(option) in (list, tuple) and len(option)==2:
-                label, value = option
-                if new_value == label:
-                    self.value = value
+            if isinstance(option, (list, tuple)) and len(option) == 2:
+                label, code = option
+                if value == label:
+                    self.value = code
 
     def widget(self):
         current_value = str(self.value or self.default) or ''
@@ -2251,15 +2221,15 @@ class PulldownField(TextField):
         found = False
         result.append(self.select_layout.format(**dict(place=self.placeholder, classed=self.css_class, name=name)))
         for option in self.options:
-            if type(option) in (list, tuple) and len(option) == 2:
+            if isinstance(option, (list, tuple)) and len(option) == 2:
                 label, value = option
             else:
                 label, value = option, option
             if str(value) == current_value:
-                result.append('<option value="%s" selected>%s</option>\n' % (value,label))
+                result.append('<option value="%s" selected>%s</option>\n' % (value, label))
                 found = True
             else:
-                result.append('<option value="%s">%s</option>\n' % (value,label))
+                result.append('<option value="%s">%s</option>\n' % (value, label))
         if not found and not current_value:
             blank_option = '<option value=""></option>\n'
             result.insert(1, blank_option)
@@ -2453,8 +2423,8 @@ class MultiselectField(TextField):
     def as_searchable(self):
         return set(self._scan(self.value, lambda a: a[0]))
 
-    def assign(self, new_value):
-        self.value = self._scan(new_value, lambda a: a[1])
+    def assign(self, value):
+        self.value = self._scan(value, lambda a: a[1])
 
     def update(self, **values):
         for value in values:
@@ -2571,12 +2541,12 @@ class ChosenMultiselectField(MultiselectField):
 
     def __init__(self, *a, **k):
         MultiselectField.__init__(self, *a, **k)
-        if not 'placeholder' in k:
+        if 'placeholder' not in k:
             self.placeholder = 'Select ' + self.label
 
     def widget(self):
         zoom.requires('chosen')
-        if self.value == None:
+        if self.value is None:
             current_values = self.default
         else:
             current_values = self.value
@@ -2585,15 +2555,15 @@ class ChosenMultiselectField(MultiselectField):
         name = self.name
         result.append(self.select_layout.format(self.placeholder, self.css_class, name, name))
         for option in self.options:
-            if is_listy(option) and len(option)==2:
+            if is_listy(option) and len(option) == 2:
                 label, value = option
             else:
                 label, value = option, option
             style = self.option_style(label, value)
             if str(value) in current_values:
-                result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value,label))
+                result.append('<option %svalue="%s" selected>%s</option>\n' % (style, value, label))
             else:
-                result.append('<option %svalue="%s">%s</option>\n' % (style,value,label))
+                result.append('<option %svalue="%s">%s</option>\n' % (style, value, label))
         result.append('</select>')
         return ''.join(result)
 
@@ -2647,8 +2617,9 @@ class RangeSliderField(IntegerField):
     show_labels = True
     css_class = 'range-slider'
 
-    def assign(self, v):
-        if v is None or not v or (isinstance(v, str) and v.strip()==','):
+    def assign(self, value):
+        v = value
+        if v is None or not v or (isinstance(v, str) and v.strip() == ','):
             self.value = (self.min, self.max)
         elif ',' in v:
             self.value = tuple(map(int, v.split(',')))
@@ -2660,14 +2631,14 @@ class RangeSliderField(IntegerField):
         tmin, tmax = self.min, self.max
         minv, maxv = self.value or (tmin, tmax)
 
-        formatter = self.js_formatter
+        formatter = self.js_formatter  # pylint: disable=possibly-unused-variable
         js = self.js % locals()
         labels = """<div data-id="{}" class="{}"><span class="min pull-left">{}</span><span class="max pull-right">{}</span></div>""".format(
             name,
             not self.show_labels and "hidden" or "",
             minv, maxv
-          )
-        slider = '<div id="{}"><input type="hidden" name="{}" value="{}, {}"></div>'.format(name, name, minv, maxv)
+        )
+        slider = f'<div id="{name}"><input type="hidden" name="{name}" value="{minv}, {maxv}"></div>'
         return component('<div class="{}">{}{}</div>'.format(self.css_class, slider, labels), js=js)
 
     def display_value(self):
@@ -2997,7 +2968,7 @@ var {self.id}Dropzone = $("{self.selector}").dropzone({{
         value = values.get(self.name.lower()) or self.default[:]  # ensure this is a copy
         self.assign(value)
 
-    def update(self,**values):
+    def update(self, **values):
         """update the field"""
         self._initialize(values)
 
@@ -3092,6 +3063,7 @@ class BasicImageField(Field):
     alt = None
     default = None
     updated_value = None
+    object_url = None
 
     def _initialize(self, values):
         self.value = None
