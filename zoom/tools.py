@@ -228,7 +228,7 @@ def how_long(time1, time2):
     >>> how_long(today(), tomorrow(today()))
     '1 day'
 
-    >>> how_long(today(), now + one_week)
+    >>> how_long(now.date(), now + one_week)
     '7 days'
 
     >>> how_long(time.time(), time.time())
