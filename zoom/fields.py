@@ -1253,6 +1253,13 @@ class NumberField(TextField):
     >>> n.value
     2
 
+    >>> n = NumberField('Markup')
+    >>> n.assign('0')
+    >>> n.value
+    0
+    >>> n.display_value()
+    '0'
+
     >>> n = NumberField('Size', units='units')
     >>> n.assign('2,123')
     >>> n.value
@@ -1308,7 +1315,7 @@ class NumberField(TextField):
 
     def display_value(self):
         units = self.units and (' ' + self.units) or ''
-        value = self.value and ('{:,}{}'.format(self.value, units)) or ''
+        value = self.value is not None and ('{:,}{}'.format(self.value, units)) or ''
         return websafe(value)
 
     def evaluate(self):
