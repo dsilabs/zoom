@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add config menu
 - add app badges
 - wrap alerts in div
+- change title bar to use css grid
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
