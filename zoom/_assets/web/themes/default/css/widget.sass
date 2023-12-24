@@ -261,62 +261,6 @@ select.pulldown
     border-bottom: none
 
 
-// Search
-// ==========================
-
-div
-  &.search
-    position: relative
-    display: inline
-    float: right
-    margin-right: 3px
-    form
-      display: block
-      width: 400px
-    input
-      display: inline
-      line-height: 25px
-      // for IE
-      &.text_field
-        width: 200px
-  &.content input.search_button
-    height: 37px
-    margin-left: 5px
-    margin-right: 5px
-    display: inline
-  &.search span.clear
-    position: absolute
-    right: 80px
-    top: 5px
-    a
-      display: inline
-
-@media (max-width: 560px)
-  .search
-    input.text_field
-      width: 40%
-
-
-// Actions
-// ====================
-
-.actions
-  display: inline
-  margin: 0
-  ul
-    list-style-type: none
-    display: inline
-    margin: 0
-    li
-      list-style-type: none
-      display: inline
-      margin: 0
-
-.action
-  margin-left: 2px
-  margin-right: 2px
-
-
 // Misc
 //==========================
 
@@ -337,6 +281,7 @@ div
   margin-left: 0px
   font-size: 0.9em
   padding-left: 5px
+
 
 // Alerts
 //==========================
@@ -520,6 +465,7 @@ div
   img
     width: 120px
 
+
 .login_box
   -webkit-border-radius: 1em
   -moz-border-radius: 1em
@@ -539,29 +485,6 @@ div
     padding: 1em 0.6em
     height: 3em
 
-#title_bar
-  width: 100%
-  .actions
-    ul
-      margin: 0
-      padding: 0
-    float: right
-    sborder: 1px solid blue
-  .search
-    sborder: 1px solid purple
-    form
-      width: auto
-  #title_bar_left
-    width: auto
-    overflow: auto
-  #title_bar_right
-    width: auto
-    float: right
-    margin-top: 1.5em
-  @media only screen and (max-width: 768px)
-    #title_bar_left
-      width: 100%
-
 .content div.group_relationships_list table
   line-height: 1.5em
   border: 0
@@ -574,3 +497,76 @@ div
 .jqstooltip
   width: auto !important
   height: auto !important
+
+
+// Title Bar
+// ==========================
+#title-bar
+  display: grid
+  grid-template-columns: 50% 50%
+  width: 100%
+  margin: 20px 0 10px
+
+  #title-bar-left
+    grid-row: 1
+    grid-column: 1
+    width: auto
+    align-self: center
+    h1
+      margin: 0
+
+  #title-bar-right
+    grid-row: 1
+    grid-column: 2
+    justify-self: right
+    align-self: center
+    padding: 0.5rem 0
+
+    .search
+      position: relative
+      display: inline
+      float: none
+      margin: 0
+      form
+        display: inline
+        input
+          position: relative
+          top: -1px
+      span.clear
+        position: absolute
+        right: 85px
+        top: -3px
+        a
+          display: inline
+      input.search-button
+        position: relative
+        top: 1px
+
+
+    .actions
+      position: relative
+      margin: 0
+      display: inline
+      ul
+        list-style-type: none
+        display: inline
+        margin: 0
+        padding: 0
+        li
+          list-style-type: none
+          display: inline
+          margin: 0
+          .action
+            margin-left: 2px
+            margin-right: 0
+
+@media (max-width: 768px)
+  #title-bar
+    grid-template-columns: 1fr
+    grid-template-rows: auto auto
+    #title-bar-right
+      // justify-self: center
+      grid-column: 1
+      grid-row: 2
+      .search, .actions
+        display: block
