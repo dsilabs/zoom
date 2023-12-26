@@ -2,23 +2,6 @@
 import os
 import setuptools
 
-requires = [
-    'PyMySQL',
-    'bcrypt>=1.1.1',
-    'passlib>=1.7.1',
-    'markdown>=2.6.1',
-    'Pillow>=1.0',
-    'faker',
-    'docopt',
-    'werkzeug',
-    'croniter',
-    'pypugjs>=5.9.1',
-    'libsass>=0.19.4',
-    'pytz==2020.1',
-    'pytzdata==2019.3',
-    'requests>=2.25.1'
-]
-
 here = os.path.abspath(os.path.dirname(__file__))
 
 about = {}
@@ -27,6 +10,9 @@ with open(os.path.join(here, 'zoom', '__version__.py'), 'r', encoding='utf-8') a
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+with open("requirements.txt", "r") as f:
+    requires = [l for l in f.read().splitlines() if not l.startswith('#')]
 
 setuptools.setup(
     name='ZoomFoundry',
