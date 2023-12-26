@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 about = {}
 with open(os.path.join(here, 'zoom', '__version__.py'), 'r', encoding='utf-8') as f:
-    exec(f.read(), about)
+    exec(f.read(), about)  # pylint: disable=exec-used
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -47,6 +47,6 @@ setuptools.setup(
         'Topic :: Internet :: WWW/HTTP :: WSGI',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Software Development :: Libraries :: Python Modules',
-   ],
-   include_package_data=True,
+    ],
+    include_package_data=True,
 )
