@@ -19,13 +19,11 @@ Options:
                               that command instead.
   -V, --version               Show the Zoom version and exit."""
 
-import os
 import sys
 
 from docopt import docopt
 
 from zoom.__version__ import __version__
-from zoom.utils import ItemList
 
 from zoom.cli.utils import finish
 
