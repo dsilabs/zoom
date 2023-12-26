@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - wrap alerts in div
 - change title bar to use css grid
 - adjust PyMySQL requirement version
+- add live reload development server
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port

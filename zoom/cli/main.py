@@ -6,6 +6,7 @@ Commands:
   assign                      Link Zoom resources.
   describe                    Describe Zoom resources.
   serve                       Serve a Zoom instance.
+  dev                         Serve a development server instance with live reload.
 
 Legacy commands (deprecated):
   database                    Manage a database.
@@ -36,6 +37,7 @@ from zoom.cli.init import init
 from zoom.cli.assign import assign
 from zoom.cli.describe import describe
 from zoom.cli.run import run
+from zoom.cli.dev import dev
 
 COMMANDS = {
     'new': new,
@@ -46,7 +48,8 @@ COMMANDS = {
     'init': init,
     'assign': assign,
     'describe': describe,
-    'run': run
+    'run': run,
+    'dev': dev
 }
 DEPRECATED_COMMANDS = 'server',
 EXPERIMENTAL_COMMANDS = 'init', 'assign', 'describe'
