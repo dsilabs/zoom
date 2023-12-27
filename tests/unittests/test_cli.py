@@ -39,13 +39,13 @@ def invoke(*args, stdin=str(), return_proc=False, **kwargs):
         log.debug('\tretv process')
         return process
     out, err = process.communicate(stdin.encode('utf-8'))
-    log.debug('\n'.join(
-        '\n==================='
-        'exit code: %d'
-        'stdout: ----%s----'
-        'stderr: ----%s----'
+    log.debug('\n'.join((
+        '\n===================',
+        'exit code: %d',
+        'stdout: ----%s----',
+        'stderr: ----%s----',
         '==================='
-    ), process.returncode, out.decode(), err.decode())
+    )), process.returncode, out.decode(), err.decode())
 
     return process.returncode, out.decode(), err.decode()
 
@@ -90,7 +90,7 @@ class TestCLI(unittest.TestCase):
 
     def test_new_app(self):
         path0 = os.path.join(TEST_DIR, 'app0')
-        code, _, _ = invoke('zoom new app "%s"'%path0)
+        code, _, _ = invoke('zoom new app "%s"' % path0)
         self.assertTrue(not code, 'Process succeeds')
         self.assertTrue(
             os.path.exists(path0) and os.path.isdir(path0),
@@ -102,7 +102,7 @@ class TestCLI(unittest.TestCase):
 
     def test_basic_init(self):
         path = os.path.join(TEST_DIR, 'web0')
-        code, _, _ = invoke('zoom init -E -U "%s"'%path)
+        code, _, _ = invoke('zoom init -E -U "%s"' % path)
         self.assertTrue(not code, 'Process succeeds')
         dirs_created = (os.path.isdir(os.path.join(path, p)) for p in (
             '.', 'sites', 'themes', 'apps'
@@ -120,7 +120,7 @@ class TestCLI(unittest.TestCase):
         cwd = os.path.abspath('.')
         os.mkdir(lib_path)
         code, out, _ = invoke(
-            '-m pip install --target=%s %s'%(lib_path, cwd),
+            '-m pip install --target=%s %s' % (lib_path, cwd),
             cwd=TEST_DIR
         )
         self.assertTrue(not code, 'No error code')
