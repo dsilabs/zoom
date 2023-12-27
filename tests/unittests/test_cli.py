@@ -39,13 +39,13 @@ def invoke(*args, stdin=str(), return_proc=False, **kwargs):
         log.debug('\tretv process')
         return process
     out, err = process.communicate(stdin.encode('utf-8'))
-    log.debug('\n'.join((
-        '\n===================',
-        'exit code: %d',
-        'stdout: ----%s----',
-        'stderr: ----%s----',
+    log.debug('\n'.join(
+        '\n==================='
+        'exit code: %d'
+        'stdout: ----%s----'
+        'stderr: ----%s----'
         '==================='
-    ))%(process.returncode, out.decode(), err.decode()))
+    ), process.returncode, out.decode(), err.decode())
 
     return process.returncode, out.decode(), err.decode()
 
@@ -54,7 +54,7 @@ class TestCLI(unittest.TestCase):
     def setUp(self):
         try:
             shutil.rmtree(TEST_DIR)
-        except: pass
+        except BaseException: pass
         os.mkdir(TEST_DIR)
 
     def tearDown(self):
@@ -90,7 +90,7 @@ class TestCLI(unittest.TestCase):
 
     def test_new_app(self):
         path0 = os.path.join(TEST_DIR, 'app0')
-        code, out, err = invoke('zoom new app "%s"'%path0)
+        code, _, _ = invoke('zoom new app "%s"'%path0)
         self.assertTrue(not code, 'Process succeeds')
         self.assertTrue(
             os.path.exists(path0) and os.path.isdir(path0),
@@ -102,7 +102,7 @@ class TestCLI(unittest.TestCase):
 
     def test_basic_init(self):
         path = os.path.join(TEST_DIR, 'web0')
-        code, out, err = invoke('zoom init -E -U "%s"'%path)
+        code, _, _ = invoke('zoom init -E -U "%s"'%path)
         self.assertTrue(not code, 'Process succeeds')
         dirs_created = (os.path.isdir(os.path.join(path, p)) for p in (
             '.', 'sites', 'themes', 'apps'
@@ -111,7 +111,7 @@ class TestCLI(unittest.TestCase):
 
     def test_init_failure_rollback(self):
         path = os.path.join(TEST_DIR, 'web1')
-        code, out, err = invoke('zoom init "%s" -u fakeuser -p nosuchpassword')
+        code, _, _ = invoke('zoom init "%s" -u fakeuser -p nosuchpassword')
         self.assertTrue(code, 'Process fails')
         self.assertTrue(not os.path.exists(path), 'Rollback deleted fragment')
 
@@ -119,7 +119,7 @@ class TestCLI(unittest.TestCase):
         lib_path = os.path.join(TEST_DIR, 'libs')
         cwd = os.path.abspath('.')
         os.mkdir(lib_path)
-        code, out, err = invoke(
+        code, out, _ = invoke(
             '-m pip install --target=%s %s'%(lib_path, cwd),
             cwd=TEST_DIR
         )
@@ -142,7 +142,7 @@ class TestCLI(unittest.TestCase):
         )
 
         # Invoke the installed zoom version to ensure it is linked properly.
-        code, out, err = invoke(
+        code, out, _ = invoke(
             '-m zoom -h', env=child_env, cwd=os.path.dirname(cwd)
         )
 
