@@ -560,7 +560,7 @@ class Users(RecordStore):
 
         return user
 
-    def before_insert(self, user):  # pylint: disable-parameters-differ
+    def before_insert(self, user):  # pylint: disable=arguments-differ
         """Things to do just before inserting a new User record"""
         user.update(status='A')
         user.created = user.updated = zoom.tools.now()
