@@ -719,6 +719,12 @@ def apps_menu(request):
         name = app.name
         return names.index(name) if name in names else 9999
 
+    def ul(items):
+        return html.tag(
+            'ul',
+            ''.join(map(str, items))
+        )
+
     site = request.site
     user = request.user
     get = site.config.get
@@ -744,7 +750,7 @@ def apps_menu(request):
     active_app = request.app.name
 
     return html.div(
-        html.ul(
+        ul(
             menu_item.format(
                 app=app,
                 active=' active' if app.name == active_app else ''
