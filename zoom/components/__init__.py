@@ -2,7 +2,6 @@
     zoom.components
 """
 
-import logging
 import uuid
 
 import zoom
@@ -69,8 +68,6 @@ def as_links(items, select=None, filter=None):
     >>> as_links(['one', 'two'], select=lambda a: a.name=='two')
     '<ul><li><a href="<dz:app_url>">one</a></li><li class="active"><a class="active" href="<dz:app_url>/two">two</a></li></ul>'
     """
-    logger = logging.getLogger(__name__)
-
     def as_link_item(n, item):
 
         if type(item) == str:
@@ -117,6 +114,76 @@ def as_links(items, select=None, filter=None):
                     **attributes
                 ),
                 **attributes
+            )
+        )
+    return tag('ul', ''.join(links))
+
+
+def as_menu(items, select=None, filter=None):
+    """generate a menu
+
+    >>> as_menu(['one', 'two'])
+    '<ul><li class="index-menu-item"><a href="<dz:app_url>">one</a></li><li class="two-menu-item"><a href="<dz:app_url>/two">two</a></li></ul>'
+
+    >>> as_menu([('uno', 'one', '/1'), 'two'], select=lambda a: a.name=='uno')
+    '<ul><li class="uno-menu-item active"><a class="active" href="/1">one</a></li><li class="two-menu-item"><a href="<dz:app_url>/two">two</a></li></ul>'
+
+    >>> as_menu(['one', 'two'], select=lambda a: a.name=='two')
+    '<ul><li class="index-menu-item"><a href="<dz:app_url>">one</a></li><li class="two-menu-item active"><a class="active" href="<dz:app_url>/two">two</a></li></ul>'
+
+    """
+    def as_menu_item(n, item):
+
+        if type(item) == str:
+            # only the label was provided
+            name = n and id_for(item) or ''
+            url = tag_for('app_url') + (n and '/' + name or '')
+            return Link(name=name or 'index', label=item, url=url)
+
+        elif len(item) == 2:
+            # the label and the URL were provided
+            name = n and id_for(item[0]) or ''
+            url = tag_for('app_url') + (n and '/' + name or '')
+            return Link(name=name or 'index', label=item[0], url=item[1])
+
+        elif len(item) == 3:
+            # the name, label and URL were provided
+            return Link(name=item[0], label=item[1], url=item[2])
+
+        else:
+            raise Exception('unkown menu item {}'.format(repr(item),))
+
+    def as_menu_items(items):
+        for n, item in enumerate(items):
+            link_item = as_menu_item(n, item)
+            if not filter or filter(link_item):
+                yield link_item
+
+    if items is None:
+        return ''
+
+    links = []
+
+    for link_item in as_menu_items(items):
+        selected = select and select(link_item)
+
+        item_attributes = {}
+        item_attributes['class'] = link_item.name + '-menu-item'
+        if selected:
+            item_attributes['class'] += ' active'
+
+        attributes = {}
+        if selected:
+            attributes['class'] = 'active'
+        links.append(
+            tag(
+                'li',
+                a(
+                    link_item.label,
+                    href=link_item.url,
+                    **attributes
+                ),
+                **item_attributes
             )
         )
     return tag('ul', ''.join(links))

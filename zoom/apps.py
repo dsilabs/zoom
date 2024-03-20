@@ -9,7 +9,7 @@ import urllib
 
 import zoom
 import zoom.components.apps
-from zoom.components import as_links
+from zoom.components import as_menu
 from zoom.database import Database
 import zoom.html as html
 from zoom.utils import existing
@@ -309,7 +309,7 @@ class AppProxy:
         )
         logger.debug('selected: %s', selected)
 
-        result = as_links(menu, select=by_name(selected))
+        result = as_menu(menu, select=by_name(selected))
         return result
 
     def read_config(self, section, key, default=None):
