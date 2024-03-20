@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - change title bar to use css grid
 - adjust PyMySQL requirement version
 - add live reload development server
+- add class names to menu items
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
