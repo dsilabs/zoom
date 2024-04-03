@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - adjust PyMySQL requirement version
 - add live reload development server
 - add class names to menu items
+- add app class name to admin apps view
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port
