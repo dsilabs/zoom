@@ -13,5 +13,5 @@ libsass>=0.19.4
 pytz==2020.1
 pytzdata==2019.3
 requests>=2.25.1
-Flask==2.2.2
+Flask==2.2.5
 livereload==2.5.1
