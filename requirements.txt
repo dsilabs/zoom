@@ -6,7 +6,7 @@ markdown>=2.6.1
 Pillow>=1.0
 faker
 docopt
-werkzeug==2.2.2
+Werkzeug<=3.0.0
 croniter
 pypugjs>=5.9.12
 libsass>=0.19.4
