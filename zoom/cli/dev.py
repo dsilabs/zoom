@@ -15,15 +15,15 @@ Parameters:
 """
 
 import logging
+import os
 import sys
 
 import flask
 from docopt import docopt
 from livereload import Server
-# from gitdatalab.dev import serve
 
-from .reloader import get_blueprint
 from zoom.tools import zoompath
+from .reloader import get_blueprint
 
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,9 @@ class ColoredConsoleHandler(logging.StreamHandler):
 
 
 class LiveReloadFilter(logging.Filter):
-    """filters out livereload messages"""
+    """
+        livereload log message filter
+    """
 
     def filter(self, record):
         # print('livereload', record.module, record.getMessage())
@@ -78,7 +80,9 @@ class LiveReloadFilter(logging.Filter):
 
 
 class AppFilter(logging.Filter):
-    """filters out livereload messages"""
+    """
+        autoreload and wsgi message filter
+    """
 
     def filter(self, record):
         if record.module in ('wsgi', 'autoreload'):
@@ -113,9 +117,7 @@ def setup_logging(level=logging.INFO):
 
 def serve(app, port=5700, level=logging.INFO, watch='.'):
     server = CustomServer(app.wsgi_app)
-    import os
     root = os.path.realpath(watch)
-    # print('watching', root)
     server.watch(root)
     setup_logging(level)
     logger.info('watching %s', root)
