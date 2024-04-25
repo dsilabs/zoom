@@ -132,7 +132,7 @@ def serve(app, port, level, static_path):
 
 
 def dev():
-    arguments = docopt(__doc__, version='1.0.0')
+    arguments = docopt(__doc__)
 
     level = logging.INFO
     if arguments['--verbose']:
