@@ -115,9 +115,9 @@ def setup_logging(level=logging.INFO):
     tornado_logger.addFilter(LiveReloadFilter())
 
 
-def serve(app, port=5700, level=logging.INFO, watch='.'):
+def serve(app, port, level):
     server = CustomServer(app.wsgi_app)
-    root = os.path.realpath(watch)
+    root = os.path.realpath('.')
     server.watch(root)
     setup_logging(level)
     logger.info('watching %s', root)
