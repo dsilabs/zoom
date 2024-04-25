@@ -380,7 +380,7 @@ class User(Record):
 
         Object thing must provide allows(user, action) method.
         """
-        return self.is_active and bool(thing and thing.allows(self, action))
+        return self.is_active and thing.allows(self, action)
 
     def authorize(self, action, thing):
         """authorize a user to perform an action on thing

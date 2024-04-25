@@ -435,6 +435,11 @@ class MarkdownText(object):
         """
         return {}
 
+    def requires_multipart_form(self):
+        """return True if a multipart form is required for this field
+        """
+        return False
+
 
 class TextField(Field):
     """Text Field
@@ -1629,7 +1634,7 @@ class DateField(Field):
     format.
 
     >>> str(DateField("Start Date").widget())
-    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="" />'
+    '<input class="date_field" type="text" autocomplete="off" id="start_date" maxlength="12" name="start_date" value="" />'
 
     >>> from datetime import date, datetime
 
@@ -1678,7 +1683,7 @@ class DateField(Field):
     True
 
     >>> str(DateField("Start Date", value=date(2015,1,1)).widget())
-    '<input class="date_field" type="text" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
+    '<input class="date_field" type="text" autocomplete="off" id="start_date" maxlength="12" name="start_date" value="Jan 01, 2015" />'
 
     """
 
@@ -1697,6 +1702,7 @@ class DateField(Field):
         if system() != 'Windows' else
         '{:%Y-%m-%d %m-%d-%Y %A %B %#d %Y}'
     )
+    autocomplete = "off"
 
     def display_value(self, alt_format=None):
         # pylint: disable=E1101
@@ -1721,6 +1727,7 @@ class DateField(Field):
             value=value,
             Type='text',
             Class=self.css_class,
+            autocomplete=self.autocomplete
         )
         js = []
         js.append("""

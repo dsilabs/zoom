@@ -120,6 +120,11 @@ class Members(RecordStore):
         )
 
 
+def get_members(db=None):
+    db = db or zoom.get_db()
+    return Members(db)
+
+
 class Subgroup(Record):
     pass
 
@@ -242,6 +247,17 @@ class Group(Record):
         membership = members.first(group_id=self._id, user_id=user._id)
         if not membership:
             members.put(Member(group_id=self._id, user_id=user._id))
+            audit('add member', self.name, user.username)
+
+    def remove_user(self, user):
+        """Remove a user from a group"""
+        store = self.get('__store')
+        members = Members(store.db)
+        membership = members.first(group_id=self._id, user_id=user._id)
+        if membership:
+            cmd = 'delete from members where group_id=%s and user_id=%s'
+            store.db(cmd, self._id, user._id)
+            audit('remove member', self.name, user.username)
 
     @property
     def roles(self):
@@ -563,6 +579,40 @@ class Group(Record):
             supergroup = groups.first(name='a_' + name)
             if supergroup:
                 supergroup.remove_subgroup(self)
+
+    def get_related_group_ids(self, reverse=False, max_depth=10):
+        """get_related_group_ids
+
+        Returns a list of group ids for a group.  By default it returns
+        subgroups.  Passing the `reverse` parameter as True returns
+        the supergroups.
+        """
+        db = zoom.get_db()
+        cols = ['`group_id`', '`subgroup_id`']
+        if reverse:
+            cols.reverse()
+        cols_str = ', '.join(cols)
+        cmd = 'select ' + cols_str + ' from `subgroups` order by ' + cols[1]
+        group_id_pairs = list(db(cmd))
+
+        def find_group_ids(grp_id, depth=0):
+            """find all related group ids to a max depth of 10"""
+            result = {grp_id}
+            if depth < max_depth:
+                for group_id1, group_id2 in group_id_pairs:
+                    if (grp_id == group_id1 and group_id2 not in result):
+                        result |= find_group_ids(group_id2, depth + 1)
+            return result
+
+        return find_group_ids(self.group_id).difference({self.group_id})
+
+    def get_subgroup_ids(self, max_depth=10):
+        """ Returns all subgroup IDs for the group """
+        return self.get_related_group_ids(max_depth=max_depth)
+
+    def get_supergroup_ids(self, max_depth=10):
+        """ Returns all supergroup IDs for the group """
+        return self.get_related_group_ids(reverse=True, max_depth=max_depth)
 
 
 class Groups(RecordStore):

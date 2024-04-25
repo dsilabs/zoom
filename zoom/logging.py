@@ -6,6 +6,8 @@ import logging
 
 import zoom
 
+PATH_LIMIT = 80
+
 cmd = """
     insert into log (
         app, path, status, user_id, address,
@@ -20,7 +22,7 @@ def add_entry(request, status, entry):
         request.site.db(
             cmd,
             hasattr(request, 'app') and request.app.name or None,
-            request.path,
+            request.path[:PATH_LIMIT],
             status,
             hasattr(request, 'user') and request.user.user_id or None,
             request.ip_address,

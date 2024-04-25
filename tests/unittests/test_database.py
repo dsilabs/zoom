@@ -633,6 +633,22 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         )
         self.db.debug = True
 
+    def test_custom_port(self):
+        get = os.environ.get
+        def connect_custom_port(port):
+            return database(
+                'mysql',
+                host=get('ZOOM_TEST_DATABASE_HOST', 'localhost'),
+                user=get('ZOOM_TEST_DATABASE_USER', 'testuser'),
+                passwd=get('ZOOM_TEST_DATABASE_PASSWORD', 'password'),
+                port=port,
+                db='zoomtest'
+            )
+        db = connect_custom_port(3306)
+        del db
+        from pymysql.err import OperationalError
+        self.assertRaises(OperationalError, lambda: connect_custom_port(3307))
+
     def test_get_column_names(self):
         db = self.db
         db('create table dzdb_test_table (ID CHAR(10), AMOUNT NUMERIC(10,2), DTADD date, NOTES TEXT)')
@@ -723,7 +739,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         db1 = connect_database(config)
         create_data(db1, 'z_test_table1')
 
-        # in Travis this is already done
         db1('create database if not exists zoomtest2')
 
         db2 = db1.use('zoomtest2')
@@ -740,7 +755,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             db2('drop table z_test_table2')
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db1('drop database if exists zoomtest2')
 
     def test_get_databases(self):
@@ -749,19 +763,16 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
         databases = db.get_databases()
         assert 'zoomtest' in databases
 
-        # in Travis this is already done
         db('create database if not exists zoomtest2')
         try:
 
             assert 'zoomtest2' in db.get_databases()
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db('drop database if exists zoomtest2')
             assert 'zoomtest2' not in db.get_databases()
 
     def test_create_and_delete_test_tables(self):
-        # in Travis this is already done
         self.db('create database if not exists zoomtest2')
 
         db = self.db.use('zoomtest2')
@@ -777,7 +788,6 @@ class TestMySQLDatabase(unittest.TestCase, DatabaseTests):
             assert 'account' not in db.get_tables()
 
         finally:
-            # in Travis this isn't needed but won't cause problems either
             db('drop database if exists zoomtest2')
             assert 'zoomtest2' not in db.get_databases()
 
