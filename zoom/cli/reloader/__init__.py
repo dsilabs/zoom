@@ -86,6 +86,6 @@ def get_response(value):
 
 @dynamic.route('/')
 @dynamic.route('/<path:path>', methods=['GET', 'POST'])
-def dynamic_world(path=None):
+def dynamic_world(path=None):  # pylint: disable=unused-argument
     request = setup()
     return get_response(zoom.middleware.handle(request))
