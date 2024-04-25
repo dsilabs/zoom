@@ -85,7 +85,7 @@ class AppFilter(logging.Filter):
     """
 
     def filter(self, record):
-        if record.module in ('wsgi', 'autoreload'):
+        if record.module in ('wsgi', 'autoreload', 'selector_events'):
             # suppress these messages because they are already handled by
             # the tornado console handler.
             return 0
@@ -115,12 +115,13 @@ def setup_logging(level=logging.INFO):
     tornado_logger.addFilter(LiveReloadFilter())
 
 
-def serve(app, port, level):
+def serve(app, port, level, static_path):
     server = CustomServer(app.wsgi_app)
     root = os.path.realpath('.')
     server.watch(root)
     setup_logging(level)
     logger.debug('watching %s', root)
+    logger.debug(f'static path is {static_path}')
     try:
         server.serve(port=port)
     except OSError as e:
@@ -141,14 +142,14 @@ def dev():
     username = arguments['--user']
     instance = arguments['<instance>']
 
-    static_folder = zoompath('zoom/_assets/web/www/static')
-    app = flask.Flask(__name__, static_folder=static_folder)
+    static_path = zoompath(instance + '/www/static')
+    app = flask.Flask(__name__, static_folder=static_path)
     app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension') # pylint: disable=no-member
     app.debug = True
 
     blueprint = get_blueprint(username=username, instance=instance)
     app.register_blueprint(blueprint)
-    serve(app, port=port, level=level)
+    serve(app, port=port, level=level, static_path=static_path)
 
 
 if __name__ == '__main__':
