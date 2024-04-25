@@ -10,8 +10,6 @@ import zoom.request
 import zoom.middleware
 
 
-# dynamic = flask.Blueprint('dynamic', __name__)
-
 class CustomBlueprint(flask.Blueprint):
 
     zoom_params = {}

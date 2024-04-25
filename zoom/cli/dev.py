@@ -120,8 +120,14 @@ def serve(app, port, level):
     root = os.path.realpath('.')
     server.watch(root)
     setup_logging(level)
-    logger.info('watching %s', root)
-    server.serve(port=port)
+    logger.debug('watching %s', root)
+    try:
+        server.serve(port=port)
+    except OSError as e:
+        if '[Errno 98]' in str(e):
+            print(f'port {port} is already in use')
+            sys.exit(-1)
+        raise
 
 
 def dev():
