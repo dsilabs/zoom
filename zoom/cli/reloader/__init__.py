@@ -23,14 +23,20 @@ class CustomBlueprint(flask.Blueprint):
 dynamic = CustomBlueprint()
 
 
-def get_blueprint(username=None):
+def get_blueprint(username=None, instance=None):
     if username:
         dynamic.zoom_params['username'] = username
+    if instance:
+        dynamic.zoom_params['instance'] = instance
     return dynamic
 
 
 def setup():
-    instance_path = os.environ.get('ZOOM_INSTANCE_PATH', '.')
+
+    params = dict(dynamic.zoom_params)
+
+    specific_path = params.pop('instance')
+    instance_path = specific_path or os.environ.get('ZOOM_INSTANCE_PATH', '.')
 
     url = flask.request.url
     parsed = urllib.parse.urlparse(url)
@@ -58,7 +64,7 @@ def setup():
             HTTP_HOST=host,
         ),
         instance_path,
-        **dynamic.zoom_params
+        **params
     )
     request.cookies = flask.request.cookies
     if data:

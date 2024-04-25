@@ -133,13 +133,14 @@ def dev():
 
     port = int(arguments['--port'])
     username = arguments['--user']
+    instance = arguments['<instance>']
 
     static_folder = zoompath('zoom/_assets/web/www/static')
     app = flask.Flask(__name__, static_folder=static_folder)
     app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension') # pylint: disable=no-member
     app.debug = True
 
-    blueprint = get_blueprint(username=username)
+    blueprint = get_blueprint(username=username, instance=instance)
     app.register_blueprint(blueprint)
     serve(app, port=port, level=level)
 
