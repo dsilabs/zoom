@@ -261,7 +261,7 @@ def trim(text):
     if trim_size:
         result = []
         for line in lines:
-            result.append(line[trim_size:])
+            result.append(line[trim_size:].rstrip())
         return '\n'.join(result)
     else:
         return text.strip()
