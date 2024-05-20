@@ -148,7 +148,7 @@ class TestApps(unittest.TestCase):
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
-        self.assertEquals(app.menu(), '<ul></ul>')
+        self.assertEqual(app.menu(), '<ul></ul>')
 
     def test_app_menu(self):
         site = zoom.system.site
@@ -162,7 +162,7 @@ class TestApps(unittest.TestCase):
         logger.debug('type(app.method)=%s', type(app.method))
         logger.debug('type(app.method.menu)=%s', type(app.method.menu))
 
-        self.assertEquals(app.menu(), (
+        self.assertEqual(app.menu(), (
             '<ul>'
             '<li class="index-menu-item"><a href="<dz:app_url>">Content</a></li>'
             '<li class="fields-menu-item"><a href="<dz:app_url>/fields">Fields</a></li>'
@@ -185,21 +185,21 @@ class TestApps(unittest.TestCase):
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
-        self.assertEquals(app.description, 'The Hello app.')
+        self.assertEqual(app.description, 'The Hello app.')
 
     def test_app_keywords(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
-        self.assertEquals(app.keywords, 'The, Hello, app.')
+        self.assertEqual(app.keywords, 'The, Hello, app.')
 
     def test_app_str(self):
         site = zoom.system.site
         pathname = zoom.tools.zoompath(self.apps_dir, 'hello', 'app.py')
         app = zoom.apps.AppProxy('Hello', pathname, site)
         app.request = self.request
-        self.assertEquals(str(app), '<a href="/Hello" name="link-to-hello">Hello</a>')
+        self.assertEqual(str(app), '<a href="/Hello" name="link-to-hello">Hello</a>')
 
     def test_respond_response(self):
         content = zoom.response.JSONResponse('true')
