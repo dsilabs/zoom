@@ -27,6 +27,8 @@ from .reloader import get_blueprint
 
 
 logger = logging.getLogger(__name__)
+debug = logger.debug
+info = logger.info
 
 
 class CustomServer(Server):
@@ -115,13 +117,10 @@ def setup_logging(level=logging.INFO):
     tornado_logger.addFilter(LiveReloadFilter())
 
 
-def serve(app, port, level, static_path):
+def serve(app, port, location=None):
     server = CustomServer(app.wsgi_app)
-    root = os.path.realpath('.')
-    server.watch(root)
-    setup_logging(level)
-    logger.debug('watching %s', root)
-    logger.debug(f'static path is {static_path}')
+    server.watch(location)
+    debug('watching %s', location)
     try:
         server.serve(port=port)
     except OSError as e:
@@ -142,14 +141,25 @@ def dev():
     username = arguments['--user']
     instance = arguments['<instance>']
 
+    setup_logging(level)
+
+    watch_path = os.path.realpath('.')
+    instance = os.path.realpath(instance)
+
+    if not os.path.isdir(os.path.join(instance, 'sites')):
+        print(f'Not an instance. (no sites directory found in {instance!r})')
+        exit(-1)
+
+    info('serving instance %s on port %s', instance, port)
+
     static_path = zoompath(instance + '/www/static')
     app = flask.Flask(__name__, static_folder=static_path)
     app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension') # pylint: disable=no-member
-    app.debug = True
+    # app.debug = True
 
     blueprint = get_blueprint(username=username, instance=instance)
     app.register_blueprint(blueprint)
-    serve(app, port=port, level=level, static_path=static_path)
+    serve(app, port=port, location=watch_path)
 
 
 if __name__ == '__main__':
