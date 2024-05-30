@@ -148,7 +148,7 @@ def dev():
 
     if not os.path.isdir(os.path.join(instance, 'sites')):
         print(f'Not an instance. (no sites directory found in {instance!r})')
-        exit(-1)
+        sys.exit(-1)
 
     info('serving instance %s on port %s', instance, port)
 
