@@ -206,7 +206,20 @@ default_packages = {
             [
                 "/static/zoom/zoom.js",
             ]
-    }
+    },
+    "tabulator-6.2.1": {
+        "libs": [
+            "/static/zoom/tabulator/6.2.1/tabulator.min.js"
+        ],
+        "styles": [
+            "/static/zoom/tabulator/6.2.1/tabulator.min.css"
+        ],
+    },
+    "tabulator": {
+        "requires": [
+            "tabulator-6.2.1"
+        ],
+    },
 }
 
 
