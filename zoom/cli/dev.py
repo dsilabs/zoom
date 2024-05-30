@@ -123,8 +123,11 @@ def serve(app, port, location=None):
     debug('watching %s', location)
     try:
         server.serve(port=port)
-    except OSError as e:
+    except (OSError, PermissionError) as e:
         if '[Errno 98]' in str(e):
+            print(f'port {port} is already in use')
+            sys.exit(-1)
+        if '[Errno 13]' in str(e):
             print(f'port {port} is already in use')
             sys.exit(-1)
         raise
