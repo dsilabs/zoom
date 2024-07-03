@@ -155,8 +155,15 @@ def dev():
 
     info('serving instance %s on port %s', instance, port)
 
-    static_path = zoompath(instance + '/www/static')
-    app = flask.Flask(__name__, static_folder=static_path)
+    # static_path = zoompath(instance + '/static')
+    # if not os.path.isdir(static_path):
+    #     alt_static_path = zoompath(instance + '/www/static')
+    #     if not os.path.isdir(alt_static_path):
+    #         print(f'WARNING: Static directory {static_path!r} missing')
+    #     else:
+    #         static_path = alt_static_path
+
+    app = flask.Flask(__name__, static_folder=None)
     app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension') # pylint: disable=no-member
     # app.debug = True
 
