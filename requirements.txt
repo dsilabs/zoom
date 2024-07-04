@@ -14,4 +14,5 @@ pytz>=2024.1
 pytzdata>=2020.1
 requests>=2.25.1
 Flask==2.2.5
+tornado==6.1
 livereload==2.5.1
