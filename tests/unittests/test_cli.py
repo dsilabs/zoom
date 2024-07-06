@@ -5,6 +5,7 @@
 import os
 import re
 import shutil
+import sys
 import logging
 import unittest
 
@@ -28,7 +29,7 @@ def agnostic_contains(source, content):
     return deformat_str(content) in deformat_str(source)
 
 def invoke(*args, stdin=str(), return_proc=False, **kwargs):
-    python_alias = 'python' if os.name == 'nt' else 'python3'
+    python_alias = 'python' if os.name == 'nt' else sys.executable
     log.debug('run: %s', args)
     process = Popen(
         ' '.join((python_alias, *args)),
