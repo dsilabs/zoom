@@ -14,6 +14,11 @@ import os
 import string
 import uuid
 
+try:
+    from collections.abc import MutableSet
+except ImportError:
+    from collections import MutableSet
+
 import zoom.jsonz as json
 
 
@@ -569,7 +574,7 @@ def get_config(filename):
         return Config(pathname)
 
 
-class OrderedSet(collections.MutableSet):
+class OrderedSet(MutableSet):
     """OrderedSet
 
     A set that preserves the order of the elements

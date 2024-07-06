@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - add basic support for tabulator
 - add support for HTTP_X_REAL_IP
+- adjust for MutableSet changes
 
 ## [6.23.0] - 2024-04-24
 - add site timezone attribute
