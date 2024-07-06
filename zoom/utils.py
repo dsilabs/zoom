@@ -814,13 +814,6 @@ class Record(Storage):
         """save record"""
         record_id = self['__store'].put(self)
         key = self['__store'].id_name
-        logger.debug(
-            'saved record %s(%s=%r) to %r',
-            self.__class__.__name__,
-            key,
-            self[key],
-            self['__store']
-        )
         return record_id
 
     def set(self, **kwargs):
@@ -828,14 +821,6 @@ class Record(Storage):
         key = self['__store'].id_name
         values = dict(kwargs)
         record_id = self['__store'].set(self[key], values)
-        logger.debug(
-            'set record %s(%s=%r) values %r to %r',
-            self.__class__.__name__,
-            key,
-            self[key],
-            values,
-            self['__store']
-        )
         self.update(kwargs)
         return record_id
 
