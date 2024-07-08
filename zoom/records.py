@@ -365,7 +365,7 @@ class RecordStore(Store):
             ['name', 'age', 'kids', 'birthdate']
 
         """
-        cmd = 'select * from %s where 1=2' % self.kind
+        cmd = 'select * from `%s` where 1=2' % self.kind
         rows = self.db(cmd)
         return [rec[0] for rec in rows.cursor.description if rec[0] != 'id']
 
@@ -377,7 +377,7 @@ class RecordStore(Store):
                 self.before_delete(rec)
 
             spots = ','.join('%s' for _ in ids)
-            cmd = 'delete from {} where {} in ({})'.format(
+            cmd = 'delete from `{}` where {} in ({})'.format(
                 self.kind, self.key, spots)
             self.db(cmd, *ids)
 
@@ -462,7 +462,7 @@ class RecordStore(Store):
         if not isinstance(keys, (list, tuple)):
             keys = (keys,)
         slots = (','.join(['%s']*len(keys)))
-        cmd = 'select distinct %s from %s where %s in (%s)' % (
+        cmd = 'select distinct %s from `%s` where %s in (%s)' % (
             self.key, self.kind, self.key, slots)
         rows = self.db(cmd, *keys)
 
@@ -517,7 +517,7 @@ class RecordStore(Store):
             []
 
         """
-        cmd = 'delete from ' + self.kind
+        cmd = 'delete from `%s`' % (self.kind)
         self.db(cmd)
 
     def __len__(self):
@@ -594,7 +594,7 @@ class RecordStore(Store):
         )
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         limit = self.limit is not None and (' limit ' + str(self.limit)) or ''
-        cmd = ('select * from ' + self.kind + ' where ' + where_clause
+        cmd = ('select * from `' + self.kind + '` where ' + where_clause
                + order_by + limit)
         result = self.db(cmd, *[v for _, v in items])
         return Result(result, self)
@@ -728,7 +728,7 @@ class RecordStore(Store):
         """
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         limit = self.limit and (' limit ' + str(self.limit)) or ''
-        cmd = 'select * from ' + self.kind + order_by + limit
+        cmd = 'select * from `' + self.kind + '`' + order_by + limit
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 
