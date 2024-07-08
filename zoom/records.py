@@ -324,11 +324,11 @@ class RecordStore(Store):
 
         if not isinstance(keys, (list, tuple)):
             keys = (keys, )
-            cmd = 'select * from '+self.kind+' where ' + self.key + '=%s'
+            cmd = 'select * from `'+self.kind+'` where ' + self.key + '=%s'
             as_list = 0
         else:
             keys = [int(key) for key in keys]
-            cmd = 'select * from {} where {} in ({})'.format(
+            cmd = 'select * from `{}` where {} in ({})'.format(
                 self.kind,
                 self.key,
                 ','.join(['%s'] * len(keys))
