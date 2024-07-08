@@ -42,11 +42,13 @@ export LC_ALL=C
 
 cat $ZOOM_DEFAULT_SITE_INI
 
+
 nosetests \
-    --with-doctest \
-    --with-coverage \
-    --cover-package=zoom \
     -vx \
     --exclude-dir=zoom/testing \
     --exclude-dir=zoom/cli \
     zoom tests/unittests/test_database.py
+
+    # --with-doctest \
+    # --with-coverage \
+    # --cover-package=zoom \
