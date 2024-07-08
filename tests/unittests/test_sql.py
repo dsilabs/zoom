@@ -89,7 +89,7 @@ class TestEntityQuery(unittest.TestCase):
             q1,
             (
                 'select row_id, attribute, datatype, value from attributes where kind="people" and \n'
-                '  row_id in (select row_id from attributes where kind="people" and attribute="name" and value="Joe")'
+                '  row_id in (select row_id from attributes where kind="people" and `attribute`="name" and value="Joe")'
             )
         )
 
@@ -100,8 +100,8 @@ class TestEntityQuery(unittest.TestCase):
             q1,
             (
                 'select row_id, attribute, datatype, value from attributes where kind="people" and \n'
-                '  row_id in (select row_id from attributes where kind="people" and attribute="age" and CAST(value AS INTEGER)>=4) and\n'
-                '  row_id in (select row_id from attributes where kind="people" and attribute="name" and value="Joe")'
+                '  row_id in (select row_id from attributes where kind="people" and `attribute`="age" and CAST(`value` AS INTEGER)>=4) and\n'
+                '  row_id in (select row_id from attributes where kind="people" and `attribute`="name" and value="Joe")'
             )
         )
 

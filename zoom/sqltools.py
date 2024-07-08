@@ -138,7 +138,7 @@ def make_store_select(kind, *a,**k):
 
     p = (
         '(select row_id from attributes '
-        'where kind=%s and attribute=%s and %s)'
+        'where kind=%s and `attribute`=%s and %s)'
     )
 
     def visitor(term, name):
@@ -171,7 +171,7 @@ def make_store_select(kind, *a,**k):
             return p % (
                 quote(kind),
                 quote(name),
-                'CAST(value AS %s)%s%s' % (
+                'CAST(`value` AS %s)%s%s' % (
                     cast_to,
                     term.operator,
                     value,
