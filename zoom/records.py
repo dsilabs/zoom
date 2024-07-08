@@ -536,7 +536,7 @@ class RecordStore(Store):
             2
 
         """
-        cmd = 'select count(*) cnt from ' + self.kind
+        cmd = 'select count(*) cnt from `' + self.kind + '`'
         return int(self.db(cmd).cursor.fetchone()[0])
 
     def _find(self, **kwargs):
@@ -549,7 +549,7 @@ class RecordStore(Store):
             'select distinct',
             self.key,
             'from',
-            self.kind,
+            '`' + self.kind + '`',
             'where',
             clause,
         ])
