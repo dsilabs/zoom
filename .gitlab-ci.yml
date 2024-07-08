@@ -118,6 +118,9 @@ python-3.9-MySQL8-unit:
   image: "python:3.9"
   services:
     - mysql:8.4
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
   script:
     - /bin/bash tests/run_unittests_mysql.sh
   artifacts:
