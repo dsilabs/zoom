@@ -16,3 +16,4 @@ build
 ZoomFoundry.egg-info
 dumps
 tests/artifacts
+myenv
