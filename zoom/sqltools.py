@@ -145,7 +145,7 @@ def make_store_select(kind, *a,**k):
 
         def get_cast(value):
             get = {
-                int: ('INTEGER', int),
+                int: ('SIGNED', int),
                 str: ('CHAR', str),
                 datetime.datetime: ('DATETIME', quote),
                 datetime.date: ('DATE', quote),
