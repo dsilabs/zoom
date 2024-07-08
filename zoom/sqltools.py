@@ -118,7 +118,7 @@ def make_store_select(kind, *a,**k):
     >>> sql = make_store_select('person', name='Joe', age=gt(25))
     >>> target = (
     ...     'select row_id, attribute, datatype, value from attributes where kind="person" and \\n'
-    ...     '  row_id in (select row_id from attributes where kind="person" and `attribute`="age" and CAST(`value` AS INTEGER)>25) and\\n'
+    ...     '  row_id in (select row_id from attributes where kind="person" and `attribute`="age" and CAST(`value` AS SIGNED)>25) and\\n'
     ...     '  row_id in (select row_id from attributes where kind="person" and `attribute`="name" and value="Joe")'
     ... )
     >>> sql == target
