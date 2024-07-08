@@ -255,7 +255,7 @@ class RecordStore(Store):
         if updating:
             _id = record[self.id_name]
             set_clause = ', '.join('`%s`=%s' % (i, '%s') for i in keys)
-            cmd = 'update %s set %s where `%s`=%d' % (
+            cmd = 'update `%s` set %s where `%s`=%d' % (
                 self.kind,
                 set_clause,
                 self.key,
@@ -265,7 +265,7 @@ class RecordStore(Store):
         else:
             names = ', '.join('`%s`' % k for k in keys)
             placeholders = ','.join(['%s'] * len(keys))
-            cmd = 'insert into %s (%s) values (%s)' % (
+            cmd = 'insert into `%s` (%s) values (%s)' % (
                 self.kind, names, placeholders)
             _id = self.db(cmd, *values)
             record[self.id_name] = _id
