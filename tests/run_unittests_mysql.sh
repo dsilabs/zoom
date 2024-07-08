@@ -2,6 +2,7 @@
 
 pip install .
 pip install -r tests/requirements.txt
+pip install cryptography
 
 export PYTHONPATH=$(pwd)
 export ZOOM_TEST_DATABASE_HOST=mysql
