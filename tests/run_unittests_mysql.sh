@@ -47,7 +47,7 @@ nosetests \
     -vx \
     --exclude-dir=zoom/testing \
     --exclude-dir=zoom/cli \
-    zoom tests/unittests/test_database.py
+    zoom tests/unittests
 
     # --with-doctest \
     # --with-coverage \
