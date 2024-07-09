@@ -129,6 +129,22 @@ python-3.9-MySQL8-unit:
     expire_in: 1 week
     when: on_failure
 
+python-3.9-MySQL8-web:
+  stage: test
+  image: "python:3.9"
+  services:
+    - mysql:8.4
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_webtests_mysql.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
 pypi:
   stage: publish
   trigger: dsilabs/zoom-publisher
