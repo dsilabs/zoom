@@ -47,8 +47,9 @@ nosetests \
     -vx \
     --exclude-dir=zoom/testing \
     --exclude-dir=zoom/cli \
-    zoom tests/unittests
+    --with-doctest \
+    --with-coverage \
+    --cover-package=zoom \
+    zoom tests/unittests \
+    zoom
 
-    # --with-doctest \
-    # --with-coverage \
-    # --cover-package=zoom \
