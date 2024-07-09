@@ -27,7 +27,6 @@ python-3.7-unit:
     - tests/artifacts/
     expire_in: 1 week
     when: on_failure
-  when: manual
 
 python-3.7-web:
   stage: test
@@ -44,7 +43,6 @@ python-3.7-web:
     - tests/artifacts/
     expire_in: 1 week
     when: on_failure
-  when: manual
 
 python-3.8-unit:
   stage: test
@@ -61,7 +59,6 @@ python-3.8-unit:
     - tests/artifacts/
     expire_in: 1 week
     when: on_failure
-  when: manual
 
 python-3.8-web:
   stage: test
@@ -78,7 +75,6 @@ python-3.8-web:
     - tests/artifacts/
     expire_in: 1 week
     when: on_failure
-  when: manual
 
 python-3.9-unit:
   stage: test
@@ -111,7 +107,6 @@ python-3.9-web:
     - tests/artifacts/
     expire_in: 1 week
     when: on_failure
-  when: manual
 
 python-3.9-MySQL8-unit:
   stage: test
