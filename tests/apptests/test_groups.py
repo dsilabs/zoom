@@ -48,8 +48,8 @@ class TestData(AppTestCase):
 
         zoom.get_db()("""
             DELETE FROM subgroups
-            WHERE group_id NOT IN (SELECT id FROM groups)
-            OR subgroup_id NOT IN (SELECT id FROM groups)
+            WHERE group_id NOT IN (SELECT id FROM `groups`)
+            OR subgroup_id NOT IN (SELECT id FROM `groups`)
         """)
 
     def setUp(self):
