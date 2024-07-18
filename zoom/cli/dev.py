@@ -117,9 +117,26 @@ def setup_logging(level=logging.INFO):
     tornado_logger.addFilter(LiveReloadFilter())
 
 
+def ignore_changes(filepath):
+    """Ignore file system changes in the watched directory
+    that have nothing to do with the project itself.
+
+    vscode recently started updating settings files periodically
+    within the watched directory which caused livereloaed to
+    refresh the web site request on a coninuous basis, which
+    basically made it unusable.  This fixes that issue.
+
+    There may be other directories or files we want to ignore
+    in the future, in which case this function could be
+    modified, but for now this is sufficient to solve the
+    immediate issue.
+    """
+    return not filepath.startswith('.vscode')
+
+
 def serve(app, port, location=None):
     server = CustomServer(app.wsgi_app)
-    server.watch(location)
+    server.watch(location, ignore=ignore_changes)
     debug('watching %s', location)
     try:
         server.serve(port=port)
