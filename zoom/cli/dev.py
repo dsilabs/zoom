@@ -131,7 +131,7 @@ def ignore_changes(filepath):
     modified, but for now this is sufficient to solve the
     immediate issue.
     """
-    return not filepath.startswith('.vscode')
+    return '.vscode' in filepath
 
 
 def serve(app, port, location=None):
