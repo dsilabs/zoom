@@ -276,6 +276,22 @@ class SVGResponse(Response):
         self.headers['Content-type'] = "image/svg+xml"
 
 
+class MP4Response(Response):
+    """
+    MP4 Response
+    Returns a response as an mp4 video
+
+    >>> response = MP4Response(b'pretend MP4')
+    >>> response.render()
+    b'Status: 200 OK\\nContent-type: video/mp4\\nContent-length: 11\\n\\npretend MP4'
+
+    """
+
+    def __init__(self, content):
+        Response.__init__(self, content)
+        self.headers['Content-type'] = "video/mp4"
+
+
 class TextResponse(Response):
     """Plan text response
 

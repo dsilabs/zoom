@@ -36,6 +36,7 @@ from zoom.response import (
     BinaryResponse,
     JSONResponse,
     SVGResponse,
+    MP4Response,
 )
 import zoom.context
 import zoom.cookies
@@ -175,6 +176,7 @@ def serve_response(*path):
         woff2=WOFF2Response,
         map=BinaryResponse,
         svg=SVGResponse,
+        mp4=MP4Response,
     )
     exists = os.path.exists
     isfile = os.path.isfile
