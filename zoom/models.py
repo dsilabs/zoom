@@ -287,7 +287,7 @@ class Group(Record):
             for group_id, in db("""
             select distinct
                 group_id
-                from subgroups, groups
+                from subgroups, `groups`
                 where
                     groups.id = subgroups.group_id
                     and subgroup_id = %s
@@ -325,7 +325,7 @@ class Group(Record):
             for group_id, in db("""
             select distinct
                 subgroup_id
-                from subgroups, groups
+                from subgroups, `groups`
                 where
                     id = group_id
                     and group_id = %s

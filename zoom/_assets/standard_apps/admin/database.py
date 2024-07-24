@@ -7,8 +7,17 @@ import zoom.html as h
 
 
 def get_isolation_level(db):
+    db_version = list(db("SELECT version()"))[0][0]
+    if (
+        'MariaDB' in db_version
+        or db_version[0].isnumeric()
+        and int(db_version[0]) < 8
+    ):
+        transaction_variable = 'tx_isolation'
+    else:
+        transaction_variable = 'transaction_isolation'
     if db.connect_string.startswith('mysql'):
-        return str(list(db('select @@TX_ISOLATION'))[0][0])
+        return str(list(db('select @@' + transaction_variable))[0][0])
     else:
         return ''
 

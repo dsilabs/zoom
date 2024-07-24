@@ -255,7 +255,7 @@ class RecordStore(Store):
         if updating:
             _id = record[self.id_name]
             set_clause = ', '.join('`%s`=%s' % (i, '%s') for i in keys)
-            cmd = 'update %s set %s where `%s`=%d' % (
+            cmd = 'update `%s` set %s where `%s`=%d' % (
                 self.kind,
                 set_clause,
                 self.key,
@@ -265,7 +265,7 @@ class RecordStore(Store):
         else:
             names = ', '.join('`%s`' % k for k in keys)
             placeholders = ','.join(['%s'] * len(keys))
-            cmd = 'insert into %s (%s) values (%s)' % (
+            cmd = 'insert into `%s` (%s) values (%s)' % (
                 self.kind, names, placeholders)
             _id = self.db(cmd, *values)
             record[self.id_name] = _id
@@ -324,11 +324,11 @@ class RecordStore(Store):
 
         if not isinstance(keys, (list, tuple)):
             keys = (keys, )
-            cmd = 'select * from '+self.kind+' where ' + self.key + '=%s'
+            cmd = 'select * from `'+self.kind+'` where ' + self.key + '=%s'
             as_list = 0
         else:
             keys = [int(key) for key in keys]
-            cmd = 'select * from {} where {} in ({})'.format(
+            cmd = 'select * from `{}` where {} in ({})'.format(
                 self.kind,
                 self.key,
                 ','.join(['%s'] * len(keys))
@@ -365,7 +365,7 @@ class RecordStore(Store):
             ['name', 'age', 'kids', 'birthdate']
 
         """
-        cmd = 'select * from %s where 1=2' % self.kind
+        cmd = 'select * from `%s` where 1=2' % self.kind
         rows = self.db(cmd)
         return [rec[0] for rec in rows.cursor.description if rec[0] != 'id']
 
@@ -377,7 +377,7 @@ class RecordStore(Store):
                 self.before_delete(rec)
 
             spots = ','.join('%s' for _ in ids)
-            cmd = 'delete from {} where {} in ({})'.format(
+            cmd = 'delete from `{}` where {} in ({})'.format(
                 self.kind, self.key, spots)
             self.db(cmd, *ids)
 
@@ -462,7 +462,7 @@ class RecordStore(Store):
         if not isinstance(keys, (list, tuple)):
             keys = (keys,)
         slots = (','.join(['%s']*len(keys)))
-        cmd = 'select distinct %s from %s where %s in (%s)' % (
+        cmd = 'select distinct %s from `%s` where %s in (%s)' % (
             self.key, self.kind, self.key, slots)
         rows = self.db(cmd, *keys)
 
@@ -517,7 +517,7 @@ class RecordStore(Store):
             []
 
         """
-        cmd = 'delete from ' + self.kind
+        cmd = 'delete from `%s`' % (self.kind)
         self.db(cmd)
 
     def __len__(self):
@@ -536,7 +536,7 @@ class RecordStore(Store):
             2
 
         """
-        cmd = 'select count(*) cnt from ' + self.kind
+        cmd = 'select count(*) cnt from `' + self.kind + '`'
         return int(self.db(cmd).cursor.fetchone()[0])
 
     def _find(self, **kwargs):
@@ -549,7 +549,7 @@ class RecordStore(Store):
             'select distinct',
             self.key,
             'from',
-            self.kind,
+            '`' + self.kind + '`',
             'where',
             clause,
         ])
@@ -594,7 +594,7 @@ class RecordStore(Store):
         )
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         limit = self.limit is not None and (' limit ' + str(self.limit)) or ''
-        cmd = ('select * from ' + self.kind + ' where ' + where_clause
+        cmd = ('select * from `' + self.kind + '` where ' + where_clause
                + order_by + limit)
         result = self.db(cmd, *[v for _, v in items])
         return Result(result, self)
@@ -728,7 +728,7 @@ class RecordStore(Store):
         """
         order_by = self.order_by and (' order by ' + self.order_by) or ''
         limit = self.limit and (' limit ' + str(self.limit)) or ''
-        cmd = 'select * from ' + self.kind + order_by + limit
+        cmd = 'select * from `' + self.kind + '`' + order_by + limit
         rows = self.db(cmd)
         return get_result_iterator(rows, self)
 

@@ -194,7 +194,7 @@ def get_index_metrics(db):
 
     online_users = count('users where status="A" and last_seen >= %s and username not in ("guest")', recently)
     num_users = count('users where status="A"')
-    num_groups = count('groups where type="U"')
+    num_groups = count('`groups` where type="U"')
     num_requests = count('log where status="C" and server=%s and timestamp>=%s', host, the_day)
     num_errors = count('log where status="E" and server=%s and timestamp>=%s', host, the_day)
     avg_speed = avg('elapsed', 'log where status="C" and server=%s and timestamp>=%s and path<>"/login"', host, the_day)

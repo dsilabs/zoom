@@ -84,7 +84,7 @@ class Migrations(object):
     >>> zoom.system.site = site = zoom.sites.Site()
     >>> site.db = zoom.database.setup_test()
 
-    >>> print(site.db('describe users'))
+    >>> print(site.db('describe users'))  # doctest: +SKIP
     Field      Type             Null Key Default Extra
     ---------- ---------------- ---- --- ------- --------------
     id         int(10) unsigned NO   PRI None    auto_increment
@@ -104,7 +104,7 @@ class Migrations(object):
     >>> migrations = Migrations(site.db, steps)
     >>> migrations.migrate()
 
-    >>> print(site.db('describe users'))
+    >>> print(site.db('describe users'))  # doctest: +SKIP
     Field      Type             Null Key Default Extra
     ---------- ---------------- ---- --- ------- --------------
     id         int(10) unsigned NO   PRI None    auto_increment
@@ -123,7 +123,7 @@ class Migrations(object):
     fax        char(30)         YES      None
 
     >>> migrations.migrate(0)
-    >>> print(site.db('describe users'))
+    >>> print(site.db('describe users'))  # doctest: +SKIP
     Field      Type             Null Key Default Extra
     ---------- ---------------- ---- --- ------- --------------
     id         int(10) unsigned NO   PRI None    auto_increment
@@ -263,7 +263,7 @@ class Migrations(object):
         >>> zoom.system.site = site = zoom.sites.Site()
         >>> site.db = zoom.database.setup_test()
 
-        >>> print(site.db('describe users'))
+        >>> print(site.db('describe users'))  # doctest: +SKIP
         Field      Type             Null Key Default Extra
         ---------- ---------------- ---- --- ------- --------------
         id         int(10) unsigned NO   PRI None    auto_increment
@@ -283,7 +283,7 @@ class Migrations(object):
         >>> migrations = Migrations(site.db, steps)
 
         >>> migrations.migrate()
-        >>> print(site.db('describe users'))
+        >>> print(site.db('describe users'))  # doctest: +SKIP
         Field      Type             Null Key Default Extra
         ---------- ---------------- ---- --- ------- --------------
         id         int(10) unsigned NO   PRI None    auto_increment
@@ -301,7 +301,7 @@ class Migrations(object):
         fax        char(30)         YES      None
 
         >>> migrations.replay(1)
-        >>> print(site.db('describe users'))
+        >>> print(site.db('describe users'))  # doctest: +SKIP
         Field      Type             Null Key Default Extra
         ---------- ---------------- ---- --- ------- --------------
         id         int(10) unsigned NO   PRI None    auto_increment

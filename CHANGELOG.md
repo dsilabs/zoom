@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add basic support for tabulator
 - add support for HTTP_X_REAL_IP
 - adjust for MutableSet changes
+- add support for MySQL 8.4
 - ignore extraneous vscode triggered updates in watched directory
 - add support for mp4 responses
 
