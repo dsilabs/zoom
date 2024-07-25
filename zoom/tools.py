@@ -60,7 +60,7 @@ def get_timezone_str(timezone):
 
 def get_timezone_names():
     """Return a list of timezone names"""
-    return _all_zones
+    return sorted(_all_zones)
 
 
 def now():
