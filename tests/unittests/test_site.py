@@ -2,9 +2,13 @@
     test site
 """
 
+from datetime import timedelta, datetime
 import unittest
 
 import zoom
+from zoom.tools import (
+    get_timezone, get_timezone_offset, get_timezone_str
+)
 
 
 class TestSite(unittest.TestCase):
@@ -28,4 +32,26 @@ class TestSite(unittest.TestCase):
     def test_timezone_attribute(self):
         site = zoom.sites.Site()
         self.assertIsNotNone(site.timezone)
-        self.assertEqual(site.timezone.zone, 'UTC')
+        self.assertEqual(get_timezone_str(site.timezone), 'UTC')
+
+    def test_timezone_offset(self):
+        timezone = get_timezone('Asia/Tokyo')
+        self.assertEqual(
+            get_timezone_offset(timezone),
+            timedelta(seconds=32400)
+        )
+
+        timezone = get_timezone('America/Vancouver')
+
+        # PST
+        self.assertEqual(
+            get_timezone_offset(timezone, datetime(2024, 1, 25)),
+            timedelta(days=-1, seconds=57600)
+        )
+
+        # PDT
+        self.assertEqual(
+            get_timezone_offset(timezone, datetime(2024, 7, 25)),
+            timedelta(days=-1, seconds=61200)
+        )
+

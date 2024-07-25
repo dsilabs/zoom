@@ -10,8 +10,16 @@ import uuid
 import sass as libsass
 from markdown import Markdown
 from pypugjs.ext.html import process_pugjs as pug
-import pytz
 
+try:
+    from zoneinfo import ZoneInfo
+    _get_timezone = ZoneInfo
+    _utc_zone = ZoneInfo('UTC')
+except ImportError:
+    import pytz
+    _get_timezone = pytz.timezone
+    _utc_zone = pytz.utc
+    
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -28,18 +36,24 @@ one_hour = datetime.timedelta(hours=1)
 one_minute = datetime.timedelta(minutes=1)
 
 
-def get_timezone(zone):
+def get_timezone(timezone_str):
     """Return a timezone object given a time zone string
     """
-    return pytz.timezone(zone)
+    # print(timezone_str)
+    # print(ZoneInfo('UTC'))
+    # print(type(_get_timezone(timezone_str)))
+    return _get_timezone(timezone_str)
 
 
-def get_timezone_offset(timezone):
+def get_timezone_offset(timezone, when=None):
     """Return the timezone offset as a timedelta"""
-    utc_dt = datetime.datetime.now(pytz.utc)
-    local_dt = utc_dt.astimezone(timezone)
-    offset = local_dt.utcoffset()
-    return offset
+    when = when or datetime.datetime.now()
+    return timezone.utcoffset(when)
+
+
+def get_timezone_str(timezone):
+    """Return the timezone string given a timezone object"""
+    return timezone.key if 'ZoneInfo' in globals() else timezone.zone
 
 
 def now():
