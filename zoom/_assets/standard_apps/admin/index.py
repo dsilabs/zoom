@@ -505,12 +505,19 @@ class MyView(zoom.View):
         )
 
     def environment(self):
+        now = zoom.tools.now()
+        zone = zoom.tools.get_timezone_str(zoom.system.site.timezone)
         return page(
             zoom.Component(
                 h.h2('Zoom'),
                 zoom.html.table([
                     ('Version', zoom.__version__ + ' Community Edition'),
                     ('Installed Path', zoom.tools.zoompath()),
+                    ('Current Time', '%s %s %s' % (
+                        zoom.tools.localtime(now),
+                        zoom.tools.get_timezone_str(zoom.system.site.timezone),
+                        '' if zone == 'UTC' else '(%s UTC)' % now,
+                    )),
                 ]),
                 h.h2('Python'),
                 zoom.html.table([
