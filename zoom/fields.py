@@ -20,6 +20,7 @@ from zoom.tools import (
     markdown,
     is_listy,
     ensure_listy,
+    get_timezone_names
 )
 import zoom.html as html
 from zoom.validators import (
@@ -2257,8 +2258,7 @@ class TimezoneField(ChosenSelectField):
 
     @property
     def options(self):
-        import pytz
-        return pytz.all_timezones
+        return get_timezone_names()
 
 
 class MultiselectField(TextField):
