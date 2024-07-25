@@ -7,7 +7,8 @@ import unittest
 
 import zoom
 from zoom.tools import (
-    get_timezone, get_timezone_offset, get_timezone_str
+    get_timezone, get_timezone_offset, get_timezone_str,
+    get_timezone_names
 )
 
 
@@ -55,3 +56,8 @@ class TestSite(unittest.TestCase):
             timedelta(days=-1, seconds=61200)
         )
 
+    def test_timezone_names(self):
+        names = get_timezone_names()
+        self.assertIn('UTC', names)
+        self.assertIn('Asia/Tokyo', names)
+        self.assertIn('America/Vancouver', names)

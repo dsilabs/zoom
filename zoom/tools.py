@@ -12,13 +12,15 @@ from markdown import Markdown
 from pypugjs.ext.html import process_pugjs as pug
 
 try:
-    from zoneinfo import ZoneInfo
+    from zoneinfo import ZoneInfo, available_timezones
     _get_timezone = ZoneInfo
     _utc_zone = ZoneInfo('UTC')
+    _all_zones = available_timezones()
 except ImportError:
     import pytz
     _get_timezone = pytz.timezone
     _utc_zone = pytz.utc
+    _all_zones = pytz.all_timezones
     
 from zoom.response import RedirectResponse
 import zoom.helpers
@@ -54,6 +56,11 @@ def get_timezone_offset(timezone, when=None):
 def get_timezone_str(timezone):
     """Return the timezone string given a timezone object"""
     return timezone.key if 'ZoneInfo' in globals() else timezone.zone
+
+
+def get_timezone_names():
+    """Return a list of timezone names"""
+    return _all_zones
 
 
 def now():
