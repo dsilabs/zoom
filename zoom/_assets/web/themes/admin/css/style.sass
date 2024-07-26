@@ -1,0 +1,225 @@
+
+$background-color: white
+$text-color: black
+$alt-text-color: #cccccc
+$brand-background: #2a3d5d
+
+$header-color: #444444
+$header-background: white
+$header-hover: #eee
+$header-active: #e8e6e6
+$header-border-color: #e0dfdf
+
+$app-menu-active: #e8e6e6
+
+$sidebar-color: $alt-text-color
+$sidebar-background: #252d3b
+
+$main-color: #3c4b64
+$main-background: #ebedef
+
+$footer-color: #3c4b64
+$footer-background: #ebedef
+
+$apps-menu-hover: #50617d
+$apps-menu-active: #465c80
+
+@import dimensions
+@import colors
+
+html, body
+  font-size: 1rem
+  font-family: Helvetica,Arial,sans-serif
+  margin: 0
+  padding: 0
+  box-sizing: border-box
+  background: $background-color
+
+a
+  color: $text-color
+  text-decoration: none
+a:hover
+  text-decoration: none
+
+.bold
+  font-weight: 700
+
+#login-panel
+  width: 100vw
+  height: 100vh
+  padding-left: 20px
+  vertical-align: middle
+  display: table-cell
+  input
+    padding: 5px
+    margin: 5px
+
+// layout
+.layout-container
+  position: relative
+  display: grid
+  height: 100vh
+  grid-template-columns: $width-sidenav 1fr
+  grid-template-rows: $height-header 1fr $height-footer
+  grid-template-areas: "brand header" "nav main" "nav footer"
+  .brand
+    grid-area: brand
+    background: $brand-background
+    line-height: $height-header
+    padding: 0 5px
+  .layout-header
+    grid-area: header
+    background: $header-background
+    color: $header-color
+    border-bottom: solid thin $header-border-color
+    a
+      color: $header-color
+    line-height: $height-header
+    padding: 0 10px
+    display: grid
+    grid-template-columns: 1fr 1fr 1fr
+    grid-template-rows: 1fr
+    .header-center
+      text-align: center
+      input
+        width: 100%
+        border: thin solid silver
+        text-align: center
+    .header-right
+      text-align: right
+  .layout-nav
+    grid-area: nav
+    background: $sidebar-background
+    color: $sidebar-color
+    padding: 0
+    a
+      color: $sidebar-color
+    li
+      line-height: 20px
+      // padding: 5px
+      list-style-type: none
+  .layout-main
+    grid-area: main
+    // background: #ccc
+  .layout-footer
+    grid-area: footer
+    color: $footer-color
+    background: $footer-background
+    line-height: $height-footer
+    padding: 0 10px
+    font-size: 0.75rem
+    display: grid
+    grid-template-columns: 1fr 1fr
+    grid-template-rows: 1fr
+    a
+      margin-right: 1em
+      color: #444
+    .footer-left
+      height: $height-footer
+    .footer-right
+      height: $height-footer
+      text-align: right
+  .layout-slide
+    grid-area: slide
+    background: pink
+
+// main menu
+.main-menu
+  display: inline
+  ul
+    padding: 0
+    display: inline
+    li
+      display: inline
+      line-height: $height-header
+  a
+    height: $height-header
+    padding: 16px 10px
+  a:hover
+    background: $header-hover
+  a.active
+    background: $header-active
+
+
+// apps menu
+.apps-menu
+  ul
+    margin: 0
+    padding: 0
+    .apps-menu-item
+      line-height: 2em
+      .app-icon
+        padding: 10px
+        display: inline
+        i
+          width: 1em
+      .app-link
+        padding: 10px 0
+        display: inline
+    li
+      line-height: 2em
+      display: block
+      width: 100%
+      clear: both
+      padding: 0
+    li:hover
+      background: $apps-menu-hover
+
+.apps-menu-item
+  padding: 5px
+.apps-menu-item.active
+    background: $apps-menu-active
+
+// brand
+.brand
+  line-height: $height-header
+  color: $alt-text-color
+  font-size: 1.2rem
+  .brand-name
+    margin-left: 0
+  img
+    height: $height-header - 20px
+    padding-top: 5px
+    display: inline
+    float: left
+    margin: 5px
+
+#pull-sheets-action, #double-check-action
+  background: #39f
+  border-color: #39f
+
+#delete-action, #uncommit-action, #unconfirm-action
+  background: white
+  color: black
+  border: thin solid silver
+
+.content
+
+  .alert
+    position: absolute
+    width: 60%
+    margin-left: 20%
+    animation: fadeout 2s linear
+    text-align: center
+    opacity: 0
+
+@keyframes fadeout
+  0%
+    opacity: 1
+  70%
+    opacity: 1
+  100%
+    opacity: 0
+
+.home-app, .reports-app, .dashboard-app, .profile-app
+  .content-container-inner
+    top: 0
+    .app-icons
+      ul
+        margin-top: 0
+
+.apps-menu ul li:last-child
+    position: absolute
+    bottom: 0
+    width: 200px
+

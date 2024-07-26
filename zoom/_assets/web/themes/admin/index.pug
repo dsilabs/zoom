@@ -1,0 +1,42 @@
+!!! 5
+head
+  include _partials/head
+body
+  style.
+    .welcome {
+      width: 100vw;
+      height: 80vh;
+      font-size: 40px;
+      text-align: center;
+      vertical-align: middle;
+      display: table-cell;
+      color: #3b6492;
+    }
+    .logo {
+      font-size: 3em;
+      width: 180px;
+      margin: 0 auto;
+    }
+    .welcome p {
+        font-size: 1.2em;
+        letter-spacing: 1rem;
+        text-transform: uppercase;
+        color: #748699;
+        margin: 0 auto;
+        padding-left: 1rem;
+        display: block;
+    }
+    .welcome a:visited {
+      color: #3b6492;
+    }
+    .brand-inner {
+      background: #ccc;
+      width: 240px;
+    }
+  .content
+    a(href="/login")
+      .welcome
+        .logo
+          img(src="/images/banner-logo.png")
+        .brand
+          p {{site_name}}

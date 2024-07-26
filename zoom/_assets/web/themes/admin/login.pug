@@ -1,0 +1,96 @@
+!!! 5
+head
+  include _partials/head
+body
+  style.
+    .welcome {
+      width: 100vw;
+      height: 80vh;
+      text-align: center;
+      vertical-align: middle;
+      display: table-cell;
+      color: #3b6492;
+    }
+    .welcome .site-name {
+      font-size: 40px;
+    }
+    .welcome p {
+        font-size: .5em
+    }
+
+    .login-form {
+      width: 340px;
+      background: #efefef;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 4px;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      border: solid thin #dddddd
+    }
+    @media screen and (max-width: 400px) {
+      .login-form {
+        width: 100%;
+      }
+    }
+    .login-form label {
+      width: 130px;
+      display: block;
+    }
+    .login-form input.text-field {
+      width: 100%;
+      margin-bottom: 1rem;
+      text-align: left;
+      height: 3rem;
+    }
+    .login-form input.button {
+      width: 100%;
+      margin-bottom: 1rem;
+      height: 3rem;
+      color: white;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      box-sizing: border-box;
+      margin: 0;
+      font: inherit;
+      font-family: Arial;
+      margin-bottom: 0;
+      font-weight: 400;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      touch-action: manipulation;
+      user-select: none;
+      background-image: none;
+      border: 1px solid transparent;
+      background-color: #5cb85c;
+      border-color: #4cae4c;
+      padding: 10px 16px;
+      font-size: 18px;
+      line-height: 1.3333333;
+      border-radius: 6px;
+      display: block;
+      -webkit-appearance: button;
+      cursor: pointer;
+      width: 100%;
+    }
+    .field-label {
+      text-align: left;
+    }
+  .content
+    .welcome
+      .div
+        a(href="/")
+          img(src="/images/logo.png")
+      .login-form
+        | {{alerts}}
+        form(method="POST")
+          input(type="hidden" name="csrf_token" value="{{csrf_token}}")
+          .field
+            input(name='username' type="text" class="text-field" placeholder="username")
+          .field
+            input(name='password' type="password" class="text-field" placeholder="password")
+          .field
+            input(name='login_button' type="submit" class="button" value="Login" type="submit")
+  include _partials/tail

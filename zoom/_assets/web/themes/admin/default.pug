@@ -1,0 +1,34 @@
+!!! 5
+head
+  include _partials/head
+body
+  | {{impersonation_notice}}
+  .layout-container
+    .layout-brand
+      a(href="/")
+        .brand
+          .brand-name
+            span
+              img(src="/images/banner-logo.png")
+            span {{site_name}}
+    header.layout-header
+      .header-left
+        .main-menu {{main_menu}}
+      .header-center
+        include _partials/header_center
+      .header-right
+        include _partials/header_right
+    .layout-nav {{apps_menu}}
+    .layout-main
+      .content-container(class="{{app_name}}-app")
+        .app-menu {{app_menu}}
+        .content-container-inner
+          .content {{stdout}} {{alerts}} {{content}}
+    footer.layout-footer
+      .footer-left
+        a(href="/terms.html") Terms
+        a(href="/privacy.html") Privacy
+      .footer-right
+        a(href="/support") support
+    .layout-slide
+  include _partials/tail
