@@ -1,15 +1,17 @@
 # The order of packages is important as pip processes them in order
-PyMySQL>=0.7.9
+PyMySQL>=0.10.1
 bcrypt>=1.1.1
 passlib>=1.7.1
 markdown>=2.6.1
 Pillow>=1.0
 faker
 docopt
-werkzeug
+Werkzeug<=3.0.0
 croniter
-pypugjs>=5.9.1
+pypugjs>=5.9.12
 libsass>=0.19.4
-pytz==2020.1
-pytzdata==2019.3
+pytz>=2024.1
+pytzdata>=2020.1
 requests>=2.25.1
+Flask==2.2.5
+livereload==2.5.1

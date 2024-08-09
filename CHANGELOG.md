@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.23.0] - 2024-04-24
+- add site timezone attribute
+- add site time zone auto adjustments
+- recongize fa prefix as fontawesome icons
+- add config menu
+- add app badges
+- wrap alerts in div
+- change title bar to use css grid
+- adjust PyMySQL requirement version
+- add live reload development server
+- add class names to menu items
+- add app class name to admin apps view
+- library requirement updates
 
 ## [6.22.0] - 2023-11-20
 - add support for custom MySQL port

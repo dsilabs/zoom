@@ -6,8 +6,9 @@ from urllib.parse import quote_plus
 import datetime
 
 import zoom
+import zoom.tools
 import zoom.html as html
-from zoom.snippets import snippet
+from zoom.snippets import get_snippet
 import zoom.impersonation
 
 
@@ -386,18 +387,19 @@ def who(user_id):
         else:
             return 'unknown'
 
-def when(date, since=None):
-    """Formats a date
+def when(timestamp, since=None):
+    """Formats a timestamp
 
+    >>> zoom.system.site = site = zoom.sites.Site()
     >>> now = datetime.datetime(2018, 2, 24, 1, 2, 42)
     >>> when(now - zoom.tools.one_day * 2, now)
     '<span title="2018-02-22 01:02:42">2 days ago</span>'
 
     """
-    if date:
+    if timestamp:
         return zoom.html.span(
-            zoom.tools.how_long_ago(date, since),
-            title='%s' % date,
+            zoom.tools.how_long_ago(timestamp, since),
+            title='%s' % zoom.tools.localtime(timestamp),
         )
     else:
         return 'never'
@@ -411,4 +413,7 @@ def impersonation_notice(*args, **kwargs):
 def version():
     """return ZoomFoundry version number"""
     return zoom.__version__
-    
+
+
+def snippet(name, default='', *args, **kwargs):
+    return get_snippet(name, default, *args, **kwargs)

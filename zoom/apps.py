@@ -1,7 +1,6 @@
 """ zoom.apps handles requests by locating and calling a suitable app """
 
 import configparser
-import imp
 import importlib
 import logging
 import os
@@ -10,7 +9,7 @@ import urllib
 
 import zoom
 import zoom.components.apps
-from zoom.components import as_links
+from zoom.components import as_menu
 from zoom.database import Database
 import zoom.html as html
 from zoom.utils import existing
@@ -196,11 +195,21 @@ class AppProxy:
         self._templates_paths = None
 
     @property
+    def badges(self):
+        app_badges = self.config.get('badges')
+        if not app_badges:
+            return ''
+        return ''.join(html.badge(i) for i in app_badges.split(','))
+
+    @property
     def icon_class(self):
         icon = self.config.get('icon')
         is_bootstrap_icon = icon.startswith('bi-')
         if is_bootstrap_icon:
             return 'bi ' + icon
+        is_fontawesome_icon = icon.startswith('fa-')
+        if is_fontawesome_icon:
+            return 'fa ' + icon
         return 'fa fa-' + icon
 
     @property
@@ -300,7 +309,7 @@ class AppProxy:
         )
         logger.debug('selected: %s', selected)
 
-        result = as_links(menu, select=by_name(selected))
+        result = as_menu(menu, select=by_name(selected))
         return result
 
     def read_config(self, section, key, default=None):
@@ -660,30 +669,52 @@ def get_main_apps(request):
     return apps
 
 
+def badges(app):
+    if not app.badges:
+        return ''
+    return ''.join(
+        html.badge(label) for label in app.badges
+    )
+
+
 def main_menu_items(request):
     """Returns the main menu."""
 
     def style(app):
         return app.name == current_app_name and 'class="active" ' or ''
 
+    def li(app_name, body):
+        return f'<li class="{app_name}-menu-item">{body}</li>'
+
     default_app_name = get_default_app_name(request.site, request.user)
     current_app_name = request.route and request.route[0] or default_app_name
 
-    return html.li([
-        app.name == default_app_name
-        and '<a {}href="<dz:site_url>/">{}</a>'.format(
-            style(app), app.title
-        )
-        or '<a {}href="<dz:site_url>{}">{}</a>'.format(
-            style(app), app.url, app.title
+    return ''.join(
+        li(
+            app.name,
+            app.name == default_app_name
+            and '<a {}href="<dz:site_url>/">{}</a>'.format(
+                style(app), app.title
+            )
+            or '<a {}href="<dz:site_url>{}">{}</a>'.format(
+                style(app), app.url, app.title
+            )
         )
         for app in get_main_apps(request) if app.visible
-    ])
+    )
 
 
 def main_menu(request):
     """Returns the main menu."""
     return '<ul>%s</ul>' % main_menu_items(request)
+
+
+def get_config_names(request):
+    site = request.site
+    get = site.config.get
+    names = get('apps', 'config', '')
+    names = names and [s.strip() for s in names.split(',')] or []
+    return list(names)
 
 
 def apps_menu(request):
@@ -694,6 +725,12 @@ def apps_menu(request):
         name = app.name
         return names.index(name) if name in names else 9999
 
+    def ul(items):
+        return html.tag(
+            'ul',
+            ''.join(map(str, items))
+        )
+
     site = request.site
     user = request.user
     get = site.config.get
@@ -703,7 +740,8 @@ def apps_menu(request):
 
     system_apps = list(get_system_apps(request))
     main_apps = list(get_main_apps(request))
-    exclude = list(a.name for a in system_apps + main_apps)
+    config_apps = get_config_names(request)
+    exclude = list(a.name for a in system_apps + main_apps) + config_apps
 
     if not 'content' in names:
         exclude.append('content')
@@ -718,7 +756,7 @@ def apps_menu(request):
     active_app = request.app.name
 
     return html.div(
-        html.ul(
+        ul(
             menu_item.format(
                 app=app,
                 active=' active' if app.name == active_app else ''
@@ -726,6 +764,41 @@ def apps_menu(request):
             if app.name in user.apps and
             app.visible and app.name not in exclude
         ), classed='apps-menu'
+    )
+
+
+def config_menu(request):
+    """Returns a menu of available config apps"""
+
+    def calc_position(app):
+        """position of app"""
+        name = app.name
+        return names.index(name) if name in names else 9999
+
+    site = request.site
+    user = request.user
+    get = site.config.get
+
+    names = get('apps', 'config', '')
+    names = names and [s.strip() for s in names.split(',')] or []
+
+    apps = [
+        app for app in sorted(sorted(site.apps, key=lambda a: a.title), key=calc_position)
+        if app.name in names and app.visible
+        and app.name in user.apps
+    ]
+
+    menu_item = zoom.components.apps.AppMenuItem()
+    active_app = request.app.name
+
+    return html.div(
+        html.ul(
+            menu_item.format(
+                app=app,
+                active=' active' if app.name == active_app else ''
+            ) for app in apps
+            if app.name in user.apps and app.visible
+        ), classed='config-menu'
     )
 
 
@@ -745,6 +818,7 @@ def helpers(request):
         main_menu_items=main_menu_items(request),
         main_menu=main_menu(request),
         apps_menu=apps_menu(request),
+        config_menu=config_menu(request),
         page_name=len(request.route) > 1 and request.route[1] or '',
     )
 

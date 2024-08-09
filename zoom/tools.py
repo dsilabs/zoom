@@ -10,6 +10,8 @@ import uuid
 import sass as libsass
 from markdown import Markdown
 from pypugjs.ext.html import process_pugjs as pug
+import pytz
+
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -26,9 +28,32 @@ one_hour = datetime.timedelta(hours=1)
 one_minute = datetime.timedelta(minutes=1)
 
 
+def get_timezone(zone):
+    """Return a timezone object given a time zone string
+    """
+    return pytz.timezone(zone)
+
+
+def get_timezone_offset(timezone):
+    """Return the timezone offset as a timedelta"""
+    utc_dt = datetime.datetime.now(pytz.utc)
+    local_dt = utc_dt.astimezone(timezone)
+    offset = local_dt.utcoffset()
+    return offset
+
+
 def now():
     """Return the current datetime"""
-    return datetime.datetime.now()
+    return datetime.datetime.utcnow()
+
+
+def localtime(timestamp):
+    site = zoom.system.site
+    if site:
+        local_time = timestamp + site.timezone_offset
+    else:
+        local_time = timestamp
+    return local_time
 
 
 def today():
@@ -203,10 +228,10 @@ def how_long(time1, time2):
     >>> how_long(today(), tomorrow(today()))
     '1 day'
 
-    >>> how_long(today(), now + one_week)
+    >>> how_long(now.date(), now + one_week)
     '7 days'
 
-    >>> how_long(now, time.time())
+    >>> how_long(time.time(), time.time())
     'a moment'
 
     >>> failed = False

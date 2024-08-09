@@ -2,7 +2,11 @@
     administer apps
 """
 
+import logging
 import zoom
+
+logger = logging.getLogger(__name__)
+
 
 class AppsController(zoom.Controller):
 
@@ -16,6 +20,13 @@ class AppsController(zoom.Controller):
                 title='unknown subgroup id {!r}'.format(group_id)
             )
 
+        def get_type(app):
+            try:
+                return zoom.tools.websafe(app.method.__class__.__name__)
+            except BaseException as e:
+                logging.error('Error examinging app: %s', e)
+                return 'Unknown'
+
         def fmt(app):
             """Format an app record"""
             name = app.name
@@ -27,6 +38,7 @@ class AppsController(zoom.Controller):
             return [
                 app.title,
                 app.name,
+                get_type(app),
                 app.path,
                 groups,
                 (bool(app.in_development) and 'development' or '')
@@ -38,7 +50,7 @@ class AppsController(zoom.Controller):
         data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.title.lower())]
         content = zoom.browse(
             data,
-            labels=['Title', 'App', 'Path', 'Groups', 'Status']
+            labels=['Title', 'App', 'Type', 'Path', 'Groups', 'Status']
         )
         return zoom.page(content, title='Apps')
 

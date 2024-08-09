@@ -179,7 +179,7 @@ def h3(text):
     return '<h3>{}</h3>'.format(text)
 
 
-def input(*args, **kwargs):
+def input(*args, **kwargs):  # pylint: disable=redefined-builtin
     Type = kwargs.pop('type', 'text')
     return tag('input', type=Type, *args, **kwargs)
 
@@ -238,3 +238,6 @@ def table(rows):
     content.append('</tbody></table>')
     return ''.join(content)
 
+
+def badge(text, style='success'):
+    return f'<span class="badge badge-{style}">{text}</span>'
