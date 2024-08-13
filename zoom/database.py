@@ -6,13 +6,18 @@
     A database module that does less.
 """
 
-import collections
 import inspect
 import logging
 import os
 import timeit
 import warnings
 from decimal import Decimal
+
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
+
 
 from pymysql.err import OperationalError
 
@@ -200,7 +205,7 @@ class Database(object):
             """test for a sequence type that is not a string"""
             if isinstance(obj, str):
                 return False
-            return isinstance(obj, collections.Sequence)
+            return isinstance(obj, Sequence)
 
         if self.paramstyle == 'qmark':
             if not many and len(args) == 1 and hasattr(args[0], 'items') and args[0]:
