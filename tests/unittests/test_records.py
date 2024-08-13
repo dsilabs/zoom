@@ -195,14 +195,14 @@ class TestRecordStore(unittest.TestCase):
 
     def test_delete_by_entity(self):
         sam = self.people.get(self.sam_id)
-        self.assert_(sam)
+        self.assertTrue(sam)
         self.people.delete(sam)
         sam = self.people.get(self.sam_id)
         self.assertEqual(None, sam)
 
     def test_delete_by_id(self):
         sam = self.people.get(self.sam_id)
-        self.assert_(sam)
+        self.assertTrue(sam)
         self.people.delete(self.sam_id)
         sam = self.people.get(self.sam_id)
         self.assertEqual(None, sam)
