@@ -1,6 +1,5 @@
 selenium
-nose
 coverage
-nose-exclude
 requests
 cryptography
+pytest
