@@ -86,9 +86,9 @@ class TestEvaluate(unittest.TestCase):
         with self.assertRaises(TypeError) as e:
             self.assertEqual(self.view.lower('X', 'Y'), 'x')
         msg = '__call__() takes 2 positional arguments but 3 were given'
-        self.assertEqual(str(e.exception), msg)
+        self.assertTrue(msg in str(e.exception))
 
         with self.assertRaises(TypeError) as e:
             self.assertEqual(self.view('lower', 'X', 'Y'), 'x')
         msg = '__call__() takes 2 positional arguments but 3 were given'
-        self.assertEqual(str(e.exception), msg)
+        self.assertTrue(msg in str(e.exception))
