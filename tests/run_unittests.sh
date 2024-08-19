@@ -37,7 +37,7 @@ cat $ZOOM_DEFAULT_SITE_INI
 
 # run tests
 pytest \
-    - x \
+    -x \
     --doctest-modules \
     --ignore=zoom/testing \
     --ignore=zoom/cli \
