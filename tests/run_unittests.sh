@@ -5,12 +5,15 @@ pip install -r tests/requirements.txt
 
 export PYTHONPATH=$(pwd)
 
-zoom database -e mysql -H mariadb -u root -p root create zoomdata
-zoom database -e mysql -H mariadb -u root -p root create zoomtest
+mysql -e "create user zoomuser identified by 'zoompass'"
+mysql -e "grant all on *.* to zoomuser"
+
+zoom database -e mysql -H mariadb -u zoomuser -p zoompass create zoomdata
+zoom database -e mysql -H mariadb -u zoomuser -p zoompass create zoomtest
 
 export ZOOM_TEST_DATABASE_HOST=mariadb
-export ZOOM_TEST_DATABASE_USER=root
-export ZOOM_TEST_DATABASE_PASSWORD=root
+export ZOOM_TEST_DATABASE_USER=zoomuser
+export ZOOM_TEST_DATABASE_PASSWORD=zoompass
 
 export ZOOM_DEFAULT_INSTANCE=$(pwd)/zoom/_assets/web
 export ZOOM_DEFAULT_SITE_INI=$ZOOM_DEFAULT_INSTANCE/sites/localhost/site.ini
@@ -18,8 +21,8 @@ export ZOOM_DEFAULT_SITE_INI=$ZOOM_DEFAULT_INSTANCE/sites/localhost/site.ini
 export ZOOM_TEST_LOG=$ZOOM_DEFAULT_INSTANCE
 
 echo "host=mariadb" >> $ZOOM_DEFAULT_SITE_INI
-echo "user=root" >> $ZOOM_DEFAULT_SITE_INI
-echo "password=root" >> $ZOOM_DEFAULT_SITE_INI
+echo "user=zoomuser" >> $ZOOM_DEFAULT_SITE_INI
+echo "password=zoompass" >> $ZOOM_DEFAULT_SITE_INI
 
 # get locales not included in base Python image
 apt-get update && apt-get install -y --no-install-recommends \
@@ -31,5 +34,13 @@ export LC_ALL=C
 
 cat $ZOOM_DEFAULT_SITE_INI
 
-pytest --doctest-modules --ignore=zoom/testing --ignore=zoom/cli --ignore=zoom/_assets zoom
-pytest --ignore=tests/unittests/apps tests/unittests
+# run tests
+pytest \
+    -x \
+    --doctest-modules \
+    --ignore=zoom/testing \
+    --ignore=zoom/cli \
+    --ignore=zoom/_assets \
+    --ignore=tests/unittests/apps \
+    zoom \
+    tests/unittests
