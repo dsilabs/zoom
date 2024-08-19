@@ -135,7 +135,7 @@ def custom_fill(tag_start, tag_end, text, callback):
     """fill tags in a custom style
 
     >>> def fill2(*args, **kwargs):
-    ...     return custom_fill('\$\(\( ', '\)\)', *args, **kwargs)
+    ...     return custom_fill(r'\$\(\( ', r'\)\)', *args, **kwargs)
     >>> def callback(name, *args, **kwargs):
     ...     return dict(first_name='Sam', last_name='Jones').get(name, 'unknown')
     >>> fill2('Hello $(( first_name ))', callback)
@@ -152,5 +152,5 @@ def dzfill(text, callback):
 
 def dollar_fill(text, callback):
     """fill templates in the dollar style"""
-    start, end = '\$\(\(\s*?', '\s*?\)\)'
+    start, end = r'\$\(\(\s*?', r'\s*?\)\)'
     return custom_fill(start, end, text, callback)
