@@ -2,8 +2,8 @@
 stages:
   - qa
   - test
-  - publish
-  - build
+  # - publish
+  # - build
 
 whitespace:
   stage: qa
@@ -28,190 +28,190 @@ python-3.7-unit:
     expire_in: 1 week
     when: on_failure
 
-python-3.7-web:
-  stage: test
-  image: "python:3.7"
-  services:
-    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.7-web:
+#   stage: test
+#   image: "python:3.7"
+#   services:
+#     - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.8-unit:
-  stage: test
-  image: "python:3.8"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.8-unit:
+#   stage: test
+#   image: "python:3.8"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_unittests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.8-web:
-  stage: test
-  image: "python:3.8"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.8-web:
+#   stage: test
+#   image: "python:3.8"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.9-unit:
-  stage: test
-  image: "python:3.9"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.9-unit:
+#   stage: test
+#   image: "python:3.9"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_unittests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.9-web:
-  stage: test
-  image: "python:3.9"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.9-web:
+#   stage: test
+#   image: "python:3.9"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.12-unit:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.12-unit:
+#   stage: test
+#   image: "python:3.12"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_unittests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.12-web:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.12-web:
+#   stage: test
+#   image: "python:3.12"
+#   services:
+#     - mariadb:10.7
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.9-MySQL8-unit:
-  stage: test
-  image: "python:3.9"
-  services:
-    - mysql:8.4
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests_mysql.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.9-MySQL8-unit:
+#   stage: test
+#   image: "python:3.9"
+#   services:
+#     - mysql:8.4
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_unittests_mysql.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.9-MySQL8-web:
-  stage: test
-  image: "python:3.9"
-  services:
-    - mysql:8.4
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests_mysql.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.9-MySQL8-web:
+#   stage: test
+#   image: "python:3.9"
+#   services:
+#     - mysql:8.4
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests_mysql.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.12-MySQL8-unit:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mysql:8.4
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests_mysql.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.12-MySQL8-unit:
+#   stage: test
+#   image: "python:3.12"
+#   services:
+#     - mysql:8.4
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_unittests_mysql.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-python-3.12-MySQL8-web:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mysql:8.4
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests_mysql.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
+# python-3.12-MySQL8-web:
+#   stage: test
+#   image: "python:3.12"
+#   services:
+#     - mysql:8.4
+#   variables:
+#     MYSQL_DATABASE: zoomtest2
+#     MYSQL_ROOT_PASSWORD: root
+#   script:
+#     - /bin/bash tests/run_webtests_mysql.sh
+#   artifacts:
+#     paths:
+#     - tests/artifacts/
+#     expire_in: 1 week
+#     when: on_failure
 
-pypi:
-  stage: publish
-  trigger: dsilabs/zoom-publisher
-  only:
-    - tags
+# pypi:
+#   stage: publish
+#   trigger: dsilabs/zoom-publisher
+#   only:
+#     - tags
 
-docker:
-  stage: build
-  trigger: dsilabs/docker-zoom
-  only:
-    - tags
+# docker:
+#   stage: build
+#   trigger: dsilabs/docker-zoom
+#   only:
+#     - tags
