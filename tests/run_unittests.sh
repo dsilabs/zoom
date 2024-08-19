@@ -7,7 +7,7 @@ pip install -r tests/requirements.txt
 export PYTHONPATH=$(pwd)
 
 apt-get update -qq
-apt-get install mariadb-client
+apt-get install -y mariadb-client
 
 mariadb -e "create user zoomuser identified by 'zoompass'"
 mariadb -e "grant all on *.* to zoomuser"
