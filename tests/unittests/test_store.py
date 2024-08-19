@@ -18,7 +18,7 @@ class Person(Entity):
     pass
 
 
-class TestPerson(Entity):
+class OtherPerson(Entity):
     pass
 
 
@@ -175,7 +175,7 @@ class TestStore(unittest.TestCase):
 
     def test_kind(self):
         self.assertEqual(self.people.kind, 'person')
-        self.assertEqual(EntityStore(self.db, TestPerson).kind, 'test_person')
+        self.assertEqual(EntityStore(self.db, OtherPerson).kind, 'other_person')
 
     def test_len(self):
         self.assertEqual(3, len(self.people))
