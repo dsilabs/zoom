@@ -1,5 +1,6 @@
 #!/bin/bash
 
+pip install -U pip
 pip install .
 pip install -r tests/requirements.txt
 
@@ -36,7 +37,6 @@ cat $ZOOM_DEFAULT_SITE_INI
 
 # run tests
 pytest \
-    -x \
     --doctest-modules \
     --ignore=zoom/testing \
     --ignore=zoom/cli \
