@@ -6,6 +6,9 @@ pip install -r tests/requirements.txt
 
 export PYTHONPATH=$(pwd)
 
+apt-get update -qq
+apt-get install mariadb-client
+
 mysql -e "create user zoomuser identified by 'zoompass'"
 mysql -e "grant all on *.* to zoomuser"
 
