@@ -2,6 +2,14 @@
 
 """
     zoom.Fields
+
+
+    Initialize system objects for doctests that require them.
+    >>> import zoom.request
+    >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.site.Site(zoom.system.request)
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
+
 """
 
 import locale
@@ -1598,7 +1606,6 @@ class MoneyField(DecimalField):
         if self.units and self.value is not None:
             v += ' ' + self.units
         return v
-
 
 class DateField(Field):
     """Date Field
