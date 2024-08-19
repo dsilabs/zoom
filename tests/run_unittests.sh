@@ -9,8 +9,8 @@ export PYTHONPATH=$(pwd)
 apt-get update -qq
 apt-get install mariadb-client
 
-mysql -e "create user zoomuser identified by 'zoompass'"
-mysql -e "grant all on *.* to zoomuser"
+mariadb -e "create user zoomuser identified by 'zoompass'"
+mariadb -e "grant all on *.* to zoomuser"
 
 zoom database -e mysql -H mariadb -u zoomuser -p zoompass create zoomdata
 zoom database -e mysql -H mariadb -u zoomuser -p zoompass create zoomtest
