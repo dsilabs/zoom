@@ -124,6 +124,8 @@ class TestCLI(unittest.TestCase):
             '-m pip install --target=%s %s' % (lib_path, cwd),
             cwd=TEST_DIR
         )
+        if code:
+            print('code:', code, out)
         self.assertTrue(not code, 'No error code')
 
         # Create and environment that will cause our installed Zoom version
