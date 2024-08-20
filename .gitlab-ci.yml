@@ -20,7 +20,7 @@ python-3.7-unit:
   stage: test
   image: "python:3.7"
   services:
-    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
@@ -36,7 +36,7 @@ python-3.7-web:
   stage: test
   image: "python:3.7"
   services:
-    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
@@ -52,7 +52,7 @@ python-3.8-unit:
   stage: test
   image: "python:3.8"
   services:
-    - mariadb:10.7
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
@@ -68,7 +68,7 @@ python-3.8-web:
   stage: test
   image: "python:3.8"
   services:
-    - mariadb:10.7
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
@@ -84,7 +84,7 @@ python-3.9-unit:
   stage: test
   image: "python:3.9"
   services:
-    - mariadb:10.7
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
@@ -100,7 +100,7 @@ python-3.9-web:
   stage: test
   image: "python:3.9"
   services:
-    - mariadb:10.7
+    - mariadb
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
