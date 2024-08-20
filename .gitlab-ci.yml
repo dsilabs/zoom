@@ -1,7 +1,7 @@
 
 default:
   retry:
-    max: 3        # Retry all jobs up to 3 times by default
+    max: 2        # Retry all jobs up to 3 times by default
     when: on_failure  # Retry only on failure by default
 
 stages:
