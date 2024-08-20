@@ -326,17 +326,17 @@ class TestFill(unittest.TestCase):
         )
         template = 'Hello $(( first_name ))'
         self.assertEqual(
-            zoom.fill.custom_fill('\$\(\( ', ' \)\)', template, callback),
+            zoom.fill.custom_fill(r'\$\(\( ', r' \)\)', template, callback),
             'Hello Sam'
         )
         template = 'Hello ${{ first_name }} ${{ last_name }}'
         self.assertEqual(
-            zoom.fill.custom_fill('\${{\s*?', '\s*?}}', template, callback),
+            zoom.fill.custom_fill(r'\${{\s*?', r'\s*?}}', template, callback),
             'Hello Sam Smith'
         )
         template = 'Hello $(( first_name )) $(( last_name ))'
         self.assertEqual(
-            zoom.fill.custom_fill('\$\(\(\s*?', '\s*?\)\)', template, callback),
+            zoom.fill.custom_fill(r'\$\(\(\s*?', r'\s*?\)\)', template, callback),
             'Hello Sam Smith'
         )
 

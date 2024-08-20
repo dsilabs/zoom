@@ -41,7 +41,7 @@ def get_context():
 def hash_password(password):
     """hash a password"""
     context = get_context()
-    return context.encrypt(password)
+    return context.hash(password)
 
 
 def validate_password(password, stored_password_hash):
