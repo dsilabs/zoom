@@ -121,8 +121,8 @@ def serve_redirects(request, handler, *rest):
     >>> request.site = zoom.utils.Bunch(abs_url='http://localhost')
     >>> redirect_home = zoom.response.RedirectResponse('/home')
     >>> result = serve_redirects(request, lambda a: redirect_home)
-    >>> print(result.headers)
-    OrderedDict([('Location', '/home')])
+    >>> print(list(result.headers.items()))
+    [('Location', '/home')]
     """
     result = handler(request, *rest)
     if isinstance(result, RedirectResponse):
