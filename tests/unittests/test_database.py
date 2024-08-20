@@ -23,7 +23,7 @@ from zoom.database import (
     UnknownDatabaseException,
 )
 
-warnings.filterwarnings('ignore', '\(1051, "Unknown table.*')
+warnings.filterwarnings('ignore', r'\(1051, "Unknown table.*')
 
 logger = logging.getLogger(__name__)
 
