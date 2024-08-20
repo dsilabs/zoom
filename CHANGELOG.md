@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - add admin theme
+- use passlib hash method instead of deprecated encrypt method
 
 ## [6.24.0] - 2024-07-25
 - add basic support for tabulator
