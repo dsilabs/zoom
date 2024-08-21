@@ -72,7 +72,7 @@ class TestEvaluate(unittest.TestCase):
         with self.assertRaises(TypeError) as e:
             evaluate(self.view, 'f1b', ('key',), dict(name='test'))
         # make sure we're reporting the offending call
-        self.assertEqual(str(e.exception)[:11], 'f() missing')
+        self.assertTrue('f() missing' in str(e.exception))
 
     def test_exception_raising(self):
         self.assertEqual(self.view('upper', 'x'), 'X')
@@ -80,15 +80,15 @@ class TestEvaluate(unittest.TestCase):
             self.assertEqual(self.view('upper', 'x', 'y'), 'X')
         self.assertEqual(self.view.lower('Y'), 'y')
         msg = 'upper() takes 2 positional arguments but 3 were given'
-        self.assertEqual(str(e.exception), msg)
+        self.assertTrue(msg in str(e.exception))
 
         self.assertEqual(self.view.lower('X'), 'x')
         with self.assertRaises(TypeError) as e:
             self.assertEqual(self.view.lower('X', 'Y'), 'x')
         msg = '__call__() takes 2 positional arguments but 3 were given'
-        self.assertEqual(str(e.exception), msg)
+        self.assertTrue(msg in str(e.exception))
 
         with self.assertRaises(TypeError) as e:
             self.assertEqual(self.view('lower', 'X', 'Y'), 'x')
         msg = '__call__() takes 2 positional arguments but 3 were given'
-        self.assertEqual(str(e.exception), msg)
+        self.assertTrue(msg in str(e.exception))

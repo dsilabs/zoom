@@ -59,12 +59,12 @@ class DatabaseTests(object):
            notes")""")
         recordset = db('select * from dzdb_test_table')
         for rec in recordset:
-            self.assertEquals(rec, ("1234", 50, date(2005,1,14), "Hello there"))
+            self.assertEqual(rec, ("1234", 50, date(2005,1,14), "Hello there"))
             break
 
     def test_db_create_drop_table(self):
         db = self.db
-        self.assert_('dzdb_test_table' not in db.get_tables())
+        self.assertTrue('dzdb_test_table' not in db.get_tables())
         db("""
            create table dzdb_test_table (
              ID CHAR(10),
@@ -73,9 +73,9 @@ class DatabaseTests(object):
              NOTES TEXT
            )
         """)
-        self.assert_('dzdb_test_table' in db.get_tables())
+        self.assertTrue('dzdb_test_table' in db.get_tables())
         db('drop table dzdb_test_table')
-        self.assert_('dzdb_test_table' not in db.get_tables())
+        self.assertTrue('dzdb_test_table' not in db.get_tables())
 
     def test_get_tables(self):
         db = self.db
@@ -83,7 +83,7 @@ class DatabaseTests(object):
         for i in range(n):
             table_name = 'dzdb_test_table{}'.format(i)
             db('drop table if exists ' + table_name)
-            self.assert_(table_name not in db.get_tables())
+            self.assertTrue(table_name not in db.get_tables())
             db("""
                create table {} (
                  ID CHAR(10),
@@ -92,12 +92,12 @@ class DatabaseTests(object):
                  NOTES TEXT
                )
             """.format(table_name))
-            self.assert_(table_name in db.get_tables())
+            self.assertTrue(table_name in db.get_tables())
 
         for i in range(n):
             table_name = 'dzdb_test_table{}'.format(i)
             db('drop table ' + table_name)
-            self.assert_(table_name not in db.get_tables())
+            self.assertTrue(table_name not in db.get_tables())
 
     def test_db_insert_update_record(self):
         # pylint: disable=protected-access
