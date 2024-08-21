@@ -219,3 +219,8 @@ docker:
   trigger: dsilabs/docker-zoom
   only:
     - tags
+
+docker-manual:
+  stage: build
+  trigger: dsilabs/docker-zoom
+  when: manual
