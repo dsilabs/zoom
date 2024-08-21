@@ -112,6 +112,38 @@ python-3.9-web:
     expire_in: 1 week
     when: on_failure
 
+python-3.12-unit:
+  stage: test
+  image: "python:3.12"
+  services:
+    - mariadb
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_unittests.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.12-web:
+  stage: test
+  image: "python:3.12"
+  services:
+    - mariadb
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_webtests.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
 python-3.9-MySQL8-unit:
   stage: test
   image: "python:3.9"
