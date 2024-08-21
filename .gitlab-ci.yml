@@ -1,7 +1,7 @@
 
 default:
   retry:
-    max: 2        # Retry all jobs up to 3 times by default
+    max: 2
 
 stages:
   - qa
@@ -101,38 +101,6 @@ python-3.9-web:
   image: "python:3.9"
   services:
     - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-python-3.12-unit:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-python-3.12-web:
-  stage: test
-  image: "python:3.12"
-  services:
-    - mariadb:10.7
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
