@@ -2,6 +2,23 @@
 
 """
     zoom.Fields
+
+    Input fields to be used in forms.
+
+    >>> import zoom.request
+    >>> from zoom import Component
+    >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.site.Site(zoom.system.request)
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
+    >>> zoom.system.parts = Component()
+
+    >>> print(TextField('Name', value="John Doe").show())
+    <div class="field">
+      <div class="field_label">Name</div>
+      <div class="field_show">John Doe</div>
+    </div>
+    <BLANKLINE>
+
 """
 
 import locale
