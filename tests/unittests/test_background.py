@@ -11,7 +11,7 @@ import pytest
 import zoom
 from zoom.background import BackgroundJobResult, purge_old_job_results
 
-@pytest.mark.skip  # pytest cannot handle these tests out of the box
+
 class TestBackground(unittest.TestCase):
 
     def setUp(self):
@@ -90,10 +90,15 @@ class TestBackground(unittest.TestCase):
         site.run_background_jobs()
         self.assertEqual(sorted(sys.modules), sorted(modules_before))
 
+    @pytest.mark.skip
     def test_import_submodules(self):
         site = zoom.sites.Site()
         site.apps_paths.append(zoom.tools.zoompath('tests', 'unittests', 'apps'))
         site.run_background_jobs()
         log_contents = self.log_capture_string.getvalue()
+        print(log_contents)
         self.assertIn('Testing test2 module import: text for test2', log_contents)
         self.assertIn('Testing test1 module import: text for test1', log_contents)
+
+if __name__ == '__main__':
+    unittest.main()

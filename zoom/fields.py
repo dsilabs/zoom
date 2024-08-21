@@ -1616,7 +1616,6 @@ class MoneyField(DecimalField):
             v += ' ' + self.units
         return v
 
-
 class DateField(Field):
     """Date Field
 

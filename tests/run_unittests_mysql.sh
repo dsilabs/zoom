@@ -41,14 +41,5 @@ export LC_ALL=C
 
 cat $ZOOM_DEFAULT_SITE_INI
 
-
-nosetests \
-    -vx \
-    --exclude-dir=zoom/testing \
-    --exclude-dir=zoom/cli \
-    --with-doctest \
-    --with-coverage \
-    --cover-package=zoom \
-    zoom tests/unittests \
-    zoom
-
+pytest --doctest-modules --ignore=zoom/testing --ignore=zoom/cli --ignore=zoom/_assets zoom
+pytest --ignore=tests/unittests/apps tests/unittests
