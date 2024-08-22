@@ -20,13 +20,13 @@ import os
 import unittest
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver.support import expected_conditions as expected
 from zoom.testing.common import get_output_path
 
 
@@ -124,17 +124,25 @@ class WebdriverTestPrimitives(unittest.TestCase):
     def find(self, target):
         """find an element in the page"""
 
+        def find(method, target):
+            return wait.until(visible((method, target)), 4)
+
         def try_method(method, target):
             try:
                 logger.debug('trying method %s(%r)', method, target)
-                result = driver.find_element(method, target)
+                result = find(method, target)
                 if result:
                     logger.debug('method %s worked!', method)
                     return result
             except NoSuchElementException:
                 return False
 
+            except TimeoutException:
+                return False
+
         driver = self.driver
+        wait = WebDriverWait(driver, 10)
+        visible = expected.visibility_of_element_located
 
         logger = logging.getLogger(__name__)
         logger.debug('finding element: %r', target)
@@ -144,31 +152,31 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         if target.startswith('link='):
             try:
-                result = driver.find_element(By.LINK_TEXT, target[5:])
+                result = find(By.LINK_TEXT, target[5:])
                 logger.debug('going with %r: %r', target, result)
                 return result
             except NoSuchElementException:
                 # try lowercase version of link, to work around text-transform bug
-                result = driver.find_element(By.LINK_TEXT, target[5:].lower())
+                result = find(By.LINK_TEXT, target[5:].lower())
                 target_cache[target] = 'link=' + target[5:].lower()
                 msg = '   label %s is being cached as %s'
                 logger.info(msg, target, target_cache[target])
                 return result
 
         elif target.startswith('//'):
-            return driver.find_element(By.XPATH, target)
+            return find(By.XPATH, target)
 
         elif target.startswith('xpath='):
-            return driver.find_element(By.XPATH, target[6:])
+            return find(By.XPATH, target[6:])
 
         elif target.startswith('css='):
-            return driver.find_element(By.CSS_SELECTOR, target[4:])
+            return find(By.CSS_SELECTOR, target[4:])
 
         elif target.startswith('id='):
-            return driver.find_element(By.ID, target[3:])
+            return find(By.ID, target[3:])
 
         elif target.startswith('name='):
-            return driver.find_element(By.NAME, target[5:])
+            return find(By.NAME, target[5:])
 
         direct = (
             try_method(By.NAME, target)
