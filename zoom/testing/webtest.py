@@ -257,7 +257,12 @@ class WebdriverTestPrimitives(unittest.TestCase):
                 result.click()
 
     def contains(self, text):
-        return text in self.driver.page_source
+        try:
+            wait = WebDriverWait(self.driver, 4)
+            # Wait until the text is present in the page source
+            return wait.until(lambda driver: text in driver.page_source)
+        except TimeoutException:
+            return False
 
     def assertContains(self, text):
         if not self.contains(text):
