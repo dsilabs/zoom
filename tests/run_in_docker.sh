@@ -6,7 +6,8 @@ VERSIONS=${VERSIONS:-"3.7 3.8 3.9 3.12"}
 # Loop through each Python version
 for VERSION in $VERSIONS
 do
-    echo "Running tests in Python $VERSION"
+    CONTAINED_VERSION=$(docker run python:$VERSION python -V)
+    echo "Running tests in $CONTAINED_VERSION container"
 
     # Run the Docker command and conditionally apply grep based on VERBOSE
     if [ "$VERBOSE" -eq 1 ]; then
