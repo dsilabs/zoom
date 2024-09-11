@@ -125,7 +125,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
         """find an element in the page"""
 
         def find(method, target):
-            return wait.until(visible((method, target)), 4)
+            return wait.until(present((method, target)), 4)
 
         def try_method(method, target):
             try:
@@ -142,7 +142,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
         driver = self.driver
         wait = WebDriverWait(driver, 10)
-        visible = expected.visibility_of_element_located
+        present = expected.presence_of_element_located
 
         logger = logging.getLogger(__name__)
         logger.debug('finding element: %r', target)
