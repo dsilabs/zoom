@@ -42,7 +42,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
     size = (1024, 768)
     logger = logging.getLogger(__name__)
     path = '.'
-    wait_time = 4
+    wait_time = int(os.environ.get('ZOOM_TEST_WAIT_TIME', '1'))
 
     driver_name = os.environ.get('ZOOM_TEST_DRIVER', 'chrome')
 
@@ -125,7 +125,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
         """find an element in the page"""
 
         def find(method, target):
-            return wait.until(present((method, target)), 4)
+            return wait.until(present((method, target)), self.wait_time)
 
         def try_method(method, target):
             try:
@@ -141,7 +141,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
                 return False
 
         driver = self.driver
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, self.wait_time)
         present = expected.presence_of_element_located
 
         logger = logging.getLogger(__name__)
@@ -258,7 +258,7 @@ class WebdriverTestPrimitives(unittest.TestCase):
 
     def contains(self, text):
         try:
-            wait = WebDriverWait(self.driver, timeout=10)
+            wait = WebDriverWait(self.driver, timeout=self.wait_time)
             # Wait until the text is present in the page source
             return wait.until(lambda driver: text in driver.page_source)
         except TimeoutException:
