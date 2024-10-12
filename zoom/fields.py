@@ -486,7 +486,7 @@ class TextField(Field):
 
         valid_attributes = (
             'id', 'size', 'maxlength',
-            'placeholder', 'title'
+            'placeholder', 'title', 'autocomplete'
         )
 
         attributes = dict(
