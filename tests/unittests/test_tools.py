@@ -218,3 +218,7 @@ class TestTools(unittest.TestCase):
             response.headers['Location'],
             '<dz:abs_site_url>/page1'
         )
+
+    def test_now(self):
+        utc_date = zoom.tools.now()
+        self.assertEqual(utc_date.tzinfo, None)
