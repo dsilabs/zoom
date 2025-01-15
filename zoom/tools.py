@@ -67,15 +67,15 @@ def now():
     """Return the current UTC datetime without timezone info.
 
     This function is designed to work across different versions of Python.
-    - For Python 3.12 and later, it uses `datetime.datetime.now(datetime.UTC)`
+    - For Python 3.11 and later, it uses `datetime.datetime.now(datetime.UTC)`
     to get the current UTC time and removes the timezone info.
-    - For Python 3.9 and earlier, it falls back to using
+    - For Python 3.10 and earlier, it falls back to using
     `datetime.datetime.utcnow()`, which returns a naive datetime in UTC.
     """
-    # Python 3.12+
+    # Python >= 3.11
     try:
         utc_date = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
-    # Python 3.9
+    # Python < 3.10
     except AttributeError:
         utc_date = datetime.datetime.utcnow()
     return utc_date
