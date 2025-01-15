@@ -21,7 +21,7 @@ except ImportError:
     _get_timezone = pytz.timezone
     _utc_zone = pytz.utc
     _all_zones = pytz.all_timezones
-    
+
 from zoom.response import RedirectResponse
 import zoom.helpers
 from zoom.helpers import abs_url_for, url_for_page, url_for
@@ -64,8 +64,21 @@ def get_timezone_names():
 
 
 def now():
-    """Return the current datetime"""
-    return datetime.datetime.utcnow()
+    """Return the current UTC datetime without timezone info.
+
+    This function is designed to work across different versions of Python.
+    - For Python 3.11 and later, it uses `datetime.datetime.now(datetime.UTC)`
+    to get the current UTC time and removes the timezone info.
+    - For Python 3.10 and earlier, it falls back to using
+    `datetime.datetime.utcnow()`, which returns a naive datetime in UTC.
+    """
+    # Python >= 3.11
+    try:
+        utc_date = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+    # Python < 3.10
+    except AttributeError:
+        utc_date = datetime.datetime.utcnow()
+    return utc_date
 
 
 def localtime(timestamp):
