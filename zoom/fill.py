@@ -135,7 +135,7 @@ def custom_fill(tag_start, tag_end, text, callback):
     """fill tags in a custom style
 
     >>> def fill2(*args, **kwargs):
-    ...     return custom_fill(r'\$\(\( ', r'\)\)', *args, **kwargs)
+    ...     return custom_fill(r'\\$\\(\\( ', r'\\)\\)', *args, **kwargs)
     >>> def callback(name, *args, **kwargs):
     ...     return dict(first_name='Sam', last_name='Jones').get(name, 'unknown')
     >>> fill2('Hello $(( first_name ))', callback)
