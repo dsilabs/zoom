@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.25.1] - 2025-01-17
 - fix escape sequence deprecation warning in fill.py
+- ignore deactivated accounts in forgot app
 
 ## [6.25.0] - 2025-01-15
 - update zoom.tools.now() for compatibility with Python >= 3.11
