@@ -7,6 +7,7 @@ stages:
   - qa
   - test
   - publish
+  - mirror
   - build
 
 whitespace:
@@ -213,6 +214,30 @@ pypi:
   trigger: dsilabs/zoom-publisher
   only:
     - tags
+
+mirror_to_github:
+  stage: mirror
+  image: alpine:latest
+
+  before_script:
+
+    - apk add --no-cache git openssh
+
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_USER_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+  script:
+
+    - git clone --bare "$CI_REPOSITORY_URL" repo
+    - cd repo
+
+    - git remote add github git@github.com:ZoomFoundry/ZoomFoundry.git
+    - git push github
+
+  only:
+    - master
 
 docker:
   stage: build
