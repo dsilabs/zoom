@@ -46,11 +46,6 @@ class Response(object):
     def render(self):
         """Renders the entire response"""
 
-        def render_headers(headers):
-            """bring headers together into one string"""
-            return (''.join(["%s: %s\n" % (header, value) for header, value in
-                             headers.items()]))
-
         status, headers, doc = self.as_wsgi()
         start = (
             ''.join(
