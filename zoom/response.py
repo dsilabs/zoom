@@ -50,7 +50,7 @@ class Response(object):
         start = (
             ''.join(
                 '{}: {}\n'.format(k, v) for k, v in
-                [('Status', self.status)] + headers
+                [('Status', status)] + headers
             )
         ).encode('utf8')
 
