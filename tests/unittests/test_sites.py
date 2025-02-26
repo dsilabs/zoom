@@ -1,11 +1,12 @@
 """
-    test site
+    test sites module
 """
 
 from datetime import timedelta, datetime
 import unittest
 
 import zoom
+import zoom.sites
 from zoom.tools import (
     get_timezone, get_timezone_offset, get_timezone_str,
     get_timezone_names
@@ -61,3 +62,25 @@ class TestSite(unittest.TestCase):
         self.assertIn('UTC', names)
         self.assertIn('Asia/Tokyo', names)
         self.assertIn('America/Vancouver', names)
+
+
+class TestSiteDatabase(unittest.TestCase):
+
+    def setUp(self):
+        zoom.sites.set_site(zoom.sites.Site())
+        site = zoom.sites.get_site()
+        expected = zoom.tools.zoompath('zoom/_assets/web/sites/localhost')
+        self.assertEqual(site.path, expected)
+
+    def tearDown(self):
+        del zoom.system.site
+
+    def test_get_db(self):
+        db = zoom.sites.get_db()
+        names = [a for a, in db('show tables')]
+        self.assertIn('users', names)
+
+    def test_db(self):
+        db = zoom.sites.db
+        names = [a for a, in db('show tables')]
+        self.assertIn('users', names)

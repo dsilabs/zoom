@@ -122,4 +122,4 @@ def get_db(name=None):
 
 def db(*args, **kwargs):
     """Run a database command and return the result"""
-    return get_db(*args, **kwargs)
+    return get_db()(*args, **kwargs)
