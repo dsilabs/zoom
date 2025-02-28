@@ -7,11 +7,14 @@
     Note: experimental
 """
 
+import logging
 import os
+from os.path import dirname
 
 import zoom
 from zoom.site import Site as BasicSite
 from zoom.background import run_background_jobs
+from zoom.context import context
 
 # The default path for sites is configurable based on an environment variable,
 # which we read eagerly here to ensure we don't provide app code an opportunity
@@ -50,20 +53,8 @@ class Site(BasicSite):
         if not os.path.isdir(path):
             raise Exception('Site missing: %s' % path)
 
-        # prepare a fake request adapter to satisfy the legacy api
-        rest, name = os.path.split(path)
-        instance, _ = os.path.split(rest)
-        fake_request_adapter = zoom.utils.Bunch(
-            site_path=path,
-            instance=instance,
-            domain=name,
-            protocol='http',
-            host=name,
-        )
-
-        # create a site based on the legacy api
-        BasicSite.__init__(self, fake_request_adapter)
-        self.instance_path = instance
+        BasicSite.__init__(self, context.request)
+        self.instance_path = dirname(dirname(path))
 
         # attach the supporting database attributes
         self.db = db = zoom.database.connect_database(self.config)
@@ -123,3 +114,15 @@ def get_db(name=None):
 def db(*args, **kwargs):
     """Run a database command and return the result"""
     return get_db()(*args, **kwargs)
+
+
+def handler(request, next_handler, *rest):
+    """install site object"""
+    try:
+        request.site = context.site = Site(request.site_path)
+        request.profiler.add('site initialized')
+        return next_handler(request, *rest)
+    except zoom.exceptions.SiteMissingException:
+        logger = logging.getLogger(__name__)
+        logger.debug('responding with 404 for %r', request.path)
+        return zoom.response.SiteNotFoundResponse(request)

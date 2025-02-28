@@ -42,10 +42,8 @@ import zoom.context
 import zoom.cookies
 import zoom.html as html
 import zoom.logging
-import zoom.models
-import zoom.queues
 import zoom.session
-import zoom.site
+import zoom.sites
 import zoom.templates
 import zoom.users
 import zoom.component
@@ -761,12 +759,9 @@ def handle(request, handlers=None):  # pragma: no cover
         serve_html,
         reset_modules,
         capture_stdout,
-        zoom.site.handler,
+        zoom.sites.handler,
         zoom.cookies.handler,
         serve_themes,
-        zoom.database.handler,
-        zoom.queues.handler,
-        zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,
         zoom.impersonation.handler,

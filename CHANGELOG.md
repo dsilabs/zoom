@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - add `now` helper
 - ignore deactivated accounts in forgot app
+- use newer Site class from sites module by default
 
 ## [6.25.1] - 2025-01-17
 - fix escape sequence deprecation warning in fill.py

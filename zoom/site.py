@@ -392,15 +392,3 @@ class Site(object):
 
     def __str__(self):
         return zoom.utils.pretty(self)
-
-
-def handler(request, next_handler, *rest):
-    """install site object"""
-    try:
-        request.site = context.site = Site(request)
-        request.profiler.add('site initialized')
-        return next_handler(request, *rest)
-    except zoom.exceptions.SiteMissingException:
-        logger = logging.getLogger(__name__)
-        logger.debug('responding with 404 for %r', request.path)
-        return zoom.response.SiteNotFoundResponse(request)
