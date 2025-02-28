@@ -15,11 +15,14 @@ import zoom
 from zoom.site import Site as BasicSite
 from zoom.background import run_background_jobs
 from zoom.context import context
+from zoom.exceptions import SiteMissingException
 
 # The default path for sites is configurable based on an environment variable,
 # which we read eagerly here to ensure we don't provide app code an opportunity
 # to modify the environment first.
 default_site_path = os.environ.get('ZOOM_DEFAULT_SITE')
+
+logger = logging.getLogger(__name__)
 
 class Site(BasicSite):
     """a Zoom site
@@ -51,7 +54,8 @@ class Site(BasicSite):
         path = path or default_site_path or \
                 zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
         if not os.path.isdir(path):
-            raise Exception('Site missing: %s' % path)
+            logger.error('Site directory missing: %r', path)
+            raise SiteMissingException(f'site {path!r} does not exist')
 
         BasicSite.__init__(self, context.request)
         self.instance_path = dirname(dirname(path))
@@ -122,7 +126,6 @@ def handler(request, next_handler, *rest):
         request.site = context.site = Site(request.site_path)
         request.profiler.add('site initialized')
         return next_handler(request, *rest)
-    except zoom.exceptions.SiteMissingException:
-        logger = logging.getLogger(__name__)
-        logger.debug('responding with 404 for %r', request.path)
+    except SiteMissingException:
+        logger.warning('responding with 404 for %r', request.path)
         return zoom.response.SiteNotFoundResponse(request)
