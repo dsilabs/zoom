@@ -9,6 +9,7 @@ from zoom.testing.webtest import AdminTestCase
 class WebTest(AdminTestCase):
 
     def test_index(self):
+        self.get('/')
         self.assertContains('app-icons')
         self.assertContains('Admin')
         self.click_link('Admin')
