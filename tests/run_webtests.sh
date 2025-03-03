@@ -43,10 +43,7 @@ sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
 apt-get -y update
 apt-get install -y google-chrome-stable
 
-# install chromedriver
-wget -O /tmp/chromedriver.zip $(python3 get_chromedriver_url.py)
-unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/
-mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+google-chrome --version
 
 # set display port to avoid crash
 export DISPLAY=:99
