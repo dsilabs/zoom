@@ -295,7 +295,7 @@ class AppProxy:
                 return name == item.name
             return selector
 
-        route = self.site.request.route
+        route = zoom.system.request.route
         logger.debug('constructing menu')
 
         menu = getattr(self.method, 'menu', [])
