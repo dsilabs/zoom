@@ -54,11 +54,21 @@ class Site(BasicSite):
         path = path or default_site_path or \
                 zoom.tools.zoompath('zoom', '_assets', 'web', 'sites', 'localhost')
         if not os.path.isdir(path):
-            logger.error('Site directory missing: %r', path)
-            raise SiteMissingException(f'site {path!r} does not exist')
+            raise SiteMissingException('Site missing: %s' % path)
 
-        BasicSite.__init__(self, context.request)
-        self.instance_path = dirname(dirname(path))
+        # prepare a request adapter to satisfy the legacy api
+        rest, name = os.path.split(path)
+        instance = os.path.dirname(rest)
+        request_adapter = zoom.utils.Bunch(
+            site_path=path,
+            instance=instance,
+            domain=name,
+            protocol='http',
+            host=name,
+        )
+
+        BasicSite.__init__(self, request_adapter)
+        self.instance_path = instance
 
         # attach the supporting database attributes
         self.db = db = zoom.database.connect_database(self.config)
