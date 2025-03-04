@@ -8,6 +8,7 @@ import shutil
 import sys
 import logging
 import unittest
+import pytest
 
 from subprocess import Popen, PIPE
 
@@ -50,6 +51,9 @@ def invoke(*args, stdin=str(), return_proc=False, **kwargs):
 
     return process.returncode, out.decode(), err.decode()
 
+def is_legacy():
+    return sys.version_info <= (3, 7)
+
 class TestCLI(unittest.TestCase):
 
     def setUp(self):
@@ -67,11 +71,13 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(not out, 'No output')
         self.assertTrue(agnostic_contains(err, MAIN_USAGE), 'Usage provided')
 
+    @pytest.mark.skipif(is_legacy, reason='Python 3.7 deprecated')
     def test_help(self):
         code, out, err = invoke('zoom -h')
         self.assertTrue(not err and not code, 'No error')
         self.assertTrue(agnostic_contains(out, MAIN_USAGE), 'Usage provided')
 
+    @pytest.mark.skipif(is_legacy, reason='Python 3.7 deprecated')
     def test_command_help(self):
         code, out, err = invoke('zoom -h new')
         self.assertTrue(not err and not code, 'No error')
@@ -80,6 +86,7 @@ class TestCLI(unittest.TestCase):
             'Help provided'
         )
 
+    @pytest.mark.skipif(is_legacy, reason='Python 3.7 deprecated')
     def test_command_usage_error(self):
         code, out, err = invoke('zoom new invalid command input')
         self.assertTrue(code, 'Non-zero exit')
