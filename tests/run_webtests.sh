@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source install_chrome.sh
+source tests/install_chrome.sh
 
 apt-get update -qq
 apt-get install -y mariadb-client iputils-ping
