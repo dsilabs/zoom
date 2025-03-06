@@ -28,4 +28,6 @@ do
             $FILTER
     done
 
+    git checkout -q zoom/_assets/web/sites/localhost/site.ini
+
 done
