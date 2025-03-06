@@ -6,8 +6,8 @@ echo "installing the database"
 export DEBIAN_FRONTEND=noninteractive
 export MYSQL_ROOT_PASSWORD=root
 
-apt-get update
-apt-get install -y mariadb-server
+apt-get update -qq
+apt-get install -y -qqq mariadb-server
 
 service mariadb start
 

@@ -59,5 +59,3 @@ pytest \
     --ignore=tests/unittests/apps \
     zoom \
     tests/unittests
-
-echo "Done"

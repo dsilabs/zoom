@@ -17,6 +17,9 @@ from zoom.cli.new import new as new_handler
 
 TEST_DIR = os.path.abspath('./_testdata')
 
+def is_legacy():
+    return sys.version_info <= (3, 7)
+
 log = logging.getLogger('tests.unittests.test_cli')
 
 def deformat_str(string):

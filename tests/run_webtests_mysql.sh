@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source tests/install_chrome.sh
+
 pip install .
 pip install -r tests/requirements.txt
 
@@ -31,17 +33,6 @@ host=$ZOOM_TEST_DATABASE_HOST
 user=$ZOOM_TEST_DATABASE_USER
 password=$ZOOM_TEST_DATABASE_PASSWORD
 EOL
-
-# install google chrome
-wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-apt-get -y update
-apt-get install -y google-chrome-stable
-
-# install chromedriver
-wget -O /tmp/chromedriver.zip $(python3 get_chromedriver_url.py)
-unzip /tmp/chromedriver.zip chromedriver-linux64/chromedriver -d /tmp/
-mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
 
 # set display port to avoid crash
 export DISPLAY=:99
