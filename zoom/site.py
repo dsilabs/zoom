@@ -333,7 +333,7 @@ class Site(object):
     @property
     def abs_url(self):
         """Calculate an absolute URL for this site"""
-        request = self.request
+        request = context.request
         return '{}://{}'.format(
             request.protocol,
             request.host,
