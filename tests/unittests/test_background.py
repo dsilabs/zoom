@@ -20,10 +20,8 @@ class TestBackground(unittest.TestCase):
         logger = logging.getLogger()
         handler = logging.StreamHandler(self.log_capture_string)
         logger.addHandler(handler)
-
+        zoom.system.request = None
         zoom.system.site = zoom.sites.Site()
-        if getattr(zoom.system, 'request', None):
-            del zoom.system.request
 
     def test_purge(self):
 

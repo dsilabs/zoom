@@ -27,8 +27,7 @@ class TestApps(unittest.TestCase):
         self.request = zoom.system.request = build('http://localhost', {})
         self.request.profiler = set()
         self.db = zoom.database.setup_test()
-        zoom.system.site = zoom.site.Site(self.request)
-        zoom.system.site.db = self.db
+        zoom.system.site = zoom.sites.Site()
         self.request.site = zoom.system.site
         self.apps_dir = zoom.tools.zoompath('zoom', '_assets', 'standard_apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
