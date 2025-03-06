@@ -258,6 +258,7 @@ class Request(object):
         self.node = platform.node()
         self.profiler = SystemTimer(self.start_time)
         self.profiling = False
+        self.abs_url = f'{self.protocol}://{self.host}'
 
         if self.module == 'wsgi':
             self.server = (get('HTTP_HOST') or '').split(':')[0]

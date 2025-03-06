@@ -331,15 +331,6 @@ class Site(object):
         return ''
 
     @property
-    def abs_url(self):
-        """Calculate an absolute URL for this site"""
-        request = context.request
-        return '{}://{}'.format(
-            request.protocol,
-            request.host,
-        )
-
-    @property
     def apps(self):
         """Return list of apps available to this site"""
         if self.__apps is None:

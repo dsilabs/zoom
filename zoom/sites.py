@@ -77,6 +77,11 @@ class Site(BasicSite):
         self.users = zoom.models.Users(db)
 
     @property
+    def abs_url(self):
+        if context.request:
+            return context.request.abs_url
+
+    @property
     def background_jobs(self):
         """All background jobs for this site. Value is a list."""
         result = list()
