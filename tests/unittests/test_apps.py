@@ -10,7 +10,7 @@ import sys
 import zoom
 import zoom.apps
 import zoom.request
-import zoom.site
+from zoom.sites import Site
 from zoom.server import reset_modules
 
 build = zoom.request.build
@@ -27,7 +27,7 @@ class TestApps(unittest.TestCase):
         self.request = zoom.system.request = build('http://localhost', {})
         self.request.profiler = set()
         self.db = zoom.database.setup_test()
-        zoom.system.site = zoom.sites.Site()
+        zoom.system.site = Site()
         self.request.site = zoom.system.site
         self.apps_dir = zoom.tools.zoompath('zoom', '_assets', 'standard_apps')
         self.request.app = zoom.system.request.app = zoom.utils.Bunch(
@@ -64,8 +64,8 @@ class TestApps(unittest.TestCase):
             os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/about', {})
-            request.site = zoom.site.Site(self.request)
-            request.site.db = zoom.database.setup_test()
+            zoom.database.setup_test()
+            request.site = Site()
             response = app(request)
             self.assertEqual(type(response), str)
         finally:
@@ -77,8 +77,8 @@ class TestApps(unittest.TestCase):
             os.chdir(zoom.tools.zoompath(self.apps_dir, 'sample'))
             app = zoom.App()
             request = build('http://localhost/sample/parts', {})
-            request.site = zoom.site.Site(self.request)
-            request.site.db = zoom.database.setup_test()
+            zoom.database.setup_test()
+            request.site = Site()
             response = app(request)
             self.assertEqual(type(response), zoom.Page)
         finally:

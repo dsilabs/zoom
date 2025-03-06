@@ -167,8 +167,8 @@ def locate_theme(path, name):
         logger.debug('using theme %s', join(*possibility))
         return possibility
 
-class Site(object):
-    """a Zoom site"""
+class BasicSite:
+    """a basic Zoom site"""
 
     def __init__(self, request):
 

@@ -12,7 +12,7 @@ import os
 from os.path import dirname
 
 import zoom
-from zoom.site import Site as BasicSite
+from zoom.site import BasicSite
 from zoom.background import run_background_jobs
 from zoom.context import context
 from zoom.exceptions import SiteMissingException

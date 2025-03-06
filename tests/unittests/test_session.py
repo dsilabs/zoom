@@ -12,7 +12,7 @@ import logging
 
 from zoom.request import Request
 from zoom.session import Session
-from zoom.site import Site
+from zoom.sites import Site
 from zoom.database import setup_test
 
 
@@ -21,8 +21,8 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         env = {}
         self.request = Request(env)
-        self.request.site = Site(self.request)
-        self.request.site.db = setup_test()
+        setup_test()
+        self.request.site = Site()
 
     def tearDown(self):
         self.request.site.db.close()
