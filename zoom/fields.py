@@ -8,7 +8,7 @@
     >>> import zoom.request
     >>> from zoom import Component
     >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
-    >>> zoom.system.site = zoom.site.Site(zoom.system.request)
+    >>> zoom.system.site = zoom.sites.Site()
     >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
     >>> zoom.system.parts = Component()
 
