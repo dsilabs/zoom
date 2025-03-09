@@ -20,9 +20,6 @@ whitespace:
 python-3.7-unit:
   stage: test
   image: "dsilabs/testbase:3.7"
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -33,14 +30,9 @@ python-3.7-unit:
 
 python-3.7-web:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.7"
   script:
-    - /bin/bash tests/run_webtests.sh
+    - /bin/bash tests/run_webtests_basetest.sh
   artifacts:
     paths:
     - tests/artifacts/
