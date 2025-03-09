@@ -1,5 +1,6 @@
 #!/bin/bash
 
+service mariadb start
 
 apt-get update -qq
 apt-get install -y mariadb-client iputils-ping

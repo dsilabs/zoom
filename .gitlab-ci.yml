@@ -19,9 +19,7 @@ whitespace:
 
 python-3.7-unit:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb
+  image: "dsilabs/testbase:3.7"
   variables:
     MYSQL_DATABASE: zoomtest2
     MYSQL_ROOT_PASSWORD: root
