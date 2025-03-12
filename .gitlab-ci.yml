@@ -97,6 +97,8 @@ python-3.12-unit:
 python-3.12-web:
   stage: test
   image: "dsilabs/testbase:3.12"
+  script:
+    - /bin/bash tests/run_webtests.sh
   artifacts:
     paths:
     - tests/artifacts/
