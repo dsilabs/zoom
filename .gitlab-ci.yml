@@ -12,19 +12,14 @@ stages:
 
 whitespace:
   stage: qa
-  image: "python:3.7"
+  image: "dsilabs/testbase:3.7"
   script:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
 python-3.7-unit:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.7"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -35,14 +30,9 @@ python-3.7-unit:
 
 python-3.7-web:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.7"
   script:
-    - /bin/bash tests/run_webtests.sh
+    - /bin/bash tests/run_webtests_basetest.sh
   artifacts:
     paths:
     - tests/artifacts/
@@ -51,12 +41,7 @@ python-3.7-web:
 
 python-3.8-unit:
   stage: test
-  image: "python:3.8"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.8"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -67,12 +52,7 @@ python-3.8-unit:
 
 python-3.8-web:
   stage: test
-  image: "python:3.8"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.8"
   script:
     - /bin/bash tests/run_webtests.sh
   artifacts:
@@ -83,12 +63,7 @@ python-3.8-web:
 
 python-3.9-unit:
   stage: test
-  image: "python:3.9"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.9"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -99,12 +74,7 @@ python-3.9-unit:
 
 python-3.9-web:
   stage: test
-  image: "python:3.9"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.9"
   script:
     - /bin/bash tests/run_webtests.sh
   artifacts:
@@ -115,12 +85,7 @@ python-3.9-web:
 
 python-3.12-unit:
   stage: test
-  image: "python:3.12"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.12"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -131,12 +96,7 @@ python-3.12-unit:
 
 python-3.12-web:
   stage: test
-  image: "python:3.12"
-  services:
-    - mariadb
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.12"
   script:
     - /bin/bash tests/run_webtests.sh
   artifacts:
@@ -147,7 +107,7 @@ python-3.12-web:
 
 python-3.9-MySQL8-unit:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mysql:8.4
   variables:
@@ -163,7 +123,7 @@ python-3.9-MySQL8-unit:
 
 python-3.9-MySQL8-web:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mysql:8.4
   variables:
@@ -179,7 +139,7 @@ python-3.9-MySQL8-web:
 
 python-3.12-MySQL8-unit:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mysql:8.4
   variables:
@@ -195,7 +155,7 @@ python-3.12-MySQL8-unit:
 
 python-3.12-MySQL8-web:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mysql:8.4
   variables:
