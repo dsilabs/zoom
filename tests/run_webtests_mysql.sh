@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source tests/install_chrome.sh
+# source tests/install_chrome.sh
 
 pip install .
 pip install -r tests/requirements.txt

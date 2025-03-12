@@ -12,7 +12,7 @@ stages:
 
 whitespace:
   stage: qa
-  image: "python:3.7"
+  image: "dsilabs/testbase:3.7"
   script:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
@@ -41,7 +41,7 @@ python-3.7-web:
 
 python-3.8-unit:
   stage: test
-  image: "python:3.8"
+  image: "dsilabs/testbase:3.8"
   services:
     - mariadb
   variables:
@@ -57,7 +57,7 @@ python-3.8-unit:
 
 python-3.8-web:
   stage: test
-  image: "python:3.8"
+  image: "dsilabs/testbase:3.8"
   services:
     - mariadb
   variables:
@@ -73,7 +73,7 @@ python-3.8-web:
 
 python-3.9-unit:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mariadb
   variables:
@@ -89,7 +89,7 @@ python-3.9-unit:
 
 python-3.9-web:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mariadb
   variables:
@@ -105,7 +105,7 @@ python-3.9-web:
 
 python-3.12-unit:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mariadb
   variables:
@@ -121,7 +121,7 @@ python-3.12-unit:
 
 python-3.12-web:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mariadb
   variables:
@@ -137,7 +137,7 @@ python-3.12-web:
 
 python-3.9-MySQL8-unit:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mysql:8.4
   variables:
@@ -153,7 +153,7 @@ python-3.9-MySQL8-unit:
 
 python-3.9-MySQL8-web:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mysql:8.4
   variables:
@@ -169,7 +169,7 @@ python-3.9-MySQL8-web:
 
 python-3.12-MySQL8-unit:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mysql:8.4
   variables:
@@ -185,7 +185,7 @@ python-3.12-MySQL8-unit:
 
 python-3.12-MySQL8-web:
   stage: test
-  image: "python:3.12"
+  image: "dsilabs/testbase:3.12"
   services:
     - mysql:8.4
   variables:
