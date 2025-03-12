@@ -1,13 +1,6 @@
 cd /work
-apt-get update -qq
 
-echo "installing the database"
-
-export DEBIAN_FRONTEND=noninteractive
-export MYSQL_ROOT_PASSWORD=root
-
-apt-get update -qq
-apt-get install -y -qqq mariadb-server
+echo "starting the database"
 
 service mariadb start
 
