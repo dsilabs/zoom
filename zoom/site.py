@@ -26,6 +26,8 @@ dirname = os.path.dirname
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
+logger = logging.getLogger(__name__)
+
 
 class ConfigSection(zoom.utils.Record):
     """site configuration section"""
@@ -148,8 +150,6 @@ def locate_theme(path, name):
             if isfile(join(pathname, 'default.{}'.format(ext))):
                 return True
 
-    logger = logging.getLogger(__name__)
-
     if name != 'default':
         possibility = path, name
         if valid_theme(join(*possibility)):
@@ -171,8 +171,6 @@ class BasicSite:
     """a basic Zoom site"""
 
     def __init__(self, request):
-
-        logger = logging.getLogger(__name__)
 
         self.request = request
         instance = request.instance
@@ -383,3 +381,10 @@ class BasicSite:
 
     def __str__(self):
         return zoom.utils.pretty(self)
+
+
+class Site(BasicSite):
+
+    def __init__(self, *args, **kwargs):
+        BasicSite.__init__(self, *args, **kwargs)
+        logger.warning('zoom.site.Site is deprecated, use zoom.sites.Site instead')

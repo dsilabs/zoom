@@ -4,8 +4,11 @@
 
 from datetime import timedelta, datetime
 import unittest
+import logging
+from io import StringIO
 
 import zoom
+import zoom.request
 import zoom.sites
 from zoom.tools import (
     get_timezone, get_timezone_offset, get_timezone_str,
@@ -62,6 +65,28 @@ class TestSite(unittest.TestCase):
         self.assertIn('UTC', names)
         self.assertIn('Asia/Tokyo', names)
         self.assertIn('America/Vancouver', names)
+
+    def test_site_module_deprecation_message(self):
+
+        # Set up a string buffer and handler to capture log output
+        log_output = StringIO()
+        handler = logging.StreamHandler(log_output)
+        logger = logging.getLogger('zoom.site')  # Adjust logger name if needed
+        logger.addHandler(handler)
+        logger.setLevel(logging.WARNING)  # Ensure warnings are captured
+
+        request = zoom.request.build('http://localhost')
+        zoom.site.Site(request)
+
+        # Get the log output
+        log_contents = log_output.getvalue()
+
+        # Clean up
+        logger.removeHandler(handler)
+        handler.close()
+
+        # Assert that the deprecation warning is in the log
+        self.assertIn("deprecated", log_contents.lower())  # Adjust to match actual message
 
 
 class TestSiteDatabase(unittest.TestCase):
