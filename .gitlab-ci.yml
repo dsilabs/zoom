@@ -3,6 +3,9 @@ default:
   retry:
     max: 2
 
+variables:
+  GIT_STRATEGY: clone
+
 stages:
   - qa
   - test
