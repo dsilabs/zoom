@@ -13,6 +13,24 @@ class UndefinedValueError(Exception):
     """Required config value missing"""
 
 
+def replace_env_vars(config):
+    """Replace placeholders in config values with environment variables."""
+    for section in config.sections():
+        for key, value in config[section].items():
+            if value.startswith('${') and value.endswith('}'):
+
+                inner = value[2:-1]
+                parts = inner.split(':', 1)
+                name = parts[0]
+
+                if len(parts) > 1:
+                    default_value = parts[1]
+                    config[section][key] = os.getenv(name, default_value)
+                else:
+                    config[section][key] = os.getenv(name, value)
+    return config
+
+
 def get_config(pathname):
     """Read a config file into a Config parser"""
     if os.path.exists(pathname):
@@ -20,7 +38,8 @@ def get_config(pathname):
         logger.debug('reading config: %r', pathname)
         config = configparser.ConfigParser(strict=False)
         config.read(pathname)
-        return config
+        return replace_env_vars(config)
+
 
 class Config:
     """Config file parser

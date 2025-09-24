@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ignore deactivated accounts in forgot app
 - use stable version of chrome in test pipelines
 - use prepared testbase image for pipeline testing
+- add environment variable substitution in site.ini
 
 ## [6.25.1] - 2025-01-17
 - fix escape sequence deprecation warning in fill.py
