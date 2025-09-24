@@ -22,7 +22,7 @@ def get_config(pathname):
         config.read(pathname)
         return config
 
-class Config(object):
+class Config:
     """Config file parser
 
     The Config class looks in two places for config settings.  First
