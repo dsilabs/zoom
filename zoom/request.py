@@ -187,6 +187,34 @@ def strim(url):
     return url
 
 
+def get_protocol(get):
+    """
+    Determine the request protocol (http or https) across CGI, WSGI, and proxied setups.
+
+    :param environ: The environment dict (WSGI environ or os.environ for CGI).
+    :return: 'http' or 'https'
+    """
+    # return get('HTTPS', 'off') == 'on' and 'https' or 'http'
+
+    # Check proxy headers first (common in Docker/Swarm with Nginx/Traefik)
+    forwarded_proto = get('HTTP_X_FORWARDED_PROTO')
+    if forwarded_proto:
+        return forwarded_proto.lower()
+
+    # WSGI standard (Apache mod_wsgi, uWSGI, built-in wsgiref)
+    url_scheme = get('wsgi.url_scheme')
+    if url_scheme:
+        return url_scheme.lower()
+
+    # Legacy CGI indicators (HTTPS env var or port)
+    if get('HTTPS', '').lower() in ('on', '1', 'true'):
+        return 'https'
+    if get('SERVER_PORT') == '443':
+        return 'https'
+
+    # Default fallback
+    return 'http'
+
 
 class Request(object):
     """A web request
@@ -253,7 +281,7 @@ class Request(object):
         self.port = get('SERVER_PORT')
         self.script = get('SCRIPT_FILENAME')
         self.agent = get('HTTP_USER_AGENT')
-        self.protocol = get('HTTPS', 'off') == 'on' and 'https' or 'http'
+        self.protocol = get_protocol(get)
         self.referrer = get('HTTP_REFERER')
         self.node = platform.node()
         self.profiler = SystemTimer(self.start_time)
