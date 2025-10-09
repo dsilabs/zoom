@@ -10,6 +10,7 @@ import platform
 import zoom
 import zoom.apps
 import zoom.html as h
+from zoom.database import obfuscate
 from zoom.helpers import link_to, link_to_page, when
 from zoom.page import page
 from zoom.tools import load_content, today, now
@@ -505,6 +506,27 @@ class MyView(zoom.View):
         )
 
     def environment(self):
+
+        def is_secret(key):
+            return (
+                'SECRET' in key
+                or 'TOKEN' in key
+                or key.startswith('_')
+            )
+
+        def format_item(k, v):
+            if len(v) > 100:
+                v = v.replace(':', ': ')
+            if is_secret(k):
+                v = obfuscate(v)
+            return k, v
+
+        def format_variables(items):
+            return sorted(list(
+                format_item(k, v)
+                for k, v in items
+            ))
+
         now = zoom.tools.now()
         zone = zoom.tools.get_timezone_str(zoom.system.site.timezone)
         return page(
@@ -536,19 +558,17 @@ class MyView(zoom.View):
                     ('Machine', platform.machine()),
                     ('Archtitecture', ' '.join(platform.architecture()))
                 ]),
+
                 h.h2('OS Variables'),
-                zoom.html.table(
-                    sorted(list(
-                        (k, v.replace(':', ': ') if len(v) > 160 else v) for k, v in os.environ.items()
-                    ))
-                ),
+                zoom.html.table(format_variables(os.environ.items())),
+
                 h.h2('Request Variables'),
                 zoom.html.table(
-                    sorted(list(
-                        (k, v)
+                    format_variables([
+                        (k, str(v))
                         for k, v in zoom.system.request.env.items()
                         if not callable(v)
-                    ))
+                    ])
                 ),
                 css="""
                     .content table { width: 100%; }
