@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - obfuscate secret environment variables in admin app
 - add updated date to admin app environment section
+- use newer Site class from sites module
 
 ## [6.26.0] - 2025-01-17
 - add `now` helper
 - ignore deactivated accounts in forgot app
-- use newer Site class from sites module by default
 - use stable version of chrome in test pipelines
 - make abs_url a request attribute
 - use prepared testbase image for pipeline testing
