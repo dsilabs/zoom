@@ -21,6 +21,13 @@ import users
 import groups
 
 
+def get_build_timestamp():
+    pathname = zoom.tools.zoompath('zoom', '__version__.py')
+    ts = os.path.getmtime(pathname)
+    build_time = datetime.datetime.fromtimestamp(ts)
+    return build_time.strftime("%Y-%m-%d %H:%M:%S") + f' ({zoom.tools.how_long_ago(build_time)})'
+
+
 def log_data(db, status, n, limit, q):
     """retreive log data"""
 
@@ -534,6 +541,7 @@ class MyView(zoom.View):
                 h.h2('Zoom'),
                 zoom.html.table([
                     ('Version', zoom.__version__ + ' Community Edition'),
+                    ('Updated', get_build_timestamp()),
                     ('Installed Path', zoom.tools.zoompath()),
                     ('Current Time', '%s %s %s' % (
                         zoom.tools.localtime(now),

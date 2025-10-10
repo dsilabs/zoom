@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - obfuscate secret environment variables in admin app
+- add updated date to admin app environment section
 
 ## [6.26.0] - 2025-01-17
 - add `now` helper
