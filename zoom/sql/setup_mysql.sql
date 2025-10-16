@@ -95,6 +95,7 @@ CREATE TABLE `groups` (
 CREATE TABLE `members` (
   `user_id` int unsigned NOT NULL,
   `group_id` int unsigned NOT NULL,
+  `expiry` datetime default NULL,
   UNIQUE KEY `user_group` (`user_id`,`group_id`),
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`)
@@ -245,7 +246,7 @@ UNLOCK TABLES;
 -- Dumping data for table `members`
 --
 LOCK TABLES `members` WRITE;
-INSERT INTO `members` VALUES
+INSERT INTO `members` (user_id, group_id) VALUES
     (1,1),
     (2,2),
     (3,3);

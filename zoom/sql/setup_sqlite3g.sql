@@ -51,6 +51,7 @@ DROP TABLE if exists `members`;
 CREATE TABLE `members` (
   `user_id` integer  NOT NULL
 ,  `group_id` integer  NOT NULL
+,  `expiry` datetime DEFAULT NULL
 ,  UNIQUE (`user_id`,`group_id`)
 );
 DROP TABLE if exists `sessions`;
@@ -140,7 +141,7 @@ INSERT INTO `users` VALUES
     (1,'admin','$bcrypt-sha256$2a,14$q4iT8GFWNrwfYDIMKaYI0e$KVxn8PWpzKbOgE/qfwG.IVhRIx.Pma6','Admin','User','admin@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'A'),
     (2,'user','$bcrypt-sha256$2a,14$o6ySWvtBElcaqrnTzyx5o.$NIAMytGFktN2rgAUeTU/QY9lzTL6U0m','User','Known','user@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'I'),
     (3,'guest','','Guest','User','guest@datazoomer.com','',datetime('now'),datetime('now'),NULL,NULL,NULL,'A');
-INSERT INTO `members` VALUES
+INSERT INTO `members` (user_id, group_id) VALUES
     (1,1),
     (2,2),
     (3,3);
