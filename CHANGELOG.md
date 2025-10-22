@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - obfuscate secret environment variables in admin app
 - add updated date to admin app environment section
 - use newer Site class from sites module
+- add expiry column to members table
 
 ## [6.26.0] - 2025-01-17
 - add `now` helper
