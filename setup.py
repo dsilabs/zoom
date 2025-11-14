@@ -15,7 +15,7 @@ with open("requirements.txt", "r") as f:
     requires = [l for l in f.read().splitlines() if not l.startswith('#')]
 
 setuptools.setup(
-    name='ZoomFoundry',
+    name='zoomfoundry',
     version=about['__version__'],
     author="DSI Labs",
     author_email="support@dsilabs.ca",
