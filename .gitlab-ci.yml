@@ -178,6 +178,13 @@ pypi:
   only:
     - tags
 
+pypi-manual:
+  stage: publish
+  trigger: dsilabs/zoom-publisher
+  when: manual
+  only:
+    - master
+
 mirror_to_github:
   stage: mirror
   image: alpine:latest
