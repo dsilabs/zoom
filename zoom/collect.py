@@ -226,13 +226,16 @@ class CollectionView(View):
         if record:
             user.authorize('read', record)
 
+            possible_actions = [
+                ('Delete', 'delete'),
+                ('Edit', 'update'),
+                ('New', 'create')
+            ]
             actions = []
-            if user.can('delete', record):
-                actions.append(action_for(record, 'Delete'))
-            if user.can('update', record):
-                actions.append(action_for(record, 'Edit'))
-            if user.can('create', record):
-                actions.append(action_for(c, 'New'))
+            for label, action in possible_actions:
+                if user.can(action, record) and user.can(action, c):
+                    actions.append(action_for(record, label))
+
             c.fields.initialize(c.model(record))
 
             if 'updated' in record and 'updated_by' in record:

@@ -392,6 +392,45 @@ class TestCollect(unittest.TestCase):
         assert '123 Somewhere St' in response
         assert '123 Nowhere St' not in response
 
+    def test_show_actions(self):
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+        response = self.collect('show', 'joe')
+        actions = [label for label, _ in response.actions]
+        assert 'New' in actions
+        assert 'Edit' in actions
+        assert 'Delete' in actions
+
+    def test_show_actions_under_policy(self):
+        def no_editing_policy(user, action):
+            return action != 'update'
+        self.collection.store.zap()
+        self.assert_response(VIEW_EMPTY_LIST)
+
+        insert_record_input = dict(
+            create_button='y',
+            name='Joe',
+            address='123 Somewhere St',
+            salary=Decimal('40000'),
+        )
+        self.collect('new', **insert_record_input)
+        saved_policy = self.collection.allows
+        self.collection.allows = no_editing_policy
+        response = self.collect('show', 'joe')
+        self.collection.allows = saved_policy
+        actions = [label for label, _ in response.actions]
+        assert 'New' in actions
+        assert 'Edit' not in actions
+        assert 'Delete' in actions
+
     def test_new(self):
         response = self.collect('new').content
         assert 'Name' in response
