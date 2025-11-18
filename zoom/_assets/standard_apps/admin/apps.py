@@ -4,6 +4,7 @@
 
 import logging
 import zoom
+from zoom import get_user
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class AppsController(zoom.Controller):
         def fmt(app):
             """Format an app record"""
             name = app.name
+            asset_path = zoom.tools.zoompath('zoom', '_assets')
             group_name = 'a_' + app.name
             app_group = zoom.system.site.groups.first(name=group_name)
             groups = ', '.join(
@@ -37,9 +39,10 @@ class AppsController(zoom.Controller):
             ) or 'none' if app_group else ''
             return [
                 app.title,
-                app.name,
+                app.link if get_user().can_run(app) else name,
                 get_type(app),
-                app.path,
+                app.theme,
+                app.path[len(asset_path)+1:] if app.path.startswith(asset_path) else app.path,
                 groups,
                 (bool(app.in_development) and 'development' or '')
             ]
@@ -50,7 +53,7 @@ class AppsController(zoom.Controller):
         data = [fmt(app) for app in sorted(zoom.system.site.apps, key=lambda a: a.title.lower())]
         content = zoom.browse(
             data,
-            labels=['Title', 'App', 'Type', 'Path', 'Groups', 'Status']
+            labels=['Title', 'App', 'Type', 'Theme', 'Path', 'Groups', 'Status']
         )
         return zoom.page(content, title='Apps')
 
