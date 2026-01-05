@@ -9,7 +9,7 @@ import uuid
 
 import sass as libsass
 from markdown import Markdown
-from pypugjs.ext.html import process_pugjs as pug
+from zoom.pug import process_pugjs as pug
 
 try:
     from zoneinfo import ZoneInfo, available_timezones
