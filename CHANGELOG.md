@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - respect collection access policy when rendering collection actions
-- add the pypugjs module html.py as pug.py
+- add a modified pypugjs module (html.py) as pug.py
 
 ## [6.27.0] - 2025-11-10
 - obfuscate secret environment variables in admin app
