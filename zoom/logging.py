@@ -81,11 +81,22 @@ def handler(request, handler, *rest):
     try:
         result = handler(request, *rest)
     finally:
-        if request.method == 'HEAD':
-            request.profiler.time('log request', add_entry, request, 'H', 'complete')
-        elif '/_' in request.path:
-            request.profiler.time('log quiet request', add_entry, request, 'Q', 'quiet complete')
-        else:
-            request.profiler.time('log request', add_entry, request, 'C', 'complete')
-        root_logger.removeHandler(log_handler)
+        # Always remove the per-request handler, even if complete-log fails.
+        # Otherwise a failed add_entry can leak LogHandler(old_request) onto
+        # the process-global root logger for the life of the uwsgi worker.
+        try:
+            if request.method == 'HEAD':
+                request.profiler.time(
+                    'log request', add_entry, request, 'H', 'complete'
+                )
+            elif '/_' in request.path:
+                request.profiler.time(
+                    'log quiet request', add_entry, request, 'Q', 'quiet complete'
+                )
+            else:
+                request.profiler.time(
+                    'log request', add_entry, request, 'C', 'complete'
+                )
+        finally:
+            root_logger.removeHandler(log_handler)
     return result
