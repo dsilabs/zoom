@@ -70,7 +70,7 @@ def apply_helpers(template, obj, providers):
                 a1 = ' '.join(str(a) for a in args)
                 k1 = ' '.join('{}={!r}'.format(k, v) for k, v in kwargs.items())
                 logger.error(str(e))
-                return 'error filling {}{!r} {!r}{!r}{}'.format('{{', name, a1, k1, '}}')
+                return 'error filling {}{} {!r}{!r}{}'.format('{{', name, a1, k1, '}}')
 
         return _filler
 
