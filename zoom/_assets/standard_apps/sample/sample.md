@@ -195,7 +195,7 @@ Helpers
 &lcub;&lcub;user_last_name&rcub;&rcub; : **{{user_last_name}}**  
 &lcub;&lcub;user_full_name&rcub;&rcub; : **{{user_full_name}}**  
 &lcub;&lcub;elapsed&rcub;&rcub; : **{{elapsed}}**  
-&lcub;&lcub;upper text="test"&rcub;&rcub; : **{{upper text"test"}}**  
+&lcub;&lcub;upper text="test"&rcub;&rcub; : **{{upper text="test"}}**  
 &lcub;&lcub;date&rcub;&rcub; : **{{date}}**  
 &lcub;&lcub;year&rcub;&rcub; : **{{year}}**  
 
@@ -205,6 +205,9 @@ Missing Substitutions
 Missing: {{no_such_value}}
 
 Missing with default: {{no_such_value "default value"}}
+
+Malformed helper:
+&lcub;&lcub;upper text"test"&rcub;&rcub;:  →  **{{upper text"test"}}**
 
 
 
