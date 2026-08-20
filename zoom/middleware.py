@@ -599,8 +599,26 @@ def cause_error(request, handler, *rest):
     raise Exception('Something unexpected happened!')
 
 
+def _report_exception(msg):
+    """Keep exception details and best-effort app log without aborting.
+
+    Always writes the traceback to stderr so details survive when the DB
+    LogHandler is broken. App logging is best-effort only.
+    """
+    try:
+        sys.stderr.write(msg)
+        if not msg.endswith('\n'):
+            sys.stderr.write('\n')
+    except Exception:
+        pass
+    try:
+        logging.getLogger(__name__).error(msg)
+    except Exception:
+        pass
+
+
 def trap_errors(request, handler, *rest):
-    """Trap exceptions and raise a server error
+    """Trap exceptions and return the total-failure 500 page
 
     >>> def exception_handler(request, *rest):
     ...     raise Exception('error!')
@@ -622,13 +640,9 @@ def trap_errors(request, handler, *rest):
     """
     try:
         return handler(request, *rest)
-    except Exception as e:
-
-        logger = logging.getLogger(__name__)
-        logger.error(str(e))
+    except Exception:
         msg = traceback.format_exc()
-        logger.error(msg)
-
+        _report_exception(msg)
         status = '500 Internal Server Error'
         return HTMLResponse(
             zoom.templates.internal_server_error_500,
@@ -658,8 +672,7 @@ def display_errors(request, handler, *rest):
 
     except Exception as e:
         msg = traceback.format_exc()
-        logger = logging.getLogger(__name__)
-        logger.error(msg)
+        _report_exception(msg)
 
         as_api = request.env.get('HTTP_ACCEPT', '') == 'application/json'
         error_status = '500 Internal Server Error'
