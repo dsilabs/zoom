@@ -7,7 +7,6 @@
 """
 
 import logging
-import traceback
 import os
 
 import zoom
@@ -131,19 +130,18 @@ class Instance(object):
                 continue
             try:
                 result[name] = Site(os.path.join(path, name))
-            except BaseException as ex:
+            except Exception as ex:
                 if not skip_fails:
-                    raise ex
-                logger.critical(
-                    'Failed to load site %s: %s', name,
-                    ''.join(traceback.format_exception(
-                        ex.__class__, ex, ex.__traceback__
-                    ))
+                    raise
+                # Expected when an instance holds sibling env sites that are
+                # not configured for this host (dev/test/prod layout).
+                logger.debug(
+                    'skipping site %s: %s', name, ex, exc_info=True
                 )
         return result
 
     def run_background_jobs(self):
-        """Run background jobs for all sites in an instance"""
+        """Run background jobs for all loadable sites in an instance"""
         for site in self.get_sites(skip_fails=True).values():
             site.run_background_jobs()
 
