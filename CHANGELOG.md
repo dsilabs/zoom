@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - always remove request LogHandler after logging middleware
 - fix sample app upper helper demo
+- return error pages even when logging fails
 
 ## [6.30.0] - 2026-07-11
 - resolve site.ini `${NAME}` placeholders from secret files under `ZOOM_SECRETS_PATH` when env is unset
