@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix sample app upper helper demo
 - return error pages even when logging fails
 - skip unloadable sites at debug when scanning an instance
+- purge old background job results after a site run
 
 ## [6.30.0] - 2026-07-11
 - resolve site.ini `${NAME}` placeholders from secret files under `ZOOM_SECRETS_PATH` when env is unset
