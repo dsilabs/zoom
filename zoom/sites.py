@@ -13,7 +13,7 @@ from os.path import dirname
 
 import zoom
 from zoom.site import BasicSite
-from zoom.background import run_background_jobs
+from zoom.background import run_background_jobs, purge_old_job_results
 from zoom.context import context
 from zoom.exceptions import SiteMissingException
 
@@ -94,6 +94,7 @@ class Site(BasicSite):
         self.activate()
         for app in self.apps:
             run_background_jobs(app)
+        purge_old_job_results()
 
     def activate(self):
         """Activate this site in Zoom's thread-local context."""

@@ -34,24 +34,34 @@ class TestBackground(unittest.TestCase):
 
         NUMBER_TO_GENERATE = 110
 
-        for i in range(NUMBER_TO_GENERATE):
-            job_log.put(
-                BackgroundJobResult(
-                    job_qualified_name='job_qualified_name',
-                    job_name='job_name',
-                    start_time=now,
-                    finish_time=now,
-                    return_value=0,
-                    run_status='C',
-                    runtime_error=None
+        for name in ('job_a', 'job_b'):
+            for i in range(NUMBER_TO_GENERATE):
+                job_log.put(
+                    BackgroundJobResult(
+                        job_qualified_name=name,
+                        job_name=name,
+                        start_time=now,
+                        finish_time=now,
+                        return_value=i,
+                        run_status='C',
+                        runtime_error=None
+                    )
                 )
-            )
 
-        self.assertEqual(len(job_log), NUMBER_TO_GENERATE)
+        self.assertEqual(len(job_log), NUMBER_TO_GENERATE * 2)
 
         purge_old_job_results()
 
-        self.assertEqual(len(job_log), 100)
+        remaining = list(job_log)
+        self.assertEqual(len(remaining), 200)
+        by_name = {}
+        for result in remaining:
+            by_name.setdefault(result.job_qualified_name, []).append(result)
+        self.assertEqual(sorted(by_name), ['job_a', 'job_b'])
+        for name, results in by_name.items():
+            self.assertEqual(len(results), 100)
+            values = sorted(r.return_value for r in results)
+            self.assertEqual(values, list(range(10, 110)))
 
     def test_instance_jobs_exist(self):
         instance = zoom.instances.Instance()

@@ -253,24 +253,21 @@ class BackgroundJobResult(Entity):
         return ' '.join((return_desc, timing_desc))
 
 
+KEEP_JOB_RESULTS = 100
+
+
 def purge_old_job_results():
     """Purge old background job results"""
 
-    cmd = """
-    delete from attributes
-    where kind = 'background_job_result' and row_id not in (
-        select row_id from (
-            select distinct row_id from attributes
-            where kind = 'background_job_result'
-            order by row_id desc
-            limit 100  -- keep this many result records
-        ) foo
-    )
-    """
-
     logger.info('purging old background job results')
-    db = zoom.get_db()
-    db(cmd)
+    job_log = store_of(BackgroundJobResult)
+    by_name = {}
+    for result in job_log:
+        by_name.setdefault(result.job_qualified_name, []).append(result)
+    for results in by_name.values():
+        results.sort(key=lambda r: r._id, reverse=True)
+        for result in results[KEEP_JOB_RESULTS:]:
+            job_log.delete(result._id)
     logger.debug('finished purging old background job results')
 
 
