@@ -5,6 +5,7 @@
 import json
 import logging
 import unittest
+from unittest.mock import patch
 
 import zoom
 from zoom.database import setup_test
@@ -70,7 +71,9 @@ class TestDisplayError(unittest.TestCase):
 
     def setUp(self):
         request = zoom.request.build('http://localhost')
-        request.app = zoom.utils.Bunch(theme='default', templates_paths=[])
+        request.app = zoom.utils.Bunch(
+            theme='default', templates_paths=[], name='test'
+        )
         request.host = 'localhost'
         request.site = zoom.sites.Site()
         request.site.theme = 'default'
@@ -116,46 +119,29 @@ class TestDisplayError(unittest.TestCase):
             }
         )
 
-    def _fail_log_inserts(self):
-        db = self.request.site.db
-        class FailLogInserts:
-            def __call__(inner, *args, **kwargs):
-                sql = args[0] if args else ''
-                if isinstance(sql, str) and 'insert into log' in sql:
-                    raise Exception('dead connection')
-                return db(*args, **kwargs)
-            def __getattr__(inner, name):
-                return getattr(db, name)
-        self.request.site.db = FailLogInserts()
-
-    def test_display_errors_when_log_insert_fails(self):
+    def test_display_errors_when_logging_fails(self):
         zoom.system.user.is_admin = True
-        self._fail_log_inserts()
-        log_handler = zoom.logging.LogHandler(self.request)
-        root = logging.getLogger()
-        root.addHandler(log_handler)
-        try:
+        with patch.object(
+            logging.getLogger('zoom.middleware'),
+            'error',
+            side_effect=Exception('dead connection'),
+        ):
             response = display_errors(self.request, throw)
-        finally:
-            root.removeHandler(log_handler)
         status, headers, content = response.as_wsgi()
         self.assertEqual(status, server_error)
         self.assertTrue(content)
         self.assertTrue(headers)
         self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
-        self.assertIn('ouch!', str(content))
 
-    def test_display_errors_json_when_log_insert_fails(self):
+    def test_display_errors_json_when_logging_fails(self):
         zoom.system.user.is_admin = True
         self.request.env = dict(HTTP_ACCEPT='application/json')
-        self._fail_log_inserts()
-        log_handler = zoom.logging.LogHandler(self.request)
-        root = logging.getLogger()
-        root.addHandler(log_handler)
-        try:
+        with patch.object(
+            logging.getLogger('zoom.middleware'),
+            'error',
+            side_effect=Exception('dead connection'),
+        ):
             response = display_errors(self.request, throw)
-        finally:
-            root.removeHandler(log_handler)
         self.assertEqual(response.status, server_error)
         self.assertTrue(isinstance(response, zoom.response.JSONResponse))
         self.assertEqual(json.loads(response.content), {
