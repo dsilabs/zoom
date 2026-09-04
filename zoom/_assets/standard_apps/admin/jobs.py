@@ -33,6 +33,11 @@ class BackgroundController(zoom.Controller):
             'Elapsed', 'Last Run Status'
         )
 
+        job_count = len(jobs)
+        job_label = 'job' if job_count == 1 else 'jobs'
+        result_count = len(zoom.store_of(zoom.background.BackgroundJobResult))
+        result_label = 'job result' if result_count == 1 else 'job results'
+
         content = zoom.browse(
             (
                 (
@@ -58,6 +63,9 @@ class BackgroundController(zoom.Controller):
                 for job in jobs
             ),
             labels=labels,
+            footer='%s %s, %s %s' % (
+                job_count, job_label, result_count, result_label
+            ),
         )
 
         title = 'Jobs'
