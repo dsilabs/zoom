@@ -3,6 +3,7 @@
 """
 
 import logging
+import sys
 
 import zoom
 
@@ -19,19 +20,29 @@ cmd = """
 def add_entry(request, status, entry):
     """Add an entry to the system log"""
     if request.site.logging:
-        request.site.db(
-            cmd,
-            hasattr(request, 'app') and request.app.name or None,
-            request.path[:PATH_LIMIT],
-            status,
-            hasattr(request, 'user') and request.user.user_id or None,
-            request.ip_address,
-            request.remote_user,
-            request.host,
-            zoom.tools.now(),
-            int(request.elapsed * 1000),
-            entry,
-        )
+        try:
+            request.site.db(
+                cmd,
+                hasattr(request, 'app') and request.app.name or None,
+                request.path[:PATH_LIMIT],
+                status,
+                hasattr(request, 'user') and request.user.user_id or None,
+                request.ip_address,
+                request.remote_user,
+                request.host,
+                zoom.tools.now(),
+                int(request.elapsed * 1000),
+                entry,
+            )
+        except Exception as e:
+            try:
+                sys.stderr.write(
+                    'failed to write log entry [%s] %s: %s\n' % (
+                        status, entry, e
+                    )
+                )
+            except Exception:
+                pass
 
 
 def log_activity(message, *args, **kwargs):

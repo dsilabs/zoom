@@ -13,7 +13,8 @@ from zoom.sites import Site
 from zoom.session import Session
 from zoom.middleware import (
     check_csrf,
-    display_errors
+    display_errors,
+    trap_errors,
 )
 
 logger = logging.getLogger(__name__)
@@ -114,3 +115,87 @@ class TestDisplayError(unittest.TestCase):
             "status": "500 Internal Server Error"
             }
         )
+
+    def _fail_log_inserts(self):
+        db = self.request.site.db
+        class FailLogInserts:
+            def __call__(inner, *args, **kwargs):
+                sql = args[0] if args else ''
+                if isinstance(sql, str) and 'insert into log' in sql:
+                    raise Exception('dead connection')
+                return db(*args, **kwargs)
+            def __getattr__(inner, name):
+                return getattr(db, name)
+        self.request.site.db = FailLogInserts()
+
+    def test_display_errors_when_log_insert_fails(self):
+        zoom.system.user.is_admin = True
+        self._fail_log_inserts()
+        log_handler = zoom.logging.LogHandler(self.request)
+        root = logging.getLogger()
+        root.addHandler(log_handler)
+        try:
+            response = display_errors(self.request, throw)
+        finally:
+            root.removeHandler(log_handler)
+        status, headers, content = response.as_wsgi()
+        self.assertEqual(status, server_error)
+        self.assertTrue(content)
+        self.assertTrue(headers)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
+        self.assertIn('ouch!', str(content))
+
+    def test_display_errors_json_when_log_insert_fails(self):
+        zoom.system.user.is_admin = True
+        self.request.env = dict(HTTP_ACCEPT='application/json')
+        self._fail_log_inserts()
+        log_handler = zoom.logging.LogHandler(self.request)
+        root = logging.getLogger()
+        root.addHandler(log_handler)
+        try:
+            response = display_errors(self.request, throw)
+        finally:
+            root.removeHandler(log_handler)
+        self.assertEqual(response.status, server_error)
+        self.assertTrue(isinstance(response, zoom.response.JSONResponse))
+        self.assertEqual(json.loads(response.content), {
+            "message": "ouch!",
+            "status": "500 Internal Server Error"
+        })
+
+
+class TestLogInsertFailures(unittest.TestCase):
+
+    def setUp(self):
+        def boom(*_args, **_kwargs):
+            raise Exception('dead connection')
+        request = zoom.request.build('http://localhost')
+        request.site = zoom.utils.Bunch(logging=True, db=boom)
+        request.app = zoom.utils.Bunch(name='test')
+        request.profiler = zoom.profiler.SystemTimer(request.start_time)
+        self.request = request
+
+    def test_add_entry_does_not_raise(self):
+        zoom.logging.add_entry(self.request, 'E', 'boom')
+
+    def test_trap_errors_when_log_insert_fails(self):
+        log_handler = zoom.logging.LogHandler(self.request)
+        root = logging.getLogger()
+        root.addHandler(log_handler)
+        try:
+            response = trap_errors(self.request, throw)
+        finally:
+            root.removeHandler(log_handler)
+        status, headers, content = response.as_wsgi()
+        self.assertEqual(status, server_error)
+        self.assertTrue(content)
+        self.assertTrue(headers)
+        self.assertTrue(isinstance(response, zoom.response.HTMLResponse))
+
+    def test_complete_log_failure_does_not_kill_response(self):
+        def ok(_request):
+            return zoom.response.HTMLResponse('ok')
+        response = zoom.logging.handler(self.request, ok)
+        status, headers, content = response.as_wsgi()
+        self.assertEqual(status, '200 OK')
+        self.assertEqual(content, b'ok')

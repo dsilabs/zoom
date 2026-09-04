@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - always remove request LogHandler after logging middleware
 - fix sample app upper helper demo
 - return error pages even when logging fails
+- swallow log table insert failures (stderr only)
 - skip unloadable sites at debug when scanning an instance
 - purge old background job results after a site run
 - show per-job, leftover, and total job result counts on admin jobs page
