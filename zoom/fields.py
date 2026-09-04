@@ -581,7 +581,11 @@ class MemoField(Field):
 
 
 class MarkdownField(MemoField):
-    """MarkdownField
+    """Markdown field
+
+    Renders markdown including raw HTML. Display is not websafe — use
+    with caution and not for general/untrusted users. Use MarkdownEditField
+    when values should be escaped first.
 
     >>> f = MarkdownField('Notes', value='test **one** 23')
     >>> f.display_value()
