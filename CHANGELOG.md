@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.31.0] - 2026-09-04
 - always remove request LogHandler after logging middleware
 - fix sample app upper helper demo
 - return error pages even when logging fails
