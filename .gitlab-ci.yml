@@ -172,11 +172,11 @@ python-3.12-MySQL8-web:
     expire_in: 1 week
     when: on_failure
 
-pypi:
-  stage: publish
-  trigger: dsilabs/zoom-publisher
-  only:
-    - tags
+      #pypi:
+      #  stage: publish
+      #  trigger: dsilabs/zoom-publisher
+      #  only:
+      #    - tags
 
 pypi-manual:
   stage: publish
