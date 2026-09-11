@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERBOSE=${VERBOSE:-0}
-VERSIONS=${VERSIONS:-"3.7 3.8 3.9 3.12"}
+VERSIONS=${VERSIONS:-"3.9 3.12"}
 SUITES=${SUITES:-"unit web"}
 IMAGE=dsilabs/testbase
 
