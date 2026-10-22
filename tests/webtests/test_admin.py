@@ -186,14 +186,16 @@ class SystemTests(AdminTestCase):
 
         try:
             self.get('/admin/groups/5/edit')
-            self.chosen('subgroups', ['guests'])
+            self.chosen('roles', ['guests'])
             self.click('id=save_button')
             self.assertContains('link-to-guests')
 
         finally:
             # remove the role we just added
             self.get('/admin/groups/5/edit')
-            element = self.find('//*[@id="subgroups_chosen"]/ul/li[2]/a')
+            element = self.find(
+                '//*[@id="roles_chosen"]//li[span[normalize-space()="guests"]]/a'
+            )
             element.click()
             self.click('id=save_button')
 

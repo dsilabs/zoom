@@ -6,6 +6,7 @@
 
 import unittest
 import logging
+from unittest.mock import patch
 
 from zoom.fields import *
 from zoom.tools import unisafe
@@ -609,6 +610,50 @@ class TestBasicImageField(unittest.TestCase):
 
 def trim(text):
     return '\n'.join(filter(bool, (line.strip() for line in text.splitlines())))
+
+
+class TestSelectionWidgetOptions(unittest.TestCase):
+
+    def test_pulldown_uses_plain_widget_labels(self):
+        linked_options = [
+            ('<a href="/admin/groups/1">administrators</a>', 1),
+            ('<a href="/admin/groups/3">guests</a>', 3),
+        ]
+        field = PulldownField(
+            'Administrators',
+            value=3,
+            options=linked_options,
+            widget_options=[('administrators', 1), ('guests', 3)],
+        )
+
+        self.assertEqual(
+            field.display_value(),
+            '<a href="/admin/groups/3">guests</a>',
+        )
+        self.assertNotIn('<a ', str(field.widget()))
+        self.assertIn('<option value="3" selected>guests</option>', str(field.widget()))
+
+    def test_multiselect_uses_plain_widget_labels(self):
+        linked_options = [
+            ('<a href="/admin/groups/1">administrators</a>', 1),
+            ('<a href="/admin/groups/3">guests</a>', 3),
+        ]
+        field = ChosenMultiselectField(
+            'Roles',
+            value=[3],
+            options=linked_options,
+            widget_options=[('administrators', 1), ('guests', 3)],
+        )
+
+        self.assertEqual(
+            field.display_value(),
+            '<a href="/admin/groups/3">guests</a>',
+        )
+        with patch('zoom.requires'):
+            widget = str(field.widget())
+        self.assertNotIn('<a ', widget)
+        self.assertIn('<option value="3" selected>guests</option>', widget)
+
 
 class TestMultiselectField(unittest.TestCase):
 
