@@ -3,9 +3,11 @@
 """
 
 import re
-import imghdr
 import cgi
 import datetime
+import io
+
+from PIL import Image
 
 PHONE_RE = r'^\(?([2-9][0-8][0-9])\)?[-. ]?([2-9][0-9]{2})[-. ]?([0-9]{4})$'
 USERNAME_RE = r'^[a-zA-Z0-9.@\\]+$'
@@ -423,20 +425,35 @@ def email_valid(email):
     return bool(email_re.match(email))
 
 
+def _image_format(stream):
+    """Return the format of an image stream without consuming it."""
+    position = stream.tell()
+    try:
+        stream.seek(0)
+        with Image.open(stream) as image:
+            image.verify()
+            return image.format.lower() if image.format else None
+    except (
+            Image.DecompressionBombError,
+            OSError,
+            SyntaxError,
+            ValueError,
+    ):
+        return None
+    finally:
+        stream.seek(position)
+
+
 def image_mime_type_valid(data):
     """check data against the more commonly browser supported mime types
     """
     accept = ['gif', 'jpeg', 'png', 'xbm', 'bmp']
-    if (
-            isinstance(data, cgi.FieldStorage) and
-            data.file and imghdr.what('a', data.file.read()) in accept
-    ):
+    if isinstance(data, cgi.FieldStorage) and data.file:
+        return _image_format(data.file) in accept
+    if not data:
         return True
-    if (
-            not data or isinstance(data, (str, bytes)) and
-            imghdr.what('a', data) in accept
-    ):
-        return True
+    if isinstance(data, bytes):
+        return _image_format(io.BytesIO(data)) in accept
     return False
 
 
