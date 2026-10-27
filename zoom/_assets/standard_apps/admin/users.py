@@ -45,7 +45,8 @@ def user_fields(request):
             'Groups',
             name='memberships',
             default=[2],
-            options=model.get_user_group_options(request.site)
+            options=model.get_user_group_options(request.site),
+            widget_options=model.get_user_group_widget_options(request.site),
         )
     ])
 

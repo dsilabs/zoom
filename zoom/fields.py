@@ -128,6 +128,7 @@ class Field(object):
     msg = ''
     visible = True
     options = []
+    widget_options = None
     validators = []
     wrap = ' nowrap'
     browse = True
@@ -2256,7 +2257,8 @@ class PulldownField(TextField):
         name = self.name
         found = False
         result.append(self.select_layout.format(**dict(place=self.placeholder, classed=self.css_class, name=name)))
-        for option in self.options:
+        options = self.widget_options if self.widget_options is not None else self.options
+        for option in options:
             if isinstance(option, (list, tuple)) and len(option) == 2:
                 label, value = option
             else:
@@ -2485,7 +2487,8 @@ class MultiselectField(TextField):
         name = self.name
         tpl = '<select multiple="multiple" class="%s" name="%s" id="%s">\n'
         result.append(tpl%(self.css_class, name, name))
-        for option in self.options:
+        options = self.widget_options if self.widget_options is not None else self.options
+        for option in options:
             if is_listy(option) and len(option) == 2:
                 label, value = option
             else:
@@ -2589,7 +2592,8 @@ class ChosenMultiselectField(MultiselectField):
         result = []
         name = self.name
         result.append(self.select_layout.format(self.placeholder, self.css_class, name, name))
-        for option in self.options:
+        options = self.widget_options if self.widget_options is not None else self.options
+        for option in options:
             if is_listy(option) and len(option) == 2:
                 label, value = option
             else:

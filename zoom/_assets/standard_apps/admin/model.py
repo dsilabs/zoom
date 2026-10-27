@@ -9,18 +9,26 @@ import uuid
 import zoom
 import zoom.mail
 from zoom.context import context
-from zoom.tools import today, now
+from zoom.tools import today, now, websafe
 from zoom.users import Users
 from zoom.models import Groups
 
 
 def get_user_group_options(site):
-    """return options for a groups pulldown field"""
+    """return linked options for displaying groups"""
     user_groups = list(sorted(
         (group.link, group.key)
         for group in site.groups.find(**{'type': 'U'})
     ))
     return user_groups
+
+
+def get_user_group_widget_options(site):
+    """return plain-text options for a groups selection widget"""
+    return list(sorted(
+        (websafe(group.name), group.key)
+        for group in site.groups.find(**{'type': 'U'})
+    ))
 
 
 def get_subgroups(db, groups):
@@ -119,6 +127,11 @@ class AdminModel(object):
             (user.link, user.user_id) for user in Users(self.db)
         )
 
+    def get_user_widget_options(self):
+        return sorted(
+            (websafe(user.get('username')), user.get('_id')) for user in Users(self.db)
+        )
+
     def get_subgroup_options(self, group_id):
         return sorted(
             (group.link, group.group_id)
@@ -126,9 +139,23 @@ class AdminModel(object):
             if group.group_id != group_id
         )
 
+    def get_subgroup_widget_options(self, group_id):
+        return sorted(
+            (websafe(group.name), group.group_id)
+            for group in self.groups.find(**{'type': 'U'})
+            if group.group_id != group_id
+        )
+
     def get_role_options(self, group_id):
         return sorted(
             (group.link, group.group_id)
+            for group in self.groups.find(**{'type': 'U'})
+            if group.group_id != group_id
+        )
+
+    def get_role_widget_options(self, group_id):
+        return sorted(
+            (websafe(group.name), group.group_id)
             for group in self.groups.find(**{'type': 'U'})
             if group.group_id != group_id
         )

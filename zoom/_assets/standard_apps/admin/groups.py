@@ -47,6 +47,7 @@ class SelectionField(f.ChosenMultiselectField):
 def group_fields(request):
 
     user_groups = model.get_user_group_options(request.site)
+    user_group_widget_options = model.get_user_group_widget_options(request.site)
 
     fields = f.Fields([
         f.TextField('Name', v.required, v.valid_name, no_app_groups),
@@ -55,7 +56,8 @@ def group_fields(request):
             'Administrators',
             default='administrators',
             name='admin_group_id',
-            options=user_groups
+            options=user_groups,
+            widget_options=user_group_widget_options,
         ),
     ])
 
@@ -68,12 +70,24 @@ def group_fields(request):
         group_id = None
 
     include_fields = f.Section('Includes',[
-        SelectionField('Subgroups', options=admin.get_subgroup_options(group_id)),
-        SelectionField('Users', options=admin.get_user_options()),
+        SelectionField(
+            'Subgroups',
+            options=admin.get_subgroup_options(group_id),
+            widget_options=admin.get_subgroup_widget_options(group_id),
+        ),
+        SelectionField(
+            'Users',
+            options=admin.get_user_options(),
+            widget_options=admin.get_user_widget_options(),
+        ),
     ])
 
     access_fields = f.Section('Accesses',[
-        SelectionField('Roles', options=admin.get_role_options(group_id)),
+        SelectionField(
+            'Roles',
+            options=admin.get_role_options(group_id),
+            widget_options=admin.get_role_widget_options(group_id),
+        ),
         SelectionField('Apps', options=admin.get_app_options()),
     ])
 
