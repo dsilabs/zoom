@@ -4,6 +4,8 @@ bcrypt>=4.0.1,<4.1
 passlib>=1.7.1
 markdown>=2.6.1
 Pillow>=1.0
+# Python 3.13+ removed cgi; preserve FieldStorage compatibility
+legacy-cgi>=2.6.4,<3; python_version >= '3.13'
 faker
 docopt
 Werkzeug<=3.0.0
