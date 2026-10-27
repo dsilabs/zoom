@@ -15,54 +15,10 @@ stages:
 
 whitespace:
   stage: qa
-  image: "dsilabs/testbase:3.7"
+  image: "dsilabs/testbase:3.9"
   script:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
-
-python-3.7-unit:
-  stage: test
-  image: "dsilabs/testbase:3.7"
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-python-3.7-web:
-  stage: test
-  image: "dsilabs/testbase:3.7"
-  script:
-    - /bin/bash tests/run_webtests_basetest.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-python-3.8-unit:
-  stage: test
-  image: "dsilabs/testbase:3.8"
-  script:
-    - /bin/bash tests/run_unittests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
-
-python-3.8-web:
-  stage: test
-  image: "dsilabs/testbase:3.8"
-  script:
-    - /bin/bash tests/run_webtests.sh
-  artifacts:
-    paths:
-    - tests/artifacts/
-    expire_in: 1 week
-    when: on_failure
 
 python-3.9-unit:
   stage: test
