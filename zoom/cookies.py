@@ -23,7 +23,7 @@
     True
 """
 
-from http.cookies import SimpleCookie, Morsel
+from http.cookies import SimpleCookie
 import logging
 import uuid
 
@@ -31,13 +31,6 @@ import uuid
 SESSION_COOKIE_NAME = 'zoom_session'
 SUBJECT_COOKIE_NAME = 'zoom_subject'
 ONE_YEAR = 365 * 24 * 60 * 60
-
-class SameSiteMorsel(Morsel):
-    """Add SameSite support for Python 3.7 and older"""
-    def add_samesite_support(self):
-        if 'samesite' not in self._reserved:
-            self._reserved['samesite'] = 'SameSite'
-
 
 def new_token():
     """generate a new subject ID"""
@@ -60,8 +53,6 @@ def add_value(cookie, name, value, lifespan, secure, samesite='Strict'):
     if secure:
         cookie[name]['secure'] = True
 
-    # for python3.7 and older
-    SameSiteMorsel.add_samesite_support(cookie[name])
     cookie[name]['samesite'] = samesite
 
 
