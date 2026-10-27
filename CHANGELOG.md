@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - drop support for Python 3.8 and older
+- use plain labels in dropdown fields
 
 ## [6.31.0] - 2026-09-04
 - always remove request LogHandler after logging middleware

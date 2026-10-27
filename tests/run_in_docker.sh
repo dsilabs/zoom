@@ -20,7 +20,7 @@ do
         if [ "$VERBOSE" -eq 1 ]; then
             $COMMAND
         else
-            $COMMAND | grep '===\ .*\ passed'
+            $COMMAND | grep '=== .* passed'
         fi
 
     done
