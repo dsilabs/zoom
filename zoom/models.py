@@ -249,7 +249,7 @@ class Group(Record):
             members.put(Member(group_id=self._id, user_id=user._id))
             audit('add member', self.name, user.username)
 
-    def remove_user(self, user):
+    def remove_user(self, user, action=None):
         """Remove a user from a group"""
         store = self.get('__store')
         members = Members(store.db)
@@ -257,7 +257,7 @@ class Group(Record):
         if membership:
             cmd = 'delete from members where group_id=%s and user_id=%s'
             store.db(cmd, self._id, user._id)
-            audit('remove member', self.name, user.username)
+            audit(action or 'remove member', self.name, user.username)
 
     @property
     def roles(self):

@@ -3,6 +3,7 @@
 """
 
 import os
+import re
 import sys
 import configparser
 import logging
@@ -13,6 +14,61 @@ class UndefinedValueError(Exception):
     """Required config value missing"""
 
 
+_SAFE_SECRET_NAME = re.compile(r'^[A-Za-z0-9_]+$')
+
+
+def _read_secret_file(name):
+    """Read a secret file from ZOOM_SECRETS_PATH if the name is safe.
+
+    Supports Docker / Swarm style mounts under /run/secrets when
+    ZOOM_SECRETS_PATH=/run/secrets.
+    """
+    if not _SAFE_SECRET_NAME.match(name):
+        return None
+    from zoom.encryption import get_secrets_path
+    pathname = os.path.join(get_secrets_path(), name)
+    if not os.path.isfile(pathname):
+        return None
+    with open(pathname, 'r') as f:
+        value = f.read().strip()
+    return value or None
+
+
+def resolve_placeholder(value):
+    """Resolve a ${NAME} or ${NAME:default} config placeholder.
+
+    Resolution order:
+      1. environment variable NAME
+      2. secret file {ZOOM_SECRETS_PATH}/NAME
+      3. default (if provided), otherwise the original placeholder
+    """
+    if not (value.startswith('${') and value.endswith('}')):
+        return value
+
+    inner = value[2:-1]
+    parts = inner.split(':', 1)
+    name = parts[0]
+    has_default = len(parts) > 1
+    default_value = parts[1] if has_default else None
+
+    resolved = os.getenv(name)
+    if resolved is None:
+        resolved = _read_secret_file(name)
+    if resolved is None:
+        if has_default:
+            return default_value
+        return value
+    return resolved
+
+
+def replace_env_vars(config):
+    """Replace placeholders in config values with env vars or secret files."""
+    for section in config.sections():
+        for key, value in config[section].items():
+            config[section][key] = resolve_placeholder(value)
+    return config
+
+
 def get_config(pathname):
     """Read a config file into a Config parser"""
     if os.path.exists(pathname):
@@ -20,9 +76,10 @@ def get_config(pathname):
         logger.debug('reading config: %r', pathname)
         config = configparser.ConfigParser(strict=False)
         config.read(pathname)
-        return config
+        return replace_env_vars(config)
 
-class Config(object):
+
+class Config:
     """Config file parser
 
     The Config class looks in two places for config settings.  First

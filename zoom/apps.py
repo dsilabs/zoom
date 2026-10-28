@@ -171,7 +171,8 @@ class AppProxy:
             slug = '/'
 
         self.url = site.url + slug
-        self.abs_url = site.abs_url + slug
+        if site.abs_url:
+            self.abs_url = site.abs_url + slug
         self.path = os.path.dirname(filename)
         self.site = site
         self.config_parser = configparser.ConfigParser()
@@ -295,7 +296,7 @@ class AppProxy:
                 return name == item.name
             return selector
 
-        route = self.site.request.route
+        route = zoom.system.request.route
         logger.debug('constructing menu')
 
         menu = getattr(self.method, 'menu', [])

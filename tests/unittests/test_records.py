@@ -15,7 +15,7 @@ class Person(Record):
     pass
 
 
-class TestPerson(Record):
+class OtherPerson(Record):
     pass
 
 
@@ -195,14 +195,14 @@ class TestRecordStore(unittest.TestCase):
 
     def test_delete_by_entity(self):
         sam = self.people.get(self.sam_id)
-        self.assert_(sam)
+        self.assertTrue(sam)
         self.people.delete(sam)
         sam = self.people.get(self.sam_id)
         self.assertEqual(None, sam)
 
     def test_delete_by_id(self):
         sam = self.people.get(self.sam_id)
-        self.assert_(sam)
+        self.assertTrue(sam)
         self.people.delete(self.sam_id)
         sam = self.people.get(self.sam_id)
         self.assertEqual(None, sam)
@@ -227,7 +227,7 @@ class TestRecordStore(unittest.TestCase):
 
     def test_kind(self):
         self.assertEqual(self.people.kind, 'person')
-        self.assertEqual(RecordStore(self.db, TestPerson).kind, 'test_person')
+        self.assertEqual(RecordStore(self.db, OtherPerson).kind, 'other_person')
 
     def test_len(self):
         self.assertEqual(3, len(self.people))

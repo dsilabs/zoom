@@ -51,16 +51,23 @@ def setup():
         (':' + str(parsed.port)) if str(parsed.port) != '80' else ''
     )
 
+    # Include headers from the dev server so request negotiation works locally.
+    flask_environ = flask.request.environ
+    env = dict(
+        REQUEST_METHOD=flask.request.method,
+        SCRIPT_NAME='flask.wsgi',
+        PATH_INFO=parsed.path,
+        QUERY_STRING=parsed.query,
+        SERVER_NAME=parsed.hostname,
+        SERVER_PORT=parsed.port or 80,
+        HTTP_HOST=host,
+        HTTP_ACCEPT=flask_environ.get('HTTP_ACCEPT', ''),
+        HTTP_USER_AGENT=flask_environ.get('HTTP_USER_AGENT', ''),
+        CONTENT_TYPE=flask_environ.get('CONTENT_TYPE', ''),
+    )
+
     request = zoom.request.Request(
-        dict(
-            REQUEST_METHOD=flask.request.method,
-            SCRIPT_NAME='flask.wsgi',
-            PATH_INFO=parsed.path,
-            QUERY_STRING=parsed.query,
-            SERVER_NAME=parsed.hostname,
-            SERVER_PORT=parsed.port or 80,
-            HTTP_HOST=host,
-        ),
+        env,
         instance_path,
         **params
     )

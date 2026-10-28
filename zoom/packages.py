@@ -235,7 +235,7 @@ def get_registered_packages():
 
     >>> import zoom.request
     >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
-    >>> zoom.system.site = zoom.site.Site(zoom.system.request)
+    >>> zoom.system.site = zoom.sites.Site()
     >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
 
     >>> packages = get_registered_packages()
@@ -264,7 +264,7 @@ def requires(*package_names):
 
     >>> import zoom.request
     >>> request = zoom.request.Request(dict(PATH_INFO='/'))
-    >>> zoom.system.site = zoom.site.Site(request)
+    >>> zoom.system.site = zoom.sites.Site()
     >>> zoom.system.parts = zoom.Component()
 
     >>> requires('c3')

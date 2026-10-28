@@ -3,7 +3,7 @@
 """
     zoom.utils
 """
-import collections
+
 import configparser
 import decimal
 import datetime

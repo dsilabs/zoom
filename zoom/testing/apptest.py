@@ -48,7 +48,7 @@ class AppTestPrimitives(unittest.TestCase):
             middleware.zoom.request.handler,
             middleware.reset_modules,
             middleware.capture_stdout,
-            middleware.zoom.site.handler,
+            middleware.zoom.sites.handler,
             middleware.serve_themes,
             middleware.zoom.database.handler,
             middleware.zoom.queues.handler,

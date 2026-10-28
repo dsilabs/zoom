@@ -42,10 +42,8 @@ import zoom.context
 import zoom.cookies
 import zoom.html as html
 import zoom.logging
-import zoom.models
-import zoom.queues
 import zoom.session
-import zoom.site
+import zoom.sites
 import zoom.templates
 import zoom.users
 import zoom.component
@@ -121,8 +119,8 @@ def serve_redirects(request, handler, *rest):
     >>> request.site = zoom.utils.Bunch(abs_url='http://localhost')
     >>> redirect_home = zoom.response.RedirectResponse('/home')
     >>> result = serve_redirects(request, lambda a: redirect_home)
-    >>> print(result.headers)
-    OrderedDict([('Location', '/home')])
+    >>> print(list(result.headers.items()))
+    [('Location', '/home')]
     """
     result = handler(request, *rest)
     if isinstance(result, RedirectResponse):
@@ -731,7 +729,7 @@ def reset_modules(request, handler, *rest):
 
     def keeper(module):
         """modules that we will not delete"""
-        sigs = ['pymysql', 'pstats']
+        sigs = ['pymysql', 'pstats', 'requests', 'urllib3']
         return (module in init_modules) or any(filter(module.startswith, sigs))
 
     global init_modules
@@ -761,12 +759,9 @@ def handle(request, handlers=None):  # pragma: no cover
         serve_html,
         reset_modules,
         capture_stdout,
-        zoom.site.handler,
+        zoom.sites.handler,
         zoom.cookies.handler,
         serve_themes,
-        zoom.database.handler,
-        zoom.queues.handler,
-        zoom.models.handler,
         zoom.logging.handler,
         zoom.session.handler,
         zoom.impersonation.handler,

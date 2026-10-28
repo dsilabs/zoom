@@ -1,25 +1,28 @@
 
+default:
+  retry:
+    max: 2
+
+variables:
+  GIT_STRATEGY: clone
+
 stages:
   - qa
   - test
   - publish
+  - mirror
   - build
 
 whitespace:
   stage: qa
-  image: "python:3.7"
+  image: "dsilabs/testbase:3.7"
   script:
     - which git || (apt-get update -y && apt-get install -y git)
     - git --no-pager diff --check
 
 python-3.7-unit:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.7"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -30,14 +33,9 @@ python-3.7-unit:
 
 python-3.7-web:
   stage: test
-  image: "python:3.7"
-  services:
-    - mariadb:10.7 # https://github.com/MariaDB/mariadb-docker/issues/434
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.7"
   script:
-    - /bin/bash tests/run_webtests.sh
+    - /bin/bash tests/run_webtests_basetest.sh
   artifacts:
     paths:
     - tests/artifacts/
@@ -46,12 +44,7 @@ python-3.7-web:
 
 python-3.8-unit:
   stage: test
-  image: "python:3.8"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.8"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -62,12 +55,7 @@ python-3.8-unit:
 
 python-3.8-web:
   stage: test
-  image: "python:3.8"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.8"
   script:
     - /bin/bash tests/run_webtests.sh
   artifacts:
@@ -78,12 +66,7 @@ python-3.8-web:
 
 python-3.9-unit:
   stage: test
-  image: "python:3.9"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.9"
   script:
     - /bin/bash tests/run_unittests.sh
   artifacts:
@@ -94,12 +77,29 @@ python-3.9-unit:
 
 python-3.9-web:
   stage: test
-  image: "python:3.9"
-  services:
-    - mariadb:10.7
-  variables:
-    MYSQL_DATABASE: zoomtest2
-    MYSQL_ROOT_PASSWORD: root
+  image: "dsilabs/testbase:3.9"
+  script:
+    - /bin/bash tests/run_webtests.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.12-unit:
+  stage: test
+  image: "dsilabs/testbase:3.12"
+  script:
+    - /bin/bash tests/run_unittests.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.12-web:
+  stage: test
+  image: "dsilabs/testbase:3.12"
   script:
     - /bin/bash tests/run_webtests.sh
   artifacts:
@@ -110,7 +110,7 @@ python-3.9-web:
 
 python-3.9-MySQL8-unit:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
   services:
     - mysql:8.4
   variables:
@@ -126,7 +126,39 @@ python-3.9-MySQL8-unit:
 
 python-3.9-MySQL8-web:
   stage: test
-  image: "python:3.9"
+  image: "dsilabs/testbase:3.9"
+  services:
+    - mysql:8.4
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_webtests_mysql.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.12-MySQL8-unit:
+  stage: test
+  image: "dsilabs/testbase:3.12"
+  services:
+    - mysql:8.4
+  variables:
+    MYSQL_DATABASE: zoomtest2
+    MYSQL_ROOT_PASSWORD: root
+  script:
+    - /bin/bash tests/run_unittests_mysql.sh
+  artifacts:
+    paths:
+    - tests/artifacts/
+    expire_in: 1 week
+    when: on_failure
+
+python-3.12-MySQL8-web:
+  stage: test
+  image: "dsilabs/testbase:3.12"
   services:
     - mysql:8.4
   variables:
@@ -146,8 +178,40 @@ pypi:
   only:
     - tags
 
+pypi-manual:
+  stage: publish
+  trigger: dsilabs/zoom-publisher
+  when: manual
+  only:
+    - master
+
+mirror_to_github:
+  stage: mirror
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git openssh
+
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_USER_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+  script:
+    - git clone --bare "$CI_REPOSITORY_URL" repo
+    - cd repo
+    - git push git@github.com:ZoomFoundry/ZoomFoundry.git master
+    - git push git@github.com:dsilabs/zoom.git master
+  only:
+    - master
+
 docker:
   stage: build
   trigger: dsilabs/docker-zoom
   only:
     - tags
+
+docker-manual:
+  stage: build
+  trigger: dsilabs/docker-zoom
+  when: manual
+  only:
+    - master

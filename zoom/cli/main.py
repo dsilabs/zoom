@@ -5,6 +5,7 @@ Commands:
   new                         Create a new app, theme, database, or site.
   assign                      Link Zoom resources.
   describe                    Describe Zoom resources.
+  secrets                     Manage site secrets.
   serve                       Serve a Zoom instance.
   dev                         Serve a development server instance with live reload.
 
@@ -36,8 +37,10 @@ from zoom.cli.assign import assign
 from zoom.cli.describe import describe
 from zoom.cli.run import run
 from zoom.cli.dev import dev
+from zoom.cli.secrets import secrets as secrets_cmd
 
 COMMANDS = {
+    'secrets': secrets_cmd,
     'new': new,
     'setup': setup,
     'database': database,

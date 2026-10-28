@@ -9,7 +9,7 @@ import unittest
 import zoom
 from zoom.database import setup_test
 from zoom.request import Request
-from zoom.site import Site
+from zoom.sites import Site
 from zoom.session import Session
 from zoom.middleware import (
     check_csrf,
@@ -31,8 +31,7 @@ class TestCSRFMiddleware(unittest.TestCase):
             'REQUEST_METHOD': 'POST',
         }
         zoom.system.request = request = Request(self.env)
-        request.site = Site(request)
-        request.site.db = setup_test()
+        request.site = Site()
         request.session = Session(request)
         zoom.forms.form_for('test') # trigger crsf token creation
         self.request = request

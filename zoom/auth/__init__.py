@@ -8,6 +8,17 @@ __all__ = ['validate_password', 'hash_password']
 
 import datetime
 
+# passlib 1.7.x expects bcrypt.__about__.__version__, removed in bcrypt 4.1+.
+# Keep a shim so authentication still works if a newer bcrypt is installed.
+try:
+    import bcrypt as _bcrypt
+    if not hasattr(_bcrypt, '__about__'):
+        class _About:  # pylint: disable=too-few-public-methods
+            __version__ = getattr(_bcrypt, '__version__', '0')
+        _bcrypt.__about__ = _About()
+except ImportError:
+    pass
+
 from passlib.context import CryptContext
 
 
@@ -41,7 +52,7 @@ def get_context():
 def hash_password(password):
     """hash a password"""
     context = get_context()
-    return context.encrypt(password)
+    return context.hash(password)
 
 
 def validate_password(password, stored_password_hash):

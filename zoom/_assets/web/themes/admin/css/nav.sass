@@ -1,0 +1,148 @@
+// nav.sass
+
+@import colors
+@import dimensions
+
+$navbar-height: 4em
+$logo-width: 250px
+
+.header-logo
+  height: $navbar-height
+  // width: $logo-width
+  a
+    padding: 1em 4em
+  a:hover
+    background: white
+    width: $logo-width
+.header-logo:hover
+  background: white
+
+.navbar
+  height: $navbar-height
+  display: inline
+  background: red
+  .navbar-left
+    float: left
+    height: $navbar-height
+    line-height: 3em
+  .navbar-right
+    height: $navbar-height
+    float: right
+  ul
+    display: inline
+    li
+      background: $nav-background
+      display: inline
+      padding: 10px
+      a
+        padding: 10px
+      a:hover
+        background-color: $action-hover
+
+.app-menu
+  ul
+    text-align: left
+    display: block
+    margin: 0
+    padding: 0
+    background: #f8f8f8
+    border-bottom: 1px solid #dadada
+
+    li
+      display: inline
+  a
+    line-height: $app-menu-height
+    color: #888
+    text-decoration: none
+    padding: $app-menu-padding 10px
+  a.active
+    background: $app-menu-active
+    color: black
+  a:hover
+    background: $app-menu-hover
+    color: black
+
+
+@media (max-width: 979px)
+  .app-menu
+    margin-top: 0
+
+.system-menu
+  display: inline
+  font-size: 0.8rem
+  ul
+    margin: 0
+    li
+      list-style-type: none
+      display: inline
+      a
+        padding: 16px 10px
+        height: $height-header
+        line-height: $height-header
+        color: black
+        text-decoration: none
+      a:hover
+        background: $header-hover
+
+.system-menu-outer
+  display: inline
+  > ul
+    margin: 0
+    > li
+      list-style-type: none
+      > a
+        padding: 0 10px
+        height: $main-nav-height
+        line-height: $main-nav-height
+
+.dropdown a, .dropdown button
+  background: transparent
+  border: 0
+  color: inherit
+  cursor: pointer
+  display: block
+  font-family: inherit
+  font-size: 13px
+  line-height: 1
+  padding: 7px 15px
+  // text-align: left
+  text-decoration: none
+  width: 100%
+  white-space: nowrap
+
+.pulldown-user-info
+  padding: 0 10px
+  font-size: 14px
+  font-weight: bold
+  line-height: 1.8rem
+
+.dropdown .dropdown-menu
+  border-radius: 4px
+  box-shadow: none
+  margin-top: 5px
+  &:before
+    content: ""
+    border-bottom: 10px solid #fff
+    border-right: 10px solid transparent
+    border-left: 10px solid transparent
+    position: absolute
+    top: -10px
+    right: 16px
+    z-index: 10
+  &:after
+    content: ""
+    border-bottom: 12px solid #ccc
+    border-right: 12px solid transparent
+    border-left: 12px solid transparent
+    position: absolute
+    top: -12px
+    right: 14px
+    z-index: 9
+  li a
+    &:hover
+      background: $nav-color3
+      opacity: 1
+    &.active
+      background: $nav-color1
+      opacity: 1
+

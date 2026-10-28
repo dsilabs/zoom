@@ -6,6 +6,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.30.0] - 2026-07-11
+- resolve site.ini `${NAME}` placeholders from secret files under `ZOOM_SECRETS_PATH` when env is unset
+
+## [6.29.1] - 2026-07-11
+- pin bcrypt to a passlib-compatible range and tolerate missing bcrypt.__about__
+
+## [6.29.0] - 2026-07-11
+- add `zoom secrets` CLI with key management commands
+- add secrets module and Fernet encryption helpers
+- load encryption key from file or environment (`ZOOM_SECRETS_PATH`, `ZOOM_ENCRYPTION_KEY`)
+- default secrets path is `~/.zoom/secrets` (override with `ZOOM_SECRETS_PATH`, e.g. `/run/secrets` in production)
+- make MoneyField doctest locale independent
+- preserve selected request headers in dev reloader
+- preserve requests and urllib3 modules during reload
+
+## [6.28.0] - 2026-02-09
+- respect collection access policy when rendering collection actions
+- add a modified pypugjs module (html.py) as pug.py
+
+## [6.27.0] - 2025-11-10
+- obfuscate secret environment variables in admin app
+- add updated date to admin app environment section
+- use newer Site class from sites module
+- add expiry column to members table
+
+## [6.26.0] - 2025-01-17
+- add `now` helper
+- ignore deactivated accounts in forgot app
+- use stable version of chrome in test pipelines
+- make abs_url a request attribute
+- use prepared testbase image for pipeline testing
+- add environment variable substitution in site.ini
+- check proxy when determining protocol
+- make python 3.9 default for zoom bin command
+
+## [6.25.1] - 2025-01-17
+- fix escape sequence deprecation warning in fill.py
+
+## [6.25.0] - 2025-01-15
+- update zoom.tools.now() for compatibility with Python >= 3.11
+- add admin theme
+- use passlib hash method instead of deprecated encrypt method
+- update tests and pipelines to remove deprecated calls
+- add ability to run test pipelines locally in docker
+- improve wait logic in webtests
+
 ## [6.24.0] - 2024-07-25
 - add basic support for tabulator
 - add support for HTTP_X_REAL_IP
@@ -257,4 +303,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Linux / Mac / Windows
 ### Changed
 - some modules ported from DataZoomer (https://github.com/dsilabs/datazoomer) which is considered the predecessor to Zoom.
-

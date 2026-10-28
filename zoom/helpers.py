@@ -351,6 +351,10 @@ def date():
     """Returns the current date in text form."""
     return '%s' % datetime.date.today()
 
+def now(tpl="%b %-d, %Y %H:%M:%S"):
+    """Returns the current datetime in text form."""
+    return ('{:%s}' % tpl).format(zoom.tools.now())
+
 def year():
     """Returns the current year in text form."""
     return datetime.date.today().strftime('%Y')

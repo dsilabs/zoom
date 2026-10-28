@@ -26,6 +26,8 @@ dirname = os.path.dirname
 
 DEFAULT_OWNER_URL = 'https://www.dynamic-solutions.com'
 
+logger = logging.getLogger(__name__)
+
 
 class ConfigSection(zoom.utils.Record):
     """site configuration section"""
@@ -148,8 +150,6 @@ def locate_theme(path, name):
             if isfile(join(pathname, 'default.{}'.format(ext))):
                 return True
 
-    logger = logging.getLogger(__name__)
-
     if name != 'default':
         possibility = path, name
         if valid_theme(join(*possibility)):
@@ -167,12 +167,10 @@ def locate_theme(path, name):
         logger.debug('using theme %s', join(*possibility))
         return possibility
 
-class Site(object):
-    """a Zoom site"""
+class BasicSite:
+    """a basic Zoom site"""
 
     def __init__(self, request):
-
-        logger = logging.getLogger(__name__)
 
         self.request = request
         instance = request.instance
@@ -331,15 +329,6 @@ class Site(object):
         return ''
 
     @property
-    def abs_url(self):
-        """Calculate an absolute URL for this site"""
-        request = self.request
-        return '{}://{}'.format(
-            request.protocol,
-            request.host,
-        )
-
-    @property
     def apps(self):
         """Return list of apps available to this site"""
         if self.__apps is None:
@@ -394,13 +383,8 @@ class Site(object):
         return zoom.utils.pretty(self)
 
 
-def handler(request, next_handler, *rest):
-    """install site object"""
-    try:
-        request.site = context.site = Site(request)
-        request.profiler.add('site initialized')
-        return next_handler(request, *rest)
-    except zoom.exceptions.SiteMissingException:
-        logger = logging.getLogger(__name__)
-        logger.debug('responding with 404 for %r', request.path)
-        return zoom.response.SiteNotFoundResponse(request)
+class Site(BasicSite):
+
+    def __init__(self, *args, **kwargs):
+        BasicSite.__init__(self, *args, **kwargs)
+        logger.warning('zoom.site.Site is deprecated, use zoom.sites.Site instead')

@@ -2,6 +2,23 @@
 
 """
     zoom.Fields
+
+    Input fields to be used in forms.
+
+    >>> import zoom.request
+    >>> from zoom import Component
+    >>> zoom.system.request = zoom.request.Request(dict(PATH_INFO='/'))
+    >>> zoom.system.site = zoom.sites.Site()
+    >>> zoom.system.request.app = zoom.utils.Bunch(packages={}, common_packages={})
+    >>> zoom.system.parts = Component()
+
+    >>> print(TextField('Name', value="John Doe").show())
+    <div class="field">
+      <div class="field_label">Name</div>
+      <div class="field_show">John Doe</div>
+    </div>
+    <BLANKLINE>
+
 """
 
 import locale
@@ -469,7 +486,7 @@ class TextField(Field):
 
         valid_attributes = (
             'id', 'size', 'maxlength',
-            'placeholder', 'title'
+            'placeholder', 'title', 'autocomplete'
         )
 
         attributes = dict(
@@ -1499,8 +1516,13 @@ class MoneyField(DecimalField):
     >>> f.display_value()
     '$1,000.00'
 
-    >>> from platform import system
-    >>> l = system()=='Windows' and 'eng' or 'en_GB.UTF-8'
+    >>> real_setlocale = locale.setlocale
+    >>> real_localeconv = locale.localeconv
+    >>> real_currency = locale.currency
+    >>> locale.setlocale = lambda *args: 'en_GB.UTF-8'
+    >>> locale.localeconv = lambda: {'currency_symbol': '\xa3'}
+    >>> locale.currency = lambda value, grouping=True: '\xa3{:,.2f}'.format(value)
+    >>> l = 'en_GB.UTF-8'
     >>> f = MoneyField("Amount", locale=l)
     >>> f.display_value()
     '\\xa30.00'
@@ -1540,6 +1562,9 @@ class MoneyField(DecimalField):
     >>> f = MoneyField("Amount", symbol='£', value=1)
     >>> f.widget()
     '<div class="input-group"><span class="input-group-addon">£</span><input class="decimal_field" type="text" id="amount" maxlength="10" name="amount" size="10" value="1" /></div>'
+    >>> locale.setlocale = real_setlocale
+    >>> locale.localeconv = real_localeconv
+    >>> locale.currency = real_currency
 
     """
 
@@ -1598,7 +1623,6 @@ class MoneyField(DecimalField):
         if self.units and self.value is not None:
             v += ' ' + self.units
         return v
-
 
 class DateField(Field):
     """Date Field

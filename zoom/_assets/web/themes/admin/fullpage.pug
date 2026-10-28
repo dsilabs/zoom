@@ -1,0 +1,15 @@
+!!! 5
+head
+  include _partials/head
+body
+  style.
+    .fullpage-layout {
+      width: 100vw;
+      height: 100vh;
+      text-align: center;
+      vertical-align: middle;
+      display: table-cell;
+    }
+  .fullpage-layout
+    | {{stdout}} {{alerts}} {{content}}
+  include _partials/tail

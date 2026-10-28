@@ -54,7 +54,8 @@ def reset_modules():
     # it, and this is for develoment purposes only in any case.
     global init_modules
     if 'init_modules' in globals():
-        for module in [x for x in sys.modules if x not in init_modules]:
+        sigs = ['pymysql', 'pstats', 'requests', 'urllib3']
+        for module in [x for x in sys.modules if x not in init_modules and not any(x.startswith(s) for s in sigs)]:
             del sys.modules[module]
     else:
         init_modules = list(sys.modules.keys())

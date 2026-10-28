@@ -6,6 +6,7 @@ import logging
 import time
 import uuid
 
+import zoom
 from zoom.alerts import error
 from zoom.context import context
 from zoom.fill import dzfill
@@ -71,7 +72,8 @@ def initiate_password_reset(email, fake=False):
     message = make_message(token)
     if fake:
         return message
-    send(email,'Password reset', message)
+    if context.site.users.first(email=email, status='A'):
+        send(email,'Password reset', message)
 
 
 def process_reset_request(token, form):
