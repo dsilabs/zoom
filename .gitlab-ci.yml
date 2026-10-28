@@ -177,6 +177,8 @@ mirror_to_github:
     - git clone --bare "$CI_REPOSITORY_URL" repo
     - cd repo
     # Release tags are lightweight, so --follow-tags would skip them.
+    - git push git@github.com:ZoomFoundry/ZoomFoundry.git master
+    - git push git@github.com:dsilabs/zoom.git master
     - git push git@github.com:ZoomFoundry/ZoomFoundry.git --tags
     - git push git@github.com:dsilabs/zoom.git --tags
     - git push git@github.com:ZoomFoundry/ZoomFoundry.git stable
