@@ -8,9 +8,10 @@ web sites quickly and easily.
 
 
 ## Requirements
-ZoomFoundry requires Python 3 and MySQL to run, along with a host of other
-3rd party library requirements listed in the requirements.txt file.  It is
-currently tested and used on various flavours of GNU/Linux, Mac and Windows.
+ZoomFoundry requires Python 3.9 or later and MySQL to run, along with a host of other
+3rd party library requirements listed in the requirements.txt file. Python 3.9,
+3.12, and 3.15 are covered by CI. It is currently used on various flavours of
+GNU/Linux, Mac and Windows.
 
 
 ## Getting started with ZoomFoundry
@@ -23,8 +24,9 @@ start building the app, you need to make sure that you have ZoomFoundry installe
 Open up a terminal window and follow along with the following steps.  The
 dollar sign $ in the following examples is the command prompt.
 
-ZoomFoundry is a Python 3 framework so you'll need to have Python 3 installed to run it.  We
-recommend the latest version which you can download from [python.org](https://www.python.org/downloads/).
+ZoomFoundry is a Python 3 framework, so you'll need a supported Python version installed to
+run it. We recommend Python 3.15, which you can download from
+[python.org](https://www.python.org/downloads/).
 
 All set?  Okay, here we go!
 
