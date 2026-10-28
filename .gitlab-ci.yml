@@ -67,6 +67,9 @@ python-3.12-web:
 python-3.15-unit:
   stage: test
   image: "dsilabs/testbase:3.15"
+  # Chrome is preinstalled; its repository key is invalid in this image.
+  before_script:
+    - rm -f /etc/apt/sources.list.d/google-chrome.list
   script:
     - /bin/bash -e tests/run_unittests.sh
   artifacts:
@@ -78,6 +81,9 @@ python-3.15-unit:
 python-3.15-web:
   stage: test
   image: "dsilabs/testbase:3.15"
+  # Chrome is preinstalled; its repository key is invalid in this image.
+  before_script:
+    - rm -f /etc/apt/sources.list.d/google-chrome.list
   script:
     - /bin/bash -e tests/run_webtests.sh
   artifacts:
